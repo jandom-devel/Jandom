@@ -17,21 +17,25 @@
  */
 
 package it.unich.sci.jandom;
+import targets._
 
 object Jandom extends App {
-  var i, j: domains.BoxDouble = null;
-  i = domains.BoxDouble(Array(1, 2), Array(3, 4));
-  println(i);
-  j = domains.BoxDouble(Array(0, 3), Array(3, 5));
-  println(j);
-  println(i union j)
-  println(i.linearAssignment(1,Array(1,2),3))
+
+   val prog: String = """
+    	 xyline <- function(x) {
+		    x = 0;
+            y = 0;
+		    while (x<=10) x=x+1
+          }      
+    """
+  val parsed = parsers.RandomParser.parseProgram(prog)  
+  if (parsed.successful) {
+	val program = parsed.get 
+	print(program)
+    program.analyze(domains.BoxDouble)
+    print (program)  
+  } else {
+    print (parsed)
+  }
   
-  var ii: IntInterval = null
-  ii = IntInterval.void
-  println(ii)
-  ii = IntInterval.full
-  println(ii)
-  ii = IntInterval(3, 4)
-  println(ii)
 }

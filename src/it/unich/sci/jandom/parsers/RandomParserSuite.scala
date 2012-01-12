@@ -22,32 +22,37 @@ import org.scalatest.prop.Checkers
 import it.unich.sci.jandom.targets._
 
 /**
+ * Test suite for RandomParser.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 class RandomParserSuite extends FunSuite with Checkers {
   test ("very simple program") {
     val prog: String =  """
-      id <- function(x) x = 1
-    """
-    val parsed = SLILProgram(List("x"), List(1), AssignStmt(1,new LinearForm(List(1,0)))) 
-    expect(parsed) { RandomParser.parseProgram(prog)}
+      xyz <- function(x,y) x = 1
+    """    
+    val env = Environment("x","y")
+    val expectedParsed = SLILProgram(env, Seq(1,2), AssignStmt(1, new LinearForm(List(1,0),env))) 
+    val parsed = RandomParser.parseProgram(prog).get
+    expect(expectedParsed) { parsed }
   }
   
   test ("simple random program") {
     val prog: String = """
-    	function xyline(x) {
-          y = 0
-          while (y < x) x=x+1
-        }
-    """
-    val parsed = SLILProgram(List("x","y"), List(1), 
+       xyline <- function(x) {
+          y = 0;
+          while (y < x) 
+    		y=y+1
+      }
+    """      
+    val env = Environment("x","y")
+    val parsed = SLILProgram(env, List(1), 
         CompoundStmt(List(
-            AssignStmt(2,LinearForm.fromCoefficient[Int](0)),
-            WhileStmt(AtomicCond(new LinearForm(List(0,-1,1)), ComparisonOperators.LT), 
-                AssignStmt(1,new LinearForm(List(1,1)))
+            AssignStmt(2,LinearForm.fromCoefficient[Int](0,env)),
+            WhileStmt(AtomicCond(new LinearForm(List(0,-1,1),env), AtomicCond.ComparisonOperators.LT), 
+                AssignStmt(2,new LinearForm(List(1,0,1),env))
             )
         )))
-   expect(parsed) { RandomParser.parseProgram(prog) }     
-    }
+    expect(parsed) { RandomParser.parseProgram(prog).get }     
+  }
 }

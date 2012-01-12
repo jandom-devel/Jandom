@@ -19,10 +19,8 @@
 package it.unich.sci.jandom
 
 /**
- * This package contains the code of the abstract domains used in Jandom.
- * 
- * @author Gianluca Amato <amato@sci.unich.it>
- *
+ * This package contains the code for the abstract domains used in Jandom. 
+ * @author Gianluca Amato <amato@sci.unich.it>*
  */
 package object domains {
 

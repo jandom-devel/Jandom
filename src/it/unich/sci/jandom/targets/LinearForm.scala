@@ -18,48 +18,46 @@
 package it.unich.sci.jandom.targets
 
 /**
- * The class LinearForm represents a linear form over a Field. The Field is a
- * type argument of the class and should be specified in all its istances.
+ * The class LinearForm represents a non-homogeneous linear form over a numeric type. 
+ * @param coefficients the coefficients of the linear form
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 
-import scala.collection.mutable._
-
-class LinearForm[T](val coefficients: List[T]) (implicit numeric: Numeric[T]) {
+class LinearForm[T](val coefficients: Seq[T], val environment: Environment) (implicit numeric: Numeric[T]) {
   
   import numeric._
+     
+  override def equals(other: Any): Boolean = other match {
+    case other: LinearForm[T] => 
+    	(coefficients zip other.coefficients) forall (tuple => tuple._1 == tuple._2)     	  
+    case _ => false
+  }
   
   def unary_-(): LinearForm[T] = 	
-	new LinearForm( coefficients map ( x => -x ) ) 
+	new LinearForm( coefficients map ( x => -x ), environment: Environment ) 
   
   def +(other: LinearForm[T]): LinearForm[T] = {  
-    val newcoeff = coefficients.zip(other.coefficients) map ( pair => pair._1 + pair._2 ) 
-    new LinearForm(newcoeff)    
+    val newcoeff = coefficients.zipAll(other.coefficients,zero,zero) map ( pair => pair._1 + pair._2 ) 
+    new LinearForm(newcoeff, environment: Environment)    
   }
   
   def -(other: LinearForm[T]): LinearForm[T] = this + (-other)
   
   def *(coeff: T): LinearForm[T]  = {	
-	new LinearForm( coefficients map (  x=> x*coeff) )
-  }
-
-  override def equals(other: Any): Boolean = other match {
-    case other:LinearForm[T] => coefficients == other.coefficients
-    case _ => false
-  } 
-        
+	new LinearForm( coefficients map ( _*coeff ),  environment: Environment )
+  }       
+  
   override def toString =  {
     var first = true
     var index = 0
     var s = ""
+    val names = environment.getVariableNames.toArray
         
-    while ( index < coefficients.size ) {
-      val coeff = coefficients(index)
+    for ( coeff <- coefficients ) {      
       val term = coeff match {
         case 0 => ""
-        case 1 => if (index == 0) "1" else "v"+index
-        case -1 => if (index == 0) "1" else "-v"+index
+        case 1 => if (index == 0) "1" else names(index-1)
+        case -1 => if (index == 0) "1" else "-"+names(index-1)
         case c:T => c.toString + (if (index==0) "" else "*v" + index)
       }
       if (coeff!=0) {
@@ -73,12 +71,26 @@ class LinearForm[T](val coefficients: List[T]) (implicit numeric: Numeric[T]) {
     }
     if (s.isEmpty) "0" else s      
   }
+  
+  def homcoeff = coefficients.tail.map { x => x.toDouble() }.padTo(environment.getNumVariables,0.0).toArray
+  
+  def known = coefficients.head.toDouble
 }
   
-object LinearForm {  
-  def apply[T](n:Int)(implicit numeric: Numeric[T]) = new LinearForm(List.fill(n)(numeric.zero))
-  def fromVar[T](v: Int)(implicit numeric: Numeric[T]) = new LinearForm((List.fill(v-1)(numeric.zero)) ++ List(numeric.one))
-  def fromCoefficient[T](coeff: T)(implicit numeric: Numeric[T]) = new LinearForm( List(coeff) )
-  def fromCoefficientVar[T](coeff:T, v: Int)(implicit numeric: Numeric[T]) = new LinearForm((List.fill(v-1)(numeric.zero)) ++ List(coeff))
+object LinearForm {
+  def apply[T](coeffs: Seq[T])(implicit numeric: Numeric[T])  = {
+    val env = new Environment()
+    (1 to coeffs.length) foreach { index => env.addVariable( "v"+ index ) }
+    new LinearForm(coeffs, env)
+  }
+  def fromCoefficient[T](coeff: T, environment: Environment = null)(implicit numeric: Numeric[T]) = fromCoefficientVar(coeff,0, environment: Environment)
+  def fromVar[T](v: Int, environment: Environment = null )(implicit numeric: Numeric[T]) = fromCoefficientVar(1,v, environment: Environment)
+  def fromCoefficientVar[T](coeff:T, v: Int, env: Environment = null )(implicit numeric: Numeric[T]) = {
+    val coeffs = List.fill(v)(numeric.zero) ++ List(coeff)
+    if (env == null)
+      apply(coeffs)(numeric)
+    else 
+      new LinearForm(coeffs, env)
+  } 
 }
 

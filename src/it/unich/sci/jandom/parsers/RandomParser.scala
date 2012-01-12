@@ -17,71 +17,60 @@
  */
 package it.unich.sci.jandom.parsers
 
-import scala.util.parsing.combinator.JavaTokenParsers
-import scala.collection.mutable.Map
 import it.unich.sci.jandom.targets._
-import sun.org.mozilla.javascript.ast.IfStatement
+import scala.util.parsing.combinator.JavaTokenParsers
 
 /**
+ * Parser for Random programs. 
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 
 object RandomParser extends JavaTokenParsers {
-    var currindex:Int = 1
-    val variables = Map[String,Int]()
+    private val env = new Environment();
     
-    private def getVariable(v: String):Int  =  variables.get(v) match  {
-      case Some(n) => n
-      case None => { 
-        currindex += 1
-        variables.update(v, currindex)
-        currindex
-      }
-    }
-       
-    def variable: Parser[Int] = 
-      ident ^^ { getVariable(_) }
+    private def variable: Parser[Int] = 
+      ident ^^ { env.getVariableOrAdd(_) }
     
-	def term: Parser[LinearForm[Int]] = 	
+	private def term: Parser[LinearForm[Int]] = 	
 	  (opt(wholeNumber) <~ opt("*")) ~ opt(variable) ^^ { 
-	     case Some(coeff)~Some(v) =>  LinearForm.fromCoefficientVar[Int](coeff.toInt,v)  
-	     case None~Some(v) =>  LinearForm.fromVar[Int](v)
-	     case Some(coeff)~None =>  LinearForm.fromCoefficient(coeff.toInt)
+	     case Some(coeff)~Some(v) =>  LinearForm.fromCoefficientVar[Int](coeff.toInt,v,env)  
+	     case None~Some(v) =>  LinearForm.fromVar[Int](v,env)
+	     case Some(coeff)~None =>  LinearForm.fromCoefficient(coeff.toInt,env)	    
 	  }
 	
-	def term_with_operator: Parser[LinearForm[Int]] =
+	private def term_with_operator: Parser[LinearForm[Int]] =
 	  "+" ~> term |
 	  "-" ~> term ^^ { lf => -lf  }	  	
 	  
-	def expr: Parser[LinearForm[Int]] = 
+	private def expr: Parser[LinearForm[Int]] = 
 	  term ~ rep(term_with_operator) ^^ {
 	    case lf1 ~ lfarr => (lf1 /: lfarr) { (lfa, lfb) => lfa + lfb }   
    	  }
 	
-	def comparison: Parser[ComparisonOperators.Value] =
-	  ("==" | "<=" | ">=" | "!=" | "<"  | ">") ^^ { s => ComparisonOperators.withName(s) }
+	private def comparison: Parser[AtomicCond.ComparisonOperators.Value] =
+	  ("==" | "<=" | ">=" | "!=" | "<"  | ">") ^^ { s => AtomicCond.ComparisonOperators.withName(s) }
 	
-	def condition: Parser[SLILCond] = 
+	private def condition: Parser[SLILCond] = 
 	  expr ~ comparison ~ expr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1-lf2, op)} |
 	  condition ~ "&&" ~ condition ^^ { case c1 ~ _ ~ c2 => AndCond(c1,c2) } |
 	  condition ~ "||" ~ condition ^^ { case c1 ~ _ ~ c2 => OrCond(c1,c2) } |
 	  "!" ~> condition ^^ { case c => NotCond(c) }
 	  
-	def stmt: Parser[SLILStmt] = 
-	  ident ~ ("=" | "<-") ~ expr ^^ { case v ~ _ ~ lf => AssignStmt(getVariable(v),lf) } |
+	private def stmt: Parser[SLILStmt] = 
+	  ident ~ ("=" | "<-") ~ expr ^^ { case v ~ _ ~ lf => AssignStmt(env.getVariableOrAdd(v),lf) } |
 	  ( "if" ~> "("  ~> condition <~ ")" ) ~ stmt ~ opt("else" ~> stmt) ^^ { 
 	    case c ~ s1 ~ Some(s2) => IfStmt(c,s1,s2)
 	    case c ~ s1 ~ None => IfStmt(c,s1,NopStmt())
 	  }  |
 	  ("while" ~> "(" ~> condition <~")") ~ stmt ^^ {
 	    case c ~ s => WhileStmt(c,s)
-	  }
+	  } |
 	  "{" ~> repsep(stmt, (";" | "\n")) <~ "}" ^^ { CompoundStmt(_) }
 	  
-	def program: Parser[SLILProgram] = 
+	private def program: Parser[SLILProgram] = 
 	  (opt(ident) ~> ("=" | "<-") ~> "function" ~> "(" ~> repsep(variable, ",") <~ ")" ) ~ stmt ^^ {
-	    case vars ~ s => SLILProgram(variables.keys, vars, s) 
+	    case vars ~ stmt=> SLILProgram(env, vars, stmt) 
 	}
 	
 	def parseProgram(s: String) = parseAll(program,s)

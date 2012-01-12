@@ -25,28 +25,31 @@ import org.scalatest.prop.Checkers
  *
  */
 class LinearFormSuite extends FunSuite with Checkers {
-  
+    
   test("standard constructor") {
-    val lf = new LinearForm(List(1,2,-1))
+    val lf = LinearForm(List(1,2,-1))
     expect("1+2*v1-v2") { lf.toString }
-    val lf2 = new LinearForm(List(1,0,3))
+    val lf2 = LinearForm(List(1,0,3))
     expect("1+3*v2") { lf2.toString }
   }	
   
-  test("zero constructor") {
-    val lf = LinearForm[Int](4)
-    expect("0") { lf.toString }
-  }
-  
   test("fromVar constructor") {
     var lf = LinearForm.fromVar[Int](3)
-    expect("v2") { lf.toString }
+    expect("v3") { lf.toString }
+  }
+  
+  test("from coefficient and var") {
+    val lf1 = LinearForm(List(0,0,2))
+    val lf2 = LinearForm.fromCoefficientVar(2,2)
+    expect(lf1) { lf2 }
   }
   
   test("sum") {
-    val lf1 = new LinearForm(List(1,2,-1))
-    val lf2 = new LinearForm(List(1,0,3))
-    val lf3 = new LinearForm(List(2,2,2))
+    val lf1 = LinearForm(List(1,2,-1))
+    val lf2 = LinearForm(List(1,0,3))
+    val lf3 = LinearForm(List(2,2,2))
   	expect(lf3) { lf1+lf2 }    
   }
+  
+
 }

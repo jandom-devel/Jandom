@@ -22,24 +22,26 @@ package it.unich.sci.jandom.domains
 
 import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers 
-import org.scalacheck.Prop._
 
 /**
+ * This is a unit test for the BoxDouble numerical domain.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 class BoxSuite extends FunSuite with Checkers {
     
-    test("constructors should only work with elements of the same length")  {
+    test("constructors should only work with normalized bounds")  {
       intercept[IllegalArgumentException] { BoxDouble(Array(0,2),Array(0,2,3)) }
+      intercept[IllegalArgumentException] { BoxDouble(Array(Double.PositiveInfinity,2),Array(0,2,3)) }
     }
            
     test("operations on boxes") {
-    	val i = BoxDouble(Array(1,2),Array(3,4))
-        val j = BoxDouble(Array(0,3),Array(3,4))       
-        expect(i union j) { BoxDouble(Array(0,2),Array(3,4)) }      
+    	val i = BoxDouble(Array(1,2),Array(5,4))
+        val j = BoxDouble(Array(0,3),Array(3,4))        
+        expect(i union j) { BoxDouble(Array(0,2),Array(5,4)) }     
+    	expect(i intersection j) { BoxDouble(Array(1,3),Array(3,4))}    	
     } 
-    
+            
     test("empty boxes") {
       val i = BoxDouble(Array(-1,-2),Array(-4,3))
       val j = BoxDouble(Array(0,0),Array(5,5))
@@ -48,17 +50,5 @@ class BoxSuite extends FunSuite with Checkers {
       expect(i intersection j) { i }
       expect(i.linearAssignment(1,Array(1,1),1)) { i }
       expect(i.linearAssignment(1,Array(0,0),0)) { i }
-    }
-      
-
-    /* 
-     * The following is  commented since gives warnings 
-     */
-    /*
-    test("operations with scalacheck") {
-        check( (w:Int, h:Int) => h > 0 ==>  w > h ==> { w > h } )
-    }
-    
-    */
-    
+    }         
 }
