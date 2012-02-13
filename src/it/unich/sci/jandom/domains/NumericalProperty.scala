@@ -13,48 +13,46 @@
  * You should have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  *
- * (c) 2011 Gianluca Amato
+ * (c) 2011,2012 Gianluca Amato
  */
 
 package it.unich.sci.jandom.domains
 
 /**
- * Trait for numerical domains, such as Box, Octagon, etc... The classes extending NumericalDomain should be 
+ * Trait for numerical properties, such as Box, Octagon, etc... The classes extending NumericalProperty should be 
  * immutables. 
  * 
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-trait NumericalDomain extends PartiallyOrdered[NumericalDomain] {
-  type Domain <: NumericalDomain 
-  
+trait NumericalProperty[Property] extends PartiallyOrdered[Property] {
   
   /**
    * Widening of two abstract objects.
    * @param that the abstract object to be widened with this
    * @return the widening of the two abstract objects
    */
-  def widening(that: NumericalDomain): Domain
+  def widening(that: Property): Property
   
   /**
-   * Narrowinf of two abstract objects.
+   * Narrowing of two abstract objects.
    * @param that the abstract object to be narrowed with this
    * @return the narrowing of the two abstract objects
    */
-  def narrowing(that: NumericalDomain): Domain
+  def narrowing(that: Property): Property
   
   /**
    * Union of two abstract objects.
    * @param that the abstract object to be unioned with this
    * @return the union of the two abstract objects
    */
-  def union(that: NumericalDomain): Domain
+  def union(that: Property): Property
   
   /**
    * Intersection of two abstract objects.
    * @param that the abstract object to be intersected with this.
    * @return the intersection of the two abstract objects
    */
-  def intersection(that: NumericalDomain): Domain  
+  def intersection(that: Property): Property
   
   /**
    * Linear assignment over an abstract object. It should be generalized to linear forms over arbitrary types.
@@ -62,21 +60,21 @@ trait NumericalDomain extends PartiallyOrdered[NumericalDomain] {
    * @param coeff the homogeneous coefficients
    * @param known the unhomogeneous coefficient
    */
-  def linearAssignment(n: Int, coeff:Array[Double], known: Double): Domain
+  def linearAssignment(n: Int, coeff:Array[Double], known: Double): Property
   
    /**
    * Intersection with an half-plane. It should be generalized to linear forms over arbitrary types.
    * @param coeff the homogeneous coefficients
    * @param known the inhomogeneous coefficient
    */
-  def linearInequality(coeff:Array[Double], known: Double): Domain
+  def linearInequality(coeff: Array[Double], known: Double): Property
   
    /**
    * Intersection with the complements of a line. It should be generalized to linear forms over arbitrary types.
    * @param coeff the homogeneous coefficients
    * @param known the inhomogeneous coefficient
    */
-  def linearDisequality(coeff: Array[Double], known: Double): Domain
+  def linearDisequality(coeff: Array[Double], known: Double): Property
   
   /**
    * Returns the dimension of the environment space.
@@ -98,20 +96,20 @@ trait NumericalDomain extends PartiallyOrdered[NumericalDomain] {
 }
 
 /** 
- * Trait for factories of numerical domains. A factory should produce abstract objects.
+ * Trait for numerical domains. A numerical domains should produce numerical properties.
  */
-trait NumericalDomainFactory {
+trait NumericalDomain[Property] {
   /**
    * Create an abstract object representing the full n-dimensional space.
    * @param n the dimension of the environment space.
    * @return the full n-dimensional environment space.
    */
-  def full(n:Int): NumericalDomain
+  def full(n:Int): Property
   
   /**
    * Create an abstract object representing the empty n-dimensional space.
    * @param n the dimension of the environment space.
    * @return the empty n-dimensional environment space.
    */
-  def empty(n:Int): NumericalDomain
+  def empty(n:Int): Property
 }

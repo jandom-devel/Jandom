@@ -18,24 +18,30 @@
 
 package it.unich.sci.jandom;
 import targets._
+import parma_polyhedra_library.{Parma_Polyhedra_Library => PPL}
 
 object Jandom extends App {
 
+  System.load("/usr/local/lib/ppl/libppl_java.so")
+  PPL.initialize_library()
    val prog: String = """
     	 xyline <- function(x) {
 		    x = 0;
-            y = 0;
-		    while (x<=10) x=x+1
+            y = 1;
+		    z = 1;
+		    if (x<=y) z=4;
+		    while (x<=10) x=x+y
           }      
     """
   val parsed = parsers.RandomParser.parseProgram(prog)  
   if (parsed.successful) {
 	val program = parsed.get 
 	print(program)
-    program.analyze(domains.BoxDouble)
+    program.analyze(domains.PPLBoxDouble)
     print (program)  
   } else {
     print (parsed)
   }
   
+  PPL.finalize_library()
 }

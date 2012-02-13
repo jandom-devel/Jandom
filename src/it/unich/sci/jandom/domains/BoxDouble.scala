@@ -21,21 +21,19 @@ package it.unich.sci.jandom.domains
 /**
   * This is the box abstract domain over doubles.
   * 
-  * It is actually a proof of concept on how to implements an abstract domain entirely in Scala. 
-  * Real domains should be implemented within PPL or APRON. 
+  * It is actually a proof of concept on how to implement an abstract domain entirely in Scala. It
+  * is not correct since it does not implement rounding correctly. Real domains should be implemented within PPL or APRON. 
   *  
   * @author Gianluca Amato <amato@sci.unich.it>
   * @param low the lower bounds for the box
   * @param high the upper bounds for the box 
   */
 
-final class BoxDouble(private val low: Array[Double], private val high: Array[Double]) extends NumericalDomain {   
+final class BoxDouble(private val low: Array[Double], private val high: Array[Double]) extends NumericalProperty[BoxDouble] {   
   require(normalized,"The paramters low:"+ low.mkString(",") + " and high: "+ high.mkString(",") + " are not normalized")
   
-  type Domain = BoxDouble
-
   /** 
-   * This checks if the box is normalized. This should always be the case. A box is normalized when 
+   * This checks whether the box is normalized. This should always be the case. A box is normalized when 
    * the lower and higher bounds are of the same length, and either a) there are no lower bounds equal to +Inf, 
    * there are no upper bounds equal to -Inf, the lower bounds are smaller of the corresponding upper bounds or
    * b) all the lower bound are +Inf and all the upper bounds are -Inf.
@@ -110,64 +108,32 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     return sum;
   }
 
-  
-  /**
-   * Computes the union of two boxes.
-   * @param the box to be unioned with this
-   * @return the union of the two boxes 
-   */
-  override def union(that: NumericalDomain): BoxDouble = {
-    that match {
-      case that: BoxDouble =>
-      	require (dimension == that.dimension)
-    	val newlow = (this.low, that.low).zipped.map(_ min _)
-    	val newhigh = (this.high, that.high).zipped.map(_ max _)
-    	new BoxDouble(newlow, newhigh)
-     case _ => 
-        throw new IllegalArgumentException      
-    }
+  override def union(that: BoxDouble): BoxDouble = {
+    require (dimension == that.dimension)
+    val newlow = (this.low, that.low).zipped.map(_ min _)
+    val newhigh = (this.high, that.high).zipped.map(_ max _)
+    new BoxDouble(newlow, newhigh)     
   }     
   
-  override def widening(that: NumericalDomain): BoxDouble = {
-    that match {
-      case that: BoxDouble =>
-        require (dimension == that.dimension)
-        val newlow = (this.low, that.low).zipped.map ( (l1,l2) => if (l1== Double.PositiveInfinity) l2 else if (l1<=l2) l1 else Double.NegativeInfinity )
-        val newhigh = (this.high, that.high).zipped.map ( (l1,l2) => if (l1== Double.NegativeInfinity) l2 else if (l1>=l2) l1 else Double.PositiveInfinity )
-        new BoxDouble(newlow, newhigh)
-      case _ => 
-        throw new IllegalArgumentException    
-    } 
+  override def widening(that: BoxDouble): BoxDouble = {
+     require (dimension == that.dimension)
+     val newlow = (this.low, that.low).zipped.map ( (l1,l2) => if (l1== Double.PositiveInfinity) l2 else if (l1<=l2) l1 else Double.NegativeInfinity )
+     val newhigh = (this.high, that.high).zipped.map ( (l1,l2) => if (l1== Double.NegativeInfinity) l2 else if (l1>=l2) l1 else Double.PositiveInfinity )
+     new BoxDouble(newlow, newhigh)
   }
   
-   override def narrowing(that: NumericalDomain): BoxDouble = {
-    that match {
-      case that: BoxDouble =>
-        require (dimension == that.dimension)
-        val newlow = (this.low, that.low).zipped.map ( (l1,l2) => if (l1 == Double.NegativeInfinity) l2 else l1 min l2 )
-        val newhigh = (this.high, that.high).zipped.map ( (l1,l2) => if (l1 == Double.PositiveInfinity) l2 else l1 max l2 )
-        new BoxDouble(newlow, newhigh)
-      case _ => 
-        throw new IllegalArgumentException    
-    } 
+   override def narrowing(that: BoxDouble): BoxDouble = {
+      require (dimension == that.dimension)
+      val newlow = (this.low, that.low).zipped.map ( (l1,l2) => if (l1 == Double.NegativeInfinity) l2 else l1 min l2 )
+      val newhigh = (this.high, that.high).zipped.map ( (l1,l2) => if (l1 == Double.PositiveInfinity) l2 else l1 max l2 )
+      new BoxDouble(newlow, newhigh)      
   }
   
-  
-  /**
-   * Compute the intersection of two boxes.
-   * @param the box to be intersected with this
-   * @return the intersection of the two boxes   
-   */
-  override def intersection(that: NumericalDomain): BoxDouble = {
-    that match {
-      case that: BoxDouble =>
-    	require (dimension == that.dimension)
-    	val newlow = (this.low, that.low).zipped.map(_ max _)
-    	val newhigh = (this.high, that.high).zipped.map(_ min _)
-    	new BoxDouble(newlow, newhigh)  
-      case _ => 
-        throw new IllegalArgumentException
-    }
+  override def intersection(that: BoxDouble): BoxDouble = {
+   	require (dimension == that.dimension)
+   	val newlow = (this.low, that.low).zipped.map(_ max _)
+   	val newhigh = (this.high, that.high).zipped.map(_ min _)
+   	new BoxDouble(newlow, newhigh)      
   }
   
   /**
@@ -226,7 +192,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * @param coeff the homogeneous coefficients
    * @param known the inhomogeneous coefficient
    * @return the least box which contains the result of the linear assignment
-   * @throws IllegalArgumentException if parameters are not correct
+   * @throws IllegalDomainException if parameters are not correct
    */  
   override def linearAssignment(n: Int, coeff: Array[Double], known: Double): BoxDouble = {    
     require(n <= low.length && coeff.length <= dimension)
@@ -240,7 +206,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * @param coeff the homogeneous coefficients
    * @param known the inhomogeneous coefficient
    * @return the least box which contains the intersection wih the half-plane coeff*v+knwown <= 0
-   * @throws IllegalArgumentException if parameters are not correct
+   * @throws IllegalDomainException if parameters are not correct
    */
   override def linearInequality(coeff: Array[Double], known: Double) : BoxDouble = {    
     require(coeff.length == dimension)
@@ -280,7 +246,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * @param coeff the homogeneous coefficients
    * @param known the inhomogeneous coefficient
    * @return the least box which contains the intersection with the complement of the line coeff*v+knwown==0
-   * @throws IllegalArgumentException if parameters are not correct
+   * @throws IllegalDomainException if parameters are not correct
    */
   override def linearDisequality(coeff: Array[Double], known: Double) : BoxDouble = 
     throw new IllegalAccessException("Unimplemented feature");
@@ -309,8 +275,8 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   override def isFull: Boolean = low.forall(_ isNegInfinity) && high.forall(_ isPosInfinity)
     
         
-  def tryCompareTo [B >: NumericalDomain](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
-      case other: Domain =>  
+  def tryCompareTo [B >: BoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
+      case other: BoxDouble =>  
         if (this.equals(other))
           Some(0)
         else if ((this.low, other.low).zipped.forall(_ <= _) &&  (this.high, other.high).zipped.forall(_ >= _))
@@ -323,7 +289,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   }
   
   override def equals(other: Any): Boolean = other match {
-    case other: Domain => java.util.Arrays.equals(this.low, other.low) && java.util.Arrays.equals(this.high, other.high)
+    case other: BoxDouble => java.util.Arrays.equals(this.low, other.low) && java.util.Arrays.equals(this.high, other.high)
     case _ => false
   }
 
@@ -339,7 +305,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
 /**
  * This object provides a set of operations needed to work with boxes on doubles.
  */
-object BoxDouble extends NumericalDomainFactory {  
+object BoxDouble extends NumericalDomain[BoxDouble] {  
   /**
    * This is a cache for empty boxes. In this way, we avoid to generate several different
    * objects for empty boxes.
@@ -375,5 +341,4 @@ object BoxDouble extends NumericalDomainFactory {
   }
 
   private def unnormalizedIsEmpty(low: Array[Double], high: Array[Double]) = (low, high).zipped.exists(_ > _)
-
 }

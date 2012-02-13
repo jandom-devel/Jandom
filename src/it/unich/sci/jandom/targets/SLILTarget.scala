@@ -29,34 +29,43 @@ import scala.collection.mutable.ListBuffer
  */
 
 sealed abstract class SLILCond {
-  def analyze(input: NumericalDomain): NumericalDomain = input;  
+  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input;  
   def opposite : SLILCond;
 }
-case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.Value) (implicit numeric: Numeric[T])  extends SLILCond {
+
+case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.Value) (implicit numeric: Numeric[T]) extends SLILCond {
   import numeric._;
   
-  override def analyze(input: NumericalDomain): NumericalDomain = op match {    
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = op match {    
     case AtomicCond.ComparisonOperators.LTE => input.linearInequality( lf.homcoeff, lf.known )
     case AtomicCond.ComparisonOperators.LT => input.linearInequality( lf.homcoeff, lf.known )
     case AtomicCond.ComparisonOperators.GTE => input.linearInequality( (-lf).homcoeff, (-lf).known )
     case AtomicCond.ComparisonOperators.GT => input.linearInequality( (-lf).homcoeff, (-lf).known )
     case AtomicCond.ComparisonOperators.NEQ => input.linearDisequality( lf.homcoeff, lf.known )
     case _ => throw new Exception("Not implemented yet")
-  }    
+  }      
   
   def opposite = new AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op))
+  
+  override def toString = lf.toString + op + "0"
 }
 
 case class AndCond(cond1: SLILCond, cond2: SLILCond) extends SLILCond {
   def opposite = new OrCond(cond1.opposite, cond2.opposite)
+  
+  override def toString = "(" + cond1 + " && " + cond2 + ")"
 }
 
 case class OrCond(cond1: SLILCond, cond2: SLILCond) extends SLILCond {
   def opposite = new AndCond(cond1.opposite, cond2.opposite)
+  
+  override def toString = "(" + cond1 + " || " + cond2 + ")"
 }
 
 case class NotCond(cond: SLILCond) extends SLILCond {
   def opposite = cond
+  
+  override def toString = "!("+cond+")"
 }
 
 object AtomicCond {
@@ -82,24 +91,24 @@ object AtomicCond {
 }
 
 sealed abstract class SLILStmt {  
-  def analyze(input: NumericalDomain):NumericalDomain = input
+  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input
 }
 
 case class AssignStmt[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T]) extends SLILStmt {
   import numeric._
   
-  override def analyze(input:NumericalDomain):NumericalDomain = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
 	val coefficients = linearForm.coefficients
     input.linearAssignment(variable-1, (coefficients.tail map (x => x.toDouble())).toArray,coefficients.head.toDouble)    
   }
   
-  override def toString = "v"+variable + " = " + linearForm.toString
+  override def toString = linearForm.environment.getVariableName(variable) + " = " + linearForm.toString
 }
 
 case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
-  val annotations = ListBuffer[NumericalDomain]()
+  val annotations = ListBuffer[NumericalProperty[_]]()
   
-  override def analyze(input:NumericalDomain):NumericalDomain = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
     var current = input
     var first = true
     for (stmt <- stmts) {
@@ -132,11 +141,12 @@ case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
   }  
 }
 
-case class WhileStmt(condition: SLILCond, body: SLILStmt) extends SLILStmt {
-  var invariant : NumericalDomain = null
+case class WhileStmt(condition: SLILCond, body: SLILStmt) extends SLILStmt {  
+  var savedInvariant : NumericalProperty[_] = null
   
-  override def analyze(input:NumericalDomain):NumericalDomain =   {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property =  {    
     var newinvariant = input
+    var invariant = input
     do {      
       invariant = newinvariant
       newinvariant = invariant widening body.analyze(condition.analyze(invariant)) 
@@ -144,32 +154,37 @@ case class WhileStmt(condition: SLILCond, body: SLILStmt) extends SLILStmt {
     do {
       invariant = newinvariant
       newinvariant = invariant narrowing body.analyze(condition.analyze(invariant))      
-    } while (newinvariant < invariant)
+    } while (newinvariant < invariant)    
+    savedInvariant = invariant
     return condition.opposite.analyze(invariant)
   }  
 
   override def toString = {
-    "while (" + condition +") { \n"  + invariant + "\n" + body + "\n }"
+    "while (" + condition +") {\n"  + savedInvariant + "\n" + body + "\n}"
   }
 }
 
 case class IfStmt(condition: SLILCond, if_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
-  var thenAnnotationStart : NumericalDomain = null
-  var thenAnnotationEnd : NumericalDomain = null
-  var elseAnnotationStart : NumericalDomain = null
-  var elseAnnotationEnd : NumericalDomain = null
+  var savedThenAnnotationStart : NumericalProperty[_] = null
+  var savedThenAnnotationEnd : NumericalProperty[_] = null
+  var savedElseAnnotationStart : NumericalProperty[_] = null
+  var savedElseAnnotationEnd : NumericalProperty[_] = null
   
-  override def analyze(input:NumericalDomain):NumericalDomain = {
-    thenAnnotationStart = condition.analyze(input)
-    elseAnnotationStart = condition.opposite.analyze(input)
-    thenAnnotationEnd = if_branch.analyze(thenAnnotationStart)
-    elseAnnotationEnd = if_branch.analyze(elseAnnotationStart)
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
+    val thenAnnotationStart = condition.analyze(input)
+    val elseAnnotationStart = condition.opposite.analyze(input)
+    val thenAnnotationEnd = if_branch.analyze(thenAnnotationStart)
+    val elseAnnotationEnd = else_branch.analyze(elseAnnotationStart)
+    savedThenAnnotationStart = thenAnnotationStart
+    savedThenAnnotationEnd = thenAnnotationEnd
+    savedElseAnnotationStart = elseAnnotationStart
+    savedElseAnnotationEnd = elseAnnotationEnd
     return thenAnnotationEnd union elseAnnotationEnd
   }
   
   override def toString : String = {   
-    val s = "if " + condition.toString + "{ \n" + thenAnnotationStart + "\n" + if_branch + "\n" + thenAnnotationEnd +  "\n } else { \n" + elseAnnotationStart + "\n" +
-             else_branch +  "\n" + elseAnnotationEnd + "}"      
+    val s = "if " + condition.toString + "{\n" + savedThenAnnotationStart + "\n" + if_branch + "\n" + savedThenAnnotationEnd +  "\n} else {\n" + 
+    		savedElseAnnotationStart + "\n" + else_branch +  "\n" + savedElseAnnotationEnd + "\n}"    
     return s  
   }  
 }
@@ -179,15 +194,14 @@ case class NopStmt() extends SLILStmt {
 }
 
 case class SLILProgram(env: Environment, inputVars: Iterable[Int], stmt: SLILStmt) {
-  override def toString = "function (" +  env.getVariableNames.mkString(",") + ") {\n"  + input + "\n" + stmt + "\n" + output +"\n" + "}"
+  override def toString = "function (" +  env.getVariableNames.mkString(",") + ") {\n"  + input + "\n" + stmt + "\n" + output +"\n}"
   var input:AnyRef = null
   var output:AnyRef = null
   
-  def analyze(domain: NumericalDomainFactory) {    
+  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property]) {    
 	  val size = env.getNumVariables
 	  val start = domain.full(size)
 	  input = start
 	  output = stmt.analyze(start)	  	  
-  }
-   
+  }   
 }

@@ -1,7 +1,7 @@
 /**
- * This it the unit test for Box
+ * This it the unit test for the BoxDouble numerical domain.
  *
- * Copyright 2011 Gianluca Amato
+ * Copyright 2011,2012 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -21,14 +21,13 @@
 package it.unich.sci.jandom.domains
 
 import org.scalatest.FunSuite
-import org.scalatest.prop.Checkers 
 
 /**
  * This is a unit test for the BoxDouble numerical domain.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class BoxSuite extends FunSuite with Checkers {
+class BoxSuite extends FunSuite {
     
     test("constructors should only work with normalized bounds")  {
       intercept[IllegalArgumentException] { BoxDouble(Array(0,2),Array(0,2,3)) }
