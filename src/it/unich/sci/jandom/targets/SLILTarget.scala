@@ -99,7 +99,7 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T]) (implicit num
   
   override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
 	val coefficients = linearForm.coefficients
-    input.linearAssignment(variable-1, (coefficients.tail map (x => x.toDouble())).toArray,coefficients.head.toDouble)    
+    input.linearAssignment(variable-1, (coefficients.tail map (x => x.toDouble())).toArray,coefficients.head.toDouble)
   }
   
   override def toString = linearForm.environment.getVariableName(variable) + " = " + linearForm.toString
@@ -149,7 +149,7 @@ case class WhileStmt(condition: SLILCond, body: SLILStmt) extends SLILStmt {
     var invariant = input
     do {      
       invariant = newinvariant
-      newinvariant = invariant widening body.analyze(condition.analyze(invariant)) 
+      newinvariant = invariant widening body.analyze(condition.analyze(invariant))
     } while (newinvariant > invariant)          
     do {
       invariant = newinvariant

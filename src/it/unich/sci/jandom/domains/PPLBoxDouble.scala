@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  *
- * (c) 2011 Gianluca Amato
+ * (c) 2011,2012 Gianluca Amato
  */
 package it.unich.sci.jandom.domains
 
@@ -37,13 +37,14 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
   
   def widening(that: PPLBoxDouble): PPLBoxDouble = { 
     val newpplbox = new Double_Box(pplbox)
-    newpplbox.CC76_widening_assign(that.pplbox, null)
+    newpplbox.upper_bound_assign(that.pplbox)
+    newpplbox.CC76_widening_assign(pplbox,null)    
     new PPLBoxDouble(newpplbox)              
   }  
 
   def narrowing(that: PPLBoxDouble): PPLBoxDouble = {   
-    val newpplbox = new Double_Box(pplbox)   
-    newpplbox.CC76_narrowing_assign(that.pplbox)
+    val newpplbox = new Double_Box(that.pplbox)   
+    newpplbox.CC76_narrowing_assign(pplbox)
     new PPLBoxDouble(newpplbox)                            
   }   
 
@@ -84,9 +85,20 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
   def isFull(): Boolean = pplbox.is_universe
 
   def tryCompareTo [B >: PPLBoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
-    case other: PPLBoxDouble => if (pplbox.equals(other.pplbox)) Some(0) else None        
+    case other: PPLBoxDouble => 
+      if (pplbox==other.pplbox) Some(0)  else 
+        if (pplbox strictly_contains other.pplbox) Some(1) else 
+          if (other.pplbox strictly_contains pplbox) Some(-1)
+          	else None
     case _ => None
   }
+  
+  override def equals(other: Any): Boolean = other match {
+    case other: PPLBoxDouble => pplbox.equals(other.pplbox)
+    case _ => false
+  }
+
+  override def hashCode: Int = pplbox.hashCode
   
   override def toString : String = pplbox.toString
   
