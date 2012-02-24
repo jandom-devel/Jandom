@@ -22,27 +22,46 @@ import it.unich.sci.jandom.domains._
 import scala.collection.mutable.ListBuffer
 
 /**
- * The target and analyzer for a simle imperative language similar to the one analyzed
+ * The target for a simple imperative language similar to the one analyzed
  * by Random.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 
-sealed abstract class SLILCond {
-  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input;  
-  def opposite : SLILCond;
+case class SLILProgram( val environment: Environment, val inputVars: Iterable[Int], val stmt: SLILStmt ) {     
+  private var input: NumericalProperty[_] = null
+  private var output: NumericalProperty[_] = null
+
+  override def toString = "function (" +  (inputVars map { v:Int => environment(v - 1).name }).mkString(",") + ") {\n"  + 
+		(if (input != null) "  " + input + "\n" else "") +
+    	stmt.formatString(1,2) + "\n" + 
+    	(if (output != null) "  " + output + "\n" else "") + '}'
+  
+  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property]) {    	  
+	  val start = domain.full(environment.size)
+	  input = start
+	  output = stmt.analyze(start)	  	  
+  }        
 }
 
+sealed abstract class SLILCond {
+  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property;  
+  def opposite : SLILCond;
+}
+  
 case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.Value) (implicit numeric: Numeric[T]) extends SLILCond {
   import numeric._;
-  
+ 
+  private def homcoeff(lf: LinearForm[T]) = lf.homcoeff.map { _.toDouble }.toArray
+  private def known(lf: LinearForm[T]) = lf.known.toDouble
+    
   override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = op match {    
-    case AtomicCond.ComparisonOperators.LTE => input.linearInequality( lf.homcoeff, lf.known )
-    case AtomicCond.ComparisonOperators.LT => input.linearInequality( lf.homcoeff, lf.known )
-    case AtomicCond.ComparisonOperators.GTE => input.linearInequality( (-lf).homcoeff, (-lf).known )
-    case AtomicCond.ComparisonOperators.GT => input.linearInequality( (-lf).homcoeff, (-lf).known )
-    case AtomicCond.ComparisonOperators.NEQ => input.linearDisequality( lf.homcoeff, lf.known )
-    case _ => throw new Exception("Not implemented yet")
+    case AtomicCond.ComparisonOperators.LTE => input.linearInequality( homcoeff(lf), known(lf) )
+    case AtomicCond.ComparisonOperators.LT => input.linearInequality( homcoeff(lf), known(lf) )
+    case AtomicCond.ComparisonOperators.GTE => input.linearInequality( homcoeff(-lf), known(-lf) )
+    case AtomicCond.ComparisonOperators.GT => input.linearInequality( homcoeff(-lf), known(-lf) )
+    case AtomicCond.ComparisonOperators.NEQ => input.linearDisequality( homcoeff(lf), known(lf) )
+    case AtomicCond.ComparisonOperators.EQ => throw new Exception("Not implemented yet")
   }      
   
   def opposite = new AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op))
@@ -50,21 +69,43 @@ case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.V
   override def toString = lf.toString + op + "0"
 }
 
+object FalseCond extends SLILCond {
+  def opposite = TrueCond
+  override def toString = "FALSE"
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input.empty
+}
+
+object TrueCond extends SLILCond {
+  def opposite = FalseCond
+  override def toString = "TRUE"
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property) = input    
+}
+
+object BRandomCond extends SLILCond {
+  def opposite = BRandomCond
+  override def toString = "brandom()"
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property) = input    
+}
+
 case class AndCond(cond1: SLILCond, cond2: SLILCond) extends SLILCond {
-  def opposite = new OrCond(cond1.opposite, cond2.opposite)
-  
+  def opposite = new OrCond(cond1.opposite, cond2.opposite)  
+  // TODO: correctly implement analyze
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input
   override def toString = "(" + cond1 + " && " + cond2 + ")"
 }
 
 case class OrCond(cond1: SLILCond, cond2: SLILCond) extends SLILCond {
   def opposite = new AndCond(cond1.opposite, cond2.opposite)
   
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = 
+    cond1.analyze(input) union cond2.analyze(input)  
   override def toString = "(" + cond1 + " || " + cond2 + ")"
 }
 
 case class NotCond(cond: SLILCond) extends SLILCond {
   def opposite = cond
-  
+  // TODO: correctly implement analyze
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input
   override def toString = "!("+cond+")"
 }
 
@@ -90,19 +131,25 @@ object AtomicCond {
   }   
 }
 
-sealed abstract class SLILStmt {  
+sealed abstract class SLILStmt { 
+  def formatString(indent: Int, indentSize: Int): String
   def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input
+  override def toString = formatString(0,2)
+}
+
+case class AssumeStmt(cond: SLILCond) extends SLILStmt {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = cond.analyze(input)  
+  override def formatString(indent: Int, indentSize:Int) = " "*indentSize*indent + "assume(" + cond +")"
 }
 
 case class AssignStmt[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T]) extends SLILStmt {
   import numeric._
   
   override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
-	val coefficients = linearForm.coefficients
+    val coefficients = linearForm.coefficients
     input.linearAssignment(variable-1, (coefficients.tail map (x => x.toDouble())).toArray,coefficients.head.toDouble)
-  }
-  
-  override def toString = linearForm.environment.getVariableName(variable) + " = " + linearForm.toString
+  }   
+  override def formatString(indent: Int, indentSize: Int) = " "*indentSize*indent + linearForm.env(variable-1).name + " = " + linearForm.toString
 }
 
 case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
@@ -121,7 +168,8 @@ case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
     current
   }
   
-  override def toString = {
+  override def formatString(indent: Int, indentSize: Int) = {
+    val spaces = " "*indentSize*indent
     val result = new StringBuilder()    
     var remainingAnnotations = annotations
     var first = true
@@ -130,10 +178,10 @@ case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
         first = false
       else
         result += '\n'      
-      result ++= stmt.toString
+      result ++= stmt.formatString(indent,indentSize)
       if (! remainingAnnotations.isEmpty) {
         result += '\n'
-        result ++= remainingAnnotations.head.toString
+        result ++= spaces  + remainingAnnotations.head.toString
         remainingAnnotations =  remainingAnnotations.tail
       }        
     }
@@ -143,7 +191,7 @@ case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
 
 case class WhileStmt(condition: SLILCond, body: SLILStmt) extends SLILStmt {  
   var savedInvariant : NumericalProperty[_] = null
-  
+ 
   override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property =  {    
     var newinvariant = input
     var invariant = input
@@ -159,8 +207,12 @@ case class WhileStmt(condition: SLILCond, body: SLILStmt) extends SLILStmt {
     return condition.opposite.analyze(invariant)
   }  
 
-  override def toString = {
-    "while (" + condition +") {\n"  + savedInvariant + "\n" + body + "\n}"
+  override def formatString(indent: Int, indentSize: Int) = {
+    val spaces = " "*indentSize*indent
+    spaces + "while (" + condition +") {\n"  + 
+      (if (savedInvariant!=null) spaces + " "*indentSize  + savedInvariant + "\n" else "") + 
+      body.formatString(indent+1, indentSize) + '\n' + 
+    spaces + '}'
   }
 }
 
@@ -182,26 +234,21 @@ case class IfStmt(condition: SLILCond, if_branch: SLILStmt, else_branch: SLILStm
     return thenAnnotationEnd union elseAnnotationEnd
   }
   
-  override def toString : String = {   
-    val s = "if " + condition.toString + "{\n" + savedThenAnnotationStart + "\n" + if_branch + "\n" + savedThenAnnotationEnd +  "\n} else {\n" + 
-    		savedElseAnnotationStart + "\n" + else_branch +  "\n" + savedElseAnnotationEnd + "\n}"    
+  override def formatString(indent: Int, indentSize: Int) : String = {  
+    val spaces = " "*indentSize*indent
+    val s = spaces + "if (" + condition.toString + ") {\n" + 
+        (if (savedThenAnnotationStart!=null) spaces + " "*indentSize+ savedThenAnnotationStart + "\n" else "") + 
+        if_branch.formatString(indent+1,indentSize) + "\n" + 
+        (if (savedThenAnnotationEnd!=null) spaces + " "*indentSize+savedThenAnnotationEnd + "\n" else "") + 
+      spaces +"} else {\n" + 
+        (if (savedElseAnnotationStart!=null) spaces + " "*indentSize + savedElseAnnotationStart + '\n' else "") + 
+        else_branch.formatString(indent+1, indentSize) +  "\n" + 
+        (if (savedElseAnnotationStart!=null) spaces + " "*indentSize+  savedElseAnnotationEnd + '\n' else "") +
+      spaces + '}'
     return s  
   }  
 }
 
 case class NopStmt() extends SLILStmt {
-  override def toString : String = ""
-}
-
-case class SLILProgram(env: Environment, inputVars: Iterable[Int], stmt: SLILStmt) {
-  override def toString = "function (" +  env.getVariableNames.mkString(",") + ") {\n"  + input + "\n" + stmt + "\n" + output +"\n}"
-  var input:AnyRef = null
-  var output:AnyRef = null
-  
-  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property]) {    
-	  val size = env.getNumVariables
-	  val start = domain.full(size)
-	  input = start
-	  output = stmt.analyze(start)	  	  
-  }   
+  override def formatString(indent: Int, indentSize: Int): String = " "*indentSize*indent + "<no-op>"
 }

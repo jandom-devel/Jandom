@@ -13,7 +13,7 @@
  * You should have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  *
- * (c) 2011 Gianluca Amato
+ * (c) 2012 Gianluca Amato
  */
 package it.unich.sci.jandom.targets
 
@@ -21,36 +21,24 @@ import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
 
 /**
+ * The Test Suite for the Environment class
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class LinearFormSuite extends FunSuite with Checkers {
-  
-  val env = Environment("v1","v2")
-    
-  test("standard constructor") {
-    val lf = LinearForm(List(1,2,-1),env)
-    expect("1+2*v1-v2") { lf.toString }
-    val lf2 = LinearForm(List(1,0,3),env)
-    expect("1+3*v2") { lf2.toString }
-  }	
-  
-  test("fromVar constructor") {
-    var lf = LinearForm.fromVar[Int](3,env)
-    expect("v3") { lf.toString }
-  }
-  
-  test("from coefficient and var") {
-    val lf1 = LinearForm(List(0,0,2),env)
-    val lf2 = LinearForm.fromCoefficientVar(2,2,env)
-    expect(lf1) { lf2 }
-  }
-  
-  test("sum") {
-    val lf1 = LinearForm(List(1,2,-1),env)
-    val lf2 = LinearForm(List(1,0,3),env)
-    val lf3 = LinearForm(List(2,2,2),env)
-  	expect(lf3) { lf1+lf2 }    
-  }  
 
+class EnvironmentSuite  extends FunSuite with Checkers {
+  test ("standard operations") {
+    val env: Environment = new Environment()
+    val v1 = env.addBinding("prova")
+    val v2 = env.getBindingOrAdd("micio")
+    expect(2) { env.size }
+    expect(0) { env.getBinding("prova")}
+    expect(v2) { env(1) }
+    expect(Set("prova", "micio")) { env.getNames }
+  }
+  
+  test ("companion object") {
+    val env = Environment("A","B","C")
+    expect ("C") { env("C").name }
+  }
 }

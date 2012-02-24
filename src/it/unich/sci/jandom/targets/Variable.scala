@@ -1,7 +1,4 @@
 /**
- *
- * Copyright 2011 Gianluca Amato
- *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -10,28 +7,25 @@
  *
  * JANDOM is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the 
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * (c) 2012 Gianluca Amato
  */
-
-package it.unich.sci.jandom
-
-import org.scalatest.FunSuite
+package it.unich.sci.jandom.targets
 
 /**
+ * The class representing a variable.
+ * @param name the name of the variable
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class JandomSuite extends FunSuite {
-  override def nestedSuites = List ( 
-      new domains.BoxSuite(), 
-      new numberextensions.GenericNumberExtSuite(),
-      new numberextensions.IntegerExtSuite(),
-      new targets.LinearFormSuite(),
-      new parsers.RandomParserSuite(),
-      new targets.VariableSuite()
-  )
-}
+class Variable(val name: String) { }
+  
+
+object Variable {
+  def apply(name: String) = new Variable(name);
+} 

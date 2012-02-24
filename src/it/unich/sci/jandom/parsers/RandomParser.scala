@@ -27,18 +27,24 @@ import scala.util.parsing.combinator.JavaTokenParsers
  */
 
 object RandomParser extends JavaTokenParsers {
-    private val env = new Environment();
+    private val env = Environment()
+     
+    override val whiteSpace = """(\s|#.*\r?\n)+""".r  // handle # as the start of a comment
+            
+    override def stringLiteral = "\"[^\"]*\"".r   // allow CR in string literals
+      
+    override def ident = not(literal("function")) ~>  """[a-zA-Z._][\w.]*""".r  // allow . in identifiers
     
     private def variable: Parser[Int] = 
-      ident ^^ { env.getVariableOrAdd(_) }
+      ident ^^ { env.getBindingOrAdd(_)+1 }
     
-	private def term: Parser[LinearForm[Int]] = 	
-	  (opt(wholeNumber) <~ opt("*")) ~ opt(variable) ^^ { 
-	     case Some(coeff)~Some(v) =>  LinearForm.fromCoefficientVar[Int](coeff.toInt,v,env)  
-	     case None~Some(v) =>  LinearForm.fromVar[Int](v,env)
-	     case Some(coeff)~None =>  LinearForm.fromCoefficient(coeff.toInt,env)	    
-	  }
-	
+	private def term: Parser[LinearForm[Int]] = 
+	  (opt(wholeNumber <~ "*") ~ variable) ^^ {
+	    case Some(coeff) ~ v => LinearForm.fromCoefficientVar[Int](coeff.toInt,v,env)  
+	    case None~v =>  LinearForm.fromVar[Int](v,env)
+      } |
+      wholeNumber ^^ { case coeff => LinearForm.fromCoefficient(coeff.toInt,env) }	
+         
 	private def term_with_operator: Parser[LinearForm[Int]] =
 	  "+" ~> term |
 	  "-" ~> term ^^ { lf => -lf  }	  	
@@ -49,16 +55,23 @@ object RandomParser extends JavaTokenParsers {
    	  }
 	
 	private def comparison: Parser[AtomicCond.ComparisonOperators.Value] =
-	  ("==" | "<=" | ">=" | "!=" | "<"  | ">") ^^ { s => AtomicCond.ComparisonOperators.withName(s) }
+	  ("==" | "<=" | ">=" | "!=" | "<"  | ">") ^^ { s => AtomicCond.ComparisonOperators.withName(s) } |
+	  failure("invalid comparison operator")
 	
-	private def condition: Parser[SLILCond] = 
-	  expr ~ comparison ~ expr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1-lf2, op)} |
-	  condition ~ "&&" ~ condition ^^ { case c1 ~ _ ~ c2 => AndCond(c1,c2) } |
-	  condition ~ "||" ~ condition ^^ { case c1 ~ _ ~ c2 => OrCond(c1,c2) } |
-	  "!" ~> condition ^^ { case c => NotCond(c) }
+	private def atomic_condition: Parser[SLILCond] =
+	  "FALSE" ^^ { s => FalseCond } |
+	  "TRUE" ^^ { s => TrueCond } |	 
+	  "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
+	  expr ~ comparison ~ expr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1-lf2, op)} 	  
 	  
+	private def condition: Parser[SLILCond] = 
+	  atomic_condition |
+	  atomic_condition ~ "&&" ~ condition ^^ { case c1 ~ _ ~ c2 => AndCond(c1,c2) } |
+	  atomic_condition ~ "||" ~ condition ^^ { case c1 ~ _ ~ c2 => OrCond(c1,c2) } |
+	  "!" ~> condition ^^ { case c => NotCond(c) }
+	  	
 	private def stmt: Parser[SLILStmt] = 
-	  ident ~ ("=" | "<-") ~ expr ^^ { case v ~ _ ~ lf => AssignStmt(env.getVariableOrAdd(v),lf) } |
+	  "assume" ~> "(" ~> condition <~ ")" ^^ { AssumeStmt(_) } |
 	  ( "if" ~> "("  ~> condition <~ ")" ) ~ stmt ~ opt("else" ~> stmt) ^^ { 
 	    case c ~ s1 ~ Some(s2) => IfStmt(c,s1,s2)
 	    case c ~ s1 ~ None => IfStmt(c,s1,NopStmt())
@@ -66,12 +79,24 @@ object RandomParser extends JavaTokenParsers {
 	  ("while" ~> "(" ~> condition <~")") ~ stmt ^^ {
 	    case c ~ s => WhileStmt(c,s)
 	  } |
-	  "{" ~> repsep(stmt, (";" | "\n")) <~ "}" ^^ { CompoundStmt(_) }
+	  "{" ~> repsep(stmt, opt(";")) <~ "}" ^^ { CompoundStmt(_) } | 
+	  ident ~ ("=" | "<-") ~ expr ^^ { case v ~ _ ~ lf => AssignStmt(env.getBindingOrAdd(v)+1,lf) } 	 
 	  
-	private def program: Parser[SLILProgram] = 
-	  (opt(ident) ~> ("=" | "<-") ~> "function" ~> "(" ~> repsep(variable, ",") <~ ")" ) ~ stmt ^^ {
+	private def prog: Parser[SLILProgram] = 
+	  (opt(ident) ~> ("=" | "<-") ~> "function" ~>  "(" ~> repsep(variable, ",") <~ ")" ) ~ stmt ^^ {
 	    case vars ~ stmt=> SLILProgram(env, vars, stmt) 
 	}
 	
-	def parseProgram(s: String) = parseAll(program,s)
+	private def skip: Parser[String] = """(.|[\r\n])*""".r   // skip until the end of the file
+		
+	/**
+	 * This parser a program, eventually preceded by an if statement used to embed an INTERPROC version
+	 * of the program. We are assuming that the first function definition in the file is the function
+	 * we want to analyze. Other definitions are input for the trace analyzer in Random which is not
+	 * implemented yet.
+	 */
+	private def progWithCases: Parser[SLILProgram] = 
+	  opt("if" ~ "(" ~ "FALSE" ~ ")" ~ stringLiteral) ~> prog <~ skip
+	  
+	def parseProgram(s: String) = parseAll(progWithCases,s)
 }

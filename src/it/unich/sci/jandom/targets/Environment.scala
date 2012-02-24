@@ -26,45 +26,78 @@ import scala.collection.mutable.LinkedHashMap
  *
  */
 
-class Environment {
-	private var currindex: Int = 0
-    private var variables = new LinkedHashMap[String,Int]()   
-	
+class Environment {	
+    private val variables = new scala.collection.mutable.ArrayBuffer[Variable]()
+    private val nameHash = new LinkedHashMap[String,Int]()
+    
 	/**
-	 * Add a new variable to the environment.
-	 * @param typeVar the type of the variable
+	 * Add a new binding to the environment. If a variable with the same name is already in the environment,
+	 * errors may happen.
 	 * @param name the name of the variable
+	 * @return the index of the new binding
 	 */
-	def addVariable(name: String)  {
-	  currindex += 1
-	  variables += (name -> currindex)
+	def addBinding(name: String): Int = {
+      val v = new Variable(name)
+  	  variables += v
+	  nameHash += name -> (variables.size - 1)
+	  return variables.size -1 
 	}
 	
 	/**
-	 * Get the variable code from the environment of add a new variable if it does not exists
-	 * @param typeVar the type of the variable
+	 * Get a binding from the environment based on the name
 	 * @param name the name of the variable
+	 * @return the index of the binding for name
 	 */
-	def getVariableOrAdd(name: String) =  variables.get(name) match {
-      case Some(n) => n
-      case None => {
-        currindex += 1
-        variables += (name -> currindex)        
-        currindex 
-      }
-    }    
-	
-	def getVariableName(i: Int) = variables.keys.toSeq(i-1) 
-	
-	def getVariableNames = variables.keys
-	
-	def getNumVariables = currindex
+	def getBinding(name: String): Option[Int] = nameHash.get(name)			
+		   	
+	/**
+	 * Get a binding from the environment based on the name, or add a new binding
+	 * @param name the name of the variable
+	 * @return the index of the binding for name
+	 */
+	def getBindingOrAdd(name:String) : Int = nameHash.get(name) match {
+	  case Some(v) => v
+	  case None => addBinding(name)
+	}
+
+	/**
+	 * Get a variable from the environment based on the name
+	 * @param name the name of the variable
+	 * @return the variable with the given name in the environment
+	 * @throw NoSuchElementException if there is no variables with such an index
+	 */
+	def apply(name: String): Variable = variables(nameHash(name))
+		
+	/**
+	 * Get a variable from the environment based on the name
+	 * @param index the index of the variable
+	 * @return the variable with the given index in the environment
+	 * @throw NoSuchElementException if there is no variables with such an index
+	 */
+	def apply(index: Int): Variable = variables(index)
+		
+	/**
+	 * Returns the name of variables in the environment
+	 * @return the variable with the given index in the environment
+	 */
+	def getNames: Iterable[String] = nameHash.keys 
+	  
+	/**
+	 * Returns the size of the environment, i.e. the number of bindings
+	 * @return the size of the environment
+	 */
+	def size = variables.size
 }
 
 object Environment {
+  /**
+   * Returns a new environment with new variables whose names are given as arguments
+   * @param names the name of variables in the new environment
+   * @return a new environment with new variables of given names
+   */
   def apply(names: String*) = {
     val env = new Environment()
-    names foreach { env.addVariable(_)}
+    names foreach { env.addBinding(_) }
     env
   }
 }

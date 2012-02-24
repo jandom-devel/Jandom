@@ -78,11 +78,15 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
      throw new IllegalAccessException("Unimplemented feature");
   }
 
-  def dimension(): Int = pplbox.space_dimension().toInt
+  def dimension(): Int = pplbox.space_dimension.toInt
 
   def isEmpty(): Boolean = pplbox.is_empty
 
   def isFull(): Boolean = pplbox.is_universe
+  
+  def empty  = PPLBoxDouble.empty(pplbox.space_dimension.toInt)
+  
+  def full  = PPLBoxDouble.full(pplbox.space_dimension.toInt)
 
   def tryCompareTo [B >: PPLBoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLBoxDouble => 

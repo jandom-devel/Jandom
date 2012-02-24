@@ -18,47 +18,53 @@
 package it.unich.sci.jandom.targets
 
 /**
- * The class LinearForm represents a non-homogeneous linear form over a numeric type. 
+ * The class LinearForm represents a homogeneous linear form over a numeric type. Variables are not
+ * explicitly handled, they are just positions in the array of coefficients. 
  * @param coefficients the coefficients of the linear form
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 
-class LinearForm[T](val coefficients: Seq[T], val environment: Environment) (implicit numeric: Numeric[T]) {
+class LinearForm[T](val coefficients: Seq[T], val env: Environment) (implicit numeric: Numeric[T]) {
   
   import numeric._
      
+  /**
+   * Equality between linear forms. Two linear forms are equal if their coefficients are the same and
+   * are defined over the same environment
+   */
   override def equals(other: Any): Boolean = other match {
     case other: LinearForm[T] => 
-    	(coefficients zip other.coefficients) forall (tuple => tuple._1 == tuple._2)     	  
+      (env == other.env) && (
+          (coefficients zip other.coefficients) forall (tuple => tuple._1 == tuple._2)
+       )    	     	 
     case _ => false
   }
   
-  def unary_-(): LinearForm[T] = 	
-	new LinearForm( coefficients map ( x => -x ), environment: Environment ) 
+  def unary_-(): LinearForm[T] = new LinearForm( coefficients map ( x => -x ), env ) 
   
-  def +(other: LinearForm[T]): LinearForm[T] = {  
-    val newcoeff = coefficients.zipAll(other.coefficients,zero,zero) map ( pair => pair._1 + pair._2 ) 
-    new LinearForm(newcoeff, environment: Environment)    
-  }
+  def +(other: LinearForm[T]): LinearForm[T] =  {
+    require(env == other.env)
+    new LinearForm ( coefficients.zipAll(other.coefficients,zero,zero) map ( pair => pair._1 + pair._2 ), env) 
+  }     
   
   def -(other: LinearForm[T]): LinearForm[T] = this + (-other)
   
-  def *(coeff: T): LinearForm[T]  = {	
-	new LinearForm( coefficients map ( _*coeff ),  environment: Environment )
-  }       
+  def *(coeff: T): LinearForm[T]  =  new LinearForm( coefficients map ( _*coeff ), env )      
   
-  override def toString =  {
+  /**
+   * Returns the textual representation of a linear form
+   */
+  override def toString =  {    
     var first = true
     var index = 0
     var s = ""
-    val names = environment.getVariableNames.toArray
         
     for ( coeff <- coefficients ) {      
       val term = coeff match {
         case 0 => ""
-        case 1 => if (index == 0) "1" else names(index-1)
-        case -1 => if (index == 0) "1" else "-"+names(index-1)
-        case c:T => c.toString + (if (index==0) "" else "*v" + index)
+        case 1 => if (index == 0) "1" else env(index-1).name
+        case -1 => if (index == 0) "-1" else "-"+env(index-1).name
+        case c:T => c.toString + (if (index==0) "" else "*"+env(index-1).name)
       }
       if (coeff!=0) {
     	if (first || coeff < zero) {
@@ -72,25 +78,21 @@ class LinearForm[T](val coefficients: Seq[T], val environment: Environment) (imp
     if (s.isEmpty) "0" else s      
   }
   
-  def homcoeff = coefficients.tail.map { x => x.toDouble() }.padTo(environment.getNumVariables,0.0).toArray
+  /**
+   * Return the constant (inhomogeneous) term of the linear form
+   */
+  def known: T = coefficients.head
   
-  def known = coefficients.head.toDouble
+  /**
+   * Return the homonogeneous terms in the linear form
+   */
+  def homcoeff: Seq[T] = coefficients.tail
 }
   
 object LinearForm {
-  def apply[T](coeffs: Seq[T])(implicit numeric: Numeric[T])  = {
-    val env = new Environment()
-    (1 to coeffs.length) foreach { index => env.addVariable( "v"+ index ) }
-    new LinearForm(coeffs, env)
-  }
-  def fromCoefficient[T](coeff: T, environment: Environment = null)(implicit numeric: Numeric[T]) = fromCoefficientVar(coeff,0, environment: Environment)
-  def fromVar[T](v: Int, environment: Environment = null )(implicit numeric: Numeric[T]) = fromCoefficientVar(1,v, environment: Environment)
-  def fromCoefficientVar[T](coeff:T, v: Int, env: Environment = null )(implicit numeric: Numeric[T]) = {
-    val coeffs = List.fill(v)(numeric.zero) ++ List(coeff)
-    if (env == null)
-      apply(coeffs)(numeric)
-    else 
-      new LinearForm(coeffs, env)
-  } 
+  def apply[T](coeffs: Seq[T], env: Environment)(implicit numeric: Numeric[T]) = new LinearForm(coeffs, env)    
+  def fromCoefficient[T](coeff: T, env: Environment)(implicit numeric: Numeric[T]) = fromCoefficientVar(coeff,0,env)
+  def fromVar[T](v: Int, env: Environment)(implicit numeric: Numeric[T]) = fromCoefficientVar(1,v,env)
+  def fromCoefficientVar[T](coeff:T, v: Int, env: Environment)(implicit numeric: Numeric[T]) = new LinearForm ( List.fill(v)(numeric.zero) ++ List(coeff), env )   
 }
 

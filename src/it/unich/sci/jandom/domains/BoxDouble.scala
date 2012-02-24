@@ -274,7 +274,16 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    */ 
   override def isFull: Boolean = low.forall(_ isNegInfinity) && high.forall(_ isPosInfinity)
     
-        
+  /**
+   * Return an empty object of the same type
+   */
+  def empty = BoxDouble.empty(low.length)
+  
+  /**
+   * Return a full object of the same type
+   */
+  def full = BoxDouble.empty(low.length)
+       
   def tryCompareTo [B >: BoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
       case other: BoxDouble =>  
         if (this.equals(other))

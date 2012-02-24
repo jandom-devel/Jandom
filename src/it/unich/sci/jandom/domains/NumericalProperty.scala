@@ -93,6 +93,16 @@ trait NumericalProperty[Property] extends PartiallyOrdered[Property] {
    * @return whether the abstract object represents the full environment space.
    */
   def isFull: Boolean    
+  
+  /**
+   * Return an empty object compatible with this
+   */
+  def empty: Property
+  
+  /**
+   * Return a full object compatible with this
+   */
+  def full: Property
 }
 
 /** 
@@ -100,14 +110,14 @@ trait NumericalProperty[Property] extends PartiallyOrdered[Property] {
  */
 trait NumericalDomain[Property] {
   /**
-   * Create an abstract object representing the full n-dimensional space.
+   * Create an abstract property representing the full n-dimensional space.
    * @param n the dimension of the environment space.
    * @return the full n-dimensional environment space.
    */
   def full(n:Int): Property
   
   /**
-   * Create an abstract object representing the empty n-dimensional space.
+   * Create an abstract property representing the empty n-dimensional space.
    * @param n the dimension of the environment space.
    * @return the empty n-dimensional environment space.
    */
