@@ -1,0 +1,143 @@
+#
+#folklore example
+#From the description in Halbwachs97 
+# journal paper
+#
+
+var b1, s, d;
+
+
+ontime_invariant := true;
+
+
+late1_invariant := (
+  b1 - s <= 0 
+  b1 >=0
+  s>= 0);
+
+onbrake_invariant := (
+ b1 -s >= 0
+ d <=10
+ d>=0
+ b1 >=0
+ s>=0);
+ 
+
+stopped_invariant:=(
+ b1 -s >= 0 
+ d>=10
+ b1 >=0
+ s>=0
+);
+
+
+
+
+Location ontime with (
+b1=0
+s=0
+d=0);
+
+Location late1 with (
+b1 -s +10 =0
+d=0
+b1 >=0
+s>=0 );
+
+Location onbrake with (
+b1-s-10=0
+d = 0
+b1 >= 0
+s>=0
+);
+
+Location stopped;
+
+
+#
+#at location ontime beacon is not going to advance 
+#
+#second advances
+
+
+
+
+Transition second_advance ontime -> ontime with 
+Guard ontime_invariant
+s:= s+1;
+
+#beacon advances
+
+Transition beacon_advance ontime -> ontime with 
+Guard ontime_invariant 
+b1:=b1+1;
+
+#Train 1 is 10 beacons behind
+
+Transition run_late1 ontime -> late1 with 
+Guard ontime_invariant and  (b1-s+10<=0)
+d:= d;
+
+
+
+#Train 1 beacon advance when late
+
+Transition tr1_beacon_advance late1 -> late1
+with Guard late1_invariant 
+
+b1:=b1+1;
+
+
+
+#Train 1 comes back on time
+
+Transition back_on_time1 late1 -> ontime 
+with Guard late1_invariant and (b1 -s >=0);
+
+
+#Train 1 becomes early
+
+Transition run_early1 ontime -> onbrake
+with Guard ontime_invariant and (b1 -s -10 >=0)
+d:=0;
+
+
+#delay and second advance when on brake
+
+Transition on_brake_second_tick onbrake -> onbrake
+with Guard onbrake_invariant 
+s:=s+1
+d:=d+1;
+
+
+#beacon advance
+
+Transition onbrake_beacon_advance onbrake -> onbrake
+with Guard onbrake_invariant
+ b1:=b1+1;
+
+#onbrake to ontime
+
+Transition back_on_time_ob onbrake -> ontime
+with Guard onbrake_invariant  and (b1 - s <=0)
+d:=0;
+
+
+Transition complete_stop_os onbrake -> stopped
+with Guard onbrake_invariant and (d -10 >=0);
+
+
+Transition time_advance_on_stop_1 stopped -> stopped
+with Guard stopped_invariant
+s:=s+1;
+
+
+Transition back_on_time_so stopped -> ontime
+with Guard stopped_invariant and (b1 -s <=0)
+d:=0;
+
+end
+
+
+
+

@@ -1,0 +1,58 @@
+var n, l, r, i, j;
+
+
+
+#
+#Adaptation of the heap sort example
+#from the CAV 2003 paper
+#
+
+location l0 with (
+n >= 2
+r -n =0 
+i -l=0
+j -2 *l =0
+2 * l  -n  >= 0
+n + 1 >=  2* l 
+l>=0
+r>=0
+i>=0
+j>=0
+);
+
+
+transition t1  l0 -> l0 with 
+Guard (
+r -j  -1 >= 0)
+i := j+ 1
+j := 2 * j + 2;
+
+
+transition t2 l0 -> l0 with 
+Guard (
+j -r <=0
+) 
+j :=  2*j 
+i := j;
+
+
+transition t3 l0 -> l0 with 
+Guard (
+l >=2
+r  >=2
+)
+i := l -1 
+j := 2 *l - 2
+l:= l -1 ;
+
+transition t4 l0 -> l0 with 
+Guard(
+l <= 1 
+r >=3)
+r:= r-1
+i:= l
+j := 2*l;
+
+end
+
+

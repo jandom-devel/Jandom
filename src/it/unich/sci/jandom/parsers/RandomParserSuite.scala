@@ -20,6 +20,7 @@ package it.unich.sci.jandom.parsers
 import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
 import it.unich.sci.jandom.targets._
+import it.unich.sci.jandom.targets.LinearCondition._
 
 /**
  * Test suite for RandomParser.

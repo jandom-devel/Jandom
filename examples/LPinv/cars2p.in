@@ -1,0 +1,143 @@
+#
+# 2-cars example. Designed by Sriram Sankaranarayanan
+#
+# run with parameter -enrich=1
+#
+
+var
+ x1, x2, v1, v2,a1, a2,  r2, t, br, ac;
+
+
+invl0:= (
+br +2 =0
+ac -2 =0
+a1 -br >=0
+a1 -ac <=0
+a2 -br >=0
+a2 -ac <=0
+r2 <=5
+r2 >=0
+v1 >=0 
+v2 >=0
+
+);
+
+Template(
+$zebra-$horse,
+- $zebra -$y);
+
+
+
+
+
+location l0 with (
+	x1=100
+	x2=50
+
+	v1=15
+	v2 =5
+
+	br +2 =0
+	ac -2 =0
+
+	a1=0
+	a2=0
+
+	r2=0
+	t=0);
+
+#time step is 1 seconds
+# let us assume that things are 
+# normalized to this time step
+
+#when things are fine in terms of braking with car 1
+
+
+transition telapse l0 -> l0
+with guard invl0 and (		
+     
+	x1 - x2 -30 >=0
+	
+) 
+
+	x1:= x1 + v1 + a1
+	x2:= x2 + v2 + a2 
+	v1:= v1+2* a1
+	v2:=v2+ 2* a2
+	r2:=0
+	t:= t+1;
+
+
+
+#Car2 is too close start the reaction variable
+
+transition telapse1 l0-> l0
+with guard invl0 and (	
+
+	x1 - x2  >=0
+	x1 - x2 -30 <= 0
+
+
+)
+	x1:= x1 + v1 + a1
+	x2:= x2 + v2 +a2
+	v1:= v1+ 2* a1 
+	v2:=v2+ 2* a2
+	t:=t+1
+	r2:=r2+1;
+
+
+
+#lead car transitions 
+# it can decide to do anything quirky 
+# like set its acceleration to anywhere between 
+# br and ac
+
+transition tlead1 l0 -> l0 with 
+guard invl0 
+	a1 := ac;
+
+
+transition tlead2 l0 -> l0 with 
+guard invl0 
+	a1 := br;
+	
+
+
+#car 2 senses the position of x1 and breaks if it is too close
+#reset reactopm variable too 
+
+transition t1 l0 -> l0
+with guard invl0 and (
+	x1 - x2 >= 0
+	x1 -x2 <= 30
+	)
+
+	a2:= br
+
+	r2:=0;
+
+
+#car 2 senses the position of x1 and accelerates if it is too far
+
+transition t2 l0 -> l0
+with guard invl0 and (
+	 
+	   x1 -x2 >= 50
+	   )
+
+	a2:= ac;
+
+
+
+#If in optimal range, car 2 will just coast
+
+transition t5 l0 -> l0
+with guard invl0 and (
+	   x1 -x2 >= 30
+	   x1 -x2 <= 50
+	   )
+
+	   a2  := 0;
+
+end

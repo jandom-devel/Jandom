@@ -1,0 +1,61 @@
+var x1, x2, x3, x4, x5, x6, x7, p, q;
+
+#Taken from a Petri net paper
+# see [Fribourg+Olsen] or the 
+# Sankaranarayanan+Sipma+Manna 2003 Petri net
+# paper
+
+Location l0 with (
+x1=0
+x2=0
+x3=0
+x4=0
+x5=0
+x6-p=0
+x7-q=0
+p >=1
+q >=1);
+
+
+
+Transition t1 l0->l0 with 
+Guard (x6 >=1 ) 
+
+x1:=x1+1
+x6:= x6 -1 ;
+
+
+Transition t2 l0 -> l0 with 
+Guard (x1 >=1
+x7 >=1)
+
+x1:= x1-1
+x2:=x2+1
+x7:=x7-1;
+
+Transition t3 l0->l0 with 
+Guard(
+x2 >=1
+)
+x2:=x2-1
+x3:=x3+1
+x6:=x6+1;
+
+Transition t4 l0->l0 with 
+Guard(x3>=1
+x6>=1)
+x3:=x3-1
+x4:=x4+1
+x6:=x6-1;
+
+Transition t5 l0 -> l0 with 
+Guard (x4>=1)
+x4:=x4-1
+x5:=x5+1
+x7:=x7+1;
+
+Transition t6 l0-> l0 with 
+Guard(x5>=1)
+x5:= x5-1
+x6:= x6+1;
+end

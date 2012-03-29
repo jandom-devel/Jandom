@@ -1,0 +1,232 @@
+var  Idle,  ServeS, 
+GrantS, ServeE, GrantE, 
+ex,  Null, WaitS, 
+WaitE, Shared, Exclusive,null0;
+
+location l0 with (
+ Idle = 1 
+ ServeS = 0 
+ GrantS = 0 
+ ServeE = 0 
+ GrantE = 0 
+ ex = 0 
+ Null -null0 = 0
+ null0 >= 1 
+ WaitS = 0 
+ WaitE = 0 
+ Shared = 0 
+ Exclusive = 0
+);
+
+location l1;
+
+transition t11 l0->l0 with 
+Guard( Exclusive =0 
+       Idle >= 1  
+       Null >= 1 )
+
+          Idle := Idle - 1
+          ServeS := ServeS + 1
+          Null := Null - 1
+          WaitS := WaitS + 1;
+
+
+transition t12 l1->l1 with 
+Guard(    
+	  1*Exclusive -1  = 0 
+          1*ex -1  = 0 
+           1*GrantE   = 0 
+          1*GrantS   = 0 
+1*ServeS -1*WaitS   = 0 
+1*Idle +1*ServeS +1*WaitE -1  = 0 
+1*Idle +1*ServeS +1*ServeE -1  = 0 
+
+	  Idle >= 1  
+          Null >= 1 )
+          
+	  Idle := Idle - 1
+          ServeS := ServeS + 1
+          Null := Null - 1
+          WaitS := WaitS + 1;
+
+
+transition t2 l1 -> l0 with 
+Guard( 
+	  1*Exclusive -1  = 0 
+          1*ex -1  = 0 
+           1*GrantE   = 0 
+          1*GrantS   = 0 
+1*ServeS -1*WaitS   = 0 
+1*Idle +1*ServeS +1*WaitE -1  = 0 
+1*Idle +1*ServeS +1*ServeE -1  = 0 
+
+        ServeS >= 1  
+        ex = 1  
+        Exclusive = 1)  
+          ServeS := ServeS - 1 
+          GrantS := GrantS + 1 
+          ex := ex - 1 
+          Exclusive := Exclusive - 1 
+          Null := Null + 1;
+
+transition t31 l0 -> l0 with
+Guard( Exclusive=0 
+	  ServeE >= 1)
+          ServeE := ServeE - 1 
+          GrantE := GrantE + 1 
+          Null := Null + Shared 
+          Shared := 0 
+          Exclusive := 0;
+
+
+transition t31 l1 -> l0 with
+Guard( 	  1*Exclusive -1  = 0 
+          1*ex -1  = 0 
+           1*GrantE   = 0 
+          1*GrantS   = 0 
+1*ServeS -1*WaitS   = 0 
+1*Idle +1*ServeS +1*WaitE -1  = 0 
+1*Idle +1*ServeS +1*ServeE -1  = 0 
+
+          Exclusive=1  
+	  ServeE >= 1)
+
+          ServeE := ServeE - 1 
+          GrantE := GrantE + 1 
+          Null := Null + Shared +1
+          Shared := 0 
+          Exclusive := 0;
+
+transition t41 l0->l0 with
+Guard(
+   Exclusive=0
+   ServeS >= 1  
+   ex = 0)
+          ServeS := ServeS - 1 
+          GrantS := GrantS + 1;
+
+transition t42 l1->l1 with
+Guard(
+   	  1*Exclusive -1  = 0 
+          1*ex -1  = 0 
+           1*GrantE   = 0 
+          1*GrantS   = 0 
+1*ServeS -1*WaitS   = 0 
+1*Idle +1*ServeS +1*WaitE -1  = 0 
+1*Idle +1*ServeS +1*ServeE -1  = 0 
+
+   
+   Exclusive=1
+   ServeS >= 1  
+   ex = 0)
+          ServeS := ServeS - 1 
+          GrantS := GrantS + 1;
+
+
+transition t50 l0->l0 with
+
+Guard( Exclusive = 0
+       GrantS >= 1  
+       WaitS >= 1)
+          GrantS := GrantS - 1 
+          Idle := Idle + 1 
+          WaitS := WaitS - 1 
+          Shared := Shared + 1;
+
+
+
+transition t51 l1->l1 with
+
+Guard( 
+	  1*Exclusive -1  = 0 
+          1*ex -1  = 0 
+           1*GrantE   = 0 
+          1*GrantS   = 0 
+1*ServeS -1*WaitS   = 0 
+1*Idle +1*ServeS +1*WaitE -1  = 0 
+1*Idle +1*ServeS +1*ServeE -1  = 0 
+
+
+     Exclusive = 1
+       GrantS >= 1  
+       WaitS >= 1)
+          GrantS := GrantS - 1 
+          Idle := Idle + 1 
+          WaitS := WaitS - 1 
+          Shared := Shared + 1;
+
+
+transition t60 l0->l0 with
+Guard( 
+
+
+   Exclusive=0
+	  Idle >= 1 
+      Null >= 1) 
+          Idle := Idle - 1 
+          ServeE := ServeE + 1 
+          Null := Null - 1 
+          WaitE := WaitE + 1;
+
+transition t61 l1->l1 with
+Guard( 
+	  1*Exclusive -1  = 0 
+          1*ex -1  = 0 
+           1*GrantE   = 0 
+          1*GrantS   = 0 
+1*ServeS -1*WaitS   = 0 
+1*Idle +1*ServeS +1*WaitE -1  = 0 
+1*Idle +1*ServeS +1*ServeE -1  = 0 
+
+Exclusive=1
+	  Idle >= 1 
+      Null >= 1) 
+          Idle := Idle - 1 
+          ServeE := ServeE + 1 
+          Null := Null - 1 
+          WaitE := WaitE + 1;
+
+transition t70 l0->l0 with
+Guard( Idle >= 1 
+      Shared >= 1
+      Exclusive = 0)
+          Idle := Idle - 1 
+          ServeE := ServeE + 1 
+          Shared := Shared - 1 
+          WaitE := WaitE + 1;
+
+
+transition t70 l1->l1 with
+Guard( 
+	  1*Exclusive -1  = 0 
+          1*ex -1  = 0 
+           1*GrantE   = 0 
+          1*GrantS   = 0 
+1*ServeS -1*WaitS   = 0 
+1*Idle +1*ServeS +1*WaitE -1  = 0 
+1*Idle +1*ServeS +1*ServeE -1  = 0 
+
+Idle >= 1 
+      Shared >= 1
+      Exclusive = 1)
+          Idle := Idle - 1 
+          ServeE := ServeE + 1 
+          Shared := Shared - 1 
+          WaitE := WaitE + 1;
+
+
+transition t8 l0 -> l1
+	with Guard(
+          Exclusive = 0
+	  GrantE >= 1 
+           WaitE >= 1)
+          GrantE := GrantE - 1 
+          Idle := Idle + 1 
+          WaitE := WaitE - 1 
+          Exclusive := Exclusive + 1 
+          ex := 1;
+
+
+end
+
+
