@@ -16,10 +16,12 @@
  * (c) 2011 Gianluca Amato
  */
 
-package it.unich.sci.jandom.targets
+package it.unich.sci.jandom.targets.SLIL
 
 import it.unich.sci.jandom.domains._
-import it.unich.sci.jandom.targets.LinearCondition._
+import it.unich.sci.jandom.targets.linearcondition._
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.LinearForm
 import scala.collection.mutable.ListBuffer
 
 /**
