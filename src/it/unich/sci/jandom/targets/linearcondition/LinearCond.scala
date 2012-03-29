@@ -16,7 +16,7 @@
  * (c) 2012 Gianluca Amato
  */
 
-package it.unich.sci.jandom.targets.LinearCondition
+package it.unich.sci.jandom.targets.linearcondition
 import it.unich.sci.jandom.domains.NumericalProperty
 
 /**
