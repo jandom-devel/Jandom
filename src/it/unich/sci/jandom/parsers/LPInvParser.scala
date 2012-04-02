@@ -33,6 +33,7 @@ import it.unich.sci.jandom.targets.lts._
  */
 object LPInvParser extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
   val env = Environment()
+  var current_loc = 0
   private val location_env = new HashMap[String, Location]
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
@@ -57,9 +58,10 @@ object LPInvParser extends JavaTokenParsers with LinearExpressionParser with Lin
     (literal("location") ~> ident <~ literal("with") <~ "(") ~
       rep(condition) <~
       ")" <~ ";" ^^ {
-        case id ~ condition => {
-          val loc = Location(id, condition)
-          location_env += id -> loc
+        case name ~ condition => {
+          val loc = Location(name, current_loc, condition)
+          current_loc += 1
+          location_env += name -> loc
           loc
         }
       }
@@ -73,13 +75,14 @@ object LPInvParser extends JavaTokenParsers with LinearExpressionParser with Lin
     (literal("transition") ~> ident) ~ (ident <~ "->") ~ (ident <~ literal("with") <~ literal("Guard")) ~
       ("(" ~> rep(condition) <~ ")") ~
       rep(assignment) <~ ";" ^^ {
-        case name ~ lstart ~ lend ~ guards ~ assignments =>
-          Transition(name, location_env(lstart), location_env(lend), guards, assignments)
+        case name ~ lstart ~ lend ~ guards ~ assignments => {
+          location_env(lend) += Transition(name, location_env(lstart), location_env(lend), guards, assignments)          
+        }         
       }
 
   private val prog = 
     declarations ~> opt(template) ~> rep(location) ~ rep(transition) <~ literal("end") ^^ {
-      case ls ~ ts => LTS(ls, ts)
+      case ls ~ ts => LTS(ls, ts, env)
     }
 
   def parseProgram(s: String) = parseAll(prog, s)

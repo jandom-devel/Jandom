@@ -17,11 +17,32 @@
  */
 package it.unich.sci.jandom.targets.lts
 
+import it.unich.sci.jandom.domains._
+import it.unich.sci.jandom.targets.Environment
+
 /**
  * The main class for Linear Transition Systems.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class LTS (val locations: List[Location], val transitions: List[Transition]) {
-  override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")   
+case class LTS (val locations: List[Location], val transitions: List[Transition], val environment: Environment) {  
+  private var result : List[NumericalProperty[_]] = null
+  
+  override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n") 
+  
+  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property]) {
+    var current, next : List[Property] = Nil    
+    next = for (loc <- locations) 
+      yield  (domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
+    while (current != next) {      
+      current = next
+      println(current)
+      next =  for ((loc, propold) <- locations zip current) yield {
+        val propnew = for (t <- loc.transitions) yield t.analyze(propold)
+        val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
+        propold widening unionednew        
+      }      
+    }      
+    result = current
+  }      
 }

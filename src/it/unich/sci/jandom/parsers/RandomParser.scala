@@ -38,7 +38,7 @@ object RandomParser extends JavaTokenParsers with LinearExpressionParser with Li
     override val ident = not(literal("function")) ~>  """[a-zA-Z._][\w.]*""".r  // allow . in identifiers
     
     val variable: Parser[Int] = 
-      ident ^^ { env.getBindingOrAdd(_)+1 }    
+      ident ^^ { env.getBindingOrAdd(_) }    
 	  	
 	private val stmt: Parser[SLILStmt] = 
 	  "assume" ~> "(" ~> condition <~ ")" ^^ { AssumeStmt(_) } |
@@ -50,7 +50,7 @@ object RandomParser extends JavaTokenParsers with LinearExpressionParser with Li
 	    case c ~ s => WhileStmt(c,s)
 	  } |
 	  "{" ~> repsep(stmt, opt(";")) <~ "}" ^^ { CompoundStmt(_) } | 
-	  ident ~ ("=" | "<-") ~ expr ^^ { case v ~ _ ~ lf => AssignStmt(env.getBindingOrAdd(v)+1,lf) } 	 
+	  ident ~ ("=" | "<-") ~ expr ^^ { case v ~ _ ~ lf => AssignStmt(env.getBindingOrAdd(v),lf) } 	 
 	  
 	private val prog: Parser[SLILProgram] = 
 	  (opt(ident) ~> ("=" | "<-") ~> "function" ~>  "(" ~> repsep(variable, ",") <~ ")" ) ~ stmt ^^ {

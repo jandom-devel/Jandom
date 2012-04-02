@@ -40,7 +40,13 @@ object Jandom extends App {
   {
     val source = scala.io.Source.fromFile("examples/LPinv/berkeley.in").getLines.mkString("\n")
     val parsed = parsers.LPInvParser.parseProgram(source)  
-    println(parsed)
+    if (parsed.successful) {
+	  val program = parsed.get 
+      program.analyze(domains.PPLBoxDouble)
+      println(program)  
+    } else {
+      println(parsed)
+    }      
   }
   
   PPL.finalize_library()

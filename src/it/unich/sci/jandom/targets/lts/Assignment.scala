@@ -17,6 +17,7 @@
  */
 package it.unich.sci.jandom.targets.lts
 import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.domains._
 
 /**
  * @author Gianluca Amato <amato@sci.unich.it>
@@ -24,7 +25,12 @@ import it.unich.sci.jandom.targets.LinearForm
  */
 
 case class Assignment[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T])  {
-  import numeric._  
-	
-  override def toString = linearForm.env(variable) + " := " + linearForm.toString
+  import numeric._
+  
+  override def toString = linearForm.env(variable) + " := " + linearForm.toString  
+  
+  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
+    val coefficients = linearForm.coefficients
+    input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
+  }
 }

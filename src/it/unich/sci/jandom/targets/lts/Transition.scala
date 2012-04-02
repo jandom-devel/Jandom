@@ -18,14 +18,23 @@
 
 package it.unich.sci.jandom.targets.lts
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
+import it.unich.sci.jandom.domains._
+
 
 /**
  * The class for transitions.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class Transition (name: String, start: Location, end: Location, guard: List[LinearCond], assignments: List[Assignment[_]]) {
-	override def toString = "transition "+name+" "+start.name+" -> "+end.name + " with Guard( " + 
-	  guard.mkString(", ") + " )\n" +
-	  assignments.mkString(start="  ", sep="\n  ", end="")+";"	  
+case class Transition (val name: String, val start: Location, val end: Location, val guard: List[LinearCond], val assignments: List[Assignment[_]]) {
+  
+  override def toString = "transition "+name+" "+start.name+" -> "+end.name + " with Guard( " + 
+	guard.mkString(", ") + " )\n" +
+	assignments.mkString(start="  ", sep="\n  ", end="")+";"
+
+  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
+    val filtered = (input /: guard) { (current, cond) => cond.analyze(current) }
+	(filtered /: assignments)  { (current, assgn) => assgn.analyze(current) }
+  }     
+
 }

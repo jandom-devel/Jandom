@@ -38,8 +38,9 @@ case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.V
     case AtomicCond.ComparisonOperators.GTE => input.linearInequality( homcoeff(-lf), known(-lf) )
     case AtomicCond.ComparisonOperators.GT => input.linearInequality( homcoeff(-lf), known(-lf) )
     case AtomicCond.ComparisonOperators.NEQ => input.linearDisequality( homcoeff(lf), known(lf) )
-    case AtomicCond.ComparisonOperators.EQ => throw new Exception("Not implemented yet")
-  }      
+    case AtomicCond.ComparisonOperators.EQ => input.linearInequality( homcoeff(lf), known(lf) ) intersection 
+    	input.linearInequality( homcoeff(-lf), known(-lf) )    
+  }
   
   def opposite = new AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op))
   

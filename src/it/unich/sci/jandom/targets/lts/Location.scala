@@ -22,9 +22,18 @@ import it.unich.sci.jandom.targets.linearcondition.LinearCond
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class Location (val name:String, val constraints: List[LinearCond]) {
+case class Location (val name:String, val id: Int, val conditions: List[LinearCond]) {  
+  var incoming : List[Transition] = Nil
+  
+  def += (t: Transition): Transition = { 
+    incoming = t :: incoming; 
+    t 
+  }
+  
+  def transitions = incoming.toIterable
+  
   override def toString = 
     "location "+name+" with (\n"+ 
-       constraints.mkString(start="  ", sep="\n  ", end="\n") + 
+       conditions.mkString(start="  ", sep="\n  ", end="\n") + 
     ");" 
 }
