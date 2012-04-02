@@ -22,7 +22,7 @@ import scala.collection.mutable.HashMap
 import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.Environment
 import it.unich.sci.jandom.targets.linearcondition._
-import it.unich.sci.jandom.targets.LTS._
+import it.unich.sci.jandom.targets.lts._
 
 /**
  * Parser for transition systems as appear in the [[http://www.cs.colorado.edu/~srirams/Software/lpinv.html LPInv]]

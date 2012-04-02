@@ -15,16 +15,13 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets.LTS
-import it.unich.sci.jandom.targets.LinearForm
+package it.unich.sci.jandom.targets.lts
 
 /**
+ * The main class for Linear Transition Systems.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-
-case class Assignment[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T])  {
-  import numeric._  
-	
-  override def toString = linearForm.env(variable) + " := " + linearForm.toString
+case class LTS (val locations: List[Location], val transitions: List[Transition]) {
+  override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")   
 }

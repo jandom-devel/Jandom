@@ -21,7 +21,7 @@ import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
 import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.targets.linearcondition._
-import it.unich.sci.jandom.targets.SLIL._
+import it.unich.sci.jandom.targets.slil._
 
 /**
  * Test suite for RandomParser.

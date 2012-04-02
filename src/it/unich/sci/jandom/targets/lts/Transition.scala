@@ -15,16 +15,17 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets.LTS
+
+package it.unich.sci.jandom.targets.lts
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
 /**
+ * The class for transitions.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class Location (val name:String, val constraints: List[LinearCond]) {
-  override def toString = 
-    "location "+name+" with (\n"+ 
-       constraints.mkString(start="  ", sep="\n  ", end="\n") + 
-    ");" 
+case class Transition (name: String, start: Location, end: Location, guard: List[LinearCond], assignments: List[Assignment[_]]) {
+	override def toString = "transition "+name+" "+start.name+" -> "+end.name + " with Guard( " + 
+	  guard.mkString(", ") + " )\n" +
+	  assignments.mkString(start="  ", sep="\n  ", end="")+";"	  
 }

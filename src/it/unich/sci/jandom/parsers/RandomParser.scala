@@ -17,7 +17,7 @@
  */
 package it.unich.sci.jandom.parsers
 
-import it.unich.sci.jandom.targets.SLIL._
+import it.unich.sci.jandom.targets.slil._
 import it.unich.sci.jandom.targets.linearcondition._
 import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.Environment

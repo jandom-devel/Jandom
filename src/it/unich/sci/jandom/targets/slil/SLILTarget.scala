@@ -16,7 +16,7 @@
  * (c) 2011 Gianluca Amato
  */
 
-package it.unich.sci.jandom.targets.SLIL
+package it.unich.sci.jandom.targets.slil
 
 import it.unich.sci.jandom.domains._
 import it.unich.sci.jandom.targets.linearcondition._
