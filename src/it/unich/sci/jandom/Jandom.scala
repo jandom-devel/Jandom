@@ -24,22 +24,22 @@ object Jandom extends App {
 
   System.load("/usr/local/lib/ppl/libppl_java.so")
   PPL.initialize_library()
-   val prog: String = """## commento
-    	 xyline <- function(x,y) {
-		    x = 0
-            y = 1
-		    z = 1
-		    if (x<=y) z=4
-		    while (x<=10) x=x+y
-          }      
-    """
-  val source = scala.io.Source.fromFile("examples/Random/octagon-3.R").getLines.mkString("\n")
-  val parsed = parsers.RandomParser.parseProgram(source)  
-  if (parsed.successful) {
-	val program = parsed.get 
-    program.analyze(domains.PPLBoxDouble)
-    println(program)  
-  } else {
+
+  {
+    val source = scala.io.Source.fromFile("examples/Random/octagon-3.R").getLines.mkString("\n")
+    val parsed = parsers.RandomParser.parseProgram(source)  
+    if (parsed.successful) {
+	  val program = parsed.get 
+      program.analyze(domains.PPLBoxDouble)
+      println(program)  
+    } else {
+      println(parsed)
+    }    
+  }
+  
+  {
+    val source = scala.io.Source.fromFile("examples/LPinv/berkeley.in").getLines.mkString("\n")
+    val parsed = parsers.LPInvParser.parseProgram(source)  
     println(parsed)
   }
   

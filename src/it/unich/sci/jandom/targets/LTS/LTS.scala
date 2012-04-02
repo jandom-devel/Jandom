@@ -16,15 +16,12 @@
  * (c) 2012 Gianluca Amato
  */
 package it.unich.sci.jandom.targets.LTS
-import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
 /**
+ * The main class for Linear Transition Systems.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class Location (val name:String, val constraints: List[LinearCond]) {
-  override def toString = 
-    "location "+name+" with (\n"+ 
-       constraints.mkString(start="  ", sep="\n  ", end="\n") + 
-    ");" 
+case class LTS (val locations: List[Location], val transitions: List[Transition]) {
+  override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")   
 }

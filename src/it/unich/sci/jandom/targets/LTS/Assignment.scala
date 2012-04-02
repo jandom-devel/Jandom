@@ -16,15 +16,15 @@
  * (c) 2012 Gianluca Amato
  */
 package it.unich.sci.jandom.targets.LTS
-import it.unich.sci.jandom.targets.linearcondition.LinearCond
+import it.unich.sci.jandom.targets.LinearForm
 
 /**
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class Location (val name:String, val constraints: List[LinearCond]) {
-  override def toString = 
-    "location "+name+" with (\n"+ 
-       constraints.mkString(start="  ", sep="\n  ", end="\n") + 
-    ");" 
+
+case class Assignment[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T])  {
+  import numeric._  
+	
+  override def toString = linearForm.env(variable) + " := " + linearForm.toString
 }
