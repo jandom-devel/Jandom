@@ -62,9 +62,9 @@ class LinearForm[T](val coefficients: Seq[T], val env: Environment) (implicit nu
     for ( coeff <- coefficients ) {      
       val term = coeff match {
         case 0 => ""
-        case 1 => if (index == 0) "1" else env(index-1).name
-        case -1 => if (index == 0) "-1" else "-"+env(index-1).name
-        case c:T => c.toString + (if (index==0) "" else "*"+env(index-1).name)
+        case 1 => if (index == 0) "1" else env(index-1)
+        case -1 => if (index == 0) "-1" else "-"+env(index-1)
+        case c:T => c.toString + (if (index==0) "" else "*"+env(index-1))
       }
       if (coeff!=0) {
     	if (first || coeff < zero) {

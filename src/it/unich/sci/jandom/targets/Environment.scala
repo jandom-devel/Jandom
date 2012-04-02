@@ -20,31 +20,32 @@ package it.unich.sci.jandom.targets
 import scala.collection.mutable.LinkedHashMap
 
 /**
- * The class Environment represents an environment at a certain point in a program, i.e. a list of variables 
- * and corresponding types.
+ * The class Environment represents an environment at a certain point in a program. At the moment
+ * this means essentially a correspondence between a variable name and a variable numerical index.
+ * Later, we will add also types (integer, floating points, etc...) to the environment.
+ *  
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 
 class Environment {	
-    private val variables = new scala.collection.mutable.ArrayBuffer[Variable]()
+    private val variables = new scala.collection.mutable.ArrayBuffer[String]()
     private val nameHash = new LinkedHashMap[String,Int]()
     
 	/**
 	 * Add a new binding to the environment. If a variable with the same name is already in the environment,
 	 * errors may happen.
 	 * @param name the name of the variable
-	 * @return the index of the new binding
+	 * @return the index of the new binding (first variable has index 0)
 	 */
-	def addBinding(name: String): Int = {
-      val v = new Variable(name)
-  	  variables += v
+	def addBinding(name: String): Int = {      
+  	  variables += name
 	  nameHash += name -> (variables.size - 1)
 	  return variables.size -1 
 	}
 	
 	/**
-	 * Get a binding from the environment based on the name
+	 * Get a binding from the environment based on the name.
 	 * @param name the name of the variable
 	 * @return the index of the binding for name
 	 */
@@ -61,26 +62,26 @@ class Environment {
 	}
 
 	/**
-	 * Get a variable from the environment based on the name
+	 * Get a binding from the environment based on the name. 
 	 * @param name the name of the variable
 	 * @return the variable with the given name in the environment
 	 * @throw NoSuchElementException if there is no variables with such an index
 	 */
-	def apply(name: String): Variable = variables(nameHash(name))
+	def apply(name: String): Int = nameHash(name)
 		
 	/**
-	 * Get a variable from the environment based on the name
+	 * Get a variable name from the environment based on the binding.
 	 * @param index the index of the variable
-	 * @return the variable with the given index in the environment
+	 * @return the variable name with the given index in the environment
 	 * @throw NoSuchElementException if there is no variables with such an index
 	 */
-	def apply(index: Int): Variable = variables(index)
+	def apply(index: Int): String = variables(index)
 		
 	/**
 	 * Returns the name of variables in the environment
 	 * @return the variable with the given index in the environment
 	 */
-	def getNames: Iterable[String] = nameHash.keys 
+	def getNames: Iterable[String] = variables.toIterable
 	  
 	/**
 	 * Returns the size of the environment, i.e. the number of bindings

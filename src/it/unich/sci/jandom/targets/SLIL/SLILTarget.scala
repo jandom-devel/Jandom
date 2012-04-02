@@ -35,7 +35,7 @@ case class SLILProgram( val environment: Environment, val inputVars: Iterable[In
   private var input: NumericalProperty[_] = null
   private var output: NumericalProperty[_] = null
 
-  override def toString = "function (" +  (inputVars map { v:Int => environment(v - 1).name }).mkString(",") + ") {\n"  + 
+  override def toString = "function (" +  (inputVars map { v:Int => environment(v - 1) }).mkString(",") + ") {\n"  + 
 		(if (input != null) "  " + input + "\n" else "") +
     	stmt.formatString(1,2) + "\n" + 
     	(if (output != null) "  " + output + "\n" else "") + '}'
@@ -65,7 +65,7 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T]) (implicit num
     val coefficients = linearForm.coefficients
     input.linearAssignment(variable-1, (coefficients.tail map (x => x.toDouble())).toArray,coefficients.head.toDouble)
   }   
-  override def formatString(indent: Int, indentSize: Int) = " "*indentSize*indent + linearForm.env(variable-1).name + " = " + linearForm.toString
+  override def formatString(indent: Int, indentSize: Int) = " "*indentSize*indent + linearForm.env(variable-1) + " = " + linearForm.toString
 }
 
 case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {

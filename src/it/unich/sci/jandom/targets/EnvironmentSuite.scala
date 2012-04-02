@@ -39,6 +39,6 @@ class EnvironmentSuite  extends FunSuite with Checkers {
   
   test ("companion object") {
     val env = Environment("A","B","C")
-    expect ("C") { env("C").name }
+    expect ("C") { env(env("C")) }
   }
 }
