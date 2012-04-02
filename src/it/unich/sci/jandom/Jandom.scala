@@ -30,7 +30,7 @@ object Jandom extends App {
     val parsed = parsers.RandomParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
-      program.analyze(domains.PPLBoxDouble)
+      program.analyze(domains.PPLCPolyhedron)
       println(program)  
     } else {
       println(parsed)
@@ -42,7 +42,7 @@ object Jandom extends App {
     val parsed = parsers.LPInvParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
-      program.analyze(domains.PPLBoxDouble)
+      program.analyze(domains.PPLCPolyhedron)
       println(program)  
     } else {
       println(parsed)
