@@ -28,51 +28,19 @@ import scala.util.parsing.combinator.JavaTokenParsers
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-object RandomParser extends JavaTokenParsers {
-    private val env = Environment()
+object RandomParser extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
+    val env = Environment()
      
     override val whiteSpace = """(\s|#.*\r?\n)+""".r  // handle # as the start of a comment
             
     override def stringLiteral = "\"[^\"]*\"".r   // allow CR in string literals
       
-    override def ident = not(literal("function")) ~>  """[a-zA-Z._][\w.]*""".r  // allow . in identifiers
+    override val ident = not(literal("function")) ~>  """[a-zA-Z._][\w.]*""".r  // allow . in identifiers
     
-    private def variable: Parser[Int] = 
-      ident ^^ { env.getBindingOrAdd(_)+1 }
-    
-	private def term: Parser[LinearForm[Int]] = 
-	  (opt(wholeNumber <~ "*") ~ variable) ^^ {
-	    case Some(coeff) ~ v => LinearForm.fromCoefficientVar[Int](coeff.toInt,v,env)  
-	    case None~v =>  LinearForm.fromVar[Int](v,env)
-      } |
-      wholeNumber ^^ { case coeff => LinearForm.fromCoefficient(coeff.toInt,env) }	
-         
-	private def term_with_operator: Parser[LinearForm[Int]] =
-	  "+" ~> term |
-	  "-" ~> term ^^ { lf => -lf  }	  	
-	  
-	private def expr: Parser[LinearForm[Int]] = 
-	  term ~ rep(term_with_operator) ^^ {
-	    case lf1 ~ lfarr => (lf1 /: lfarr) { (lfa, lfb) => lfa + lfb }   
-   	  }
-	
-	private def comparison: Parser[AtomicCond.ComparisonOperators.Value] =
-	  ("==" | "<=" | ">=" | "!=" | "<"  | ">") ^^ { s => AtomicCond.ComparisonOperators.withName(s) } |
-	  failure("invalid comparison operator")
-	
-	private def atomic_condition: Parser[LinearCond] =
-	  "FALSE" ^^ { s => FalseCond } |
-	  "TRUE" ^^ { s => TrueCond } |	 
-	  "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
-	  expr ~ comparison ~ expr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1-lf2, op)} 	  
-	  
-	private def condition: Parser[LinearCond] = 
-	  atomic_condition |
-	  atomic_condition ~ "&&" ~ condition ^^ { case c1 ~ _ ~ c2 => AndCond(c1,c2) } |
-	  atomic_condition ~ "||" ~ condition ^^ { case c1 ~ _ ~ c2 => OrCond(c1,c2) } |
-	  "!" ~> condition ^^ { case c => NotCond(c) }
+    val variable: Parser[Int] = 
+      ident ^^ { env.getBindingOrAdd(_)+1 }    
 	  	
-	private def stmt: Parser[SLILStmt] = 
+	private val stmt: Parser[SLILStmt] = 
 	  "assume" ~> "(" ~> condition <~ ")" ^^ { AssumeStmt(_) } |
 	  ( "if" ~> "("  ~> condition <~ ")" ) ~ stmt ~ opt("else" ~> stmt) ^^ { 
 	    case c ~ s1 ~ Some(s2) => IfStmt(c,s1,s2)
@@ -84,12 +52,12 @@ object RandomParser extends JavaTokenParsers {
 	  "{" ~> repsep(stmt, opt(";")) <~ "}" ^^ { CompoundStmt(_) } | 
 	  ident ~ ("=" | "<-") ~ expr ^^ { case v ~ _ ~ lf => AssignStmt(env.getBindingOrAdd(v)+1,lf) } 	 
 	  
-	private def prog: Parser[SLILProgram] = 
+	private val prog: Parser[SLILProgram] = 
 	  (opt(ident) ~> ("=" | "<-") ~> "function" ~>  "(" ~> repsep(variable, ",") <~ ")" ) ~ stmt ^^ {
 	    case vars ~ stmt=> SLILProgram(env, vars, stmt) 
 	}
 	
-	private def skip: Parser[String] = """(.|[\r\n])*""".r   // skip until the end of the file
+	private val skip: Parser[String] = """(.|[\r\n])*""".r   // skip until the end of the file
 		
 	/**
 	 * This parser a program, eventually preceded by an if statement used to embed an INTERPROC version
@@ -97,7 +65,7 @@ object RandomParser extends JavaTokenParsers {
 	 * we want to analyze. Other definitions are input for the trace analyzer in Random which is not
 	 * implemented yet.
 	 */
-	private def progWithCases: Parser[SLILProgram] = 
+	private val progWithCases: Parser[SLILProgram] = 
 	  opt("if" ~ "(" ~ "FALSE" ~ ")" ~ stringLiteral) ~> prog <~ skip
 	  
 	def parseProgram(s: String) = parseAll(progWithCases,s)

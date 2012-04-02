@@ -31,50 +31,17 @@ import it.unich.sci.jandom.targets.lts._
  * conditions with &&, || and ! in the locations.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-object LPInvParser extends JavaTokenParsers {
-  private val env = Environment()
-
+object LPInvParser extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
+  val env = Environment()
   private val location_env = new HashMap[String, Location]
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
 
-  private val variable: Parser[Int] =
+  val variable: Parser[Int] =
     ident ^^ { env(_) }
-
-  private val term: Parser[LinearForm[Int]] =
-    (opt(wholeNumber <~ "*") ~ variable) ^^ {
-      case Some(coeff) ~ v => LinearForm.fromCoefficientVar[Int](coeff.toInt, v + 1, env)
-      case None ~ v => LinearForm.fromVar[Int](v + 1, env)
-    } |
-      wholeNumber ^^ { case coeff => LinearForm.fromCoefficient(coeff.toInt, env) }
-
-  private val term_with_operator: Parser[LinearForm[Int]] =
-    "+" ~> term |
-      "-" ~> term ^^ { lf => -lf }
-
-  private val expr: Parser[LinearForm[Int]] =
-    term ~ rep(term_with_operator) ^^ {
-      case lf1 ~ lfarr => (lf1 /: lfarr) { (lfa, lfb) => lfa + lfb }
-    }
-
-  private val comparison: Parser[AtomicCond.ComparisonOperators.Value] =
-    ("=" | "==" | "<=" | ">=" | "!=" | "<" | ">") ^^ {
-      case "=" => AtomicCond.ComparisonOperators.withName("==")
-      case s => AtomicCond.ComparisonOperators.withName(s)
-    } |
-      failure("invalid comparison operator")
-
-  private val atomic_condition: Parser[LinearCond] =
-    "FALSE" ^^ { s => FalseCond } |
-      "TRUE" ^^ { s => TrueCond } |
-      "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
-      expr ~ comparison ~ expr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1 - lf2, op) }
-
-  private val condition: Parser[LinearCond] =
-    atomic_condition |
-      atomic_condition ~ "&&" ~ condition ^^ { case c1 ~ _ ~ c2 => AndCond(c1, c2) } |
-      atomic_condition ~ "||" ~ condition ^^ { case c1 ~ _ ~ c2 => OrCond(c1, c2) } |
-      "!" ~> condition ^^ { case c => NotCond(c) }
+  
+  override val operator_alias: Parser[String] = 
+    "=" ^^ { _ => "==" }
 
   private val var_declaration: Parser[Any] =
     ident ^^ { case v => env.addBinding(v) }
@@ -102,7 +69,7 @@ object LPInvParser extends JavaTokenParsers {
       case v ~ lf => Assignment(env.getBindingOrAdd(v), lf)
     }
 
-  private def transition: Parser[Transition] =
+  private val transition: Parser[Transition] =
     (literal("transition") ~> ident) ~ (ident <~ "->") ~ (ident <~ literal("with") <~ literal("Guard")) ~
       ("(" ~> rep(condition) <~ ")") ~
       rep(assignment) <~ ";" ^^ {
@@ -110,7 +77,7 @@ object LPInvParser extends JavaTokenParsers {
           Transition(name, location_env(lstart), location_env(lend), guards, assignments)
       }
 
-  private def prog = 
+  private val prog = 
     declarations ~> opt(template) ~> rep(location) ~ rep(transition) <~ literal("end") ^^ {
       case ls ~ ts => LTS(ls, ts)
     }
