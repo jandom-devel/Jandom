@@ -19,7 +19,7 @@ package it.unich.sci.jandom.targets.lts
 
 import it.unich.sci.jandom.domains._
 import it.unich.sci.jandom.targets.Environment
-import it.unich.sci.jandom.widenings.Widening
+import it.unich.sci.jandom.targets.Parameters
 
 /**
  * The main class for Linear Transition Systems.
@@ -29,13 +29,9 @@ import it.unich.sci.jandom.widenings.Widening
 case class LTS (val locations: List[Location], val transitions: List[Transition], val environment: Environment) {  
   private var result : List[NumericalProperty[_]] = null
   
-  override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n") 
+  override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")
   
-  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property]) { 
-    analyze(domain, domain.widening) 
-  }   
-
-  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], widening: Widening[Property]) {   
+  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property]) {   
     var current, next : List[Property] = Nil    
     next = for (loc <- locations) 
       yield  (domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
@@ -44,7 +40,7 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
         val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
-        widening(propold, unionednew)        
+        params.widening(propold, unionednew)        
       }      
     } 
     current = Nil

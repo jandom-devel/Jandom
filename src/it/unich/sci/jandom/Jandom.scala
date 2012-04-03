@@ -17,21 +17,21 @@
  */
 
 package it.unich.sci.jandom;
-import targets._
 import parma_polyhedra_library.{Parma_Polyhedra_Library => PPL}
-import it.unich.sci.jandom.widenings.DelayedWidening
 
 object Jandom extends App {
 
   System.load("/usr/local/lib/ppl/libppl_java.so")
   PPL.initialize_library()
-
+ 
   {
+    val params = new targets.Parameters(domains.PPLCPolyhedron)
+    params.narrowing = new narrowings.FixedStepsNarrowing(params.narrowing,2)  
     val source = scala.io.Source.fromFile("examples/Random/octagon-3.R").getLines.mkString("\n")
     val parsed = parsers.RandomParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
-      program.analyze(domains.PPLCPolyhedron, new DelayedWidening(domains.PPLCPolyhedron.widening,2) )
+      program.analyze(domains.PPLCPolyhedron, params)
       println(program)  
     } else {
       println(parsed)
@@ -39,11 +39,13 @@ object Jandom extends App {
   }
   
   {
+    val params = new targets.Parameters(domains.PPLCPolyhedron)
+    params.widening = new widenings.DelayedWidening(params.widening,2)
     val source = scala.io.Source.fromFile("examples/LPinv/berkeley.in").getLines.mkString("\n")
     val parsed = parsers.LPInvParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
-      program.analyze(domains.PPLCPolyhedron, new DelayedWidening(domains.PPLCPolyhedron.widening,2) )
+      program.analyze(domains.PPLCPolyhedron, params)
       println(program)  
     } else {
       println(parsed)
