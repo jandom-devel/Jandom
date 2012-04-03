@@ -18,6 +18,8 @@
 
 package it.unich.sci.jandom.domains
 
+import it.unich.sci.jandom.widenings.Widening
+
 /**
   * This is the box abstract domain over doubles.
   * 
@@ -113,14 +115,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     val newlow = (this.low, that.low).zipped.map(_ min _)
     val newhigh = (this.high, that.high).zipped.map(_ max _)
     new BoxDouble(newlow, newhigh)     
-  }     
-  
-  override def widening(that: BoxDouble): BoxDouble = {
-     require (dimension == that.dimension)
-     val newlow = (this.low, that.low).zipped.map ( (l1,l2) => if (l1== Double.PositiveInfinity) l2 else if (l1<=l2) l1 else Double.NegativeInfinity )
-     val newhigh = (this.high, that.high).zipped.map ( (l1,l2) => if (l1== Double.NegativeInfinity) l2 else if (l1>=l2) l1 else Double.PositiveInfinity )
-     new BoxDouble(newlow, newhigh)
-  }
+  }       
   
    override def narrowing(that: BoxDouble): BoxDouble = {
       require (dimension == that.dimension)
@@ -335,6 +330,18 @@ object BoxDouble extends NumericalDomain[BoxDouble] {
       empty(low.length)
     else
       new BoxDouble(low, high)
+  }
+  
+  /** 
+   * Returns the standard widening on boxes based on CC76.
+   */
+  val widening = new Widening[BoxDouble] {
+    def apply(current: BoxDouble, next: BoxDouble) = {  
+     require (current.dimension == next.dimension)
+     val newlow = (current.low, next.low).zipped.map ( (l1,l2) => if (l1== Double.PositiveInfinity) l2 else if (l1<=l2) l1 else Double.NegativeInfinity )
+     val newhigh = (current.high, next.high).zipped.map ( (l1,l2) => if (l1== Double.NegativeInfinity) l2 else if (l1>=l2) l1 else Double.PositiveInfinity )
+     new BoxDouble(newlow, newhigh)
+    }
   }
     
   def apply(poDouble: Array[Double]): BoxDouble = apply(poDouble, poDouble)

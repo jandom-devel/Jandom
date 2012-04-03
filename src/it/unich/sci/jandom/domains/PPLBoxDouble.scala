@@ -26,7 +26,7 @@ import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
-import com.sun.xml.internal.bind.v2.TODO
+import it.unich.sci.jandom.widenings.Widening
 
 /**
  * The class for Boxes in PPL.
@@ -35,13 +35,6 @@ import com.sun.xml.internal.bind.v2.TODO
  */
 class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PPLBoxDouble] {
   
-  def widening(that: PPLBoxDouble): PPLBoxDouble = { 
-    val newpplbox = new Double_Box(pplbox)
-    newpplbox.upper_bound_assign(that.pplbox)
-    newpplbox.CC76_widening_assign(pplbox,null)    
-    new PPLBoxDouble(newpplbox)              
-  }  
-
   def narrowing(that: PPLBoxDouble): PPLBoxDouble = {   
     val newpplbox = new Double_Box(that.pplbox)   
     newpplbox.CC76_narrowing_assign(pplbox)
@@ -129,5 +122,13 @@ object PPLBoxDouble extends NumericalDomain[PPLBoxDouble] {
     val pplbox = new Double_Box(n, Degenerate_Element.EMPTY)
     new PPLBoxDouble(pplbox)        
   }  
-
+  
+  val widening = new Widening[PPLBoxDouble] {
+    def apply(current: PPLBoxDouble, next: PPLBoxDouble) = {
+      val newpplbox = new Double_Box(current.pplbox)
+      newpplbox.upper_bound_assign(next.pplbox)
+      newpplbox.CC76_widening_assign(current.pplbox,null)    
+      new PPLBoxDouble(newpplbox)              
+    }  
+  }
 }

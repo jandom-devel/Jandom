@@ -27,21 +27,15 @@ import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
+import it.unich.sci.jandom.widenings.Widening
 
 /**
  * The class for Polyhedra in PPL.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class PPLCPolyhedron(private val pplpolyhedron : C_Polyhedron) extends NumericalProperty[PPLCPolyhedron] {
+class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends NumericalProperty[PPLCPolyhedron] {
   
-  def widening(that: PPLCPolyhedron): PPLCPolyhedron = { 
-    val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
-    newpplpolyhedron.upper_bound_assign(that.pplpolyhedron)
-    newpplpolyhedron.widening_assign(pplpolyhedron,null)    
-    new PPLCPolyhedron(newpplpolyhedron)              
-  }  
-
   def narrowing(that: PPLCPolyhedron): PPLCPolyhedron = {
     this
   }   
@@ -126,6 +120,15 @@ object PPLCPolyhedron extends NumericalDomain[PPLCPolyhedron] {
   def empty(n: Int): PPLCPolyhedron = {
     val pplpolyhedron = new C_Polyhedron(n, Degenerate_Element.EMPTY)
     new PPLCPolyhedron(pplpolyhedron)        
+  }  
+
+ val widening = new Widening[PPLCPolyhedron] {
+    def apply(current: PPLCPolyhedron, next: PPLCPolyhedron) = {
+      val newpplpolyhedron = new C_Polyhedron(current.pplpolyhedron)
+      newpplpolyhedron.upper_bound_assign(next.pplpolyhedron)
+      newpplpolyhedron.widening_assign(current.pplpolyhedron,null)    
+      new PPLCPolyhedron(newpplpolyhedron)
+    }
   }  
 
 }

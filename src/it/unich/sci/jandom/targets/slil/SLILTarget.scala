@@ -22,7 +22,9 @@ import it.unich.sci.jandom.domains._
 import it.unich.sci.jandom.targets.linearcondition._
 import it.unich.sci.jandom.targets.Environment
 import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.widenings.Widening
 import scala.collection.mutable.ListBuffer
+
 
 /**
  * The target for a simple imperative language similar to the one analyzed
@@ -39,29 +41,29 @@ case class SLILProgram( val environment: Environment, val inputVars: Iterable[In
 		(if (input != null) "  " + input + "\n" else "") +
     	stmt.formatString(1,2) + "\n" + 
     	(if (output != null) "  " + output + "\n" else "") + '}'
-  
-  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property]) {    	  
+      	
+  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], widening: Widening[Property] = null) {    	  
 	  val start = domain.full(environment.size)
 	  input = start
-	  output = stmt.analyze(start)	  	  
+	  output = stmt.analyze(start, if (widening==null) domain.widening else widening)	  	  
   }        
 }
   
 sealed abstract class SLILStmt { 
   def formatString(indent: Int, indentSize: Int): String
-  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input
+  def analyze[Property <: NumericalProperty[Property]] (input: Property, widening: Widening[Property]): Property = input
   override def toString = formatString(0,2)
 }
 
 case class AssumeStmt(cond: LinearCond) extends SLILStmt {
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = cond.analyze(input)  
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, widening: Widening[Property]): Property = cond.analyze(input)  
   override def formatString(indent: Int, indentSize:Int) = " "*indentSize*indent + "assume(" + cond +")"
 }
 
 case class AssignStmt[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T]) extends SLILStmt {
   import numeric._
   
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, widening: Widening[Property]): Property = {
     val coefficients = linearForm.coefficients
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray,coefficients.head.toDouble)
   }   
@@ -71,7 +73,7 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T]) (implicit num
 case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
   val annotations = ListBuffer[NumericalProperty[_]]()
   
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, widening: Widening[Property]): Property = {
     var current = input
     var first = true
     for (stmt <- stmts) {
@@ -79,7 +81,7 @@ case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
         first = false
       else
         annotations += current 
-      current = stmt.analyze(current)      
+      current = stmt.analyze(current, widening)      
     }  
     current
   }
@@ -108,16 +110,16 @@ case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
 case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {  
   var savedInvariant : NumericalProperty[_] = null
  
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property =  {    
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, widening: Widening[Property]): Property =  {    
     var newinvariant = input
     var invariant = input
     do {      
       invariant = newinvariant
-      newinvariant = invariant widening body.analyze(condition.analyze(invariant))
+      newinvariant = widening(invariant,body.analyze(condition.analyze(invariant),widening))
     } while (newinvariant > invariant)          
     do {
       invariant = newinvariant
-      newinvariant = invariant narrowing body.analyze(condition.analyze(invariant))      
+      newinvariant = invariant narrowing body.analyze(condition.analyze(invariant),widening)      
     } while (newinvariant < invariant)    
     savedInvariant = invariant
     return condition.opposite.analyze(invariant)
@@ -138,11 +140,11 @@ case class IfStmt(condition: LinearCond, if_branch: SLILStmt, else_branch: SLILS
   var savedElseAnnotationStart : NumericalProperty[_] = null
   var savedElseAnnotationEnd : NumericalProperty[_] = null
   
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, widening: Widening[Property]): Property = {
     val thenAnnotationStart = condition.analyze(input)
     val elseAnnotationStart = condition.opposite.analyze(input)
-    val thenAnnotationEnd = if_branch.analyze(thenAnnotationStart)
-    val elseAnnotationEnd = else_branch.analyze(elseAnnotationStart)
+    val thenAnnotationEnd = if_branch.analyze(thenAnnotationStart,widening)
+    val elseAnnotationEnd = else_branch.analyze(elseAnnotationStart,widening)
     savedThenAnnotationStart = thenAnnotationStart
     savedThenAnnotationEnd = thenAnnotationEnd
     savedElseAnnotationStart = elseAnnotationStart

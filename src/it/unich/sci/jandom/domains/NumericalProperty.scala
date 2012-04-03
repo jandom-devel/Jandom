@@ -18,6 +18,8 @@
 
 package it.unich.sci.jandom.domains
 
+import it.unich.sci.jandom.widenings.Widening
+
 /**
  * Trait for numerical properties, such as Box, Octagon, etc... The classes extending NumericalProperty should be 
  * immutables. 
@@ -25,14 +27,7 @@ package it.unich.sci.jandom.domains
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 trait NumericalProperty[Property] extends PartiallyOrdered[Property] {
-  
-  /**
-   * Widening of two abstract objects.
-   * @param that the abstract object to be widened with this
-   * @return the widening of the two abstract objects
-   */
-  def widening(that: Property): Property
-  
+    
   /**
    * Narrowing of two abstract objects.
    * @param that the abstract object to be narrowed with this
@@ -109,6 +104,12 @@ trait NumericalProperty[Property] extends PartiallyOrdered[Property] {
  * Trait for numerical domains. A numerical domains should produce numerical properties.
  */
 trait NumericalDomain[Property] {
+  
+  /**
+   * The standard widening for the domain
+   */
+  val widening: Widening[Property]
+  
   /**
    * Create an abstract property representing the full n-dimensional space.
    * @param n the dimension of the environment space.

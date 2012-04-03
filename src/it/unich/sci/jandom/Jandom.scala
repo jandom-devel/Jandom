@@ -19,6 +19,7 @@
 package it.unich.sci.jandom;
 import targets._
 import parma_polyhedra_library.{Parma_Polyhedra_Library => PPL}
+import it.unich.sci.jandom.widenings.DelayedWidening
 
 object Jandom extends App {
 
@@ -30,7 +31,7 @@ object Jandom extends App {
     val parsed = parsers.RandomParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
-      program.analyze(domains.PPLCPolyhedron)
+      program.analyze(domains.PPLCPolyhedron, new DelayedWidening(domains.PPLCPolyhedron.widening,2) )
       println(program)  
     } else {
       println(parsed)
@@ -42,7 +43,7 @@ object Jandom extends App {
     val parsed = parsers.LPInvParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
-      program.analyze(domains.PPLCPolyhedron)
+      program.analyze(domains.PPLCPolyhedron, new DelayedWidening(domains.PPLCPolyhedron.widening,2) )
       println(program)  
     } else {
       println(parsed)
