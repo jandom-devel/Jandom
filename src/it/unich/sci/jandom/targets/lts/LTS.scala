@@ -36,13 +36,21 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
       yield  (domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
     while (current != next) {      
       current = next
-      println(current)
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
         val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
         propold widening unionednew        
       }      
-    }      
-    result = current
+    } 
+    current = Nil
+    while (current != next) {
+      current = next
+      next =  for ((loc, propold) <- locations zip current) yield {
+        val propnew = for (t <- loc.transitions) yield t.analyze(propold)
+        val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
+        propold narrowing unionednew    
+      }      
+    }
+    result = current   
   }      
 }
