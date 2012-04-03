@@ -17,17 +17,25 @@
  */
 package it.unich.sci.jandom.targets
 
-import it.unich.sci.jandom.domains.{NumericalDomain,NumericalProperty}
+import scala.collection.mutable.HashMap
 
 /**
- * The abstract class for targets
- * @author Gianluca Amato <amato@sci.unich.it>
+ * Annotations for programs.
+ * @author Gianluca Amato <g.amato@unich.it>
  *
  */
-abstract class Target {
-  type ProgramPoint
-  /**
-   * Takes a domain and some parameters and perform the analysis.
-   */
-  def  analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property], ann: Annotations)
+
+class Annotations (t: Target) {
+  private val myhash = new HashMap[Tuple2[t.ProgramPoint, AnnotationType[_]], Any] 
+  
+  def get[T](pp: t.ProgramPoint, kind: AnnotationType[T] ): Option[T] = 
+    myhash.get((pp,kind)) match {
+      case None => None
+      case v: Some[T] => v
+      case _ => throw new IllegalAccessException
+  }
+  
+  def update[T](pp: t.ProgramPoint, kind: AnnotationType[T], v: T ) {
+    myhash((pp,kind))=v
+  }
 }

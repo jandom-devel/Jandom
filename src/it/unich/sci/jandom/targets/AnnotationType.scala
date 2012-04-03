@@ -17,17 +17,11 @@
  */
 package it.unich.sci.jandom.targets
 
-import it.unich.sci.jandom.domains.{NumericalDomain,NumericalProperty}
-
 /**
- * The abstract class for targets
- * @author Gianluca Amato <amato@sci.unich.it>
+ * This is just a custom trait for typing purposes.
+ * @author Gianluca Amato <g.amato@unich.it>
  *
  */
-abstract class Target {
-  type ProgramPoint
-  /**
-   * Takes a domain and some parameters and perform the analysis.
-   */
-  def  analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property], ann: Annotations)
+trait AnnotationType[T] {
+  
 }
