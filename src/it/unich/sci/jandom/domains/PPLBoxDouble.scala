@@ -27,6 +27,8 @@ import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
 import it.unich.sci.jandom.widenings.Widening
+import it.unich.sci.jandom.narrowings.Narrowing
+
 
 /**
  * The class for Boxes in PPL.
@@ -34,6 +36,13 @@ import it.unich.sci.jandom.widenings.Widening
  *
  */
 class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PPLBoxDouble] {
+  
+  def widening(that: PPLBoxDouble): PPLBoxDouble = {
+    val newpplbox = new Double_Box(pplbox)
+    newpplbox.upper_bound_assign(that.pplbox)
+    newpplbox.CC76_widening_assign(pplbox,null)    
+    new PPLBoxDouble(newpplbox)              
+  }  
   
   def narrowing(that: PPLBoxDouble): PPLBoxDouble = {   
     val newpplbox = new Double_Box(that.pplbox)   
@@ -123,12 +132,4 @@ object PPLBoxDouble extends NumericalDomain[PPLBoxDouble] {
     new PPLBoxDouble(pplbox)        
   }  
   
-  val widening = new Widening[PPLBoxDouble] {
-    def apply(current: PPLBoxDouble, next: PPLBoxDouble) = {
-      val newpplbox = new Double_Box(current.pplbox)
-      newpplbox.upper_bound_assign(next.pplbox)
-      newpplbox.CC76_widening_assign(current.pplbox,null)    
-      new PPLBoxDouble(newpplbox)              
-    }  
-  }
 }

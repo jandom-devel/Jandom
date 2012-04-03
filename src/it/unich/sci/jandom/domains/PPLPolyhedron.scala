@@ -35,6 +35,13 @@ import it.unich.sci.jandom.widenings.Widening
  *
  */
 class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends NumericalProperty[PPLCPolyhedron] {
+     
+  def widening(that: PPLCPolyhedron): PPLCPolyhedron = {
+    val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
+    newpplpolyhedron.upper_bound_assign(that.pplpolyhedron)
+    newpplpolyhedron.widening_assign(pplpolyhedron,null)    
+    new PPLCPolyhedron(newpplpolyhedron)
+  }
   
   def narrowing(that: PPLCPolyhedron): PPLCPolyhedron = {
     this
@@ -121,14 +128,4 @@ object PPLCPolyhedron extends NumericalDomain[PPLCPolyhedron] {
     val pplpolyhedron = new C_Polyhedron(n, Degenerate_Element.EMPTY)
     new PPLCPolyhedron(pplpolyhedron)        
   }  
-
- val widening = new Widening[PPLCPolyhedron] {
-    def apply(current: PPLCPolyhedron, next: PPLCPolyhedron) = {
-      val newpplpolyhedron = new C_Polyhedron(current.pplpolyhedron)
-      newpplpolyhedron.upper_bound_assign(next.pplpolyhedron)
-      newpplpolyhedron.widening_assign(current.pplpolyhedron,null)    
-      new PPLCPolyhedron(newpplpolyhedron)
-    }
-  }  
-
 }

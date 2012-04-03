@@ -1,5 +1,10 @@
 /**
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+/**
+   * The standard widening for two abstract objects
+   * @param that the abstract object to be widened with this
+   * @return the widening of the two abstract objects
+   */  
+  def widening(that: Property): Property * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
@@ -19,6 +24,7 @@
 package it.unich.sci.jandom.domains
 
 import it.unich.sci.jandom.widenings.Widening
+import it.unich.sci.jandom.narrowings.Narrowing
 
 /**
  * Trait for numerical properties, such as Box, Octagon, etc... The classes extending NumericalProperty should be 
@@ -29,10 +35,17 @@ import it.unich.sci.jandom.widenings.Widening
 trait NumericalProperty[Property] extends PartiallyOrdered[Property] {
     
   /**
-   * Narrowing of two abstract objects.
+   * The standard widening for two abstract objects
+   * @param that the abstract object to be widened with this
+   * @return the widening of the two abstract objects
+   */  
+  def widening(that: Property): Property 
+  
+  /**
+   * The standard widening for two abstract objects
    * @param that the abstract object to be narrowed with this
    * @return the narrowing of the two abstract objects
-   */
+   */  
   def narrowing(that: Property): Property
   
   /**
@@ -103,12 +116,21 @@ trait NumericalProperty[Property] extends PartiallyOrdered[Property] {
 /** 
  * Trait for numerical domains. A numerical domains should produce numerical properties.
  */
-trait NumericalDomain[Property] {
+trait NumericalDomain[Property <: NumericalProperty[Property]] {
   
   /**
    * The standard widening for the domain
    */
-  val widening: Widening[Property]
+  val widening = new Widening[Property] {
+    def apply(current: Property, next: Property) = current.widening(next)
+  }
+  
+  /**
+   * The standard narrowing for the domain
+   */
+  val narrowing = new Narrowing[Property] {
+    def apply(current: Property, next: Property) = current.narrowing(next)
+  }
   
   /**
    * Create an abstract property representing the full n-dimensional space.
@@ -123,4 +145,5 @@ trait NumericalDomain[Property] {
    * @return the empty n-dimensional environment space.
    */
   def empty(n:Int): Property
+  
 }
