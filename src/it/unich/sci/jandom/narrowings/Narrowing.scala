@@ -15,17 +15,17 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.widenings
+package it.unich.sci.jandom.narrowings
 
 /**
  * This is the abstract widening, an operator used to accelerate fixpoint computations.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract class Widening[Property] extends Function2[Property,Property,Property] {
+abstract class Narrowing[Property] extends Function2[Property,Property,Property] {
   /**
    * @param current the property at the current iteration
-   * @param next the property at the next iteration
+   * @param next the property at the next iteration. It should be smaller than current.
    * @result the result of widening 
    */
   def apply(current: Property, next: Property) : Property
