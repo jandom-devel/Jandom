@@ -39,9 +39,7 @@ class Annotations[ProgramPoint]  {
     myhash((pp,kind))=v
   }
   
-  override def toString = {
-    var b = ""
-    myhash.foreach { case (key, value) => b += key._1 + " " + value }
-    b
+  override def toString = {    
+    myhash map { case (key, value) => key._1 + " " + key._2 + " " + value } mkString("\n")    
   }
 }

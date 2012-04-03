@@ -23,5 +23,5 @@ package it.unich.sci.jandom.targets
  *
  */
 trait AnnotationType[T] {
-  
+  override def toString = this.getClass.getName
 }
