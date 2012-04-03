@@ -25,17 +25,23 @@ import scala.collection.mutable.HashMap
  *
  */
 
-class Annotations (t: Target) {
-  private val myhash = new HashMap[Tuple2[t.ProgramPoint, AnnotationType[_]], Any] 
+class Annotations[ProgramPoint]  {
+  private val myhash = new HashMap[Tuple2[ProgramPoint, AnnotationType[_]], Any] 
   
-  def get[T](pp: t.ProgramPoint, kind: AnnotationType[T] ): Option[T] = 
+  def get[T](pp: ProgramPoint, kind: AnnotationType[T] ): Option[T] = 
     myhash.get((pp,kind)) match {
       case None => None
       case v: Some[T] => v
       case _ => throw new IllegalAccessException
   }
   
-  def update[T](pp: t.ProgramPoint, kind: AnnotationType[T], v: T ) {
+  def update[T](pp: ProgramPoint, kind: AnnotationType[T], v: T ) {
     myhash((pp,kind))=v
+  }
+  
+  override def toString = {
+    var b = ""
+    myhash.foreach { case (key, value) => b += key._1 + " " + value }
+    b
   }
 }

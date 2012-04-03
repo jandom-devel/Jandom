@@ -27,12 +27,10 @@ import it.unich.sci.jandom.targets.{Environment,Parameters,Annotations,Target}
  */
 case class LTS (val locations: List[Location], val transitions: List[Transition], val environment: Environment) extends Target {    
   type ProgramPoint = Int
-  
-  private var result : List[NumericalProperty[_]] = null
-  
+    
   override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")
   
-  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property], ann: Annotations) {   
+  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property], ann: Annotations[ProgramPoint]) {   
     var current, next : List[Property] = Nil    
     next = for (loc <- locations) 
       yield  (domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
@@ -53,6 +51,6 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
         propold narrowing unionednew    
       }      
     }
-    result = current   
+   current.zipWithIndex.foreach { case (prop, pp) => ann(pp, NumericalPropertyAnnotation)=prop }     
   }      
 }
