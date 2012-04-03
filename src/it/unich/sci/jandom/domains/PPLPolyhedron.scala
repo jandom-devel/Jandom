@@ -44,11 +44,6 @@ class PPLCPolyhedron(private val pplpolyhedron : C_Polyhedron) extends Numerical
 
   def narrowing(that: PPLCPolyhedron): PPLCPolyhedron = {
     this
-    /*
-    val newpplpolyhedron = new C_Polyhedron(that.pplpolyhedron)   
-    newpplpolyhedron.narrowing_assign(pplpolyhedron)
-    new PPLCPolyhedron(newpplpolyhedron)
-    */                            
   }   
 
   def union(that: PPLCPolyhedron): PPLCPolyhedron = {
