@@ -34,6 +34,7 @@ object Jandom extends App {
 	  val ann = new targets.Annotations[program.ProgramPoint]
       program.analyze(domains.PPLCPolyhedron, params, ann)
       println(program)  
+      println(ann)  
     } else {
       println(parsed)
     }    

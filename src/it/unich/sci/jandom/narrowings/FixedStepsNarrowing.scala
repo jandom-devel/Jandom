@@ -18,6 +18,7 @@
 package it.unich.sci.jandom.narrowings
 
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.{Annotations,AnnotationType}
 
 /**
  * @author Gianluca Amato <amato@sci.unich.it>
@@ -26,14 +27,22 @@ import it.unich.sci.jandom.domains.NumericalProperty
   
 class FixedStepsNarrowing[Property <: NumericalProperty[Property]] (private val narrowing: Narrowing[Property], private val steps: Int) extends Narrowing[Property] { 
   require(steps>0)
-  var i: Int = 0
   
-  def apply(current: Property, next: Property) = {
+  def apply[ProgramPoint] (current: Property, next: Property, ann: Annotations[ProgramPoint], pp: ProgramPoint) = {
+    // get the index of the delayed widening at the current program point
+    val i = ann.get(pp, FixedStepNarrowingAnnotation) match {
+      case None => 0
+      case Some(j) => j
+    }
     if (i < steps) {
-      i+=1
+      ann(pp, FixedStepNarrowingAnnotation) = i+1
       next
     } else 
-      narrowing(current, next)
-  }
- 
+      narrowing(current, next, ann, pp)
+  } 
 }
+
+/**
+ * This declares a new annotation type for the current index of fixed step narrowing
+ */
+object FixedStepNarrowingAnnotation extends AnnotationType[Int]

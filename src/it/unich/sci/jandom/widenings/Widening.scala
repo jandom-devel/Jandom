@@ -17,16 +17,18 @@
  */
 package it.unich.sci.jandom.widenings
 
+import it.unich.sci.jandom.targets.Annotations
+
 /**
  * This is the abstract widening, an operator used to accelerate fixpoint computations.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract class Widening[Property] extends Function2[Property,Property,Property] {
+abstract class Widening[Property] {
   /**
    * @param current the property at the current iteration
    * @param next the property at the next iteration
    * @result the result of widening 
    */
-  def apply(current: Property, next: Property) : Property
+  def apply[ProgramPoint](current: Property, next: Property, ann: Annotations[ProgramPoint], pp: ProgramPoint) : Property
 }

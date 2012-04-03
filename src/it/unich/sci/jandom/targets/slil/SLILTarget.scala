@@ -115,11 +115,11 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     var invariant = input
     do {      
       invariant = newinvariant
-      newinvariant = params.widening(invariant, body.analyze(condition.analyze(invariant),params, ann))
+      newinvariant = params.widening(invariant, body.analyze(condition.analyze(invariant), params, ann), ann, this.hashCode)
     } while (newinvariant > invariant)          
     do {
       invariant = newinvariant
-      newinvariant = params.narrowing(invariant, body.analyze(condition.analyze(invariant),params, ann))      
+      newinvariant = params.narrowing(invariant, body.analyze(condition.analyze(invariant),params, ann), ann, this.hashCode)      
     } while (newinvariant < invariant)    
     savedInvariant = invariant
     return condition.opposite.analyze(invariant)

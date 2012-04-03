@@ -39,7 +39,7 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
         val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
-        params.widening(propold, unionednew)        
+        params.widening(propold, unionednew, ann, loc.id)
       }      
     } 
     current = Nil
@@ -48,7 +48,7 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
         val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
-        propold narrowing unionednew    
+        params.narrowing(propold, unionednew, ann, loc.id)    
       }      
     }
    current.zipWithIndex.foreach { case (prop, pp) => ann(pp, NumericalPropertyAnnotation)=prop }     

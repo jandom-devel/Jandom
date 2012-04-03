@@ -16,7 +16,9 @@
  * (c) 2012 Gianluca Amato
  */
 package it.unich.sci.jandom.widenings
+
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.{Annotations,AnnotationType}
 
 /**
  * This build a delayed widening.
@@ -26,14 +28,23 @@ import it.unich.sci.jandom.domains.NumericalProperty
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class DelayedWidening[Property <: NumericalProperty[Property]] (private val widening: Widening[Property], private val delay: Int) extends Widening[Property] {
-  var i: Int = 0
-  
-  def apply(current: Property, next: Property) = {
-    if (i < delay) {
-      i+=1
+class DelayedWidening[Property <: NumericalProperty[Property]] (private val widening: Widening[Property], private val delay: Int) extends Widening[Property] {  
+  def apply[ProgramPoint](current: Property, next: Property, ann: Annotations[ProgramPoint], pp: ProgramPoint) = {
+    // get the index of the delayed widening at the current program point
+    val i = ann.get(pp, DelayedWideningAnnotation) match {
+      case None => 0
+      case Some(j) => j
+    }
+    if (i < delay) {      
+      // increment index
+      ann(pp, DelayedWideningAnnotation) = i+1
       current union next
     } else 
-    widening(current, next)
+      widening(current, next, ann, pp)
   }
 }
+
+/**
+ * This declares a new annotation type for the current index of delayed widening
+ */
+object DelayedWideningAnnotation extends AnnotationType[Int]

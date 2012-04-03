@@ -27,21 +27,7 @@ import it.unich.sci.jandom.narrowings.Narrowing
  */
 trait NumericalDomain[Property <: NumericalProperty[Property]] {
   
-  /**
-   * The standard widening for the domain
-   */
-  val widening = new Widening[Property] {
-    def apply(current: Property, next: Property) = current.widening(next)
-  }
-  
-  /**
-   * The standard narrowing for the domain
-   */
-  val narrowing = new Narrowing[Property] {
-    def apply(current: Property, next: Property) = current.narrowing(next)
-  }
-  
-  /**
+  /** 
    * Create an abstract property representing the full n-dimensional space.
    * @param n the dimension of the environment space.
    * @return the full n-dimensional environment space.
