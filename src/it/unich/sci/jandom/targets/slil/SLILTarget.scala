@@ -20,9 +20,7 @@ package it.unich.sci.jandom.targets.slil
 
 import it.unich.sci.jandom.domains._
 import it.unich.sci.jandom.targets.linearcondition._
-import it.unich.sci.jandom.targets.Environment
-import it.unich.sci.jandom.targets.LinearForm
-import it.unich.sci.jandom.targets.Parameters
+import it.unich.sci.jandom.targets.{Environment,LinearForm,Parameters,Target}
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -32,7 +30,7 @@ import scala.collection.mutable.ListBuffer
  *
  */
 
-case class SLILProgram( val environment: Environment, val inputVars: Iterable[Int], val stmt: SLILStmt ) {     
+case class SLILProgram( val environment: Environment, val inputVars: Iterable[Int], val stmt: SLILStmt ) extends Target  {     
   private var input: NumericalProperty[_] = null
   private var output: NumericalProperty[_] = null
 

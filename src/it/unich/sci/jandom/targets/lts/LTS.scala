@@ -18,15 +18,14 @@
 package it.unich.sci.jandom.targets.lts
 
 import it.unich.sci.jandom.domains._
-import it.unich.sci.jandom.targets.Environment
-import it.unich.sci.jandom.targets.Parameters
+import it.unich.sci.jandom.targets.{Environment,Parameters,Target}
 
 /**
  * The main class for Linear Transition Systems.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class LTS (val locations: List[Location], val transitions: List[Transition], val environment: Environment) {  
+case class LTS (val locations: List[Location], val transitions: List[Transition], val environment: Environment) extends Target {  
   private var result : List[NumericalProperty[_]] = null
   
   override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")
