@@ -1,11 +1,4 @@
-/**
-/**
-   * The standard widening for two abstract objects
-   * @param that the abstract object to be widened with this
-   * @return the widening of the two abstract objects
-   */  
-  def widening(that: Property): Property * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
+/* JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -113,37 +106,3 @@ trait NumericalProperty[Property] extends PartiallyOrdered[Property] {
   def full: Property
 }
 
-/** 
- * Trait for numerical domains. A numerical domains should produce numerical properties.
- */
-trait NumericalDomain[Property <: NumericalProperty[Property]] {
-  
-  /**
-   * The standard widening for the domain
-   */
-  val widening = new Widening[Property] {
-    def apply(current: Property, next: Property) = current.widening(next)
-  }
-  
-  /**
-   * The standard narrowing for the domain
-   */
-  val narrowing = new Narrowing[Property] {
-    def apply(current: Property, next: Property) = current.narrowing(next)
-  }
-  
-  /**
-   * Create an abstract property representing the full n-dimensional space.
-   * @param n the dimension of the environment space.
-   * @return the full n-dimensional environment space.
-   */
-  def full(n:Int): Property
-  
-  /**
-   * Create an abstract property representing the empty n-dimensional space.
-   * @param n the dimension of the environment space.
-   * @return the empty n-dimensional environment space.
-   */
-  def empty(n:Int): Property
-  
-}
