@@ -18,7 +18,7 @@
 package it.unich.sci.jandom.widenings
 
 import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.targets.{Annotations,AnnotationType}
+import it.unich.sci.jandom.annotations.{BlackBoard,PerProgramPointAnnotationType}
 
 /**
  * This build a delayed widening.
@@ -29,22 +29,18 @@ import it.unich.sci.jandom.targets.{Annotations,AnnotationType}
  *
  */
 class DelayedWidening[Property <: NumericalProperty[Property]] (private val widening: Widening[Property], private val delay: Int) extends Widening[Property] {  
-  def apply[ProgramPoint](current: Property, next: Property, ann: Annotations[ProgramPoint], pp: ProgramPoint) = {
-    // get the index of the delayed widening at the current program point
-    val i = ann.get(pp, DelayedWideningAnnotation) match {
-      case None => 0
-      case Some(j) => j
-    }
+  def apply(current: Property, next: Property, bb: BlackBoard, pp: Int) = {    
+    val i = bb(DelayedWideningAnnotation)(pp)
     if (i < delay) {      
       // increment index
-      ann(pp, DelayedWideningAnnotation) = i+1
+      bb(DelayedWideningAnnotation)(pp) = i+1
       current union next
     } else 
-      widening(current, next, ann, pp)
+      widening(current, next, bb, pp)
   }
 }
 
 /**
  * This declares a new annotation type for the current index of delayed widening
  */
-object DelayedWideningAnnotation extends AnnotationType[Int]
+object DelayedWideningAnnotation extends PerProgramPointAnnotationType[Int]

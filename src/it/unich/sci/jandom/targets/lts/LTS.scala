@@ -18,7 +18,8 @@
 package it.unich.sci.jandom.targets.lts
 
 import it.unich.sci.jandom.domains._
-import it.unich.sci.jandom.targets.{Environment,Parameters,Annotations,Target}
+import it.unich.sci.jandom.targets.{Environment,Parameters,Target}
+import it.unich.sci.jandom.annotations.BlackBoard
 
 /**
  * The main class for Linear Transition Systems.
@@ -26,31 +27,35 @@ import it.unich.sci.jandom.targets.{Environment,Parameters,Annotations,Target}
  *
  */
 case class LTS (val locations: List[Location], val transitions: List[Transition], val environment: Environment) extends Target {    
-  type ProgramPoint = Int
-    
+     
   override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")
   
-  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property], ann: Annotations[ProgramPoint]) {   
+  def size = locations.size
+  
+  def analyze[Property <: NumericalProperty[Property]] (domain: NumericalDomain[Property], params: Parameters[Property], bb: BlackBoard) {    
     var current, next : List[Property] = Nil    
     next = for (loc <- locations) 
       yield  (domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
+           
     while (current != next) {      
       current = next
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
         val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
-        params.widening(propold, unionednew, ann, loc.id)
+        params.widening(propold, unionednew, bb, loc.id)
       }      
     } 
-    current = Nil
+    
+    current = Nil    
     while (current != next) {
       current = next
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
         val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
-        params.narrowing(propold, unionednew, ann, loc.id)    
+        params.narrowing(propold, unionednew, bb, loc.id)    
       }      
     }
-   current.zipWithIndex.foreach { case (prop, pp) => ann(pp, NumericalPropertyAnnotation)=prop }     
+    val annotation = bb(NumericalPropertyAnnotation)  
+    current.zipWithIndex.foreach { case (prop, pp) => annotation(pp)=prop }         
   }      
 }

@@ -18,6 +18,7 @@
 package it.unich.sci.jandom.targets
 
 import it.unich.sci.jandom.domains.{NumericalDomain,NumericalProperty}
+import it.unich.sci.jandom.annotations.BlackBoard
 
 /**
  * The abstract class for targets
@@ -25,9 +26,12 @@ import it.unich.sci.jandom.domains.{NumericalDomain,NumericalProperty}
  *
  */
 abstract class Target {
-  type ProgramPoint
+  /**
+   * Returns the size of the target as the number of program points.
+   */
+  def size: Int
   /**
    * Takes a domain and some parameters and perform the analysis.
    */
-  def  analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property], ann: Annotations[ProgramPoint])
+  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property], bb: BlackBoard)
 }

@@ -15,31 +15,26 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets
+package it.unich.sci.jandom.annotations
 
-import scala.collection.mutable.HashMap
+import it.unich.sci.jandom.targets.Target
 
 /**
- * Annotations for programs.
+ * These are classes used for typing annotations in blackboards and specifying
+ * default values.
  * @author Gianluca Amato <g.amato@unich.it>
  *
  */
+abstract class AnnotationType[T] {
+  def defaultValue(t: Target): T
+  override def toString = this.getClass.getName
+}
 
-class Annotations[ProgramPoint]  {
-  private val myhash = new HashMap[Tuple2[ProgramPoint, AnnotationType[_]], Any] 
-  
-  def get[T](pp: ProgramPoint, kind: AnnotationType[T] ): Option[T] = 
-    myhash.get((pp,kind)) match {
-      case None => None
-      case v: Some[T] => v
-      case _ => throw new IllegalAccessException
-  }
-  
-  def update[T](pp: ProgramPoint, kind: AnnotationType[T], v: T ) {
-    myhash((pp,kind))=v
-  }
-  
-  override def toString = {    
-    myhash map { case (key, value) => key._1 + " " + key._2 + " " + value } mkString("\n")    
-  }
+abstract class GlobalAnnotationType[T] extends AnnotationType[T] {
+  val defaultValue: T
+  def defaultValue(t: Target) = defaultValue
+}
+
+class PerProgramPointAnnotationType[T] (implicit manifest: ClassManifest[T]) extends AnnotationType[Array[T]] {
+  def defaultValue(t: Target) = manifest.newArray(t.size) 
 }

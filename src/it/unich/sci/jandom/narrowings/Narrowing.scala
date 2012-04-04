@@ -17,7 +17,7 @@
  */
 package it.unich.sci.jandom.narrowings
 
-import it.unich.sci.jandom.targets.Annotations
+import it.unich.sci.jandom.annotations.BlackBoard
 
 /**
  * This is the abstract widening, an operator used to accelerate fixpoint computations.
@@ -30,5 +30,5 @@ abstract class Narrowing[Property] {
    * @param next the property at the next iteration. It should be smaller than current.
    * @result the result of widening 
    */
-  def apply[ProgramPoint](current: Property, next: Property, ann: Annotations[ProgramPoint], pp: ProgramPoint) : Property
+  def apply(current: Property, next: Property, bb: BlackBoard, pp: Int) : Property
 }

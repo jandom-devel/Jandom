@@ -31,10 +31,10 @@ object Jandom extends App {
     val parsed = parsers.RandomParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
-	  val ann = new targets.Annotations[program.ProgramPoint]
-      program.analyze(domains.PPLCPolyhedron, params, ann)
+ 	  val bb = new annotations.BlackBoard(program)
+//      program.analyze(domains.PPLCPolyhedron, params, ann)
       println(program)  
-      println(ann)  
+      println(bb)  
     } else {
       println(parsed)
     }    
@@ -47,9 +47,9 @@ object Jandom extends App {
     val parsed = parsers.LPInvParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
- 	  val ann = new targets.Annotations[program.ProgramPoint]
-      program.analyze(domains.PPLCPolyhedron, params, ann)
-      println(ann)  
+ 	  val bb = new annotations.BlackBoard(program)
+      program.analyze(domains.PPLCPolyhedron, params, bb)
+      println(bb)  
     } else {
       println(parsed)
     }      

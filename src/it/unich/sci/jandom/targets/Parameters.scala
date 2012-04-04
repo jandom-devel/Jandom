@@ -21,6 +21,7 @@ import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.widenings.Widening
 import it.unich.sci.jandom.narrowings.Narrowing
+import it.unich.sci.jandom.annotations.BlackBoard
 
 /**
  * This class is used to keep parameter for analyzers.
@@ -33,14 +34,14 @@ class Parameters[Property <: NumericalProperty[Property]] (domain: NumericalDoma
   * The standard widening for the domain
   */
   var widening = new Widening[Property] {
-    def apply[ProgramPoint](current: Property, next: Property, ann: Annotations[ProgramPoint], pp: ProgramPoint) = current.widening(next)
+    def apply(current: Property, next: Property, bb: BlackBoard, pp: Int) = current.widening(next)
   }
   
   /**
    * The standard narrowing for the domain
    */
   var narrowing = new Narrowing[Property] {
-    def apply[ProgramPoint](current: Property, next: Property, ann: Annotations[ProgramPoint], pp: ProgramPoint) = current.narrowing(next)
+    def apply(current: Property, next: Property, bb: BlackBoard, pp: Int) = current.narrowing(next)
   }
    
 }

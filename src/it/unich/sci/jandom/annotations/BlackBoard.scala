@@ -15,13 +15,35 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets
+package it.unich.sci.jandom.annotations
+
+import scala.collection.mutable.HashMap
+import it.unich.sci.jandom.targets.Target
 
 /**
- * This is just a custom trait for typing purposes.
+ * A blackboard for putting type-safe annotations for a specific target.
  * @author Gianluca Amato <g.amato@unich.it>
  *
  */
-trait AnnotationType[T] {
-  override def toString = this.getClass.getName
+class BlackBoard (t: Target) {  
+  private val myhash = new HashMap[AnnotationType[_], Any] 
+      
+  def update[T]( kind: AnnotationType[T], v: T ) {
+    myhash(kind)=v
+  }   
+  
+  def apply[T] ( kind: AnnotationType[T] ): T = {
+    myhash.get(kind) match {
+      case None => {
+        val default = kind.defaultValue(t)
+        myhash(kind) = default
+        default
+      }
+      case Some(v) => v.asInstanceOf[T]
+    }
+  }         
+  
+  override def toString = {    
+    myhash map { case (key, value) => key + " " + value } mkString("\n")    
+  }
 }
