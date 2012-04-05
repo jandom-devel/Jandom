@@ -46,8 +46,8 @@ case class SLILProgram( val environment: Environment, val inputVars: Iterable[In
       	
   def size = 1
   
-  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property], ann: BlackBoard[SLILProgram]) {    	  
-	  val start = domain.full(environment.size)
+  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property], ann: BlackBoard[SLILProgram]) {    	  
+	  val start = params.domain.full(environment.size)
 	  input = start
 	  output = stmt.analyze(start, params, ann)	  	  
   }        

@@ -28,8 +28,7 @@ import it.unich.sci.jandom.annotations.BlackBoard
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class Parameters[Property <: NumericalProperty[Property]] (domain: NumericalDomain[Property]) {
-  
+class Parameters[Property <: NumericalProperty[Property]] (val domain: NumericalDomain[Property]) {  
   /**
   * The standard widening for the domain
   */

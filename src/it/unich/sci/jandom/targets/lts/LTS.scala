@@ -35,16 +35,16 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
   
   def size = locations.size
   
-  def analyze[Property <: NumericalProperty[Property]] (domain: NumericalDomain[Property], params: Parameters[Property], bb: BlackBoard[LTS]) {    
+  def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property], bb: BlackBoard[LTS]) {    
     var current, next : List[Property] = Nil    
     next = for (loc <- locations) 
-      yield  (domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
+      yield  (params.domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
            
     while (current != next) {      
       current = next
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
-        val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
+        val unionednew = propnew.fold( params.domain.empty(environment.size) ) ( _ union _ )
         params.widening[LTS](propold, unionednew, bb, loc.id)
       }      
     } 
@@ -54,7 +54,7 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
       current = next
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
-        val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
+        val unionednew = propnew.fold( params.domain.empty(environment.size) ) ( _ union _ )
         params.narrowing[LTS](propold, unionednew, bb, loc.id)    
       }      
     }

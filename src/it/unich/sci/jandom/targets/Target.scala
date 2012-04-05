@@ -37,5 +37,5 @@ abstract class Target {
   /**
    * Takes a domain and some parameters and perform the analysis.
    */
-  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property], bb: BlackBoard[Tgt])
+  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property], bb: BlackBoard[Tgt])
 }

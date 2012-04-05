@@ -37,7 +37,7 @@ object Jandom extends App {
     if (parsed.successful) {
 	  val program = parsed.get 
  	  val bb: BlackBoard[SLILProgram] = new annotations.BlackBoard(program)
-      program.analyze(domains.PPLCPolyhedron, params, bb)
+      program.analyze(params, bb)
       println(program)  
       println(bb)  
     } else {
@@ -53,7 +53,7 @@ object Jandom extends App {
     if (parsed.successful) {
 	  val program = parsed.get 
  	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
-      program.analyze(domains.PPLCPolyhedron, params, bb)
+      program.analyze(params, bb)
       println(bb)  
     } else {
       println(parsed)
