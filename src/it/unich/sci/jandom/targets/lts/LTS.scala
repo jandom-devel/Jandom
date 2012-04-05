@@ -19,20 +19,23 @@ package it.unich.sci.jandom.targets.lts
 
 import it.unich.sci.jandom.domains._
 import it.unich.sci.jandom.targets.{Environment,Parameters,Target}
-import it.unich.sci.jandom.annotations.BlackBoard
-
+import it.unich.sci.jandom.annotations._
+import scala.collection.mutable.ArrayBuffer
 /**
  * The main class for Linear Transition Systems.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 case class LTS (val locations: List[Location], val transitions: List[Transition], val environment: Environment) extends Target {    
-     
+  
+  type ProgramPoint = Int
+  type Tgt = LTS
+  
   override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")
   
   def size = locations.size
   
-  def analyze[Property <: NumericalProperty[Property]] (domain: NumericalDomain[Property], params: Parameters[Property], bb: BlackBoard) {    
+  def analyze[Property <: NumericalProperty[Property]] (domain: NumericalDomain[Property], params: Parameters[Property,LTS], bb: BlackBoard[LTS]) {    
     var current, next : List[Property] = Nil    
     next = for (loc <- locations) 
       yield  (domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
@@ -42,7 +45,7 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
         val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
-        params.widening(propold, unionednew, bb, loc.id)
+        params.widening[LTS](propold, unionednew, bb, loc.id)
       }      
     } 
     
@@ -58,4 +61,14 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
     val annotation = bb(NumericalPropertyAnnotation)  
     current.zipWithIndex.foreach { case (prop, pp) => annotation(pp)=prop }         
   }      
+}
+
+object LTS {
+  implicit object LTSProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[LTS] {
+	 def apply[Ann <: AnnotationType](t: LTS, ann: Ann): PerProgramPointAnnotation[LTS,Ann] = new PerProgramPointAnnotation[LTS,Ann]{
+	   val a = ArrayBuffer.fill[Ann#T](t.size)(ann.defaultValue)
+	   def apply(pp: LTS#ProgramPoint) = a(pp)
+	   def update(pp: LTS#ProgramPoint, v: Ann#T) { a(pp) = v }
+	 }
+  } 
 }

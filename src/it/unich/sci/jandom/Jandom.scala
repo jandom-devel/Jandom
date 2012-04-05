@@ -18,6 +18,11 @@
 
 package it.unich.sci.jandom;
 import parma_polyhedra_library.{Parma_Polyhedra_Library => PPL}
+import domains.PPLCPolyhedron
+import it.unich.sci.jandom.targets.slil.SLILProgram
+import it.unich.sci.jandom.targets.lts.LTS
+import it.unich.sci.jandom.domains._
+import it.unich.sci.jandom.annotations.BlackBoard
 
 object Jandom extends App {
 
@@ -25,14 +30,14 @@ object Jandom extends App {
   PPL.initialize_library()
  
   {
-    val params = new targets.Parameters(domains.PPLCPolyhedron)
+    val params = new targets.Parameters[PPLCPolyhedron,SLILProgram](domains.PPLCPolyhedron)
     params.narrowing = new narrowings.FixedStepsNarrowing(params.narrowing,2)  
     val source = scala.io.Source.fromFile("examples/Random/octagon-3.R").getLines.mkString("\n")
     val parsed = parsers.RandomParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
- 	  val bb = new annotations.BlackBoard(program)
-//      program.analyze(domains.PPLCPolyhedron, params, ann)
+ 	  val bb: BlackBoard[SLILProgram] = new annotations.BlackBoard(program)
+      program.analyze(domains.PPLCPolyhedron, params, bb)
       println(program)  
       println(bb)  
     } else {
@@ -41,13 +46,13 @@ object Jandom extends App {
   }
   
   {
-    val params = new targets.Parameters(domains.PPLCPolyhedron)
+    val params = new targets.Parameters[PPLCPolyhedron,LTS](domains.PPLCPolyhedron)
     params.widening = new widenings.DelayedWidening(params.widening,2)
     val source = scala.io.Source.fromFile("examples/LPinv/berkeley.in").getLines.mkString("\n")
     val parsed = parsers.LPInvParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
- 	  val bb = new annotations.BlackBoard(program)
+ 	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
       program.analyze(domains.PPLCPolyhedron, params, bb)
       println(bb)  
     } else {

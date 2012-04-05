@@ -25,24 +25,24 @@ import it.unich.sci.jandom.targets.Target
  * @author Gianluca Amato <g.amato@unich.it>
  *
  */
-class BlackBoard (t: Target) {  
-  private val myhash = new HashMap[AnnotationType[_], Any] 
+class BlackBoard[Tgt <: Target](t: Tgt) (implicit maker: PerProgramPointAnnotationBuilder[Tgt])  {
+  private val myhash = new HashMap[AnnotationType, Annotation[Tgt,_]] 
       
-  def update[T]( kind: AnnotationType[T], v: T ) {
+  def update[Ann <: AnnotationType]( kind: Ann, v: Annotation[Tgt,Ann] ) {
     myhash(kind)=v
   }   
   
-  def apply[T] ( kind: AnnotationType[T] ): T = {
+  def apply[Ann <: AnnotationType] ( kind: Ann ) :  Annotation[Tgt,Ann] = {
     myhash.get(kind) match {
       case None => {
-        val default = kind.defaultValue(t)
+        val default = new Annotation[Tgt,Ann](t, kind)
         myhash(kind) = default
         default
       }
-      case Some(v) => v.asInstanceOf[T]
+      case Some(v) => v.asInstanceOf[Annotation[Tgt,Ann]]
     }
-  }         
-  
+  }
+    
   override def toString = {    
     myhash map { case (key, value) => key + " " + value } mkString("\n")    
   }

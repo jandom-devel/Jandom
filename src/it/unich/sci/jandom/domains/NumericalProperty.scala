@@ -18,7 +18,7 @@ package it.unich.sci.jandom.domains
 
 import it.unich.sci.jandom.widenings.Widening
 import it.unich.sci.jandom.narrowings.Narrowing
-import it.unich.sci.jandom.annotations.PerProgramPointAnnotationType
+import it.unich.sci.jandom.annotations.AnnotationType
 
 /**
  * Trait for numerical properties, such as Box, Octagon, etc... The classes extending NumericalProperty should be 
@@ -110,4 +110,7 @@ trait NumericalProperty[Property] extends PartiallyOrdered[Property] {
 /**
  * This declares a new annotation type for numerical properties
  */
-object NumericalPropertyAnnotation extends PerProgramPointAnnotationType[NumericalProperty[_]]
+object NumericalPropertyAnnotation extends AnnotationType {
+  type T = NumericalProperty[_]
+  val defaultValue = null
+}

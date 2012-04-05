@@ -18,18 +18,18 @@
 package it.unich.sci.jandom.narrowings
 
 import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.annotations.{BlackBoard,PerProgramPointAnnotationType}
-import it.unich.sci.jandom.annotations.PerProgramPointAnnotationType
+import it.unich.sci.jandom.targets.Target
+import it.unich.sci.jandom.annotations._
 
 /**
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
   
-class FixedStepsNarrowing[Property <: NumericalProperty[Property]] (private val narrowing: Narrowing[Property], private val steps: Int) extends Narrowing[Property] { 
+class FixedStepsNarrowing[Property <: NumericalProperty[Property], Tgt <: Target] (private val narrowing: Narrowing[Property, Tgt], private val steps: Int) extends Narrowing[Property, Tgt] { 
   require(steps>0)
   
-  def apply (current: Property, next: Property, bb: BlackBoard, pp: Int) = {
+  def apply (current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) = {
     val i = bb(FixedStepNarrowingAnnotation)(pp)
     if (i < steps) {
       bb(FixedStepNarrowingAnnotation)(pp) = i+1
@@ -42,4 +42,7 @@ class FixedStepsNarrowing[Property <: NumericalProperty[Property]] (private val 
 /**
  * This declares a new annotation type for the current index of fixed step narrowing
  */
-object FixedStepNarrowingAnnotation extends PerProgramPointAnnotationType[Int]
+object FixedStepNarrowingAnnotation extends AnnotationType {
+  type T = Int
+  val defaultValue = 0
+}

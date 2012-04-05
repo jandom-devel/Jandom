@@ -25,16 +25,14 @@ import it.unich.sci.jandom.targets.Target
  * @author Gianluca Amato <g.amato@unich.it>
  *
  */
-abstract class AnnotationType[T] {
-  def defaultValue(t: Target): T
-  override def toString = this.getClass.getName
-}
-
-abstract class GlobalAnnotationType[T] extends AnnotationType[T] {
+abstract class AnnotationType {
+  /**
+   * The type of the annotation
+   */
+  type T
+  
+  /** 
+   * The default value for annotations.
+   */
   val defaultValue: T
-  def defaultValue(t: Target) = defaultValue
-}
-
-class PerProgramPointAnnotationType[T] (implicit manifest: ClassManifest[T]) extends AnnotationType[Array[T]] {
-  def defaultValue(t: Target) = manifest.newArray(t.size) 
 }

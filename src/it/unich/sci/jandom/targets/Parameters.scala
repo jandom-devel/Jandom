@@ -22,26 +22,27 @@ import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.widenings.Widening
 import it.unich.sci.jandom.narrowings.Narrowing
 import it.unich.sci.jandom.annotations.BlackBoard
+import it.unich.sci.jandom.targets.Target
 
 /**
  * This class is used to keep parameter for analyzers.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class Parameters[Property <: NumericalProperty[Property]] (domain: NumericalDomain[Property]) {
+class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (domain: NumericalDomain[Property]) {
   
   /**
   * The standard widening for the domain
   */
   var widening = new Widening[Property] {
-    def apply(current: Property, next: Property, bb: BlackBoard, pp: Int) = current.widening(next)
+    def apply[Tgt <: Target](current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) = current.widening(next)
   }
   
   /**
    * The standard narrowing for the domain
    */
-  var narrowing = new Narrowing[Property] {
-    def apply(current: Property, next: Property, bb: BlackBoard, pp: Int) = current.narrowing(next)
+  var narrowing = new Narrowing[Property, Tgt] {
+    def apply(current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) = current.narrowing(next)
   }
    
 }

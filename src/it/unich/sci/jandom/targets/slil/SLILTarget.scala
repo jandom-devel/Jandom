@@ -21,7 +21,8 @@ package it.unich.sci.jandom.targets.slil
 import it.unich.sci.jandom.domains._
 import it.unich.sci.jandom.targets.linearcondition._
 import it.unich.sci.jandom.targets.{Environment, LinearForm, Parameters, Target}
-import it.unich.sci.jandom.annotations.BlackBoard
+import it.unich.sci.jandom.annotations._
+import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 
 /**
@@ -30,9 +31,13 @@ import scala.collection.mutable.ListBuffer
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class SLILProgram( val environment: Environment, val inputVars: Iterable[Int], val stmt: SLILStmt ) extends Target  {         
+case class SLILProgram( val environment: Environment, val inputVars: Iterable[Int], val stmt: SLILStmt ) extends Target  {        
+  
   private var input: NumericalProperty[_] = null
   private var output: NumericalProperty[_] = null
+  
+  type ProgramPoint = Int
+  type Tgt = SLILProgram
 
   override def toString = "function (" +  (inputVars map { v:Int => environment(v) }).mkString(",") + ") {\n"  + 
 		(if (input != null) "  " + input + "\n" else "") +
@@ -41,7 +46,7 @@ case class SLILProgram( val environment: Environment, val inputVars: Iterable[In
       	
   def size = 1
   
-  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property], ann: BlackBoard) {    	  
+  def analyze[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property], params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]) {    	  
 	  val start = domain.full(environment.size)
 	  input = start
 	  output = stmt.analyze(start, params, ann)	  	  
@@ -52,19 +57,19 @@ sealed abstract class SLILStmt {
   val program: SLILProgram = null
   
   def formatString(indent: Int, indentSize: Int): String
-  def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard): Property = input
+  def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = input
   override def toString = formatString(0,2)
 }
 
 case class AssumeStmt(cond: LinearCond) extends SLILStmt {
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard): Property = cond.analyze(input)  
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = cond.analyze(input)  
   override def formatString(indent: Int, indentSize:Int) = " "*indentSize*indent + "assume(" + cond +")"
 }
 
 case class AssignStmt[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T]) extends SLILStmt {
   import numeric._
   
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard): Property = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = {
     val coefficients = linearForm.coefficients
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray,coefficients.head.toDouble)
   }   
@@ -74,7 +79,7 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T]) (implicit num
 case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
   val annotations = ListBuffer[NumericalProperty[_]]()
   
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard): Property = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = {
     var current = input
     var first = true
     for (stmt <- stmts) {
@@ -111,12 +116,12 @@ case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
 case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {  
   var savedInvariant : NumericalProperty[_] = null
  
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard): Property =  {    
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property =  {    
     var newinvariant = input
     var invariant = input
     do {      
       invariant = newinvariant
-      newinvariant = params.widening(invariant, body.analyze(condition.analyze(invariant), params, ann), ann, this.hashCode)
+      newinvariant = params.widening[SLILProgram](invariant, body.analyze(condition.analyze(invariant), params, ann), ann, this.hashCode)
     } while (newinvariant > invariant)          
     do {
       invariant = newinvariant
@@ -141,7 +146,7 @@ case class IfStmt(condition: LinearCond, if_branch: SLILStmt, else_branch: SLILS
   var savedElseAnnotationStart : NumericalProperty[_] = null
   var savedElseAnnotationEnd : NumericalProperty[_] = null
   
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard): Property = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = {
     val thenAnnotationStart = condition.analyze(input)
     val elseAnnotationStart = condition.opposite.analyze(input)
     val thenAnnotationEnd = if_branch.analyze(thenAnnotationStart,params, ann)
@@ -170,4 +175,18 @@ case class IfStmt(condition: LinearCond, if_branch: SLILStmt, else_branch: SLILS
 
 case class NopStmt() extends SLILStmt {
   override def formatString(indent: Int, indentSize: Int): String = " "*indentSize*indent + "<no-op>"
+}
+
+object SLILProgram {
+ 
+   implicit object SLILProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[SLILProgram] {
+	 def apply[Ann <: AnnotationType] (t: SLILProgram, ann: Ann): PerProgramPointAnnotation[SLILProgram,Ann] = new PerProgramPointAnnotation[SLILProgram,Ann]{
+	   val a= new HashMap[SLILProgram#ProgramPoint,Ann#T]
+	   def apply(pp: SLILProgram#ProgramPoint) = a.get(pp) match {
+	     case None => { a(pp) = ann.defaultValue; ann.defaultValue }
+	     case Some(v) => v
+	   }
+	   def update(pp: SLILProgram#ProgramPoint, v: Ann#T) { a(pp) = v }
+	 }
+  }  
 }

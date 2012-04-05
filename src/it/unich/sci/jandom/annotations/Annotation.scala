@@ -15,20 +15,32 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.widenings
+package it.unich.sci.jandom.annotations
 
-import it.unich.sci.jandom.annotations.BlackBoard
 import it.unich.sci.jandom.targets.Target
+
 /**
- * This is the abstract widening, an operator used to accelerate fixpoint computations.
+ * This is the class for annotation. An annotation is parameteric w.r.t.
+ * a Target and a Type.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract class Widening[Property] {
-  /**
-   * @param current the property at the current iteration
-   * @param next the property at the next iteration
-   * @result the result of widening 
-   */
-  def apply[Tgt <: Target](current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint ) : Property
+class Annotation[Tgt <: Target, Ann <: AnnotationType](t:Tgt, ann: Ann) (implicit maker: PerProgramPointAnnotationBuilder[Tgt]) {
+  type T = Ann#T
+  private var perPP: PerProgramPointAnnotation[Tgt,Ann] = null
+  var global: T = _
+  
+  def apply(pp: Tgt#ProgramPoint): T = {
+    if (perPP == null) {
+      perPP = maker.apply[Ann](t, ann)
+    }
+    perPP(pp)
+  }
+  
+  def update(pp: Tgt#ProgramPoint, v: T) {
+    if (perPP == null) {
+      perPP = maker.apply[Ann](t, ann)
+    }
+    perPP(pp) = v
+  }
 }
