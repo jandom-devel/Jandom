@@ -26,10 +26,10 @@ import it.unich.sci.jandom.annotations._
  *
  */
   
-class FixedStepsNarrowing[Property <: NumericalProperty[Property], Tgt <: Target] (private val narrowing: Narrowing[Property, Tgt], private val steps: Int) extends Narrowing[Property, Tgt] { 
+class FixedStepsNarrowing[Property <: NumericalProperty[Property]] (private val narrowing: Narrowing[Property], private val steps: Int) extends Narrowing[Property] { 
   require(steps>0)
   
-  def apply (current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) = {
+  def apply[Tgt <: Target] (current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) = {
     val i = bb(FixedStepNarrowingAnnotation)(pp)
     if (i < steps) {
       bb(FixedStepNarrowingAnnotation)(pp) = i+1

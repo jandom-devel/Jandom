@@ -20,19 +20,20 @@ package it.unich.sci.jandom.annotations
 import it.unich.sci.jandom.targets.Target
 
 /**
- * These are classes used for typing annotations in blackboards and specifying
- * default values.
+ * This is the abstract classes used for typing annotations in blackboards and 
+ * specifying default values. Each annotation we want to put in the blackwoard
+ * needs to define an object derived from AnnotationType.
  * @author Gianluca Amato <g.amato@unich.it>
  *
  */
 abstract class AnnotationType {
   /**
-   * The type of the annotation
+   * The type of annotation
    */
   type T
-  
+    
   /** 
-   * The default value for annotations.
+   * The default value for this annotation type.
    */
   val defaultValue: T
 }

@@ -29,8 +29,8 @@ object Jandom extends App {
   System.load("/usr/local/lib/ppl/libppl_java.so")
   PPL.initialize_library()
  
-  {
-    val params = new targets.Parameters[PPLCPolyhedron,SLILProgram](domains.PPLCPolyhedron)
+  { 
+    val params = new targets.Parameters[PPLCPolyhedron](domains.PPLCPolyhedron)
     params.narrowing = new narrowings.FixedStepsNarrowing(params.narrowing,2)  
     val source = scala.io.Source.fromFile("examples/Random/octagon-3.R").getLines.mkString("\n")
     val parsed = parsers.RandomParser.parseProgram(source)  
@@ -46,7 +46,7 @@ object Jandom extends App {
   }
   
   {
-    val params = new targets.Parameters[PPLCPolyhedron,LTS](domains.PPLCPolyhedron)
+    val params = new targets.Parameters[PPLCPolyhedron](domains.PPLCPolyhedron)
     params.widening = new widenings.DelayedWidening(params.widening,2)
     val source = scala.io.Source.fromFile("examples/LPinv/berkeley.in").getLines.mkString("\n")
     val parsed = parsers.LPInvParser.parseProgram(source)  

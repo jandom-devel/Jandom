@@ -18,11 +18,12 @@
 package it.unich.sci.jandom.targets.lts
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
+
 /**
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class Location (val name:String, val id: Int, val conditions: List[LinearCond]) {  
+case class Location (val name:String, val id: LTS#ProgramPoint, val conditions: List[LinearCond]) {  
   var incoming : List[Transition] = Nil
   
   def += (t: Transition): Transition = { 

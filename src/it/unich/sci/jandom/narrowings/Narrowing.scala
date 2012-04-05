@@ -25,11 +25,11 @@ import it.unich.sci.jandom.targets.Target
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract class Narrowing[Property, Tgt <: Target] {
+abstract class Narrowing[Property] {
   /**
    * @param current the property at the current iteration
    * @param next the property at the next iteration. It should be smaller than current.
    * @result the result of widening 
    */
-  def apply(current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) : Property
+  def apply[Tgt <: Target](current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) : Property
 }

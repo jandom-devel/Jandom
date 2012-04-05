@@ -35,7 +35,7 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
   
   def size = locations.size
   
-  def analyze[Property <: NumericalProperty[Property]] (domain: NumericalDomain[Property], params: Parameters[Property,LTS], bb: BlackBoard[LTS]) {    
+  def analyze[Property <: NumericalProperty[Property]] (domain: NumericalDomain[Property], params: Parameters[Property], bb: BlackBoard[LTS]) {    
     var current, next : List[Property] = Nil    
     next = for (loc <- locations) 
       yield  (domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
@@ -55,7 +55,7 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
         val unionednew = propnew.fold( domain.empty(environment.size) ) ( _ union _ )
-        params.narrowing(propold, unionednew, bb, loc.id)    
+        params.narrowing[LTS](propold, unionednew, bb, loc.id)    
       }      
     }
     val annotation = bb(NumericalPropertyAnnotation)  
