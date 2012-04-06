@@ -43,4 +43,6 @@ class Annotation[Tgt <: Target, Ann <: AnnotationType](t:Tgt, ann: Ann) (implici
     }
     perPP(pp) = v
   }
+  
+  override def toString = "global: " + global + "\nperPP:\n" + perPP
 }

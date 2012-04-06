@@ -65,10 +65,16 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
 
 object LTS {
   implicit object LTSProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[LTS] {
-	 def apply[Ann <: AnnotationType](t: LTS, ann: Ann): PerProgramPointAnnotation[LTS,Ann] = new PerProgramPointAnnotation[LTS,Ann]{
-	   val a = ArrayBuffer.fill[Ann#T](t.size)(ann.defaultValue)
-	   def apply(pp: LTS#ProgramPoint) = a(pp)
-	   def update(pp: LTS#ProgramPoint, v: Ann#T) { a(pp) = v }
+	 def apply[Ann <: AnnotationType](t: LTS, ann: Ann): PerProgramPointAnnotation[LTS,Ann] = 
+	   new PerProgramPointAnnotation[LTS,Ann]{
+	     val a = ArrayBuffer.fill[Ann#T](t.size)(ann.defaultValue)
+	     def apply(pp: LTS#ProgramPoint) = a(pp)
+	     def update(pp: LTS#ProgramPoint, v: Ann#T) { a(pp) = v }
+	     def iterator = new Iterator[(LTS#ProgramPoint,Ann#T)] {
+	       var index: Int = -1
+	       def hasNext = index < a.size -1
+	       def next = { index +=1 ; (index,a(index)) }
+	     }
 	 }
   } 
 }

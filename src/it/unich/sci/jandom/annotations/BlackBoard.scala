@@ -44,6 +44,6 @@ class BlackBoard[Tgt <: Target](t: Tgt) (implicit maker: PerProgramPointAnnotati
   }
     
   override def toString = {    
-    myhash map { case (key, value) => key + " " + value } mkString("\n")    
+    myhash map { case (key, value) => key + "\n" + value } mkString("--\n")    
   }
 }

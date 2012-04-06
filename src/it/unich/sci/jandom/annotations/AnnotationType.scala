@@ -36,4 +36,10 @@ abstract class AnnotationType {
    * The default value for this annotation type.
    */
   val defaultValue: T
+  
+  /**
+   * The string version of an AnnotationType is the simple class name (i.e.
+   * the class name without packages)
+   */
+  override def toString = getClass.getSimpleName
 }

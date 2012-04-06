@@ -180,13 +180,15 @@ case class NopStmt() extends SLILStmt {
 object SLILProgram {
  
    implicit object SLILProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[SLILProgram] {
-	 def apply[Ann <: AnnotationType] (t: SLILProgram, ann: Ann): PerProgramPointAnnotation[SLILProgram,Ann] = new PerProgramPointAnnotation[SLILProgram,Ann]{
-	   val a= new HashMap[SLILProgram#ProgramPoint,Ann#T]
-	   def apply(pp: SLILProgram#ProgramPoint) = a.get(pp) match {
-	     case None => { a(pp) = ann.defaultValue; ann.defaultValue }
-	     case Some(v) => v
-	   }
-	   def update(pp: SLILProgram#ProgramPoint, v: Ann#T) { a(pp) = v }
+	 def apply[Ann <: AnnotationType] (t: SLILProgram, ann: Ann): PerProgramPointAnnotation[SLILProgram,Ann] = 
+	   new PerProgramPointAnnotation[SLILProgram,Ann]{
+	     private val a= new HashMap[SLILProgram#ProgramPoint,Ann#T]
+	     def apply(pp: SLILProgram#ProgramPoint) = a.get(pp) match {
+	       case None => { a(pp) = ann.defaultValue; ann.defaultValue }
+	       case Some(v) => v
+	     }
+	     def update(pp: SLILProgram#ProgramPoint, v: Ann#T) { a(pp) = v }
+	     def iterator = a.iterator
 	 }
   }  
 }

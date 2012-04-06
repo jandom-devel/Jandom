@@ -24,6 +24,7 @@ import it.unich.sci.jandom.targets.lts.LTS
 import it.unich.sci.jandom.domains._
 import it.unich.sci.jandom.annotations.BlackBoard
 
+
 object Jandom extends App {
 
   System.load("/usr/local/lib/ppl/libppl_java.so")
@@ -35,7 +36,7 @@ object Jandom extends App {
     if (parsed.successful) {
 	  val program = parsed.get 
 	  val params = new targets.Parameters(domains.PPLCPolyhedron,program)
-      params.narrowing = new narrowings.FixedStepsNarrowing(params.narrowing,2)  
+      params.narrowing = new narrowings.FixedStepsNarrowing(params.narrowing,2)
  	  val bb: BlackBoard[SLILProgram] = new annotations.BlackBoard(program)
       program.analyze(params, bb)
       println(program)  
@@ -54,6 +55,7 @@ object Jandom extends App {
       params.widening = new widenings.DelayedWidening(params.widening,2)
  	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
       program.analyze(params, bb)
+      println(program)  
       println(bb)  
     } else {
       println(parsed)

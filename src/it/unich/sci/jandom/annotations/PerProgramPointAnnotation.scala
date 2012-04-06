@@ -17,6 +17,7 @@
  */
 package it.unich.sci.jandom.annotations
 import it.unich.sci.jandom.targets.Target
+import scala.collection.mutable.Iterable
 
 /**
  * A PerProgramPointAnnotation is an target-defined implementation of a map
@@ -26,7 +27,8 @@ import it.unich.sci.jandom.targets.Target
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract class PerProgramPointAnnotation[Tgt <: Target, Ann <: AnnotationType] {
+abstract class PerProgramPointAnnotation[Tgt <: Target, Ann <: AnnotationType] extends Iterable[(Tgt#ProgramPoint,Ann#T)]  {
   def apply(pp: Tgt#ProgramPoint): Ann#T
   def update(pp: Tgt#ProgramPoint, v: Ann#T)
+  override def toString = (map { case (l,v) =>  l + " --> " + v }).mkString(start="",sep="\n",end="\n")
 }
