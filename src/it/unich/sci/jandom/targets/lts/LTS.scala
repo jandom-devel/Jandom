@@ -35,7 +35,7 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
   
   def size = locations.size
   
-  def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property], bb: BlackBoard[LTS]) {    
+  def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property, Tgt], bb: BlackBoard[LTS]) {    
     var current, next : List[Property] = Nil    
     next = for (loc <- locations) 
       yield  (params.domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }

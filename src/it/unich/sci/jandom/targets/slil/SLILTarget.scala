@@ -46,7 +46,7 @@ case class SLILProgram( val environment: Environment, val inputVars: Iterable[In
       	
   def size = 1
   
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property], ann: BlackBoard[SLILProgram]) {    	  
+  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]) {    	  
 	  val start = params.domain.full(environment.size)
 	  input = start
 	  output = stmt.analyze(start, params, ann)	  	  
@@ -57,19 +57,19 @@ sealed abstract class SLILStmt {
   val program: SLILProgram = null
   
   def formatString(indent: Int, indentSize: Int): String
-  def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard[SLILProgram]): Property = input
+  def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = input
   override def toString = formatString(0,2)
 }
 
 case class AssumeStmt(cond: LinearCond) extends SLILStmt {
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard[SLILProgram]): Property = cond.analyze(input)  
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = cond.analyze(input)  
   override def formatString(indent: Int, indentSize:Int) = " "*indentSize*indent + "assume(" + cond +")"
 }
 
 case class AssignStmt[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T]) extends SLILStmt {
   import numeric._
   
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard[SLILProgram]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = {
     val coefficients = linearForm.coefficients
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray,coefficients.head.toDouble)
   }   
@@ -79,7 +79,7 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T]) (implicit num
 case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
   val annotations = ListBuffer[NumericalProperty[_]]()
   
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard[SLILProgram]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = {
     var current = input
     var first = true
     for (stmt <- stmts) {
@@ -116,7 +116,7 @@ case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
 case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {  
   var savedInvariant : NumericalProperty[_] = null
  
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard[SLILProgram]): Property =  {    
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property =  {    
     var newinvariant = input
     var invariant = input
     do {      
@@ -146,7 +146,7 @@ case class IfStmt(condition: LinearCond, if_branch: SLILStmt, else_branch: SLILS
   var savedElseAnnotationStart : NumericalProperty[_] = null
   var savedElseAnnotationEnd : NumericalProperty[_] = null
   
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property], ann: BlackBoard[SLILProgram]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = {
     val thenAnnotationStart = condition.analyze(input)
     val elseAnnotationStart = condition.opposite.analyze(input)
     val thenAnnotationEnd = if_branch.analyze(thenAnnotationStart,params, ann)

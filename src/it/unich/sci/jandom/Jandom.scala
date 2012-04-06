@@ -30,12 +30,12 @@ object Jandom extends App {
   PPL.initialize_library()
  
   { 
-    val params = new targets.Parameters[PPLCPolyhedron](domains.PPLCPolyhedron)
-    params.narrowing = new narrowings.FixedStepsNarrowing(params.narrowing,2)  
     val source = scala.io.Source.fromFile("examples/Random/octagon-3.R").getLines.mkString("\n")
     val parsed = parsers.RandomParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
+	  val params = new targets.Parameters(domains.PPLCPolyhedron,program)
+      params.narrowing = new narrowings.FixedStepsNarrowing(params.narrowing,2)  
  	  val bb: BlackBoard[SLILProgram] = new annotations.BlackBoard(program)
       program.analyze(params, bb)
       println(program)  
@@ -46,12 +46,12 @@ object Jandom extends App {
   }
   
   {
-    val params = new targets.Parameters[PPLCPolyhedron](domains.PPLCPolyhedron)
-    params.widening = new widenings.DelayedWidening(params.widening,2)
     val source = scala.io.Source.fromFile("examples/LPinv/berkeley.in").getLines.mkString("\n")
     val parsed = parsers.LPInvParser.parseProgram(source)  
     if (parsed.successful) {
-	  val program = parsed.get 
+   	  val program = parsed.get 
+      val params = new targets.Parameters(domains.PPLCPolyhedron,program)
+      params.widening = new widenings.DelayedWidening(params.widening,2)
  	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
       program.analyze(params, bb)
       println(bb)  

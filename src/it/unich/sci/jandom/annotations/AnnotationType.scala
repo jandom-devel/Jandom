@@ -21,7 +21,7 @@ import it.unich.sci.jandom.targets.Target
 
 /**
  * This is the abstract classes used for typing annotations in blackboards and 
- * specifying default values. Each annotation we want to put in the blackwoard
+ * specifying default values. Each annotation we want to put in the blackboard
  * needs to define an object derived from AnnotationType.
  * @author Gianluca Amato <g.amato@unich.it>
  *

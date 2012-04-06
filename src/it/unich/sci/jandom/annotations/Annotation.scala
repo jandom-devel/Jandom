@@ -21,7 +21,7 @@ import it.unich.sci.jandom.targets.Target
 
 /**
  * This is the class for annotation. An annotation is parameteric w.r.t.
- * a Target and a Type.
+ * a target and an annotation type.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
