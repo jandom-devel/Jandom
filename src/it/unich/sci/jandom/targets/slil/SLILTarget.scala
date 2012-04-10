@@ -115,26 +115,29 @@ case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
 
 case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {  
   var savedInvariant : NumericalProperty[_] = null
+  var savedFirst: NumericalProperty[_] = null
  
   override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property =  {    
     var newinvariant = input
     var invariant = input
     do {      
       invariant = newinvariant
-      newinvariant = params.widening[SLILProgram](invariant, body.analyze(condition.analyze(invariant), params, ann), ann, this.hashCode)
+      newinvariant = params.widening[SLILProgram](invariant, input union body.analyze(condition.analyze(invariant), params, ann), ann, this.hashCode)
     } while (newinvariant > invariant)          
     do {
       invariant = newinvariant
-      newinvariant = params.narrowing[SLILProgram](invariant, body.analyze(condition.analyze(invariant),params, ann), ann, this.hashCode)      
+      newinvariant = params.narrowing[SLILProgram](invariant, input union body.analyze(condition.analyze(invariant),params, ann), ann, this.hashCode)      
     } while (newinvariant < invariant)    
     savedInvariant = invariant
+    savedFirst = condition.analyze(invariant)
     return condition.opposite.analyze(invariant)
   }  
 
   override def formatString(indent: Int, indentSize: Int) = {
     val spaces = " "*indentSize*indent
-    spaces + "while (" + condition +") {\n"  + 
-      (if (savedInvariant!=null) spaces + " "*indentSize  + savedInvariant + "\n" else "") + 
+    spaces + "while (" + condition +")"  + 
+      (if (savedInvariant!=null) " "+savedInvariant else "") + " {\n" +
+      spaces + " "*indentSize + savedFirst + "\n" +
       body.formatString(indent+1, indentSize) + '\n' + 
     spaces + '}'
   }
