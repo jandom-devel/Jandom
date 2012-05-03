@@ -15,8 +15,11 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets.linearcondition
-import it.unich.sci.jandom.domains.NumericalProperty
+
+package it.unich.sci.jandom
+package targets.linearcondition
+
+import domains.NumericalProperty
 
 /**
  * The random condition.

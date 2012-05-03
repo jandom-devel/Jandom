@@ -15,14 +15,15 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.parsers
 
+package it.unich.sci.jandom
+package parsers
+
+import targets.Environment
+import targets.linearcondition._
+import targets.lts._
 import scala.util.parsing.combinator.JavaTokenParsers
 import scala.collection.mutable.HashMap
-import it.unich.sci.jandom.targets.LinearForm
-import it.unich.sci.jandom.targets.Environment
-import it.unich.sci.jandom.targets.linearcondition._
-import it.unich.sci.jandom.targets.lts._
 
 /**
  * Parser for transition systems as appear in the [[http://www.cs.colorado.edu/~srirams/Software/lpinv.html LPInv]]

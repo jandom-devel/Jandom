@@ -15,8 +15,11 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets.lts
-import it.unich.sci.jandom.targets.linearcondition.LinearCond
+
+package it.unich.sci.jandom
+package targets.lts
+
+import targets.linearcondition.LinearCond
 
 
 /**

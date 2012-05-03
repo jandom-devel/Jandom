@@ -1,4 +1,5 @@
-package it.unich.sci.jandom.numberextensions
+package it.unich.sci.jandom
+package numberextensions
 
 object TryIntervals {
 

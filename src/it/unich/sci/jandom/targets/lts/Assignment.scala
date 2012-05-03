@@ -15,9 +15,12 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets.lts
-import it.unich.sci.jandom.targets.LinearForm
-import it.unich.sci.jandom.domains._
+
+package it.unich.sci.jandom
+package targets.lts
+
+import targets.LinearForm
+import domains.NumericalProperty
 
 /**
  * @author Gianluca Amato <amato@sci.unich.it>

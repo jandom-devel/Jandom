@@ -15,11 +15,12 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.widenings
 
-import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.targets.Target
-import it.unich.sci.jandom.annotations._
+package it.unich.sci.jandom
+package widenings
+
+import domains.NumericalProperty
+import targets.Target
 
 /**
  * The standard widening.

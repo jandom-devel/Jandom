@@ -14,11 +14,10 @@
  * (c) 2011,2012 Gianluca Amato
  */
 
-package it.unich.sci.jandom.domains
+package it.unich.sci.jandom
+package domains
 
-import it.unich.sci.jandom.widenings.Widening
-import it.unich.sci.jandom.narrowings.Narrowing
-import it.unich.sci.jandom.annotations.AnnotationType
+import annotations.AnnotationType
 
 /**
  * Trait for numerical properties, such as Box, Octagon, etc... The classes extending NumericalProperty should be 

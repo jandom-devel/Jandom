@@ -15,6 +15,7 @@
  *
  * (c) 2012 Gianluca Amato
  */
+
 package it.unich.sci.jandom
 package widenings
 

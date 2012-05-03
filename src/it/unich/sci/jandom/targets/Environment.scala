@@ -15,7 +15,9 @@
  *
  * (c) 2011 Gianluca Amato
  */
-package it.unich.sci.jandom.targets
+
+package it.unich.sci.jandom
+package targets
 
 import scala.collection.mutable.LinkedHashMap
 

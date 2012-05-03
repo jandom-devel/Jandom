@@ -15,10 +15,12 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.narrowings
 
-import it.unich.sci.jandom.annotations.BlackBoard
-import it.unich.sci.jandom.targets.Target
+package it.unich.sci.jandom
+package narrowings
+
+import targets.Target
+import annotations.BlackBoard
 
 /**
  * This is the abstract widening, an operator used to accelerate fixpoint computations.

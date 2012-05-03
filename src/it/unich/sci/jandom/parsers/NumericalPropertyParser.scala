@@ -15,14 +15,15 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom
-package domains.parsers
 
-import parsers.{LinearExpressionParser,LinearConditionParser}
+package it.unich.sci.jandom
+package parsers
+
 import targets.Environment
-import scala.util.parsing.combinator.JavaTokenParsers
 import domains.NumericalDomain
 import domains.NumericalProperty
+
+import scala.util.parsing.combinator.JavaTokenParsers
 
 /**
  * @author Gianluca Amato <amato@sci.unich.it>

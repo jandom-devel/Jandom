@@ -18,7 +18,8 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains
+package it.unich.sci.jandom
+package domains
 
 import org.scalatest.FunSuite
 

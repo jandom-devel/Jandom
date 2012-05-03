@@ -16,7 +16,8 @@
  * (c) 2011 Gianluca Amato
  */
 
-package it.unich.sci.jandom;
+package it.unich.sci.jandom
+
 import parma_polyhedra_library.{Parma_Polyhedra_Library => PPL}
 import domains.PPLCPolyhedron
 import it.unich.sci.jandom.targets.slil.SLILProgram
@@ -24,7 +25,6 @@ import it.unich.sci.jandom.targets.lts.LTS
 import it.unich.sci.jandom.domains._
 import it.unich.sci.jandom.annotations.BlackBoard
 import widenings.DefaultWideningFactory
-
 
 object Jandom extends App {
 

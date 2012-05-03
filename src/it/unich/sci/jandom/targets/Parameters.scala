@@ -15,14 +15,14 @@
  *
  * (c) 2012 Gianluca Amato
  */
+
 package it.unich.sci.jandom
 package targets
   
-import domains.NumericalProperty
-import domains.NumericalDomain
+import domains.{NumericalProperty,NumericalDomain}
 import widenings.{WideningFactory, DefaultWideningFactory}
-import narrowings.Narrowing
-import narrowings.DefaultNarrowing
+import narrowings.{Narrowing, DefaultNarrowing}
+
 /**
  * This class is used to keep parameter for analyzers.
  * @author Gianluca Amato <amato@sci.unich.it>

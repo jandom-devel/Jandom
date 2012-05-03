@@ -15,10 +15,12 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.parsers
 
+package it.unich.sci.jandom
+package parsers
+
+import targets.{Environment,LinearForm}
 import scala.util.parsing.combinator.JavaTokenParsers
-import it.unich.sci.jandom.targets._
 
 
 /**

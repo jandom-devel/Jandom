@@ -19,11 +19,11 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains._
-import targets.linearcondition._
+import domains.NumericalProperty
+import targets.linearcondition.LinearCond
 import targets.{Environment, LinearForm, Parameters, Target}
-import annotations._
 import widenings.Widening
+import annotations._
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 

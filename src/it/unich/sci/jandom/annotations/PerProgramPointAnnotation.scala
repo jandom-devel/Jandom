@@ -15,8 +15,11 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.annotations
-import it.unich.sci.jandom.targets.Target
+
+package it.unich.sci.jandom
+package annotations
+
+import targets.Target
 import scala.collection.mutable.Iterable
 
 /**

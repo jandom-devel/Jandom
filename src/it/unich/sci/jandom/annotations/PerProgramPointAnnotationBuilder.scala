@@ -15,7 +15,10 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.annotations
+
+package it.unich.sci.jandom
+package annotations
+
 import it.unich.sci.jandom.targets.Target
 
 /**

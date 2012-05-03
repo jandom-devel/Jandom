@@ -15,7 +15,9 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets
+
+package it.unich.sci.jandom
+package targets
 
 /**
  * The class representing a variable.
@@ -23,8 +25,8 @@ package it.unich.sci.jandom.targets
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
+
 class Variable(val name: String) { }
-  
 
 object Variable {
   def apply(name: String) = new Variable(name);

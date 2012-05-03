@@ -15,10 +15,12 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets
 
-import it.unich.sci.jandom.domains._
-import it.unich.sci.jandom.annotations._
+package it.unich.sci.jandom
+package targets
+
+import domains.NumericalProperty
+import annotations.BlackBoard
 
 /**
  * The abstract class for targets.

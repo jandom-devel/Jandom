@@ -15,13 +15,15 @@
  *
  * (c) 2011 Gianluca Amato
  */
-package it.unich.sci.jandom.parsers
 
+package it.unich.sci.jandom
+package parsers
+
+import targets.{Environment,LinearForm}
+import targets.linearcondition._
+import targets.slil._
 import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
-import it.unich.sci.jandom.targets._
-import it.unich.sci.jandom.targets.linearcondition._
-import it.unich.sci.jandom.targets.slil._
 
 /**
  * Test suite for RandomParser.

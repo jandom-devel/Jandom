@@ -18,7 +18,8 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.numberextensions
+package it.unich.sci.jandom
+package numberextensions
 
 /**
  * @author Gianluca Amato <amato@sci.unich.it>

@@ -16,10 +16,8 @@
  * (c) 2011 Gianluca Amato
  */
 
-package it.unich.sci.jandom.domains
-
-import it.unich.sci.jandom.widenings.Widening
-import it.unich.sci.jandom.narrowings.Narrowing
+package it.unich.sci.jandom
+package domains
 
 /**
  * This is the box abstract domain over doubles.

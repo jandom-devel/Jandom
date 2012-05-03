@@ -15,7 +15,9 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets
+
+package it.unich.sci.jandom
+package targets
 
 import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers

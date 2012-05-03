@@ -15,9 +15,11 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.annotations
 
-import it.unich.sci.jandom.targets.Target
+package it.unich.sci.jandom
+package annotations
+
+import targets.Target
 
 /**
  * This is the class for annotation. An annotation is parameteric w.r.t.

@@ -16,11 +16,12 @@
  * (c) 2012 Gianluca Amato
  */
 
-package it.unich.sci.jandom.narrowings
+package it.unich.sci.jandom
+package narrowings
 
-import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.targets.Target
-import it.unich.sci.jandom.annotations._
+import domains.NumericalProperty
+import targets.Target
+import annotations.BlackBoard
 
 /**
  * @author Gianluca Amato <amato@sci.unich.it>

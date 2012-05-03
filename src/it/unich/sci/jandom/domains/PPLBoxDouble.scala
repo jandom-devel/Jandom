@@ -15,7 +15,9 @@
  *
  * (c) 2011,2012 Gianluca Amato
  */
-package it.unich.sci.jandom.domains
+
+package it.unich.sci.jandom
+package domains
 
 import parma_polyhedra_library.Double_Box
 import parma_polyhedra_library.Linear_Expression
@@ -26,9 +28,6 @@ import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
-import it.unich.sci.jandom.widenings.Widening
-import it.unich.sci.jandom.narrowings.Narrowing
-
 
 /**
  * The class for Boxes in PPL.

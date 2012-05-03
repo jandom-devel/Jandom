@@ -15,7 +15,9 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.widenings
+
+package it.unich.sci.jandom
+package widenings
 
 /**
  * @author Gianluca Amato <amato@sci.unich.it>

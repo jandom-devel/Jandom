@@ -15,12 +15,13 @@
  *
  * (c) 2011 Gianluca Amato
  */
-package it.unich.sci.jandom.parsers
 
-import it.unich.sci.jandom.targets.slil._
-import it.unich.sci.jandom.targets.linearcondition._
-import it.unich.sci.jandom.targets.LinearForm
-import it.unich.sci.jandom.targets.Environment
+package it.unich.sci.jandom
+package parsers
+
+import targets.{Environment,LinearForm}
+import targets.slil._
+import targets.linearcondition._
 import scala.util.parsing.combinator.JavaTokenParsers
 
 /**
@@ -28,7 +29,7 @@ import scala.util.parsing.combinator.JavaTokenParsers
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-object RandomParser extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
+object RandomParser extends JavaTokenParsers  with LinearExpressionParser with LinearConditionParser {
     val env = Environment()
      
     override val whiteSpace = """(\s|#.*\r?\n)+""".r  // handle # as the start of a comment
@@ -37,8 +38,7 @@ object RandomParser extends JavaTokenParsers with LinearExpressionParser with Li
       
     override val ident = not(literal("function")) ~>  """[a-zA-Z._][\w.]*""".r  // allow . in identifiers
     
-    val variable: Parser[Int] = 
-      ident ^^ { env.getBindingOrAdd(_) }    
+    val variable: Parser[Int] =  ident ^^ { env.getBindingOrAdd(_) }    
 	  	
 	private val stmt: Parser[SLILStmt] = 
 	  "assume" ~> "(" ~> condition <~ ")" ^^ { AssumeStmt(_) } |

@@ -15,10 +15,11 @@
  *
  * (c) 2012 Gianluca Amato
  */
+
 package it.unich.sci.jandom
 package targets.lts
 
-import domains._
+import domains.{NumericalProperty,NumericalPropertyAnnotation}
 import targets.{Environment,Parameters,Target}
 import widenings.Widening
 import annotations._

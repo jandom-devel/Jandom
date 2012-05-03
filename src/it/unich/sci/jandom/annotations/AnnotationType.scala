@@ -15,9 +15,9 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.annotations
 
-import it.unich.sci.jandom.targets.Target
+package it.unich.sci.jandom
+package annotations
 
 /**
  * This is the abstract classes used for typing annotations in blackboards and 
