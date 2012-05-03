@@ -17,15 +17,11 @@
  */
 package it.unich.sci.jandom.widenings
 
-import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.targets.Target
-import it.unich.sci.jandom.annotations._
-
 /**
- * The standard widening.
+ * This is a factory for widenings.
  * @author Gianluca Amato <amato@sci.unich.it>
+ *
  */
-
-object DefaultWidening  extends Widening {  
-  def apply[Property <: NumericalProperty[Property]] (current: Property, next: Property) = current.widening(next)
+abstract class WideningFactory {
+  def widening: Widening
 }

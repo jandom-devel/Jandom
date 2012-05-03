@@ -15,14 +15,14 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets
-
-import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.domains.NumericalDomain
-import it.unich.sci.jandom.widenings.Widening
-import it.unich.sci.jandom.narrowings.Narrowing
-import it.unich.sci.jandom.widenings.DefaultWidening
-import it.unich.sci.jandom.narrowings.DefaultNarrowing
+package it.unich.sci.jandom
+package targets
+  
+import domains.NumericalProperty
+import domains.NumericalDomain
+import widenings.{WideningFactory, DefaultWideningFactory}
+import narrowings.Narrowing
+import narrowings.DefaultNarrowing
 /**
  * This class is used to keep parameter for analyzers.
  * @author Gianluca Amato <amato@sci.unich.it>
@@ -32,7 +32,7 @@ class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val do
   /**
   * The standard widening for the domain
   */
-  var widening: Widening[Property] = new DefaultWidening[Property]
+  var wideningFactory: WideningFactory = DefaultWideningFactory
   
   /**
    * The standard narrowing for the domain

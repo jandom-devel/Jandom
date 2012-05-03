@@ -16,12 +16,14 @@
  * (c) 2011 Gianluca Amato
  */
 
-package it.unich.sci.jandom.targets.slil
+package it.unich.sci.jandom
+package targets.slil
 
-import it.unich.sci.jandom.domains._
-import it.unich.sci.jandom.targets.linearcondition._
-import it.unich.sci.jandom.targets.{Environment, LinearForm, Parameters, Target}
-import it.unich.sci.jandom.annotations._
+import domains._
+import targets.linearcondition._
+import targets.{Environment, LinearForm, Parameters, Target}
+import annotations._
+import widenings.Widening
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.ListBuffer
 
@@ -116,13 +118,15 @@ case class CompoundStmt(stmts: Iterable[SLILStmt]) extends SLILStmt {
 case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {  
   var savedInvariant : NumericalProperty[_] = null
   var savedFirst: NumericalProperty[_] = null
+  private var widening: Widening = null
  
   override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property =  {    
     var newinvariant = input
     var invariant = input
+    if (widening==null) widening = params.wideningFactory.widening
     do {      
       invariant = newinvariant
-      newinvariant = params.widening[SLILProgram](invariant, input union body.analyze(condition.analyze(invariant), params, ann), ann, this.hashCode)
+      newinvariant = widening(invariant, input union body.analyze(condition.analyze(invariant), params, ann))
     } while (newinvariant > invariant)          
     do {
       invariant = newinvariant

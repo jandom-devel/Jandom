@@ -21,12 +21,12 @@ import it.unich.sci.jandom.domains._
 import it.unich.sci.jandom.annotations._
 
 /**
- * The abstract class for targets
+ * The abstract class for targets.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 abstract class Target {
-  type ProgramPoint
+  type ProgramPoint 
   type Tgt <: Target
   
   /**
@@ -37,5 +37,6 @@ abstract class Target {
   /**
    * Takes a domain and some parameters and perform the analysis.
    */
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property, Tgt], bb: BlackBoard[Tgt])
+  def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property, Tgt], bb: BlackBoard[Tgt])
+   
 }

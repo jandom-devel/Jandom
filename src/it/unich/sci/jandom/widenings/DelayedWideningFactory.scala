@@ -17,15 +17,11 @@
  */
 package it.unich.sci.jandom.widenings
 
-import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.targets.Target
-import it.unich.sci.jandom.annotations._
-
 /**
- * The standard widening.
  * @author Gianluca Amato <amato@sci.unich.it>
+ * @param wideningFactory the original widening factory
+ * @param delay the delay of the widening  
  */
-
-object DefaultWidening  extends Widening {  
-  def apply[Property <: NumericalProperty[Property]] (current: Property, next: Property) = current.widening(next)
+class DelayedWideningFactory (private val wideningFactory: WideningFactory, private val delay: Int) extends WideningFactory {
+  def widening = new DelayedWidening(wideningFactory.widening, delay)  
 }

@@ -22,29 +22,17 @@ import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.annotations._
 
 /**
- * This build a delayed widening.
- * @tparam Property: the property the widening acts upon
- * @param delay the delay of the widening
+ * Delayed widening.
  * @param widening the original widening
+ * @param delay the delay of the widening 
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
-class DelayedWidening[Property <: NumericalProperty[Property]] (private val widening: Widening[Property], private val delay: Int) extends Widening[Property] {  
-  def apply[Tgt <: Target](current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) = {    
-    val i = bb(DelayedWideningAnnotation)(pp)
-    if (i < delay) {      
-      // increment index
-      bb(DelayedWideningAnnotation)(pp) = i+1
+class DelayedWidening (private val widening: Widening, private var delay: Int) extends Widening { 
+  def apply[Property <: NumericalProperty[Property]] (current: Property, next: Property) = {    
+    if (delay>0) {
+      delay -= 1
       current union next
     } else 
-      widening(current, next, bb, pp)
+      widening(current, next)
   }
-}
-
-/**
- * This declares a new annotation type for the current index of delayed widening
- */
-object DelayedWideningAnnotation extends AnnotationType {
-  type T = Int
-  val defaultValue = 0
 }

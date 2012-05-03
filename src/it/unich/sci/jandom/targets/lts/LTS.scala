@@ -15,11 +15,14 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom.targets.lts
+package it.unich.sci.jandom
+package targets.lts
 
-import it.unich.sci.jandom.domains._
-import it.unich.sci.jandom.targets.{Environment,Parameters,Target}
-import it.unich.sci.jandom.annotations._
+import domains._
+import targets.{Environment,Parameters,Target}
+import widenings.Widening
+import annotations._
+
 import scala.collection.mutable.ArrayBuffer
 /**
  * The main class for Linear Transition Systems.
@@ -36,16 +39,20 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
   def size = locations.size
   
   def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property, Tgt], bb: BlackBoard[LTS]) {    
-    var current, next : List[Property] = Nil    
+    var current, next : List[Property] = Nil
+    val widenings = Array.fill(size) { params.wideningFactory.widening } 
+    
     next = for (loc <- locations) 
       yield  (params.domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
-           
+    
+    
+    
     while (current != next) {      
-      current = next
+      current = next      
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(propold)
         val unionednew = propnew.fold( params.domain.empty(environment.size) ) ( _ union _ )
-        params.widening[LTS](propold, unionednew, bb, loc.id)
+        widenings(loc.id)(propold, unionednew)
       }      
     } 
     
