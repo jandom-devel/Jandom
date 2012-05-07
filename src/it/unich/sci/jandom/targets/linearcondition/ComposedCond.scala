@@ -22,18 +22,27 @@ package targets.linearcondition
 import domains.NumericalProperty
 
 /**
- * The composed conditions.
+ * This is the class for the logical and of two conditions.
+ * @param cond1 the first condition
+ * @param cond2 the second condition
+ * @returns the logical "and" of cond1 and cond2
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-
 case class AndCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
   def opposite = new OrCond(cond1.opposite, cond2.opposite)  
-  // TODO: correctly implement analyze
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = cond2.analyze(cond1.analyze(input))
   override def toString = "(" + cond1 + " && " + cond2 + ")"
 }
 
+/**
+ * This is the class for the logical or of two conditions.
+ * @param cond1 the first condition
+ * @param cond2 the second condition
+ * @returns the logical "or" of cond1 and cond2
+ * @author Gianluca Amato <amato@sci.unich.it>
+ *
+ */
 case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
   def opposite = new AndCond(cond1.opposite, cond2.opposite)
   
@@ -42,9 +51,15 @@ case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
   override def toString = "(" + cond1 + " || " + cond2 + ")"
 }
 
+/**
+ * This is the class for the logical not of a condition.
+ * @param cond the original condition
+ * @returns the logical "not" of cond
+ * @author Gianluca Amato <amato@sci.unich.it>
+ *
+ */
 case class NotCond(cond: LinearCond) extends LinearCond {
   def opposite = cond
-  // TODO: correctly implement analyze
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = cond.opposite.analyze(input)
   override def toString = "!("+cond+")"
 }

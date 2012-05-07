@@ -22,11 +22,10 @@ package targets.linearcondition
 import domains.NumericalProperty
 
 /**
- * The random condition.
+ * An atomic condition for a non-deterministic choice
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-
 object BRandomCond extends LinearCond {
   def opposite = BRandomCond
   override def toString = "brandom()"
@@ -38,8 +37,6 @@ object BRandomCond extends LinearCond {
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-
-
 object TrueCond extends LinearCond {
   def opposite = FalseCond
   override def toString = "TRUE"
@@ -47,11 +44,10 @@ object TrueCond extends LinearCond {
 }
 
 /**
- * The falsity condition.
+ * The false condition.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-
 object FalseCond extends LinearCond {
   def opposite = TrueCond
   override def toString = "FALSE"

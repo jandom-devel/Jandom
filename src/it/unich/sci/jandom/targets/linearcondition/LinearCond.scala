@@ -28,6 +28,15 @@ import domains.NumericalProperty
  *
  */
 abstract class LinearCond {
-  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property;  
-  def opposite : LinearCond;
+  /**
+   * The analyzer for linear conditions. 
+   * @param input the property which holds 
+   * @returns the property given by the logical and of input and the condition itself
+   */
+  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property
+  /**
+   * Returns the opposite linear condition (the one obtained by reversing the order of inequalities)
+   * @returns the opposite linear condition
+   */
+  def opposite : LinearCond
 }
