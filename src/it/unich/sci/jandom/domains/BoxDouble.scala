@@ -232,15 +232,15 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     infinities.size match {
       case 0 =>
         for (i <- 0 to (coeff.length - 1)) {
-          if (coeff(i) < 0) newlow(i) = low(i) max lfArgmin(i) - lfMin / coeff(i)
-          if (coeff(i) > 0) newhigh(i) = high(i) min lfArgmin(i) - lfMin / coeff(i)
+          if (coeff(i) < 0) newlow(i) = low(i) max (lfArgmin(i) - lfMin / coeff(i))
+          if (coeff(i) > 0) newhigh(i) = high(i) min (lfArgmin(i) - lfMin / coeff(i))
         }
       case 1 => {
         val posinf = infinities.head
         if (coeff(posinf) < 0)
-          newlow(posinf) = low(posinf) max (dotprod_lo(coeff, lfArgmin, posinf) / lfArgmin(posinf))
+          newlow(posinf) = low(posinf) max ( (-dotprod_lo(coeff, lfArgmin, posinf) - known) / coeff(posinf))
         else
-          newhigh(posinf) = high(posinf) min (dotprod_hi(coeff, lfArgmin, posinf) / lfArgmin(posinf))
+          newhigh(posinf) = high(posinf) min ( (-dotprod_hi(coeff, lfArgmin, posinf) - known )/ coeff(posinf))
       }
       case _ =>
     }

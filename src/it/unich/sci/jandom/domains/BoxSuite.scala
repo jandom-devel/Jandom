@@ -50,5 +50,12 @@ class BoxSuite extends FunSuite {
       expect(i intersection j) { i }
       expect(i.linearAssignment(1,Array(1,1),1)) { i }
       expect(i.linearAssignment(1,Array(0,0),0)) { i }
-    }         
+    }
+    
+    test("linear inequations") {
+      val i = BoxDouble.full(2).linearInequality(Array(1,0),-3)
+      val j = BoxDouble(Array(0,0),Array(5,5)).linearInequality(Array(1,1),-4)
+      expect(BoxDouble(Array(Double.NegativeInfinity,Double.NegativeInfinity), Array(3,Double.PositiveInfinity))) { i }
+      expect(BoxDouble(Array(0,0),Array(4,4))) { j }
+    }
 }
