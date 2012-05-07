@@ -28,17 +28,27 @@ import annotations.BlackBoard
  *
  */
 abstract class Target {
-  type ProgramPoint 
+  /**
+   * The type for program points of the given target
+   */
+  type ProgramPoint
+  
+  /**
+   * The type of the given target
+   */
   type Tgt <: Target
   
   /**
    * Returns the size of the target as the number of program points.
+   * @return the size of the target as the number of program points
    */
   def size: Int
   
   /**
-   * Takes a domain and some parameters and perform the analysis.
-   */
+   * Perform a static analysis over the target.
+   * @tparam Property the type of the property we want to analyze
+   * @param param the parameters which drive the analyzer
+   * @param bb the blackboard where it is possible to put annotation during the analysis
+   */  
   def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property, Tgt], bb: BlackBoard[Tgt])
-   
 }
