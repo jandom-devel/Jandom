@@ -25,6 +25,9 @@ import narrowings.{Narrowing, DefaultNarrowing}
 
 /**
  * This class is used to keep parameters for analyzers.
+ * @tparam Property the type of property described by the analysis
+ * @param val the numerical domain for the analysis
+ * @param tgt the target for the analysis
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */

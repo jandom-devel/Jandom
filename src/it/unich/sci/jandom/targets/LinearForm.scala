@@ -22,6 +22,7 @@ package targets
 /**
  * The class LinearForm represents a inhomogeneous linear form over a given numeric type. It is an 
  * immutable type.
+ * @tparam T the type of the coefficients in the linear form. It should be endowed with an implicit Numeric[T] object.
  * @param coefficients the coefficients of the linear form
  * @param env the environment, which associates variables to index in coefficients
  * @author Gianluca Amato <amato@sci.unich.it>
