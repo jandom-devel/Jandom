@@ -24,18 +24,18 @@ import widenings.{WideningFactory, DefaultWideningFactory}
 import narrowings.{Narrowing, DefaultNarrowing}
 
 /**
- * This class is used to keep parameter for analyzers.
+ * This class is used to keep parameters for analyzers.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val domain: NumericalDomain[Property], val tgt: Tgt) {  
   /**
-  * The standard widening for the domain
+  * The widening factory used in the analysis. Defaults to the factory for the standard domain widening.
   */
   var wideningFactory: WideningFactory = DefaultWideningFactory
   
   /**
-   * The standard narrowing for the domain
+   * The narrowing used in the analysis. Defaults to the standard domain narrowing. 
    */
   var narrowing: Narrowing[Property] = new DefaultNarrowing[Property]
 }

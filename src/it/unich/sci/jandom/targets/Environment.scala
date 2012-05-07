@@ -19,11 +19,11 @@
 package it.unich.sci.jandom
 package targets
 
-import scala.collection.mutable.LinkedHashMap
+import scala.collection.mutable.{ArrayBuffer,LinkedHashMap}
 
 /**
  * The class Environment represents an environment at a certain point in a program. At the moment
- * this means essentially a correspondence between a variable name and a variable numerical index.
+ * this means essentially a correspondence between a variable name and a numerical index.
  * Later, we will add also types (integer, floating points, etc...) to the environment.
  *  
  * @author Gianluca Amato <amato@sci.unich.it>
@@ -31,7 +31,7 @@ import scala.collection.mutable.LinkedHashMap
  */
 
 class Environment {	
-    private val variables = new scala.collection.mutable.ArrayBuffer[String]()
+    private val variables = new ArrayBuffer[String]()
     private val nameHash = new LinkedHashMap[String,Int]()
     
 	/**
@@ -83,7 +83,7 @@ class Environment {
 	 * Returns the name of variables in the environment
 	 * @return the variable with the given index in the environment
 	 */
-	def getNames: Iterable[String] = variables.toIterable
+	def getNames: IndexedSeq[String] = variables.toIndexedSeq
 	  
 	/**
 	 * Returns the size of the environment, i.e. the number of bindings
@@ -92,6 +92,11 @@ class Environment {
 	def size = variables.size
 }
 
+/**
+ * Factory object for the Environment class.
+ * 
+ * This object provides a set of operations to create Environment values. 
+ */
 object Environment {
   /**
    * Returns a new environment with new variables whose names are given as arguments

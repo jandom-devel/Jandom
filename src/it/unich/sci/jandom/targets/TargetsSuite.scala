@@ -19,19 +19,14 @@
 package it.unich.sci.jandom
 package targets
 
+import org.scalatest.FunSuite
+import linearcondition.LinearCondSuite
+
 /**
- * The class representing a variable. At the moment, this is dead code.
- * @param name the name of the variable
+ * The test suite for Jandom targets.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class Variable (val name: String) { }
-
-/**
- * Factory object for the Variable class.
- * 
- * This object provides a set of operations to create Variable values. 
- */
-object Variable {
-  def apply(name: String) = new Variable(name)
-} 
+class TargetsSuite extends FunSuite {
+  override def nestedSuites = List(new EnvironmentSuite, new VariableSuite, new LinearFormSuite, new LinearCondSuite)
+}

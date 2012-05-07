@@ -20,21 +20,20 @@ package it.unich.sci.jandom
 package targets
 
 import org.scalatest.FunSuite
-import org.scalatest.prop.Checkers
 
 /**
  * The Test Suite for the Variable class
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class VariableSuite extends FunSuite with Checkers {
-	test ("standard constructors") {
+class VariableSuite extends FunSuite {
+	test ("Variable standard constructors") {
 	  val v1 = new Variable("x")
 	  val v2 = new Variable("x")
 	  expect(false) { v1==v2 }	  
 	}
 	
-	test ("companion object constructors") {
+	test ("Variable companion object constructors") {
 	  val v1 = Variable("x");
 	  val v2 = Variable("x");
 	  expect(false) { v1==v2 };

@@ -20,38 +20,51 @@ package it.unich.sci.jandom
 package targets
 
 /**
- * The class LinearForm represents a homogeneous linear form over a numeric type. Variables are not
- * explicitly handled, they are just positions in the array of coefficients. 
+ * The class LinearForm represents a inhomogeneous linear form over a given numeric type. It is an 
+ * immutable type.
  * @param coefficients the coefficients of the linear form
+ * @param env the environment, which associates variables to index in coefficients
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 
-class LinearForm[T](val coefficients: Seq[T], val env: Environment) (implicit numeric: Numeric[T]) {
+class LinearForm[T] (val coefficients: Seq[T], val env: Environment) (implicit numeric: Numeric[T]) {
   
   import numeric._
      
   /**
    * Equality between linear forms. Two linear forms are equal if their coefficients are the same and
-   * are defined over the same environment
+   * are defined over the same environment.
    */
-  override def equals(other: Any): Boolean = other match {
-    case other: LinearForm[T] => 
-      (env == other.env) && (
-          (coefficients zip other.coefficients) forall (tuple => tuple._1 == tuple._2)
+  override def equals(that: Any): Boolean = that match {
+    case that: LinearForm[T] => 
+      (env == that.env) && (
+          (coefficients zip that.coefficients) forall (tuple => tuple._1 == tuple._2)
        )    	     	 
     case _ => false
   }
   
+  /** 
+   * .Returns a LinearForm whose elements are the negation of the original one. 
+   */
   def unary_-(): LinearForm[T] = new LinearForm( coefficients map ( x => -x ), env ) 
   
-  def +(other: LinearForm[T]): LinearForm[T] =  {
-    require(env == other.env)
-    new LinearForm ( coefficients.zipAll(other.coefficients,zero,zero) map ( pair => pair._1 + pair._2 ), env) 
+  /**
+   * Addition of LinearForms
+   */
+  def +(that: LinearForm[T]): LinearForm[T] =  {
+    require(env == that.env)
+    new LinearForm ( coefficients.zipAll(that.coefficients,zero,zero) map ( pair => pair._1 + pair._2 ), env) 
   }     
   
-  def -(other: LinearForm[T]): LinearForm[T] = this + (-other)
+  /**
+   * Subtraction of LinearForms
+   */
+  def -(that: LinearForm[T]): LinearForm[T] = this + (-that)
   
-  def *(coeff: T): LinearForm[T]  =  new LinearForm( coefficients map ( _*coeff ), env )      
+  /**
+   * Multiplication of a scalar times a LinearForm
+   */
+  def *(coeff: T): LinearForm[T]  =  new LinearForm (coefficients map ( _*coeff ), env)      
   
   /**
    * Returns the textual representation of a linear form
@@ -91,10 +104,30 @@ class LinearForm[T](val coefficients: Seq[T], val env: Environment) (implicit nu
   def homcoeff: Seq[T] = coefficients.tail
 }
   
+/**
+ * Factory object for the LinearForm class.
+ * 
+ * This object provides a set of operations to create Variable values. 
+ */
 object LinearForm {
-  def apply[T](coeffs: Seq[T], env: Environment)(implicit numeric: Numeric[T]) = new LinearForm(coeffs, env)    
+  /**
+   * Builds a linear form given coefficients and environment
+   */
+  def apply[T](coeffs: Seq[T], env: Environment)(implicit numeric: Numeric[T]) = new LinearForm(coeffs, env)
+  
+  /**
+   * Builds the linear form "coeff*v(i)" 
+   */
+  def fromCoefficientVar[T](coeff:T, i: Int, env: Environment)(implicit numeric: Numeric[T]) = new LinearForm ( List.fill(i)(numeric.zero) ++ List(coeff), env )   
+
+  /**
+   * Builds the constant linear form "coeff" 
+   */
   def fromCoefficient[T](coeff: T, env: Environment)(implicit numeric: Numeric[T]) = fromCoefficientVar(coeff,0,env)
-  def fromVar[T](v: Int, env: Environment)(implicit numeric: Numeric[T]) = fromCoefficientVar(1,v,env)
-  def fromCoefficientVar[T](coeff:T, v: Int, env: Environment)(implicit numeric: Numeric[T]) = new LinearForm ( List.fill(v)(numeric.zero) ++ List(coeff), env )   
+  
+  /**
+   * Builds the linear form "v(i)" 
+   */
+  def fromVar[T](i: Int, env: Environment)(implicit numeric: Numeric[T]) = fromCoefficientVar(1,i,env)
 }
 

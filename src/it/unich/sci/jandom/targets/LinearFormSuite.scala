@@ -20,39 +20,38 @@ package it.unich.sci.jandom
 package targets
 
 import org.scalatest.FunSuite
-import org.scalatest.prop.Checkers
 
-/**
+/** 
+ * The Test Suite for the LinearForm class
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class LinearFormSuite extends FunSuite with Checkers {
+class LinearFormSuite extends FunSuite {
   
   val env = Environment("v1","v2")
     
-  test("standard constructor") {
+  test("LinearForm companion object standard constructor") {
     val lf = LinearForm(List(1,2,-1),env)
     expect("1+2*v1-v2") { lf.toString }
     val lf2 = LinearForm(List(1,0,3),env)
     expect("1+3*v2") { lf2.toString }
   }	
   
-  test("fromVar constructor") {
-    var lf = LinearForm.fromVar[Int](3,env)
-    expect("v3") { lf.toString }
+  test("LinearForm companion object fromVar constructor") {
+    var lf = LinearForm.fromVar[Int](2,env)
+    expect("v2") { lf.toString }
   }
   
-  test("from coefficient and var") {
+  test("LinearForm companion object fromCoefficientVar constructor") {
     val lf1 = LinearForm(List(0,0,2),env)
     val lf2 = LinearForm.fromCoefficientVar(2,2,env)
     expect(lf1) { lf2 }
   }
   
-  test("sum") {
+  test("LinearForm companion addition") {
     val lf1 = LinearForm(List(1,2,-1),env)
     val lf2 = LinearForm(List(1,0,3),env)
     val lf3 = LinearForm(List(2,2,2),env)
   	expect(lf3) { lf1+lf2 }    
   }  
-
 }
