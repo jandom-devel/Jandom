@@ -17,24 +17,13 @@
  */
 
 package it.unich.sci.jandom
-package widenings
-package factories
+package widenings.factories
 
 import targets.Target
+import widenings.DefaultWidening
 
 /**
- * This is a factory for widenings and is a parameter of the analysis. The analyzer calls the
- * factory at each program point, and the factory decides whether to create a new widening or
- * reuse an existing one.
- * @tparam Tgt the target for the widening factory
+ * A factory for the default widening.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
-abstract class WideningFactory[-Tgt <: Target] {
-  /**
-   * Returns a widening.
-   * @param pp the program point this widening is supposed to be used
-   * @return the widening to use at program point pp
-   */
-  def apply (pp: Tgt#ProgramPoint): Widening
-}
+object DefaultWideningFactory extends ConstantWideningFactory(DefaultWidening)

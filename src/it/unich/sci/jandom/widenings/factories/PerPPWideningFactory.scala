@@ -24,22 +24,31 @@ import targets.Target
 import annotations.{AnnotationType,PerProgramPointAnnotationBuilder}
 
 /**
- * A widening factory which builds a different widening for each program point
- * @tparam Tgt the target for the widening factory
+ * A widening factory which builds different widenings for different program point, but reuses widenings
+ * withing the same program point.
+ * @tparam Tgt the type of target for the widening factory
  * @param wideningFactory the factory to build the widenings at each program point
+ * @param tgt the target for the widening factory
+ * @param annBuilder an implicit annotationBuilder which is generally provided by the Tgt implicit object
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class PerPPWideningFactory[Tgt <: Target] (private val wideningFactory: WideningFactory[Tgt], tgt: Tgt)
-										   (implicit annBuilder: PerProgramPointAnnotationBuilder[Tgt]) extends WideningFactory[Tgt] {
+class PerPPWideningFactory[Tgt <: Target] (private val wideningFactory: WideningFactory[Tgt], private val tgt: Tgt)
+										   (private implicit val annBuilder: PerProgramPointAnnotationBuilder[Tgt]) extends WideningFactory[Tgt] {
 
-  object PerPPWideningAnnotation extends AnnotationType {
+  /** 
+   * An annotation type used to store the widenings for the different program points.
+   */
+  private object PerPPWideningAnnotation extends AnnotationType {
     type T = Widening
 	val defaultValue = null
   }
-  
+ 
+  /**
+   * The private blackboard to store the widenings.
+   */
   private val bb = annBuilder(tgt, PerPPWideningAnnotation)
   
-  def apply(pp: Tgt#ProgramPoint) =  {
+  def apply(pp: Tgt#ProgramPoint) = {
     val w = bb(pp)
     if (w!=null) 
       w 

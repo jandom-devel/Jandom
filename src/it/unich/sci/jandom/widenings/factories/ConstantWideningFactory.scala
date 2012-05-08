@@ -28,6 +28,6 @@ import targets.Target
  * @param widening the widening which is returned by the factory
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class ConstantWideningFactory[Tgt <: Target]  (val widening: Widening) extends WideningFactory[Tgt] {
-  def apply(pp: Tgt#ProgramPoint) = widening
+class ConstantWideningFactory (private val widening: Widening) extends WideningFactory[Target] {
+  def apply(pp: Target#ProgramPoint) = widening
 }
