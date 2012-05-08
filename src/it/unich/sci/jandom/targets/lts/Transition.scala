@@ -19,16 +19,23 @@
 package it.unich.sci.jandom
 package targets.lts
 
+import targets.LinearAssignment
 import targets.linearcondition.LinearCond
 import domains.NumericalProperty
 
 
 /**
  * The class for transitions.
+ * @param name the name of the transition
+ * @param start the source location of the transition
+ * @param end the target location of the transition
+ * @param guard the conditions which should hold for the transition to be active
+ * @param assignments the assignments to apply when the transition is selected
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class Transition (val name: String, val start: Location, val end: Location, val guard: List[LinearCond], val assignments: List[Assignment[_]]) {
+case class Transition (val name: String, val start: Location, val end: Location, val guard: Seq[LinearCond], val assignments: Seq[LinearAssignment[_]]) {
+  end += this
   
   override def toString = "transition "+name+" "+start.name+" -> "+end.name + " with Guard( " + 
 	guard.mkString(", ") + " )\n" +

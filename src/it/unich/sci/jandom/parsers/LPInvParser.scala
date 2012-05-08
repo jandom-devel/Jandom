@@ -19,9 +19,10 @@
 package it.unich.sci.jandom
 package parsers
 
-import targets.Environment
+import targets.{Environment,LinearAssignment}
 import targets.linearcondition._
 import targets.lts._
+
 import scala.util.parsing.combinator.JavaTokenParsers
 import scala.collection.mutable.HashMap
 
@@ -67,9 +68,9 @@ object LPInvParser extends JavaTokenParsers with LinearExpressionParser with Lin
         }
       }
 
-  private val assignment: Parser[Assignment[Int]] =
+  private val assignment: Parser[LinearAssignment[Int]] =
     (ident <~ ":=") ~ expr ^^ {
-      case v ~ lf => Assignment(env.getBindingOrAdd(v), lf)
+      case v ~ lf => LinearAssignment(env.getBindingOrAdd(v), lf)
     }
 
   private val transition: Parser[Transition] =
@@ -77,7 +78,7 @@ object LPInvParser extends JavaTokenParsers with LinearExpressionParser with Lin
       ("(" ~> rep(condition) <~ ")") ~
       rep(assignment) <~ ";" ^^ {
         case name ~ lstart ~ lend ~ guards ~ assignments => {
-          location_env(lend) += Transition(name, location_env(lstart), location_env(lend), guards, assignments)          
+          Transition(name, location_env(lstart), location_env(lend), guards, assignments)          
         }         
       }
 

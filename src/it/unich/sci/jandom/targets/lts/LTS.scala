@@ -25,12 +25,16 @@ import widenings.Widening
 import annotations._
 
 import scala.collection.mutable.ArrayBuffer
+
 /**
- * The main class for Linear Transition Systems.
+ * The class for the target of Linear Transition Systems.
+ * @param locations the locations which makes the LTS
+ * @param transitions the transitions which makes the LTS
+ * @param env the environment of the LTS
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class LTS (val locations: List[Location], val transitions: List[Transition], val environment: Environment) extends Target {    
+case class LTS (val locations: Seq[Location], val transitions: Seq[Transition], val env: Environment) extends Target {    
   
   type ProgramPoint = Int
   type Tgt = LTS
@@ -40,19 +44,17 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
   def size = locations.size
   
   def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property, Tgt], bb: BlackBoard[LTS]) {    
-    var current, next : List[Property] = Nil
+    var current, next, base : Seq[Property] = Nil
     val widenings = Array.fill(size) { params.wideningFactory.widening } 
     
     next = for (loc <- locations) 
-      yield  (params.domain.full(environment.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }
-    
-    
+      yield  (params.domain.full(env.size) /: loc.conditions) { (prop, cond) => { print(cond.analyze(prop)); cond.analyze(prop) } }   
     
     while (current != next) {      
       current = next      
-      next =  for ((loc, propold) <- locations zip current) yield {
-        val propnew = for (t <- loc.transitions) yield t.analyze(propold)
-        val unionednew = propnew.fold( params.domain.empty(environment.size) ) ( _ union _ )
+      next = for ((loc, propold) <- locations zip current) yield {
+        val propnew = for (t <- loc.transitions) yield t.analyze(current(t.start.id))
+        val unionednew = propnew.fold( params.domain.empty(env.size) ) ( _ union _ )
         widenings(loc.id)(propold, unionednew)
       }      
     } 
@@ -61,17 +63,24 @@ case class LTS (val locations: List[Location], val transitions: List[Transition]
     while (current != next) {
       current = next
       next =  for ((loc, propold) <- locations zip current) yield {
-        val propnew = for (t <- loc.transitions) yield t.analyze(propold)
-        val unionednew = propnew.fold( params.domain.empty(environment.size) ) ( _ union _ )
+        val propnew = for (t <- loc.transitions) yield t.analyze(current(t.start.id))
+        val unionednew = propnew.fold( params.domain.empty(env.size) ) ( _ union _ )
         params.narrowing[LTS](propold, unionednew, bb, loc.id)    
       }      
     }
-    val annotation = bb(NumericalPropertyAnnotation)  
+   
+    val annotation = bb(NumericalPropertyAnnotation) 
     current.zipWithIndex.foreach { case (prop, pp) => annotation(pp)=prop }         
   }      
 }
 
+/** 
+ * The companion object for LTS. It defines the AnnotationBuilder for program point annotations. 
+ */
 object LTS {
+  /**
+   * The annotation builder for program point annotations in LTS's
+   */
   implicit object LTSProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[LTS] {
 	 def apply[Ann <: AnnotationType](t: LTS, ann: Ann): PerProgramPointAnnotation[LTS,Ann] = 
 	   new PerProgramPointAnnotation[LTS,Ann]{

@@ -23,19 +23,35 @@ import targets.linearcondition.LinearCond
 
 
 /**
+ * A class for locations (i.e. nodes in a linear transition system)
+ * @param name name of the location
+ * @param id numerical id of the location
+ * @conditions linear conditions which should hold at the location
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class Location (val name:String, val id: LTS#ProgramPoint, val conditions: List[LinearCond]) {  
+case class Location (val name:String, val id: LTS#ProgramPoint, val conditions: Seq[LinearCond]) {   
+  /**
+   * The set of incoming transitions 
+   */
   var incoming : List[Transition] = Nil
   
+  /**
+   * Add a transition to the set of incoming transitions.
+   * @param t the transition to add
+   * @return the transition t
+   */
   def += (t: Transition): Transition = { 
-    incoming = t :: incoming; 
+    incoming = t :: incoming 
     t 
   }
   
+  /**
+   * Returns the iterable of incoming transitions.
+   * @return the incoming transitions
+   */
   def transitions = incoming.toIterable
-  
+    
   override def toString = 
     "location "+name+" with (\n"+ 
        conditions.mkString(start="  ", sep="\n  ", end="\n") + 

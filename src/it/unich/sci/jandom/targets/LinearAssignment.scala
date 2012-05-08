@@ -17,17 +17,20 @@
  */
 
 package it.unich.sci.jandom
-package targets.lts
+package targets
 
-import targets.LinearForm
 import domains.NumericalProperty
 
 /**
+ * This class represent an assignment of linear forms.
+ * @tparam T the type of variables involved. It should be endowed with an implicit of type Numeric[T]
+ * @param variable the variable to assign
+ * @param linearForm the linear form representing the right hand side of the assignment
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 
-case class Assignment[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T])  {
+case class LinearAssignment[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T])  {
   import numeric._
   
   override def toString = linearForm.env(variable) + " := " + linearForm.toString  
