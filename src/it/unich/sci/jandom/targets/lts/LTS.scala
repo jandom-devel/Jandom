@@ -45,10 +45,10 @@ case class LTS (val locations: Seq[Location], val transitions: Seq[Transition], 
   
   def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property, Tgt], bb: BlackBoard[LTS]) {    
     var current, next, base : Seq[Property] = Nil
-    val widenings = (0 to locations.size) map { params.wideningFactory(_) } 
+    val widenings = (0 to locations.size-1) map { params.wideningFactory(_) } 
 
     next = for (loc <- locations) 
-      yield  (params.domain.full(env.size) /: loc.conditions) { (prop, cond) => { print(cond.analyze(prop)); cond.analyze(prop) } }   
+      yield  (params.domain.full(env.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }   
     
     while (current != next) {      
       current = next      
