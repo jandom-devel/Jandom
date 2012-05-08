@@ -18,11 +18,17 @@
 
 package it.unich.sci.jandom
 package widenings
+package factories
+
+import targets.Target
 
 /**
+ * The factory for a dealyed widening. It creates a number of delayed widenings with the same parameters.
+ * @tparam Tgt the target for the widening factory
+ * @param wideningFactory the original widening factory
+ * @param delay the delay of the widening
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
-object DefaultWideningFactory extends WideningFactory {
-	def widening = DefaultWidening
+class DelayedWideningFactory[Tgt <: Target] (private val wideningFactory: WideningFactory[Tgt], private val delay: Int) extends WideningFactory[Tgt] {
+	def apply(pp: Tgt#ProgramPoint) = new DelayedWidening(wideningFactory(pp), delay)  
 }

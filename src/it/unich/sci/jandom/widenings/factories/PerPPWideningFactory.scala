@@ -18,15 +18,35 @@
 
 package it.unich.sci.jandom
 package widenings
+package factories
 
-import domains.NumericalProperty
 import targets.Target
+import annotations.{AnnotationType,PerProgramPointAnnotationBuilder}
 
 /**
- * The standard widening. It use the widening operator defined in the abstract domain.
+ * A widening factory which builds a different widening for each program point
+ * @tparam Tgt the target for the widening factory
+ * @param wideningFactory the factory to build the widenings at each program point
  * @author Gianluca Amato <amato@sci.unich.it>
  */
+class PerPPWideningFactory[Tgt <: Target] (private val wideningFactory: WideningFactory[Tgt], tgt: Tgt)
+										   (implicit annBuilder: PerProgramPointAnnotationBuilder[Tgt]) extends WideningFactory[Tgt] {
 
-object DefaultWidening extends Widening {  
-  def apply[Property <: NumericalProperty[Property]] (current: Property, next: Property) = current.widening(next)
+  object PerPPWideningAnnotation extends AnnotationType {
+    type T = Widening
+	val defaultValue = null
+  }
+  
+  private val bb = annBuilder(tgt, PerPPWideningAnnotation)
+  
+  def apply(pp: Tgt#ProgramPoint) =  {
+    val w = bb(pp)
+    if (w!=null) 
+      w 
+    else {
+      val neww = wideningFactory(pp)
+      bb(pp) = neww 
+      neww
+    }
+  }
 }

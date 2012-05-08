@@ -24,7 +24,7 @@ import domains.NumericalProperty
 /**
  * Delayed widening.
  * @param widening the original widening
- * @param delay the delay of the widening 
+ * @param delay the number of delayed steps 
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 class DelayedWidening (private val widening: Widening, private var delay: Int) extends Widening { 

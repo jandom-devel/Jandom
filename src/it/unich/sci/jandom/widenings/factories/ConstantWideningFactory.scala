@@ -18,12 +18,16 @@
 
 package it.unich.sci.jandom
 package widenings
+package factories
+
+import targets.Target
 
 /**
+ * A factory which always returns the same widening.
+ * @tparam Tgt the target for the widening factory
+ * @param widening the widening which is returned by the factory
  * @author Gianluca Amato <amato@sci.unich.it>
- * @param wideningFactory the original widening factory
- * @param delay the delay of the widening  
  */
-class DelayedWideningFactory (private val wideningFactory: WideningFactory, private val delay: Int) extends WideningFactory {
-  def widening = new DelayedWidening(wideningFactory.widening, delay)  
+class ConstantWideningFactory[Tgt <: Target]  (val widening: Widening) extends WideningFactory[Tgt] {
+  def apply(pp: Tgt#ProgramPoint) = widening
 }

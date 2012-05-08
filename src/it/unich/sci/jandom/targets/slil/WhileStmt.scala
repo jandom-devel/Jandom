@@ -38,7 +38,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
   override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property =  {    
     var newinvariant = input
     var invariant = input
-    if (widening==null) widening = params.wideningFactory.widening
+    val widening = params.wideningFactory(this.hashCode)
     do {      
       invariant = newinvariant
       newinvariant = widening(invariant, input union body.analyze(condition.analyze(invariant), params, ann))

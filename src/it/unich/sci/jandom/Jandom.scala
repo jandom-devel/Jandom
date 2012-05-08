@@ -20,11 +20,12 @@ package it.unich.sci.jandom
 
 import parma_polyhedra_library.{Parma_Polyhedra_Library => PPL}
 import domains.PPLCPolyhedron
-import it.unich.sci.jandom.targets.slil.SLILProgram
-import it.unich.sci.jandom.targets.lts.LTS
-import it.unich.sci.jandom.domains._
-import it.unich.sci.jandom.annotations.BlackBoard
-import widenings.DefaultWideningFactory
+import targets.slil.SLILProgram
+import targets.lts.LTS
+import domains._
+import annotations.BlackBoard
+import widenings.DefaultWidening
+import widenings.factories.DelayedWideningFactory
 
 object Jandom extends App {
 
@@ -53,7 +54,7 @@ object Jandom extends App {
     if (parsed.successful) {
    	  val program = parsed.get 
       val params = new targets.Parameters(domains.PPLCPolyhedron,program)
-      params.wideningFactory = new widenings.DelayedWideningFactory(DefaultWideningFactory,2)
+      params.wideningFactory = new DelayedWideningFactory(DefaultWidening,2)
  	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
       program.analyze(params, bb)
       println(program)  
