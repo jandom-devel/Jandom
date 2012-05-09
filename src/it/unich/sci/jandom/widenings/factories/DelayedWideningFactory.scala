@@ -30,5 +30,12 @@ import targets.Target
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 class DelayedWideningFactory[Tgt <: Target] (private val wideningFactory: WideningFactory[Tgt], private val delay: Int) extends WideningFactory[Tgt] {
-	def apply(pp: Tgt#ProgramPoint) = new DelayedWidening(wideningFactory(pp), delay)  
+	def apply(pp: Tgt#WideningPoint) = new DelayedWidening(wideningFactory(pp), delay)  
+}
+
+/**
+ * The companion object for delayed widening factories
+ **/
+object DelayedWideningFactory {
+  def apply[Tgt<: Target](wideningFactory: WideningFactory[Tgt], delay: Int) = new DelayedWideningFactory(wideningFactory,delay)
 }

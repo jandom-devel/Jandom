@@ -36,5 +36,5 @@ abstract class WideningFactory[-Tgt <: Target] {
    * @param pp the program point this widening is supposed to be used
    * @return the widening to use at program point pp
    */
-  def apply (pp: Tgt#ProgramPoint): Widening
+  def apply (pp: Tgt#WideningPoint): Widening
 }

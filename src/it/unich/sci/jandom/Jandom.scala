@@ -25,6 +25,8 @@ import targets.lts.LTS
 import domains._
 import annotations.BlackBoard
 import widenings.factories._
+import widenings.Widening
+import scala.collection.mutable.Map
 
 object Jandom extends App {
 
@@ -53,7 +55,7 @@ object Jandom extends App {
     if (parsed.successful) {
    	  val program = parsed.get 
       val params = new targets.Parameters(domains.PPLCPolyhedron,program)
-      params.wideningFactory = new PerPPWideningFactory(new DelayedWideningFactory(DefaultWideningFactory,2),program)
+      params.wideningFactory = PerPPWideningFactory[LTS](DelayedWideningFactory(DefaultWideningFactory,2),program)
  	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
    	  println(program)
       program.analyze(params, bb)        

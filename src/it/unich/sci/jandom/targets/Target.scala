@@ -21,6 +21,7 @@ package targets
 
 import domains.NumericalProperty
 import annotations.BlackBoard
+import scala.collection.mutable.Map
 
 /**
  * The abstract class for targets.
@@ -29,20 +30,25 @@ import annotations.BlackBoard
  */
 abstract class Target {
   /**
-   * The type for program points of the given target
+   * Abstract type for program points
    */
   type ProgramPoint
   
   /**
+   * Abstract type for widening program points
+   */
+  type WideningPoint = ProgramPoint
+   
+  /**
    * The type of the given target
    */
-  type Tgt <: Target
+  type Tgt <: Target    
   
   /**
    * Returns the size of the target as the number of program points.
    * @return the size of the target as the number of program points
    */
-  def size: Int
+  def size: Int    
   
   /**
    * Perform a static analysis over the target.

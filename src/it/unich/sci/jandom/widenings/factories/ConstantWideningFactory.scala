@@ -29,5 +29,12 @@ import targets.Target
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 class ConstantWideningFactory (private val widening: Widening) extends WideningFactory[Target] {
-  def apply(pp: Target#ProgramPoint) = widening
+  def apply(pp: Target#WideningPoint) = widening
+}
+
+/**
+ * The companion object for constant widening factories
+ **/
+object ConstantWideningFactory {
+  def apply(widening: Widening) = new ConstantWideningFactory(widening)
 }
