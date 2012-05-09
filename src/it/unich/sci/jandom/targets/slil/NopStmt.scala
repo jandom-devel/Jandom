@@ -22,6 +22,6 @@ package targets.slil
 /**
  * The class for the empty statement.
  */
-case class NopStmt extends SLILStmt {
+case object NopStmt extends SLILStmt {
   override def formatString(indent: Int, indentSize: Int): String = " "*indentSize*indent + "<no-op>"
 }

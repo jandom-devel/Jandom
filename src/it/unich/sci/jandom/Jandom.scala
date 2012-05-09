@@ -24,8 +24,7 @@ import targets.slil.SLILProgram
 import targets.lts.LTS
 import domains._
 import annotations.BlackBoard
-import widenings.DefaultWidening
-import widenings.factories.DelayedWideningFactory
+import widenings.factories._
 
 object Jandom extends App {
 
@@ -54,10 +53,10 @@ object Jandom extends App {
     if (parsed.successful) {
    	  val program = parsed.get 
       val params = new targets.Parameters(domains.PPLCPolyhedron,program)
-      params.wideningFactory = new DelayedWideningFactory(DefaultWidening,2)
+      params.wideningFactory = new PerPPWideningFactory(new DelayedWideningFactory(DefaultWideningFactory,2),program)
  	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
-      program.analyze(params, bb)
-      println(program)  
+   	  println(program)
+      program.analyze(params, bb)        
       println(bb)  
     } else {
       println(parsed)

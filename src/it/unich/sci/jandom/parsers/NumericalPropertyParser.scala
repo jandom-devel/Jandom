@@ -33,9 +33,12 @@ class PropertyParser extends JavaTokenParsers with LinearExpressionParser with L
 	val env = Environment()
 	var closedVariables = false;
     
-    protected val variable: Parser[Int] = ident ^^ { i => env.getBinding(i) match {
-      case Some(v) => v
-      case None => if (closedVariables) error("Unexpected variable") else env.addBinding(i)
-    }}	
+    protected val variable: Parser[Int] = new Parser[Int] {
+      def apply(in: Input) = ident(in) match {
+        case Success(i,in1) => env.getBinding(i) match {
+        	case Some(v) => Success(v,in1)
+        	case None => if (closedVariables) Failure("Unexpected variable",in1) else Success(env.addBinding(i),in1)
+        }}}
+    
 	def parse[Property<: NumericalProperty[Property]] (s: String, domain: NumericalDomain[Property]) = parseAll(condition,s).get.analyze(domain.full(env.size))
 }

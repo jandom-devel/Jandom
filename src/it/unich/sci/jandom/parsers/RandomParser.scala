@@ -44,7 +44,7 @@ object RandomParser extends JavaTokenParsers  with LinearExpressionParser with L
 	  "assume" ~> "(" ~> condition <~ ")" ^^ { AssumeStmt(_) } |
 	  ( "if" ~> "("  ~> condition <~ ")" ) ~ stmt ~ opt("else" ~> stmt) ^^ { 
 	    case c ~ s1 ~ Some(s2) => IfStmt(c,s1,s2)
-	    case c ~ s1 ~ None => IfStmt(c,s1,NopStmt())
+	    case c ~ s1 ~ None => IfStmt(c,s1,NopStmt)
 	  }  |
 	  ("while" ~> "(" ~> condition <~")") ~ stmt ^^ {
 	    case c ~ s => WhileStmt(c,s)

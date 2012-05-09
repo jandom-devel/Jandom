@@ -37,7 +37,7 @@ class LinearForm[T] (val coefficients: Seq[T], val env: Environment) (implicit n
    * are defined over the same environment.
    */
   override def equals(that: Any): Boolean = that match {
-    case that: LinearForm[T] => 
+    case that: LinearForm[_] => 
       (env == that.env) && (
           (coefficients zip that.coefficients) forall (tuple => tuple._1 == tuple._2)
        )    	     	 
@@ -80,7 +80,7 @@ class LinearForm[T] (val coefficients: Seq[T], val env: Environment) (implicit n
         case 0 => ""
         case 1 => if (index == 0) "1" else env(index-1)
         case -1 => if (index == 0) "-1" else "-"+env(index-1)
-        case c:T => c.toString + (if (index==0) "" else "*"+env(index-1))
+        case c => c.toString + (if (index==0) "" else "*"+env(index-1))
       }
       if (coeff!=0) {
     	if (first || coeff < zero) {
