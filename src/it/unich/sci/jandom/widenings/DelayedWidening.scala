@@ -29,6 +29,7 @@ import domains.NumericalProperty
  */
 class DelayedWidening (private val widening: Widening, private var delay: Int) extends Widening { 
   require(delay>=0)
+  
   def apply[Property <: NumericalProperty[Property]] (current: Property, next: Property) = {    
     if (delay>0) {
       delay -= 1

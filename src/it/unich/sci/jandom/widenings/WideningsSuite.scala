@@ -17,15 +17,15 @@
  */
 
 package it.unich.sci.jandom
-package widenings.factories
+package widenings
 
 import org.scalatest.Suite
 
 /**
- * The test suite for widening factories.
+ * The test suite for widenings.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class WideningFactoriesSuite extends Suite {
-  override def nestedSuites = List(new DelayedWideningFactorySuite)  
+class WideningsSuite extends Suite {
+  override def nestedSuites = List( new DelayedWideningSuite, new DelayedWideningFactorySuite )  
 }

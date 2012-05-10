@@ -34,6 +34,7 @@ class JandomSuite extends FunSuite {
       new targets.TargetsSuite,
       new parsers.ParsersSuite,
       new narrowings.NarrowingsSuite,
-      new ppfactories.PPFactoriesSuite
+      new ppfactories.PPFactoriesSuite,
+      new widenings.WideningsSuite
   )
 }

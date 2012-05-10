@@ -20,7 +20,6 @@ package it.unich.sci.jandom
 package widenings
 
 import domains.NumericalProperty
-import targets.Target
 
 /**
  * The standard widening. It use the widening operator defined in the abstract domain.

@@ -23,12 +23,10 @@ import domains.PPLCPolyhedron
 import targets.slil.SLILProgram
 import targets.lts.LTS
 import domains._
-import annotations.BlackBoard
-import widenings.factories._
-import widenings.Widening
+import widenings._
 import narrowings._
-import scala.collection.mutable.Map
 import ppfactories._
+import annotations.BlackBoard
 
 object Jandom extends App {
 
@@ -57,7 +55,7 @@ object Jandom extends App {
     if (parsed.successful) {
    	  val program = parsed.get 
       val params = new targets.Parameters(domains.PPLCPolyhedron,program)
-      params.wideningFactory = MemoizingFactory(DelayedWideningFactory[LTS](DefaultWideningFactory,2),program)
+      params.wideningFactory = MemoizingFactory(DelayedWideningFactory[LTS](DefaultWidening,2),program)
  	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
    	  println(program)
       program.analyze(params, bb)        
