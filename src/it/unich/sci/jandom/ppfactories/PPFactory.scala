@@ -17,24 +17,13 @@
  */
 
 package it.unich.sci.jandom
-package widenings
-package factories
+package ppfactories
 
 import targets.Target
 
 /**
- * This is a factory for widenings and is a parameter of the analysis. The analyzer calls the
- * factory at each program point, and the factory decides whether to create a new widening or
- * reuse an existing one.
- * @tparam Tgt the target for the widening factory
+ * This is the trait for "per program point" factories, i.e. functions
+ * which build objects parameterized by widening points.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
-abstract class WideningFactory[-Tgt <: Target] {
-  /**
-   * Returns a widening.
-   * @param pp the program point this widening is supposed to be used
-   * @return the widening to use at program point pp
-   */
-  def apply (pp: Tgt#WideningPoint): Widening
-}
+trait PPFactory[-Tgt <: Target, +Val] extends Function1[Tgt#WideningPoint,Val]

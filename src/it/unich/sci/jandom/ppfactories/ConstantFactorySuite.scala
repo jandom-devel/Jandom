@@ -17,24 +17,25 @@
  */
 
 package it.unich.sci.jandom
-package widenings
-package factories
+package ppfactories
 
-import targets.Target
+import targets.MockTarget
+import org.scalatest.FunSpec
+import org.scalatest.matchers.ShouldMatchers
 
 /**
- * A factory which always returns the same widening.
- * @tparam Tgt the target for the widening factory
- * @param widening the widening which is returned by the factory
+ * Test suite for constant "per program point" factories.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class ConstantWideningFactory (private val widening: Widening) extends WideningFactory[Target] {
-  def apply(pp: Target#WideningPoint) = widening
-}
-
-/**
- * The companion object for constant widening factories
- **/
-object ConstantWideningFactory {
-  def apply(widening: Widening) = new ConstantWideningFactory(widening)
+class ConstantFactorySuite extends FunSpec  {
+  describe("Constant Factory") {
+    it ("should return the same object each time it is called")  {
+      val dwf: PPFactory[MockTarget,String] = ConstantFactory("prova")
+      val d0 = dwf(0)
+      val d1= dwf(0)
+      val d2= dwf(2)
+      expect(d0) { d1 }
+      expect(d1) { d2 }
+    }
+  }
 }

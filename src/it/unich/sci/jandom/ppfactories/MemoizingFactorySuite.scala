@@ -17,35 +17,38 @@
  */
 
 package it.unich.sci.jandom
-package widenings.factories
+package ppfactories
 
-import domains.BoxDouble
 import targets.MockTarget
-import widenings.{DefaultWidening,DelayedWidening}
 import org.scalatest.FunSpec
 
 /**
+ * A test suite for memoizing factories.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class PerPPWideningFactorySuite extends FunSpec {
+class MemoizingFactorySuite extends FunSpec {
+  
+  private class NumberFactory extends PPFactory[MockTarget,Int] {
+    var i: Int = 0
+    def apply(pp: MockTarget#WideningPoint) = {
+      i+=1
+      i
+    } 
+  }
+  
   describe("PerPP Widening Factory") {
     it ("should create differente instances of a widening for each program point")  {
       val tgt = new MockTarget()
-      val dwf = PerPPWideningFactory[MockTarget](DelayedWideningFactory(DefaultWideningFactory,1),tgt)
-      val wd = dwf(0)       
-      val d1 = BoxDouble(Array(0),Array(1))
-      val d2 = BoxDouble(Array(1),Array(2))
-      val d3 = wd(d1,d2)    
-      expect ( BoxDouble(Array(0),Array(2)) ) { d3 }
-      val wd2 = dwf(0)
-      val d4 = BoxDouble(Array(2),Array(3))
-      val d5 = wd2(d3,d4)
-      expect ( BoxDouble(Array(0),Array(Double.PositiveInfinity)) ) { d5 }
-      val wd3 = dwf(1)
-      val d6 = BoxDouble(Array(3),Array(4))
-      val d7 = wd3(d1,d6)
-      expect ( BoxDouble(Array(0),Array(4)) ) { d7 }          
+      val dwf = MemoizingFactory(new NumberFactory,tgt)
+      val i0 = dwf(0)      
+      val i1 = dwf(0)
+      val i2 = dwf(1)
+      val i3 = dwf(0)
+      expect(1) { i0 }
+      expect(1) { i1 }
+      expect(2) { i2 }
+      expect(1) { i3 }
     }   
   }
 }

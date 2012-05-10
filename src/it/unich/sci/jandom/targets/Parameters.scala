@@ -20,9 +20,10 @@ package it.unich.sci.jandom
 package targets
   
 import domains.{NumericalProperty,NumericalDomain}
-import widenings.DefaultWidening
-import widenings.factories.{WideningFactory, ConstantWideningFactory}
+import widenings.factories.DefaultWideningFactory
+import widenings.Widening
 import narrowings.{Narrowing, DefaultNarrowing}
+import ppfactories.PPFactory
 
 /**
  * This class is used to keep parameters for analyzers.
@@ -36,7 +37,7 @@ class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val do
   /**
   * The widening factory used in the analysis. Defaults to the factory for the standard domain widening.
   */
-  var wideningFactory: WideningFactory[Tgt] = new ConstantWideningFactory(DefaultWidening)
+  var wideningFactory: PPFactory[Tgt, Widening] = DefaultWideningFactory
   
   /**
    * The narrowing used in the analysis. Defaults to the standard domain narrowing. 

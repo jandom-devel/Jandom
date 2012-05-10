@@ -17,15 +17,15 @@
  */
 
 package it.unich.sci.jandom
-package widenings.factories
+package ppfactories
 
 import org.scalatest.Suite
 
 /**
- * The test suite for widening factories.
+ * Test suites for the generic "per program point" factories
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class WideningFactoriesSuite extends Suite {
-  override def nestedSuites = List(new DelayedWideningFactorySuite)  
+class PPFactoriesSuite extends Suite {	
+  override def nestedSuites = List(new ConstantFactorySuite, new MemoizingFactorySuite)  
 }

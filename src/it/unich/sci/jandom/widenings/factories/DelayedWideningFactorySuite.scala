@@ -30,7 +30,7 @@ import org.scalatest.FunSpec
 class DelayedWideningFactorySuite extends FunSpec {  
   
   describe("Delayed Widening Factory") {
-    it ("should create a difference instance of a delayed widening each time it is called")  {
+    it ("should create a difference instance of a delayed widening each time it is called")  {      
       val dwf = DelayedWideningFactory[MockTarget](DefaultWideningFactory,1)
       val wd = dwf(0)       
       val d1 = BoxDouble(Array(0),Array(1))
@@ -48,7 +48,7 @@ class DelayedWideningFactorySuite extends FunSpec {
     }
     
     it ("should reject negative delays") {
-      intercept[IllegalArgumentException] { DelayedWideningFactory[MockTarget](DefaultWideningFactory,-1) }
+      intercept[IllegalArgumentException] { DelayedWideningFactory(DefaultWideningFactory,-1) }
     }
   }      
 }

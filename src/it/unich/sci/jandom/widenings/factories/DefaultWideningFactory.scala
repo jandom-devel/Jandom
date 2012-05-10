@@ -21,9 +21,10 @@ package widenings.factories
 
 import targets.Target
 import widenings.DefaultWidening
+import ppfactories.ConstantFactory
 
 /**
  * A factory for the default widening.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-object DefaultWideningFactory extends ConstantWideningFactory(DefaultWidening)
+object DefaultWideningFactory extends ConstantFactory(DefaultWidening)

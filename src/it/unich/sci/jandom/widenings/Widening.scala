@@ -22,11 +22,11 @@ package widenings
 import domains.NumericalProperty
 
 /**
- * This is the abstract class for widenings, operators used to accelerate fixpoint computations.
+ * This is the trait for widenings, operators used to accelerate fixpoint computations.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 
-abstract class Widening  {
+trait Widening  {
   /**
    * @tparam Property the type of the property 
    * @param current the property at the current iteration
@@ -34,5 +34,4 @@ abstract class Widening  {
    * @result the result of widening 
    */
   def apply[Property <: NumericalProperty[Property]](current: Property, next: Property): Property
-  
 }

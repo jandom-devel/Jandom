@@ -17,28 +17,24 @@
  */
 
 package it.unich.sci.jandom
-package widenings
-package factories
+package ppfactories
 
 import targets.Target
-import ppfactories.PPFactory
-import it.unich.sci.jandom.ppfactories.PPFactory
 
 /**
- * The factory for a dealyed widening. It creates a number of delayed widenings with the same parameters.
- * @tparam Tgt the target for the widening factory
- * @param wideningFactory the original widening factory
- * @param delay the delay of the widening
+ * A "per program point" factory which always returns the same value 
+ * @taparam T the type of the object built by the factory
+ * @param obj the object returned by the factory
  * @author Gianluca Amato <amato@sci.unich.it>
+ *
  */
-class DelayedWideningFactory[Tgt<: Target] (private val wideningFactory: PPFactory[Tgt,Widening], private val delay: Int) extends PPFactory[Tgt,Widening] {
-  require(delay>=0)
-  def apply(pp: Tgt#WideningPoint) = new DelayedWidening(wideningFactory(pp), delay)  
+class ConstantFactory[T] (private val obj: T) extends PPFactory[Target,T] {
+  def apply(pp: Target#WideningPoint) = obj
 }
 
 /**
- * The companion object for delayed widening factories
+ * The companion object for constant "per program point" factories
  **/
-object DelayedWideningFactory {
-  def apply[Tgt <:Target](wideningFactory: PPFactory[Tgt,Widening], delay: Int) = new DelayedWideningFactory(wideningFactory,delay)
+object ConstantFactory {  
+  def apply[T](obj: T) = new ConstantFactory(obj)
 }
