@@ -17,26 +17,15 @@
  */
 
 package it.unich.sci.jandom
-package widenings
-package factories
+package widenings.factories
 
-import targets.Target
+import org.scalatest.Suite
 
 /**
- * The factory for a dealyed widening. It creates a number of delayed widenings with the same parameters.
- * @tparam Tgt the target for the widening factory
- * @param wideningFactory the original widening factory
- * @param delay the delay of the widening
+ * The test suite for widening factories.
  * @author Gianluca Amato <amato@sci.unich.it>
+ *
  */
-class DelayedWideningFactory[Tgt <: Target] (private val wideningFactory: WideningFactory[Tgt], private val delay: Int) extends WideningFactory[Tgt] {
-  require(delay>=0)
-  def apply(pp: Tgt#WideningPoint) = new DelayedWidening(wideningFactory(pp), delay)  
-}
-
-/**
- * The companion object for delayed widening factories
- **/
-object DelayedWideningFactory {
-  def apply[Tgt<: Target](wideningFactory: WideningFactory[Tgt], delay: Int) = new DelayedWideningFactory(wideningFactory,delay)
+class WideningFactoriesSuite extends Suite {
+  override def nestedSuites = List(new ConstantWideningFactorySuite, new DelayedWideningFactorySuite, new PerPPWideningFactorySuite)  
 }
