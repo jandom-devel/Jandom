@@ -20,13 +20,12 @@ package it.unich.sci.jandom
 package narrowings
 
 import domains.NumericalProperty
-import targets.Target
-import annotations.BlackBoard
 
 /**
+ * This is a narrowing which does not perform any descending step, it just returns the 
+ * current value.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
-class NoNarrowing[Property] extends Narrowing[Property] {
-	def apply[Tgt <: Target] (current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) = current
+class NoNarrowing extends Narrowing {
+	def apply[Property <: NumericalProperty[Property]] (current: Property, next: Property) = current
 }

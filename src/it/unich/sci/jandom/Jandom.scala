@@ -26,6 +26,7 @@ import domains._
 import annotations.BlackBoard
 import widenings.factories._
 import widenings.Widening
+import narrowings._
 import scala.collection.mutable.Map
 import ppfactories._
 
@@ -40,7 +41,7 @@ object Jandom extends App {
     if (parsed.successful) {
 	  val program = parsed.get 
 	  val params = new targets.Parameters(domains.PPLCPolyhedron,program)
-      params.narrowing = new narrowings.FixedStepsNarrowing(params.narrowing,2)
+      params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing,2),program)
  	  val bb: BlackBoard[SLILProgram] = new annotations.BlackBoard(program)
       program.analyze(params, bb)
       println(program)  

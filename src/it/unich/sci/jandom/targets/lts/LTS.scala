@@ -46,6 +46,7 @@ case class LTS (val locations: Seq[Location], val transitions: Seq[Transition], 
   def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property, Tgt], bb: BlackBoard[LTS]) {    
     var current, next, base : Seq[Property] = Nil
     val widenings = (0 to locations.size-1) map { params.wideningFactory(_) } 
+    val narrowings = (0 to locations.size-1) map { params.narrowingFactory(_) } 
 
     next = for (loc <- locations) 
       yield  (params.domain.full(env.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }   
@@ -65,7 +66,7 @@ case class LTS (val locations: Seq[Location], val transitions: Seq[Transition], 
       next =  for ((loc, propold) <- locations zip current) yield {
         val propnew = for (t <- loc.transitions) yield t.analyze(current(t.start.id))
         val unionednew = propnew.fold( params.domain.empty(env.size) ) ( _ union _ )
-        params.narrowing[LTS](propold, unionednew, bb, loc.id)    
+        narrowings(loc.id)(propold, unionednew)    
       }      
     }
    

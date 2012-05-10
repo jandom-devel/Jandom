@@ -39,13 +39,14 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     var newinvariant = input
     var invariant = input
     val widening = params.wideningFactory(this.hashCode)
+    val narrowing = params.narrowingFactory(this.hashCode)
     do {      
       invariant = newinvariant
       newinvariant = widening(invariant, input union body.analyze(condition.analyze(invariant), params, ann))
     } while (newinvariant > invariant)          
     do {
       invariant = newinvariant
-      newinvariant = params.narrowing[SLILProgram](invariant, input union body.analyze(condition.analyze(invariant),params, ann), ann, this.hashCode)      
+      newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant),params, ann))      
     } while (newinvariant < invariant)    
     savedInvariant = invariant
     savedFirst = condition.analyze(invariant)

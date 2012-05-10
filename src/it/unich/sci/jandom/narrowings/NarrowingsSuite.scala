@@ -19,31 +19,13 @@
 package it.unich.sci.jandom
 package narrowings
 
-import domains.NumericalProperty
-import targets.Target
-import annotations.{AnnotationType,BlackBoard}
-/**
- * @author Gianluca Amato <amato@sci.unich.it>
- *
- */
-  
-class FixedStepsNarrowing[Property <: NumericalProperty[Property]] (private val narrowing: Narrowing[Property], private val steps: Int) extends Narrowing[Property] { 
-  require(steps>0)
-  
-  def apply[Tgt <: Target] (current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) = {
-    val i = bb(FixedStepNarrowingAnnotation)(pp)
-    if (i < steps) {
-      bb(FixedStepNarrowingAnnotation)(pp) = i+1
-      next
-    } else 
-      narrowing(current, next, bb, pp)
-  } 
-}
+import org.scalatest.Suite
 
 /**
- * This declares a new annotation type for the current index of fixed step narrowing
+ * Test suite for narrowings.
+ * @author Gianluca Amato <amato@sci.unich.it>
  */
-object FixedStepNarrowingAnnotation extends AnnotationType {
-  type T = Int
-  val defaultValue = 0
+
+class NarrowingsSuite extends Suite {
+  override def nestedSuites = List ( new DelayedNarrowingSuite, new DelayedNarrowingFactorySuite )  
 }

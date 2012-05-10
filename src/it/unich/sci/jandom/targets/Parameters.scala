@@ -40,7 +40,7 @@ class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val do
   var wideningFactory: PPFactory[Tgt, Widening] = DefaultWideningFactory
   
   /**
-   * The narrowing used in the analysis. Defaults to the standard domain narrowing. 
+   * The narrowing factory used in the analysis. Defaults to the standard domain narrowing. 
    */
-  var narrowing: Narrowing[Property] = new DefaultNarrowing[Property]
+  var narrowingFactory: PPFactory[Tgt,Narrowing] = DefaultNarrowing
 }

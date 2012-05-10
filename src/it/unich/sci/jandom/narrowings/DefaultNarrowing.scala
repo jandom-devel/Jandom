@@ -20,14 +20,13 @@ package it.unich.sci.jandom
 package narrowings
 
 import domains.NumericalProperty
-import targets.Target
-import annotations.BlackBoard
+import ppfactories.ConstantFactory
 
 /**
+ * The standard narrowing. It use the narrowing operator defined in the abstract domain.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 
-class DefaultNarrowing [Property <: NumericalProperty[Property]]  extends Narrowing[Property] {  
-  def apply[Tgt <: Target](current: Property, next: Property, bb: BlackBoard[Tgt], pp: Tgt#ProgramPoint) = current.narrowing(next)
+object DefaultNarrowing extends Narrowing {  
+  def apply[Property <: NumericalProperty[Property]] (current: Property, next: Property) = current narrowing next
 }

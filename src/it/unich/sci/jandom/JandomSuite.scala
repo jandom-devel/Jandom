@@ -32,6 +32,8 @@ class JandomSuite extends FunSuite {
       new numberextensions.GenericNumberExtSuite,
       new numberextensions.IntegerExtSuite,
       new targets.TargetsSuite,
-      new parsers.ParsersSuite            
+      new parsers.ParsersSuite,
+      new narrowings.NarrowingsSuite,
+      new ppfactories.PPFactoriesSuite
   )
 }

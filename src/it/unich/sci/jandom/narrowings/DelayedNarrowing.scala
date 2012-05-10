@@ -20,27 +20,23 @@ package it.unich.sci.jandom
 package narrowings
 
 import domains.NumericalProperty
-import targets.Target
-import ppfactories.ConstantFactory
 
 /**
- * This is the trait for narrowings, operators used to accelerate fixpoint computations.
+ * Delayed narrowing. It performs delayes normal descending steps, and then start applying the
+ * narrowing given as an argument.
+ * @param narrowing the original narrowing
+ * @param delay the number of delayed steps 
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-trait Narrowing {
-  /**
-   * @param current the property at the current iteration
-   * @param next the property at the next iteration. This IS assumed to be smaller than current.
-   * @result the result of the narrowing
-   */
-  def apply[Property <: NumericalProperty[Property]](current: Property, next: Property) : Property
-}
-
-/**
- * The companion object for Narrowing. Contains implicit definition to transform automatically
- * a narrowing into a constant "per program point" factory.
- * @author Gianluca Amato <amato@sci.unich.it>
- */
-object Narrowing {
-  implicit def toNarrowingFactory[Tgt <: Target](narrowing: Narrowing) = ConstantFactory(narrowing)
+  
+class DelayedNarrowing(private val narrowing: Narrowing, private var delay: Int) extends Narrowing { 
+  require (delay>=0)
+  
+  def apply[Property <: NumericalProperty[Property]]  (current: Property, next: Property) = {      
+    if (delay>0) {
+      delay -= 1
+      next
+    } else 
+      narrowing(current, next)
+  } 
 }
