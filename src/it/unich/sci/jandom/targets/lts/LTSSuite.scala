@@ -32,34 +32,18 @@ import org.scalatest.FunSuite
 class LTSSuite extends FunSuite {
   test("simple LTS analysis") {
     val env = targets.Environment("x")
-	val l1 = Location("start",0, Nil)
-	val l2 = Location("ciclo", 1, List(FalseCond))
+	val l1 = Location("start", Nil)
+	val l2 = Location("ciclo", List(FalseCond))
 	val t1 = Transition("init", l1, l2, 
 	    guard = Nil, 
 	    assignments = List(LinearAssignment(0,LinearForm.fromCoefficient(0,env))))
 	val t2 = Transition("loop", l2, l2, 
 	    guard = List(AtomicCond(LinearForm(List(-10,1),env), AtomicCond.ComparisonOperators.LTE)),
 	    assignments = List(LinearAssignment(0,LinearForm(List(1,1),env))))
-	val lts = LTS(List(l1,l2), List(t1,t2), env)
+	val lts = LTS(IndexedSeq(l1,l2), Seq(t1,t2), env)
 	val params = new targets.Parameters(BoxDouble,lts)
     val bb = new annotations.BlackBoard(lts)
     lts.analyze(params, bb)
-    expect ( BoxDouble(Array(0), Array(11)) ) { bb(NumericalPropertyAnnotation)(1) }
-  } 
-  /*
-  test("simple LTS analysis, non-consecutive id") {
-    val env = targets.Environment("x")
-	val l1 = Location("l1",1,Nil)
-	val l2 = Location("ciclo",4, List(FalseCond))
-	val t1 = Transition("init", l1, l2,guard = Nil, assignments = List(LinearAssignment(0,LinearForm.fromCoefficient(0,env))))
-	val t2 = Transition("loop", l2, l2, 
-	    guard = List(AtomicCond(LinearForm(List(-10,1),env), AtomicCond.ComparisonOperators.LT)),
-	    assignments = List(LinearAssignment(0,LinearForm(List(1,1),env))))
-	val lts= LTS(List(l1,l2), List(t1,t2), env)
-	val params = new targets.Parameters(BoxDouble,lts)
-    val bb = new annotations.BlackBoard(lts)
-    lts.analyze(params, bb)
-    expect ( BoxDouble(Array(0), Array(11)) ) { bb(NumericalPropertyAnnotation)(4) }
-  } 
-  */
+    expect ( BoxDouble(Array(0), Array(11)) ) { bb(NumericalPropertyAnnotation)(l2) }
+  }   
 }

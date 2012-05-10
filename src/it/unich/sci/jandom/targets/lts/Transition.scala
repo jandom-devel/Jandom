@@ -32,7 +32,6 @@ import domains.NumericalProperty
  * @param guard the conditions which should hold for the transition to be active
  * @param assignments the assignments to apply when the transition is selected
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 case class Transition (val name: String, val start: Location, val end: Location, val guard: Seq[LinearCond], val assignments: Seq[LinearAssignment[_]]) {
   end += this
@@ -45,5 +44,4 @@ case class Transition (val name: String, val start: Location, val end: Location,
     val filtered = (input /: guard) { (current, cond) => cond.analyze(current) }
 	(filtered /: assignments)  { (current, assgn) => assgn.analyze(current) }
   }     
-
 }

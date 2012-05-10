@@ -19,12 +19,13 @@
 package it.unich.sci.jandom
 package targets.lts
 
-import domains.{NumericalProperty,NumericalPropertyAnnotation}
-import targets.{Environment,Parameters,Target}
-import widenings.Widening
+import domains.{ NumericalProperty, NumericalPropertyAnnotation }
+import targets.{ Environment, Parameters, Target }
 import annotations._
+import widenings.Widening
+import narrowings.Narrowing
 
-import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.{ ArrayBuffer, Map }
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -34,65 +35,83 @@ import scala.collection.mutable.ArrayBuffer
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class LTS (val locations: Seq[Location], val transitions: Seq[Transition], val env: Environment) extends Target {    
-  
-  type ProgramPoint = Int
-  type Tgt = LTS
-  
-  override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")
-  
-  def size = locations.size
-  
-  def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property, Tgt], bb: BlackBoard[LTS]) {    
-    var current, next, base : Seq[Property] = Nil
-    val widenings = (0 to locations.size-1) map { params.wideningFactory(_) } 
-    val narrowings = (0 to locations.size-1) map { params.narrowingFactory(_) } 
 
-    next = for (loc <- locations) 
-      yield  (params.domain.full(env.size) /: loc.conditions) { (prop, cond) => cond.analyze(prop) }   
-    
-    while (current != next) {      
-      current = next      
-      next = for ((loc, propold) <- locations zip current) yield {
-        val propnew = for (t <- loc.transitions) yield t.analyze(current(t.start.id))
-        val unionednew = propnew.fold( params.domain.empty(env.size) ) ( _ union _ )
-        widenings(loc.id)(propold, unionednew)
-      }      
-    } 
-    
-    current = Nil    
+class LTS(private val locations: IndexedSeq[Location], private val transitions: Seq[Transition], private val env: Environment) extends Target {
+
+  // fill locations with their numerical index.. this is used to speed up execution
+  locations.zipWithIndex.foreach { case (loc, index) => loc.id = index }
+
+  // set s to the number of locations. A Seq is not guaranteed to have a fast size method, hence we
+  // cache the result
+  private[this] val s = locations.size
+
+  type ProgramPoint = Location
+  type Tgt = LTS
+
+  def size = s
+
+  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property, Tgt], bb: BlackBoard[LTS]) {
+    // build widening and narrowings for each program point    
+    val widenings = locations map params.wideningFactory
+    val narrowings = locations map params.narrowingFactory
+
+    // build an empty property.. it is used several times, so we speed execution    
+    val empty = params.domain.empty(env.size)
+
+    var current = locations map { _ => empty }
+    var next = locations map { loc =>
+      (params.domain.full(env.size) /: loc.conditions) {
+        (prop, cond) => cond.analyze(prop)
+      }
+    }
+
     while (current != next) {
       current = next
-      next =  for ((loc, propold) <- locations zip current) yield {
-        val propnew = for (t <- loc.transitions) yield t.analyze(current(t.start.id))
-        val unionednew = propnew.fold( params.domain.empty(env.size) ) ( _ union _ )
-        narrowings(loc.id)(propold, unionednew)    
-      }      
+      next = for (loc <- locations) yield {
+        val propnew = for (t <- loc.incomings) yield t.analyze(current(t.start.id))
+        val unionednew = propnew.fold(empty)(_ union _)
+        widenings(loc.id)(current(loc.id), unionednew)
+      }
     }
-   
-    val annotation = bb(NumericalPropertyAnnotation) 
-    current.zipWithIndex.foreach { case (prop, pp) => annotation(pp)=prop }         
-  }      
+
+    current = null
+    while (current != next) {
+      current = next
+      next = for (loc <- locations) yield {
+        val propnew = for (t <- loc.incomings) yield t.analyze(current(t.start.id))
+        val unionednew = propnew.fold(empty)(_ union _)
+        narrowings(loc.id)(current(loc.id), unionednew)
+      }
+    }
+
+    val annotation = bb(NumericalPropertyAnnotation)
+    locations.foreach { loc => annotation(loc) = current(loc.id) }
+  }
+
+  override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")
 }
 
-/** 
- * The companion object for LTS. It defines the AnnotationBuilder for program point annotations. 
+/**
+ * The companion object for LTS. It defines the AnnotationBuilder for program point annotations.
  */
 object LTS {
+
+  def apply(locations: IndexedSeq[Location], transitions: Seq[Transition], env: Environment) = new LTS(locations, transitions, env)
+
   /**
    * The annotation builder for program point annotations in LTS's
    */
   implicit object LTSProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[LTS] {
-	 def apply[Ann <: AnnotationType](t: LTS, ann: Ann): PerProgramPointAnnotation[LTS,Ann] = 
-	   new PerProgramPointAnnotation[LTS,Ann]{
-	     val a = ArrayBuffer.fill[Ann#T](t.size)(ann.defaultValue)
-	     def apply(pp: LTS#ProgramPoint) = a(pp)
-	     def update(pp: LTS#ProgramPoint, v: Ann#T) { a(pp) = v }
-	     def iterator = new Iterator[(LTS#ProgramPoint,Ann#T)] {
-	       var index: Int = -1
-	       def hasNext = index < a.size -1
-	       def next = { index +=1 ; (index,a(index)) }
-	     }
-	 }
-  } 
+    def apply[Ann <: AnnotationType](t: LTS, ann: Ann): PerProgramPointAnnotation[LTS, Ann] =
+      new PerProgramPointAnnotation[LTS, Ann] {
+        val a = ArrayBuffer.fill[Ann#T](t.size)(ann.defaultValue)
+        def apply(pp: LTS#ProgramPoint) = a(pp.id)
+        def update(pp: LTS#ProgramPoint, v: Ann#T) { a(pp.id) = v }
+        def iterator = new Iterator[(LTS#ProgramPoint, Ann#T)] {
+          var index: Int = -1
+          def hasNext = index < a.size - 1
+          def next = { index += 1; (t.locations(index), a(index)) }
+        }
+      }
+  }
 }

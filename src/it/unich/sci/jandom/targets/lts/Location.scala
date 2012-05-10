@@ -20,7 +20,7 @@ package it.unich.sci.jandom
 package targets.lts
 
 import targets.linearcondition.LinearCond
-
+import targets.ProgramPoint
 
 /**
  * A class for locations (i.e. nodes in a linear transition system)
@@ -30,30 +30,36 @@ import targets.linearcondition.LinearCond
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class Location (val name:String, val id: LTS#ProgramPoint, val conditions: Seq[LinearCond]) {   
+case class Location (val name: String, val conditions: Seq[LinearCond]) extends ProgramPoint {
   /**
-   * The set of incoming transitions 
+   * The set of incoming transitions.  Used internally by the analyzer
    */
-  var incoming : List[Transition] = Nil
+  private[this] var inc: List[Transition] = Nil
+      
+  /** 
+   * A numeric id for the location. Used internally by the analyzer. The value
+   * -1 means it has never been assigned a valid id.
+   */
+  private[lts] var id: Int = -1
   
   /**
-   * Add a transition to the set of incoming transitions.
+   * Returns the incoming transitions. Used internally by the analyzer
+   * @return the incoming transitions
+   */
+  private[lts] def incomings = inc
+
+  /**
+   * Add a transition to the set of incoming transitions.  Used internally by the analyzer
    * @param t the transition to add
    * @return the transition t
    */
-  def += (t: Transition): Transition = { 
-    incoming = t :: incoming 
-    t 
+  private [lts] def += (t: Transition): Transition = {
+    inc = t :: inc
+    t
   }
-  
-  /**
-   * Returns the iterable of incoming transitions.
-   * @return the incoming transitions
-   */
-  def transitions = incoming.toIterable
-    
-  override def toString = 
-    "location "+name+" with (\n"+ 
-       conditions.mkString(start="  ", sep="\n  ", end="\n") + 
-    ");" 
+
+  override def toString =
+    "location " + name + " with (\n" +
+      conditions.mkString(start = "  ", sep = "\n  ", end = "\n") +
+      ");"
 }

@@ -59,7 +59,7 @@ object Jandom extends App {
  	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
    	  println(program)
       program.analyze(params, bb)        
-      println(bb)  
+      println(bb)
     } else {
       println(parsed)
     }      

@@ -35,7 +35,6 @@ import scala.collection.mutable.HashMap
  */
 object LPInvParser extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
   val env = Environment()
-  var current_loc = 0
   private val location_env = new HashMap[String, Location]
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
@@ -61,8 +60,7 @@ object LPInvParser extends JavaTokenParsers with LinearExpressionParser with Lin
       rep(condition) <~
       ")" <~ ";" ^^ {
         case name ~ condition => {
-          val loc = Location(name, current_loc, condition)
-          current_loc += 1
+          val loc = Location(name, condition)          
           location_env += name -> loc
           loc
         }
@@ -84,7 +82,7 @@ object LPInvParser extends JavaTokenParsers with LinearExpressionParser with Lin
 
   private val prog = 
     declarations ~> opt(template) ~> rep(location) ~ rep(transition) <~ literal("end") ^^ {
-      case ls ~ ts => LTS(ls, ts, env)
+      case ls ~ ts => LTS(ls.toIndexedSeq, ts, env)
     }
 
   def parseProgram(s: String) = parseAll(prog, s)
