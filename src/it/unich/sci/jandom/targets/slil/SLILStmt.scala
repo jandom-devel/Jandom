@@ -31,16 +31,17 @@ abstract class SLILStmt {
   /**
    * The program this statement is part of.
    */
-  val program: SLILProgram = null
+  private[this] val program: SLILProgram = null
 
   /**
-   * A method to pretty print a SLILStmt with annotations
-   * @param indent the indentation level of the statement
-   * @param identSize the size in white spaces of each indentation level
-   * @param ann the annotation to print together with program
+   * A method to pretty print a SLILStmt with corresponding annotations 
+   * @param ann the annotation to print together with the program
+   * @param level the current indentation level
+   * @param ppspec the specification for the format to use for pretty printing. It defaults to the
+   * standard pretty printer specification
    * @return the string representation of the program
    */
-  def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]): String
+  def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int = 0, ppspec: PrettyPrinterSpec = PrettyPrinterSpec()): String
 
   /**
    * The analyzer for the SLIL statement.
@@ -51,8 +52,6 @@ abstract class SLILStmt {
    * @return the property at the end of the statement
    */
   def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], ann: BlackBoard[SLILProgram]): Property = input
-
-  def mkString(ann: PerProgramPointAnnotation[SLILProgram, _]) = formatString(0, 2, ann)
 
   override def toString = mkString(SLILProgram.SLILProgramPointAnnotationBuilder.apply(program, EmptyAnnotationType))
 }

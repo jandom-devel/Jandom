@@ -38,6 +38,6 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T])(implicit nume
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
   }
 
-  override def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]) =
-    " " * indentSize * indent + linearForm.env(variable) + " = " + linearForm.toString
+  override def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int, ppspec: PrettyPrinterSpec) =
+    ppspec.indent(level) + linearForm.env(variable) + " = " + linearForm.toString
 }

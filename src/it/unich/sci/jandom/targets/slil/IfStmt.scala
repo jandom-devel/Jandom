@@ -48,16 +48,17 @@ case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLI
     return thenEnd union elseEnd
   }
 
-  override def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]): String = {
-    val spaces = " " * indentSize * indent
+  override def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int, ppspec: PrettyPrinterSpec): String = {
+    val spaces = ppspec.indent(level)
+    val innerspaces = ppspec.indent(level+1)
     val s = spaces + "if (" + condition.toString + ") {\n" +
-      (if (ann(this, 1) != null) spaces + " " * indentSize + ann(this, 1) + "\n" else "") +
-      then_branch.formatString(indent + 1, indentSize, ann) + "\n" +
-      (if (ann(this, 3) != null) spaces + " " * indentSize + ann(this, 3) + "\n" else "") +
+      (if (ann(this, 1) != null) innerspaces + ppspec.decorator(ann(this, 1)) + "\n" else "") +
+      then_branch.mkString(ann,level+1,ppspec) + "\n" +
+      (if (ann(this, 3) != null) innerspaces + ppspec.decorator(ann(this, 3)) + "\n" else "") +
       spaces + "} else {\n" +
-      (if (ann(this, 2) != null) spaces + " " * indentSize + ann(this, 2) + '\n' else "") +
-      else_branch.formatString(indent + 1, indentSize, ann) + "\n" +
-      (if (ann(this, 4) != null) spaces + " " * indentSize + ann(this, 4) + '\n' else "") +
+      (if (ann(this, 2) != null) innerspaces + ppspec.decorator(ann(this, 2)) + '\n' else "") +
+      else_branch.mkString(ann,level+1,ppspec) + "\n" +
+      (if (ann(this, 4) != null) innerspaces + ppspec.decorator(ann(this, 4)) + '\n' else "") +
       spaces + '}'
     return s
   }

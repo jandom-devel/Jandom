@@ -52,12 +52,12 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     return condition.opposite.analyze(invariant)
   }
 
-  override def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]) = {
-    val spaces = " " * indentSize * indent
+  override def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int, ppspec: PrettyPrinterSpec) = {
+    val spaces = ppspec.indent(level)
     spaces + "while (" + condition + ")" +
-      (if (ann(this, 1) != null) " " + ann(this, 1) else "") + " {\n" +
-      (if (ann(this, 2) != null) spaces + " " * indentSize + ann(this, 2) + "\n" else "") +
-      body.formatString(indent + 1, indentSize, ann) + '\n' +
+      (if (ann(this, 1) != null) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +
+      (if (ann(this, 2) != null) ppspec.indent(level+1) + ppspec.decorator(ann(this, 2)) + "\n" else "") +
+      body.mkString(ann, level+1, ppspec) + '\n' +
       spaces + '}'
   }
 }

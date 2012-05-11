@@ -32,6 +32,6 @@ import annotations.{ BlackBoard, PerProgramPointAnnotation }
 case class AssumeStmt(cond: LinearCond) extends SLILStmt {
   override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], ann: BlackBoard[SLILProgram]): Property =
     cond.analyze(input)
-  override def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]) =
-    " " * indentSize * indent + "assume(" + cond + ")"
+  override def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level:Int, ppspec: PrettyPrinterSpec) =
+    ppspec.indent(level) + "assume(" + cond + ")"
 }

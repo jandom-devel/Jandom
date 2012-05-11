@@ -19,39 +19,39 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.{NumericalProperty,NumericalPropertyAnnotation}
+import domains.{ NumericalProperty, NumericalPropertyAnnotation }
 import targets.Parameters
-import annotations.{BlackBoard,PerProgramPointAnnotation}
+import annotations.{ BlackBoard, PerProgramPointAnnotation }
 import scala.collection.mutable.ListBuffer
 
 /**
  * A class for the compound statement (sequential composition)
  * @param stmts the sequence of statements that form the compound statement
  */
-case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {  
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], bb: BlackBoard[SLILProgram]): Property = {
+case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], bb: BlackBoard[SLILProgram]): Property = {
     val ann = bb(NumericalPropertyAnnotation).toPPAnnotation
-    var current = input    
+    var current = input
     var index = 0
     for (stmt <- stmts) {
-      if (index>0 && params.allPPResult) ann((this,index)) = current
-      index += 1       
-      current = stmt.analyze(current, params, bb)      
-    }  
+      if (index > 0 && params.allPPResult) ann((this, index)) = current
+      index += 1
+      current = stmt.analyze(current, params, bb)
+    }
     current
   }
-  
-  override def formatString(indent: Int, indentSize: Int, ann:  PerProgramPointAnnotation[SLILProgram,_]) = {
-    val spaces = " "*indentSize*indent
-    val result = new StringBuilder()    
+
+  override def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int, ppspec: PrettyPrinterSpec) = {
+    val spaces = ppspec.indent(level)
+    val result = new StringBuilder()
     var index = 1
     for (stmt <- stmts) {
-      if (index>1) result+= '\n'            
-      result ++= stmt.formatString(indent,indentSize, ann)
-      if (ann(this,index)!=null)
-        result ++= '\n' + spaces + ann(this,index).toString
+      if (index > 1) result += '\n'
+      result ++= stmt.mkString(ann, level, ppspec)
+      if (ann(this, index) != null)
+        result ++= '\n' + spaces + ppspec.decorator(ann(this, index))
       index += 1
     }
     result.toString
-  }  
+  }
 }

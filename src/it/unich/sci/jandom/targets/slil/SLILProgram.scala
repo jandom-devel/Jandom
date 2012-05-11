@@ -35,23 +35,27 @@ import scala.collection.mutable.ListBuffer
  * @param stmt the body of the program
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-case class SLILProgram(private val env: Environment, private val inputVars: Seq[Int], private val stmt: SLILStmt) extends  SLILStmt with Target {
-  type ProgramPoint = (SLILStmt,Int)
+case class SLILProgram(private val env: Environment, private val inputVars: Seq[Int], private val stmt: SLILStmt) extends SLILStmt with Target {
+  type ProgramPoint = (SLILStmt, Int)
   type Tgt = SLILProgram
 
-  def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]) =
-    "function (" + (inputVars map { v: Int => env(v) }).mkString(",") + ") {\n" +
-      (if (ann(this,1) != null) "  " + ann(this,1) + "\n" else "") +
-      stmt.formatString(1, 2, ann) + "\n" +
-      (if (ann(this,2) != null) "  " + ann(this,2) + "\n" else "") + '}'
+  override def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int, ppspec: PrettyPrinterSpec) = {
+    val spaces = ppspec.indent(level)
+    val innerspaces = ppspec.indent(level + 1)
+    spaces + "function (" + (inputVars map { v: Int => env(v) }).mkString(",") + ") {\n" +
+      (if (ann(this, 1) != null) innerspaces + ppspec.decorator(ann(this, 1)) + "\n" else "") +
+      stmt.mkString(ann, level + 1, ppspec) + "\n" +
+      (if (ann(this, 2) != null) innerspaces + ppspec.decorator(ann(this, 2)) + "\n" else "") +
+      spaces + '}'
+  }
 
   def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property, SLILProgram], bb: BlackBoard[SLILProgram]) {
     val start = params.domain.full(env.size)
-    if (params.allPPResult) bb(NumericalPropertyAnnotation)((this,1)) = start
+    if (params.allPPResult) bb(NumericalPropertyAnnotation)((this, 1)) = start
     val output = stmt.analyze(start, params, bb)
-    if (params.allPPResult) bb(NumericalPropertyAnnotation)((this,2)) = output
+    if (params.allPPResult) bb(NumericalPropertyAnnotation)((this, 2)) = output
   }
- 
+
   def size = 1
 }
 
