@@ -43,3 +43,8 @@ abstract class AnnotationType {
    */
   override def toString = getClass.getSimpleName
 }
+
+object EmptyAnnotationType extends AnnotationType {
+  type T = Null
+  val defaultValue = null  
+}

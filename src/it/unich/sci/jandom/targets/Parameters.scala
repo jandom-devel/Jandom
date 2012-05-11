@@ -42,4 +42,9 @@ class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val do
    * The narrowing factory used in the analysis. Defaults to the standard domain narrowing. 
    */
   var narrowingFactory: PPFactory[Tgt,Narrowing] = DefaultNarrowing
+  
+  /**
+   * This parameter determines whether results are saved for each program point or only for widening points.
+   */
+  var allPPResult = true
 }

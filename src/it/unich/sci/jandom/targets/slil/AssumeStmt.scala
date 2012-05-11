@@ -22,7 +22,7 @@ package targets.slil
 import targets.linearcondition.LinearCond
 import domains.NumericalProperty
 import targets.Parameters
-import annotations.BlackBoard
+import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
 /**
  * The class for the statement assume. It takes a linear condition as a parameter, and forces this condition to hold. It is
@@ -30,6 +30,8 @@ import annotations.BlackBoard
  * @param cond the linear condition
  */
 case class AssumeStmt(cond: LinearCond) extends SLILStmt {
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = cond.analyze(input)  
-  override def formatString(indent: Int, indentSize:Int) = " "*indentSize*indent + "assume(" + cond +")"
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], ann: BlackBoard[SLILProgram]): Property =
+    cond.analyze(input)
+  override def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]) =
+    " " * indentSize * indent + "assume(" + cond + ")"
 }

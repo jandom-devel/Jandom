@@ -19,9 +19,12 @@
 package it.unich.sci.jandom
 package targets.slil
 
+import annotations.PerProgramPointAnnotation
+
 /**
  * The class for the empty statement.
  */
 case object NopStmt extends SLILStmt {
-  override def formatString(indent: Int, indentSize: Int): String = " "*indentSize*indent + "<no-op>"
+  override def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]): String =
+    " " * indentSize * indent + "<no-op>"
 }

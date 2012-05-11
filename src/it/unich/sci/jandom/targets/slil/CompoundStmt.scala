@@ -19,48 +19,39 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.NumericalProperty
+import domains.{NumericalProperty,NumericalPropertyAnnotation}
 import targets.Parameters
-import annotations.BlackBoard
+import annotations.{BlackBoard,PerProgramPointAnnotation}
 import scala.collection.mutable.ListBuffer
 
 /**
  * A class for the compound statement (sequential composition)
  * @param stmts the sequence of statements that form the compound statement
  */
-case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
-  val annotations = ListBuffer[NumericalProperty[_]]()
-  
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = {
-    var current = input
-    var first = true
+case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {  
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], bb: BlackBoard[SLILProgram]): Property = {
+    val ann = bb(NumericalPropertyAnnotation).toPPAnnotation
+    var current = input    
+    var index = 0
     for (stmt <- stmts) {
-      if (first)
-        first = false
-      else
-        annotations += current 
-      current = stmt.analyze(current, params, ann)      
+      if (index>0 && params.allPPResult) ann((this,index)) = current
+      index += 1       
+      current = stmt.analyze(current, params, bb)      
     }  
     current
   }
   
-  override def formatString(indent: Int, indentSize: Int) = {
+  override def formatString(indent: Int, indentSize: Int, ann:  PerProgramPointAnnotation[SLILProgram,_]) = {
     val spaces = " "*indentSize*indent
     val result = new StringBuilder()    
-    var remainingAnnotations = annotations
-    var first = true
+    var index = 1
     for (stmt <- stmts) {
-      if (first) 
-        first = false
-      else
-        result += '\n'      
-      result ++= stmt.formatString(indent,indentSize)
-      if (! remainingAnnotations.isEmpty) {
-        result += '\n'
-        result ++= spaces  + remainingAnnotations.head.toString
-        remainingAnnotations =  remainingAnnotations.tail
-      }        
+      if (index>1) result+= '\n'            
+      result ++= stmt.formatString(indent,indentSize, ann)
+      if (ann(this,index)!=null)
+        result ++= '\n' + spaces + ann(this,index).toString
+      index += 1
     }
-    result.toString()
+    result.toString
   }  
 }

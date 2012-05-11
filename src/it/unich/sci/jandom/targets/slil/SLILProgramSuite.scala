@@ -19,7 +19,7 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.BoxDouble
+import domains.{BoxDouble,NumericalPropertyAnnotation}
 import targets.LinearForm
 import targets.linearcondition.AtomicCond
 import org.scalatest.FunSuite
@@ -42,6 +42,6 @@ class SLILProgramSuite extends FunSuite {
     val params = new targets.Parameters(BoxDouble,program)
     val bb = new annotations.BlackBoard(program)
     program.analyze(params, bb)
-    expect ( BoxDouble(Array(10), Array(11)) ) { program.output }
+    expect ( BoxDouble(Array(10), Array(11)) ) { bb(NumericalPropertyAnnotation)(program,2) }
   }  
 }

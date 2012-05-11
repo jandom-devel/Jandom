@@ -19,10 +19,10 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.NumericalProperty
+import domains.{ NumericalProperty, NumericalPropertyAnnotation }
 import targets.Parameters
 import targets.linearcondition.LinearCond
-import annotations.BlackBoard
+import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
 /**
  * The class for an if/then/else statement
@@ -32,34 +32,33 @@ import annotations.BlackBoard
  */
 
 case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
-  var savedThenAnnotationStart : NumericalProperty[_] = null
-  var savedThenAnnotationEnd : NumericalProperty[_] = null
-  var savedElseAnnotationStart : NumericalProperty[_] = null
-  var savedElseAnnotationEnd : NumericalProperty[_] = null
-  
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = {
-    val thenAnnotationStart = condition.analyze(input)
-    val elseAnnotationStart = condition.opposite.analyze(input)
-    val thenAnnotationEnd = then_branch.analyze(thenAnnotationStart,params, ann)
-    val elseAnnotationEnd = else_branch.analyze(elseAnnotationStart,params, ann)
-    savedThenAnnotationStart = thenAnnotationStart
-    savedThenAnnotationEnd = thenAnnotationEnd
-    savedElseAnnotationStart = elseAnnotationStart
-    savedElseAnnotationEnd = elseAnnotationEnd
-    return thenAnnotationEnd union elseAnnotationEnd
+
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], bb: BlackBoard[SLILProgram]): Property = {
+    val thenStart = condition.analyze(input)
+    val elseStart = condition.opposite.analyze(input)
+    val thenEnd = then_branch.analyze(thenStart, params, bb)
+    val elseEnd = else_branch.analyze(elseStart, params, bb)
+    if (params.allPPResult) {
+      val ann = bb(NumericalPropertyAnnotation)
+      ann((this, 1)) = thenStart
+      ann((this, 2)) = elseStart
+      ann((this, 3)) = thenEnd
+      ann((this, 4)) = elseEnd
+    }
+    return thenEnd union elseEnd
   }
-  
-  override def formatString(indent: Int, indentSize: Int) : String = {  
-    val spaces = " "*indentSize*indent
-    val s = spaces + "if (" + condition.toString + ") {\n" + 
-        (if (savedThenAnnotationStart!=null) spaces + " "*indentSize+ savedThenAnnotationStart + "\n" else "") + 
-        then_branch.formatString(indent+1,indentSize) + "\n" + 
-        (if (savedThenAnnotationEnd!=null) spaces + " "*indentSize+savedThenAnnotationEnd + "\n" else "") + 
-      spaces +"} else {\n" + 
-        (if (savedElseAnnotationStart!=null) spaces + " "*indentSize + savedElseAnnotationStart + '\n' else "") + 
-        else_branch.formatString(indent+1, indentSize) +  "\n" + 
-        (if (savedElseAnnotationStart!=null) spaces + " "*indentSize+  savedElseAnnotationEnd + '\n' else "") +
+
+  override def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]): String = {
+    val spaces = " " * indentSize * indent
+    val s = spaces + "if (" + condition.toString + ") {\n" +
+      (if (ann(this, 1) != null) spaces + " " * indentSize + ann(this, 1) + "\n" else "") +
+      then_branch.formatString(indent + 1, indentSize, ann) + "\n" +
+      (if (ann(this, 3) != null) spaces + " " * indentSize + ann(this, 3) + "\n" else "") +
+      spaces + "} else {\n" +
+      (if (ann(this, 2) != null) spaces + " " * indentSize + ann(this, 2) + '\n' else "") +
+      else_branch.formatString(indent + 1, indentSize, ann) + "\n" +
+      (if (ann(this, 4) != null) spaces + " " * indentSize + ann(this, 4) + '\n' else "") +
       spaces + '}'
-    return s  
-  }  
+    return s
+  }
 }

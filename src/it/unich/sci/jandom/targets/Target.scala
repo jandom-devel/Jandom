@@ -28,7 +28,7 @@ import scala.collection.mutable.Map
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract class Target {
+trait Target {
   /**
    * Abstract type for program points
    */

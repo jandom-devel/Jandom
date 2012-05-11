@@ -21,26 +21,27 @@ package targets.slil
 
 import domains.NumericalProperty
 import targets.Parameters
-import annotations.BlackBoard
+import annotations.{ BlackBoard, PerProgramPointAnnotation, EmptyAnnotationType }
 
 /**
  * The abstract class for program statements. Each object in SLILStmt represents a statement
- * of a simple imperative language. 
+ * of a simple imperative language.
  */
 abstract class SLILStmt {
-  /** 
+  /**
    * The program this statement is part of.
    */
   val program: SLILProgram = null
-  
+
   /**
-   * A method to pretty print a SLILStmt. 
+   * A method to pretty print a SLILStmt with annotations
    * @param indent the indentation level of the statement
    * @param identSize the size in white spaces of each indentation level
-   * @return the string representaton of the program
+   * @param ann the annotation to print together with program
+   * @return the string representation of the program
    */
-  def formatString(indent: Int, indentSize: Int): String
-  
+  def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]): String
+
   /**
    * The analyzer for the SLIL statement.
    * @tparam Property the class of the properties we want to analyze
@@ -49,7 +50,9 @@ abstract class SLILStmt {
    * @param ann a blackboard where put annotations for the inner program points
    * @return the property at the end of the statement
    */
-  def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property = input
-  
-  override def toString = formatString(0,2)
+  def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], ann: BlackBoard[SLILProgram]): Property = input
+
+  def mkString(ann: PerProgramPointAnnotation[SLILProgram, _]) = formatString(0, 2, ann)
+
+  override def toString = mkString(SLILProgram.SLILProgramPointAnnotationBuilder.apply(program, EmptyAnnotationType))
 }

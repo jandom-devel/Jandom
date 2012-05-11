@@ -29,8 +29,15 @@ import targets.Target
  */
 class Annotation[Tgt <: Target, Ann <: AnnotationType](t:Tgt, ann: Ann) (implicit maker: PerProgramPointAnnotationBuilder[Tgt]) {
   type T = Ann#T
-  private var perPP: PerProgramPointAnnotation[Tgt,Ann] = null
-  var global: T = _
+  private[this] var perPP: PerProgramPointAnnotation[Tgt,Ann] = null
+  var global: T = _    
+  
+  def toPPAnnotation = {
+	if (perPP == null) {
+      perPP = maker.apply[Ann](t, ann)
+    }
+   	perPP
+  }
   
   def apply(pp: Tgt#ProgramPoint): T = {
     if (perPP == null) {
@@ -45,6 +52,7 @@ class Annotation[Tgt <: Target, Ann <: AnnotationType](t:Tgt, ann: Ann) (implici
     }
     perPP(pp) = v
   }
-  
+
   override def toString = "global: " + global + "\nperPP:\n" + perPP
 }
+

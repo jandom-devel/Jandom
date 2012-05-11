@@ -19,46 +19,45 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.NumericalProperty
+import domains.{ NumericalProperty, NumericalPropertyAnnotation }
 import targets.Parameters
 import targets.linearcondition.LinearCond
-import annotations.BlackBoard
-import widenings.Widening
+import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
 /**
  * The class for a while statement.
  * @param condition the guard of the statement
- * @param body the body of the statement 
+ * @param body the body of the statement
  */
-case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {  
-  var savedInvariant : NumericalProperty[_] = null
+case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
+  var savedInvariant: NumericalProperty[_] = null
   var savedFirst: NumericalProperty[_] = null
-  private var widening: Widening = null
- 
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property, params: Parameters[Property,SLILProgram], ann: BlackBoard[SLILProgram]): Property =  {    
+
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], bb: BlackBoard[SLILProgram]): Property = {
     var newinvariant = input
     var invariant = input
-    val widening = params.wideningFactory(this.hashCode)
-    val narrowing = params.narrowingFactory(this.hashCode)
-    do {      
-      invariant = newinvariant
-      newinvariant = widening(invariant, input union body.analyze(condition.analyze(invariant), params, ann))
-    } while (newinvariant > invariant)          
+    val widening = params.wideningFactory(this, 1)
+    val narrowing = params.narrowingFactory(this, 1)
     do {
       invariant = newinvariant
-      newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant),params, ann))      
-    } while (newinvariant < invariant)    
-    savedInvariant = invariant
-    savedFirst = condition.analyze(invariant)
+      newinvariant = widening(invariant, input union body.analyze(condition.analyze(invariant), params, bb))
+    } while (newinvariant > invariant)
+    do {
+      invariant = newinvariant
+      newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, bb))
+    } while (newinvariant < invariant)
+    val ann = bb(NumericalPropertyAnnotation)
+    ann((this, 1)) = invariant
+    if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)
     return condition.opposite.analyze(invariant)
-  }  
+  }
 
-  override def formatString(indent: Int, indentSize: Int) = {
-    val spaces = " "*indentSize*indent
-    spaces + "while (" + condition +")"  + 
-      (if (savedInvariant!=null) " "+savedInvariant else "") + " {\n" +
-      spaces + " "*indentSize + savedFirst + "\n" +
-      body.formatString(indent+1, indentSize) + '\n' + 
-    spaces + '}'
+  override def formatString(indent: Int, indentSize: Int, ann: PerProgramPointAnnotation[SLILProgram, _]) = {
+    val spaces = " " * indentSize * indent
+    spaces + "while (" + condition + ")" +
+      (if (ann(this, 1) != null) " " + ann(this, 1) else "") + " {\n" +
+      (if (ann(this, 2) != null) spaces + " " * indentSize + ann(this, 2) + "\n" else "") +
+      body.formatString(indent + 1, indentSize, ann) + '\n' +
+      spaces + '}'
   }
 }

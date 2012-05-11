@@ -42,11 +42,10 @@ object Jandom extends App {
       params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing,2),program)
  	  val bb: BlackBoard[SLILProgram] = new annotations.BlackBoard(program)
       program.analyze(params, bb)
-      println(program)  
-      println(bb)  
+      println(program.mkString(bb(NumericalPropertyAnnotation).toPPAnnotation))  
     } else {
       println(parsed)
-    }    
+    }
   }
   
   {
@@ -55,7 +54,7 @@ object Jandom extends App {
     if (parsed.successful) {
    	  val program = parsed.get 
       val params = new targets.Parameters(domains.PPLCPolyhedron,program)
-      params.wideningFactory = MemoizingFactory(DelayedWideningFactory[LTS](DefaultWidening,2),program)
+      params.wideningFactory = MemoizingFactory(DelayedWideningFactory(DefaultWidening,2),program)
  	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
    	  println(program)
       program.analyze(params, bb)        

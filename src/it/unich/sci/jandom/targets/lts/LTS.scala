@@ -51,7 +51,7 @@ class LTS(private val locations: IndexedSeq[Location], private val transitions: 
   def size = s
 
   def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property, Tgt], bb: BlackBoard[LTS]) {
-    // build widening and narrowings for each program point    
+    // build widening and narrowing for each program point    
     val widenings = locations map params.wideningFactory
     val narrowings = locations map params.narrowingFactory
 
