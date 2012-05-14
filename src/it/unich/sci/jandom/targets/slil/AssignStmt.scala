@@ -20,7 +20,7 @@ package it.unich.sci.jandom
 package targets.slil
 
 import domains.NumericalProperty
-import targets.{ LinearForm, Parameters }
+import targets.{ LinearForm, Parameters, Environment }
 import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
 /**
@@ -33,11 +33,11 @@ import annotations.{ BlackBoard, PerProgramPointAnnotation }
 case class AssignStmt[T](variable: Int, linearForm: LinearForm[T])(implicit numeric: Numeric[T]) extends SLILStmt {
   import numeric._
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], ann: BlackBoard[SLILProgram]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation): Property = {
     val coefficients = linearForm.coefficients
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
   }
 
-  override def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int, ppspec: PrettyPrinterSpec) =
+  override def mkString(ann: PerProgramPointAnnotation[SLILStmt, _], level: Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + linearForm.env(variable) + " = " + linearForm.toString
 }

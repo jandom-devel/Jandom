@@ -20,7 +20,6 @@ package it.unich.sci.jandom
 package targets.slil
 
 import domains.{ NumericalProperty, NumericalPropertyAnnotation }
-import targets.Parameters
 import targets.linearcondition.LinearCond
 import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
@@ -33,26 +32,25 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
   var savedInvariant: NumericalProperty[_] = null
   var savedFirst: NumericalProperty[_] = null
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], bb: BlackBoard[SLILProgram]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation): Property = {
     var newinvariant = input
     var invariant = input
     val widening = params.wideningFactory(this, 1)
     val narrowing = params.narrowingFactory(this, 1)
     do {
       invariant = newinvariant
-      newinvariant = widening(invariant, input union body.analyze(condition.analyze(invariant), params, bb))
+      newinvariant = widening(invariant, input union body.analyze(condition.analyze(invariant), params, ann))
     } while (newinvariant > invariant)
     do {
       invariant = newinvariant
-      newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, bb))
+      newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, ann))
     } while (newinvariant < invariant)
-    val ann = bb(NumericalPropertyAnnotation)
     ann((this, 1)) = invariant
     if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)
     return condition.opposite.analyze(invariant)
   }
 
-  override def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int, ppspec: PrettyPrinterSpec) = {
+  override def mkString(ann: PerProgramPointAnnotation[SLILStmt, _], level: Int, ppspec: PrettyPrinterSpec) = {
     val spaces = ppspec.indent(level)
     spaces + "while (" + condition + ")" +
       (if (ann(this, 1) != null) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +

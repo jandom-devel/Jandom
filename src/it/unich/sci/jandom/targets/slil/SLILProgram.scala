@@ -20,7 +20,7 @@ package it.unich.sci.jandom
 package targets.slil
 
 import domains.{ NumericalProperty, NumericalPropertyAnnotation }
-import targets.{ Environment, LinearForm, Parameters, Target }
+import targets.{ Environment, LinearForm, Target }
 import widenings.Widening
 import annotations._
 import scala.collection.mutable.HashMap
@@ -35,11 +35,16 @@ import scala.collection.mutable.ListBuffer
  * @param stmt the body of the program
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-case class SLILProgram(private val env: Environment, private val inputVars: Seq[Int], private val stmt: SLILStmt) extends SLILStmt with Target {
-  type ProgramPoint = (SLILStmt, Int)
-  type Tgt = SLILProgram
-
-  override def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int, ppspec: PrettyPrinterSpec) = {
+case class SLILProgram (private val env: Environment, private val inputVars: Seq[Int], private val stmt: SLILStmt) extends SLILStmt {
+  
+  program = this
+  
+  /**
+   * Returns the environment associated with the program.
+   */
+  def environment = env
+     
+  override def mkString(ann: PerProgramPointAnnotation[SLILStmt, _], level: Int, ppspec: PrettyPrinterSpec) = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level + 1)
     spaces + "function (" + (inputVars map { v: Int => env(v) }).mkString(",") + ") {\n" +
@@ -49,33 +54,12 @@ case class SLILProgram(private val env: Environment, private val inputVars: Seq[
       spaces + '}'
   }
 
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property, SLILProgram], bb: BlackBoard[SLILProgram]) {
-    val start = params.domain.full(env.size)
-    if (params.allPPResult) bb(NumericalPropertyAnnotation)((this, 1)) = start
-    val output = stmt.analyze(start, params, bb)
-    if (params.allPPResult) bb(NumericalPropertyAnnotation)((this, 2)) = output
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation): Property = {        
+    if (params.allPPResult) ann((this, 1)) = input
+    val output = stmt.analyze(input, params, ann)
+    if (params.allPPResult) ann((this, 2)) = output
+    return output
   }
 
-  def size = 1
 }
 
-/**
- * The companion object for SLILProgram. It defines the AnnotationBuilder for program point annotations.
- */
-object SLILProgram {
-  /**
-   * The annotation builder for program point annotations in SLILProgram's.
-   */
-  implicit object SLILProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[SLILProgram] {
-    def apply[Ann <: AnnotationType](t: SLILProgram, ann: Ann): PerProgramPointAnnotation[SLILProgram, Ann] =
-      new PerProgramPointAnnotation[SLILProgram, Ann] {
-        private val a = new HashMap[SLILProgram#ProgramPoint, Ann#T]
-        def apply(pp: SLILProgram#ProgramPoint) = a.get(pp) match {
-          case None => { a(pp) = ann.defaultValue; ann.defaultValue }
-          case Some(v) => v
-        }
-        def update(pp: SLILProgram#ProgramPoint, v: Ann#T) { a(pp) = v }
-        def iterator = a.iterator
-      }
-  }
-}

@@ -33,13 +33,12 @@ import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
 case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], bb: BlackBoard[SLILProgram]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation): Property = {
     val thenStart = condition.analyze(input)
     val elseStart = condition.opposite.analyze(input)
-    val thenEnd = then_branch.analyze(thenStart, params, bb)
-    val elseEnd = else_branch.analyze(elseStart, params, bb)
+    val thenEnd = then_branch.analyze(thenStart, params, ann)
+    val elseEnd = else_branch.analyze(elseStart, params, ann)
     if (params.allPPResult) {
-      val ann = bb(NumericalPropertyAnnotation)
       ann((this, 1)) = thenStart
       ann((this, 2)) = elseStart
       ann((this, 3)) = thenEnd
@@ -48,7 +47,7 @@ case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLI
     return thenEnd union elseEnd
   }
 
-  override def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int, ppspec: PrettyPrinterSpec): String = {
+  override def mkString(ann: PerProgramPointAnnotation[SLILStmt, _], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level+1)
     val s = spaces + "if (" + condition.toString + ") {\n" +

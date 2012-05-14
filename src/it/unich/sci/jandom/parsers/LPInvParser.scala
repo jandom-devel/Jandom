@@ -80,7 +80,7 @@ object LPInvParser extends JavaTokenParsers with LinearExpressionParser with Lin
         }         
       }
 
-  private val prog = 
+  private val prog: Parser[LTS] = 
     declarations ~> opt(template) ~> rep(location) ~ rep(transition) <~ literal("end") ^^ {
       case ls ~ ts => LTS(ls.toIndexedSeq, ts, env)
     }

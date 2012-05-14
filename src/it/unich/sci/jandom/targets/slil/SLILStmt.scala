@@ -19,39 +19,75 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.NumericalProperty
-import targets.Parameters
-import annotations.{ BlackBoard, PerProgramPointAnnotation, EmptyAnnotationType }
+import targets.{ Target }
+import domains.{ NumericalProperty, NumericalPropertyAnnotation }
+import annotations._
+import scala.collection.mutable.HashMap
 
 /**
  * The abstract class for program statements. Each object in SLILStmt represents a statement
  * of a simple imperative language.
  */
-abstract class SLILStmt {
-  /**
-   * The program this statement is part of.
-   */
-  private[this] val program: SLILProgram = null
+abstract class SLILStmt extends Target {
+  type ProgramPoint = (SLILStmt, Int)
+  type Tgt = SLILStmt
 
   /**
-   * A method to pretty print a SLILStmt with corresponding annotations 
+   * Program associated with this statement.
+   */
+  protected var program: SLILProgram = null
+
+  /**
+   * A method to pretty print a SLILStmt with corresponding annotations
    * @param ann the annotation to print together with the program
    * @param level the current indentation level
-   * @param ppspec the specification for the format to use for pretty printing. It defaults to the
+   * @param ppspec the specification object for pretty printing. It defaults to the
    * standard pretty printer specification
    * @return the string representation of the program
    */
-  def mkString(ann: PerProgramPointAnnotation[SLILProgram, _], level: Int = 0, ppspec: PrettyPrinterSpec = PrettyPrinterSpec()): String
+  def mkString(ann: PerProgramPointAnnotation[SLILStmt, _], level: Int = 0, ppspec: PrettyPrinterSpec = PrettyPrinterSpec()): String
 
   /**
-   * The analyzer for the SLIL statement.
+   * The analyzer for a SLIL statement. This methods is different from the one declared in Target since it takes
+   * an annotations as a parameter, and update it with the result of the analysis. Moreover, it returns a numerical
+   * property as a result instead of an annotation.
    * @tparam Property the class of the properties we want to analyze
    * @param input the property at the program point before the statement
    * @param params the parameter which control the analysis
-   * @param ann a blackboard where put annotations for the inner program points
+   * @param ann an annotation where to put informations on the inner program points
    * @return the property at the end of the statement
    */
-  def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property, SLILProgram], ann: BlackBoard[SLILProgram]): Property = input
+  def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation): Property = input
 
-  override def toString = mkString(SLILProgram.SLILProgramPointAnnotationBuilder.apply(program, EmptyAnnotationType))
+  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation = {
+    val ann = SLILStmt.SLILProgramPointAnnotationBuilder(this, NumericalPropertyAnnotation)
+    val input = params.domain.full(program.environment.size)
+    analyze(input, params, ann)
+    return ann
+  }
+    
+  def size = 1
+
+  override def toString = mkString(SLILStmt.SLILProgramPointAnnotationBuilder(this, EmptyAnnotationType))
+}
+
+/**
+ * The companion object for SLILStmt. It defines the AnnotationBuilder for program point annotations.
+ */
+object SLILStmt {
+  /**
+   * The annotation builder for program point annotations in statements.
+   */
+  implicit object SLILProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[SLILStmt] {
+    def apply[Ann <: AnnotationType](t: SLILStmt, ann: Ann): PerProgramPointAnnotation[SLILStmt, Ann] =
+      new PerProgramPointAnnotation[SLILStmt, Ann] {
+        private val a = new HashMap[SLILStmt#ProgramPoint, Ann#T]
+        def apply(pp: SLILStmt#ProgramPoint) = a.get(pp) match {
+          case None => { a(pp) = ann.defaultValue; ann.defaultValue }
+          case Some(v) => v
+        }
+        def update(pp: SLILStmt#ProgramPoint, v: Ann#T) { a(pp) = v }
+        def iterator = a.iterator
+      }
+  }
 }

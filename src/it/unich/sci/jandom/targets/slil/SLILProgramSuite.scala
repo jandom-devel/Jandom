@@ -39,9 +39,8 @@ class SLILProgramSuite extends FunSuite {
                 AssignStmt(0,LinearForm(List(1,1),env))
             )
        )))      
-    val params = new targets.Parameters(BoxDouble,program)
-    val bb = new annotations.BlackBoard(program)
-    program.analyze(params, bb)
-    expect ( BoxDouble(Array(10), Array(11)) ) { bb(NumericalPropertyAnnotation)(program,2) }
+    val params = new targets.Parameters[BoxDouble,SLILStmt](BoxDouble,program)
+    val ann = program.analyze(params)
+    expect ( BoxDouble(Array(10), Array(11)) ) { ann(program,2) }
   }  
 }

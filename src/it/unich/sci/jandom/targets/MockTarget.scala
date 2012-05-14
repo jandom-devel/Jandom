@@ -19,7 +19,8 @@
 package it.unich.sci.jandom
 package targets
 
-import domains.NumericalProperty
+import domains.{NumericalProperty, NumericalPropertyAnnotation}
+
 import annotations._
 import scala.collection.mutable.ArrayBuffer
 
@@ -32,7 +33,9 @@ private[jandom] class MockTarget extends Target {
   type Tgt = MockTarget
   type ProgramPoint = Int
   def size = 10
-  def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property, Tgt], bb: BlackBoard[Tgt]) { }
+  def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property]): Annotation = { 
+    MockTarget.MockProgramPointAnnotationBuilder(this,NumericalPropertyAnnotation) 
+  }
 }
 
 /** 

@@ -27,6 +27,7 @@ import widenings._
 import narrowings._
 import ppfactories._
 import annotations.BlackBoard
+import it.unich.sci.jandom.targets.slil.SLILStmt
 
 object Jandom extends App {
 
@@ -38,11 +39,10 @@ object Jandom extends App {
     val parsed = parsers.RandomParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
-	  val params = new targets.Parameters(domains.PPLCPolyhedron,program)
-      params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing,2),program)
- 	  val bb: BlackBoard[SLILProgram] = new annotations.BlackBoard(program)
-      program.analyze(params, bb)
-      println(program.mkString(bb(NumericalPropertyAnnotation).toPPAnnotation))  
+	  val params = new targets.Parameters[domains.PPLCPolyhedron,SLILStmt](domains.PPLCPolyhedron,program)
+      params.narrowingFactory = MemoizingFactory[SLILStmt,Narrowing](DelayedNarrowingFactory(DefaultNarrowing,2),program)
+      val ann = program.analyze(params)
+      println(program.mkString(ann))
     } else {
       println(parsed)
     }
@@ -55,10 +55,9 @@ object Jandom extends App {
    	  val program = parsed.get 
       val params = new targets.Parameters(domains.PPLCPolyhedron,program)
       params.wideningFactory = MemoizingFactory(DelayedWideningFactory(DefaultWidening,2),program)
- 	  val bb: BlackBoard[LTS] = new annotations.BlackBoard(program)
    	  println(program)
-      program.analyze(params, bb)        
-      println(bb)
+   	  val ann = program.analyze(params)        
+      println(ann)
     } else {
       println(parsed)
     }      

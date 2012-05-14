@@ -50,7 +50,7 @@ class LTS(private val locations: IndexedSeq[Location], private val transitions: 
 
   def size = s
 
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property, Tgt], bb: BlackBoard[LTS]) {
+  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation = {
     // build widening and narrowing for each program point    
     val widenings = locations map params.wideningFactory
     val narrowings = locations map params.narrowingFactory
@@ -83,9 +83,9 @@ class LTS(private val locations: IndexedSeq[Location], private val transitions: 
         narrowings(loc.id)(current(loc.id), unionednew)
       }
     }
-
-    val annotation = bb(NumericalPropertyAnnotation)
-    locations.foreach { loc => annotation(loc) = current(loc.id) }
+    val ann = LTS.LTSProgramPointAnnotationBuilder(this, NumericalPropertyAnnotation)
+    locations.foreach { loc => ann(loc) = current(loc.id) }
+    return ann
   }
 
   override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")
