@@ -23,12 +23,13 @@ import domains.BoxDouble
 import org.scalatest.FunSpec
 
 /**
+ * Test suite for delayed narrowing.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 class DelayedNarrowingSuite extends FunSpec {
   describe("DelayedNarrowing") {
-    it("should delay for a fixed number of stepes") {
+    it("should delay for a fixed number of stepe") {
       val d1 = BoxDouble(Array(0), Array(3))
       val wd = new DelayedNarrowing(DefaultNarrowing, 2)
       val d2 = BoxDouble(Array(1), Array(3))

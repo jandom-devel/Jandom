@@ -29,9 +29,9 @@ import ppfactories.ConstantFactory
  */
 trait Narrowing {
   /**
-   * @param current the property at the current iteration
+   * @param current the property at the current iteration.
    * @param next the property at the next iteration. This IS assumed to be smaller than current.
-   * @result the result of the narrowing
+   * @result the result of the narrowing.
    */
   def apply[Property <: NumericalProperty[Property]](current: Property, next: Property) : Property
 }
@@ -42,5 +42,9 @@ trait Narrowing {
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 object Narrowing {
-  implicit def toNarrowingFactory[Tgt <: Target](narrowing: Narrowing) = ConstantFactory(narrowing)
+  /** 
+   * Transforms a narrowing in a constant narrowing factory
+   * @return a constant narrowing factory for the parameter narrowing.
+   */
+  implicit def toNarrowingFactory(narrowing: Narrowing) = ConstantFactory(narrowing)
 }

@@ -20,7 +20,6 @@ package it.unich.sci.jandom
 package narrowings
 
 import domains.NumericalProperty
-import ppfactories.ConstantFactory
 
 /**
  * The standard narrowing. It use the narrowing operator defined in the abstract domain.
