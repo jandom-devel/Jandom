@@ -33,7 +33,7 @@ import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
 case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: SLILStmt#Annotation[Property]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = {
     val thenStart = condition.analyze(input)
     val elseStart = condition.opposite.analyze(input)
     val thenEnd = then_branch.analyze(thenStart, params, ann)
@@ -47,7 +47,7 @@ case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLI
     return thenEnd union elseEnd
   }
 
-  override def mkString(ann: SLILStmt#Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {
+  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level+1)
     val s = spaces + "if (" + condition.toString + ") {\n" +

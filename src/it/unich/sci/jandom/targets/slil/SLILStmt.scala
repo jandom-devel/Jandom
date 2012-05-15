@@ -45,7 +45,7 @@ abstract class SLILStmt extends Target {
    * standard pretty printer specification
    * @return the string representation of the program
    */
-  def mkString(ann: SLILStmt#Annotation[_], level: Int = 0, ppspec: PrettyPrinterSpec = PrettyPrinterSpec()): String
+  def mkString(ann: Annotation[_], level: Int = 0, ppspec: PrettyPrinterSpec = PrettyPrinterSpec()): String
 
   /**
    * The analyzer for a SLIL statement. This methods is different from the one declared in Target since it takes
@@ -57,7 +57,7 @@ abstract class SLILStmt extends Target {
    * @param ann an annotation where to put informations on the inner program points
    * @return the property at the end of the statement
    */
-  def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: SLILStmt#Annotation[Property]): Property = input
+  def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = input
 
   def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property] = {
     val ann = new Annotation[Property]()

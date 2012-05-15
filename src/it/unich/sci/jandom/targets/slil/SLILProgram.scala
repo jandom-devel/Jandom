@@ -44,7 +44,7 @@ case class SLILProgram(private val env: Environment, private val inputVars: Seq[
    */
   def environment = env
 
-  override def mkString(ann: SLILStmt#Annotation[_], level: Int, ppspec: PrettyPrinterSpec) = {
+  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec) = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level + 1)
     spaces + "function (" + (inputVars map { v: Int => env(v) }).mkString(",") + ") {\n" +
@@ -54,7 +54,7 @@ case class SLILProgram(private val env: Environment, private val inputVars: Seq[
       spaces + '}'    
   }
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: SLILStmt#Annotation[Property]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = {
     if (params.allPPResult) ann((this, 1)) = input
     val output = stmt.analyze(input, params, ann)
     if (params.allPPResult) ann((this, 2)) = output

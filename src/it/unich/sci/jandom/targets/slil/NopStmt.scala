@@ -25,6 +25,6 @@ import annotations.PerProgramPointAnnotation
  * The class for the empty statement.
  */
 case object NopStmt extends SLILStmt {
-  override def mkString(ann: SLILStmt#Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String =
+  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String =
     ppspec.indent(level) + "<no-op>"
 }

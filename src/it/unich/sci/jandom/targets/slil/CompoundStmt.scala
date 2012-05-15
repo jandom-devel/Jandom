@@ -29,7 +29,7 @@ import scala.collection.mutable.ListBuffer
  * @param stmts the sequence of statements that form the compound statement
  */
 case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: SLILStmt#Annotation[Property]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = {
     var current = input
     var index = 0
     for (stmt <- stmts) {
@@ -40,7 +40,7 @@ case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
     current
   }
 
-  override def mkString(ann: SLILStmt#Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {    
+  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {    
     val spaces = ppspec.indent(level)
     val result = new StringBuilder()
     var index = 1

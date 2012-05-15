@@ -32,7 +32,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
   var savedInvariant: NumericalProperty[_] = null
   var savedFirst: NumericalProperty[_] = null
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: SLILStmt#Annotation[Property]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = {
     var newinvariant = input
     var invariant = input
     val widening = params.wideningFactory(this, 1)
@@ -50,7 +50,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     return condition.opposite.analyze(invariant)
   }
 
-  override def mkString(ann: SLILStmt#Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {  
+  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {  
     val spaces = ppspec.indent(level)
     spaces + "while (" + condition + ")" +""+
       (if (ann contains (this, 1)) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +
