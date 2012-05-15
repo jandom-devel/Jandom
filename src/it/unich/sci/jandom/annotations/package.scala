@@ -17,28 +17,15 @@
  */
 
 package it.unich.sci.jandom
-package annotations
-
-import targets.Target
 
 /**
- * A PerProgramPointAnnotation is an target-defined implementation of a map
- * from program points to values of a given annotation type.
- * @tparam Tgt the target of this annotation
- * @tparam Ann the annotation type
+ * The package annotations contains classes which implements a sort of
+ * blackboard where multiple annotations may be put and removed. At the 
+ * moment it is dead code, since annotation are implemented with a different
+ * schema which is much more easier.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract class PerProgramPointAnnotation[Tgt <: Target, Ann <: AnnotationType] extends scala.collection.mutable.Iterable[(Tgt#ProgramPoint,Ann#T)]  {
-  /** 
-   * Method to access the annotation of a given program point
-   */
-  def apply(pp: Tgt#ProgramPoint): Ann#T
-  
-  /**
-   * Method to update the annotation of a given program point
-   */
-  def update(pp: Tgt#ProgramPoint, v: Ann#T)
-  
-  override def toString = (map { case (l,v) =>  l + " --> " + v }).mkString(start="",sep="\n",end="\n")
+package object annotations {
+
 }

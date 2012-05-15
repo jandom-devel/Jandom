@@ -23,15 +23,30 @@ import targets.Target
 
 /**
  * This is the class for annotation. An annotation is parameteric w.r.t.
- * a target and an annotation type.
+ * a target and an annotation type. An annotation contain a global objecet and
+ * "per program point" annotations which are built when needed using an 
+ * object of class PerProgramPointAnnotationBuilder.
+ * @tparam Tgt the target for the annotation
+ * @param ann the annotation type
+ * @maker an object which build per-programpoint annotations
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 class Annotation[Tgt <: Target, Ann <: AnnotationType](t:Tgt, ann: Ann) (implicit maker: PerProgramPointAnnotationBuilder[Tgt]) {
-  type T = Ann#T
+  type T = Ann#T  
+  
+  /**
+   * The "per-program point" annotation
+   */
   private[this] var perPP: PerProgramPointAnnotation[Tgt,Ann] = null
+  
+  /**
+   * The global annotation
+   */
   var global: T = _    
   
+  /**
+   * Returns the PerPerProgramPointAnnotation corresponding to this.
+   */
   def toPPAnnotation = {
 	if (perPP == null) {
       perPP = maker.apply[Ann](t, ann)
@@ -39,6 +54,9 @@ class Annotation[Tgt <: Target, Ann <: AnnotationType](t:Tgt, ann: Ann) (implici
    	perPP
   }
   
+  /**
+   * Given a program point, returns the corresponding annotation.
+   */
   def apply(pp: Tgt#ProgramPoint): T = {
     if (perPP == null) {
       perPP = maker.apply[Ann](t, ann)
@@ -46,6 +64,9 @@ class Annotation[Tgt <: Target, Ann <: AnnotationType](t:Tgt, ann: Ann) (implici
     perPP(pp)
   }
   
+  /**
+   * Given a program point and a value, update the corresponding annotation.
+   */
   def update(pp: Tgt#ProgramPoint, v: T) {
     if (perPP == null) {
       perPP = maker.apply[Ann](t, ann)

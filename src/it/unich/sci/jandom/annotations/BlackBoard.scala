@@ -22,17 +22,27 @@ import targets.Target
 import scala.collection.mutable.HashMap
 
 /**
- * A blackboard for putting type-safe annotations for a specific target.
+ * A blackboard for putting type-safe annotations for a specific target. 
  * @author Gianluca Amato <g.amato@unich.it>
  *
  */
 class BlackBoard[Tgt <: Target](t: Tgt) (implicit maker: PerProgramPointAnnotationBuilder[Tgt])  {
-  private val myhash = new HashMap[AnnotationType, Annotation[Tgt,_]] 
+  /**
+   * An hash from annotation types to annotations. The way it is handled by
+   * Blackboard make it typesafe.
+   */
+  private val myhash = new scala.collection.mutable.HashMap[AnnotationType, Annotation[Tgt,_]] 
       
+  /**
+   * Update the annotation in the blackboard corresponding to an annotation type.
+   */
   def update[Ann <: AnnotationType]( kind: Ann, v: Annotation[Tgt,Ann] ) {
     myhash(kind)=v
   }   
   
+  /**
+   * Given an annotation type, returns the corresponding annotation in the blackboard.
+   */
   def apply[Ann <: AnnotationType] ( kind: Ann ) :  Annotation[Tgt,Ann] = {
     myhash.get(kind) match {
       case None => {

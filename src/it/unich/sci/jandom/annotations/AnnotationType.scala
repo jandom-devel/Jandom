@@ -44,6 +44,9 @@ abstract class AnnotationType {
   override def toString = getClass.getSimpleName
 }
 
+/**
+ * This is the empty annotation, whose only value is null
+ */
 object EmptyAnnotationType extends AnnotationType {
   type T = Null
   val defaultValue = null  

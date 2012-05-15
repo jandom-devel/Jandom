@@ -19,13 +19,17 @@
 package it.unich.sci.jandom
 package annotations
 
-import it.unich.sci.jandom.targets.Target
+import targets.Target
 
 /**
- * A PerProgramPointAnnotationBuilder is a factor for a PerProgramPointAnnotation.
+ * A PerProgramPointAnnotationBuilder is a factory for a PerProgramPointAnnotation. It is
+ * generally provided as an implicit object by Target who wants to use the Blackboard system.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 abstract class PerProgramPointAnnotationBuilder[Tgt <: Target] {
+  /**
+   * Given a target and an annotation type, build a corresponding PerProgramAnnotation
+   */
   def apply[Ann <: AnnotationType](t: Tgt, ann: Ann): PerProgramPointAnnotation[Tgt,Ann]
 }
