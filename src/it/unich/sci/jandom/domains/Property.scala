@@ -17,14 +17,13 @@
  */
 
 package it.unich.sci.jandom
-package targets.slil
-
-import annotations.PerProgramPointAnnotation
+package domains
 
 /**
- * The class for the empty statement.
+ * The base trait for all the abstract properties.
+ * @author Gianluca Amato <amato@sci.unich.it>
+ *
  */
-case object NopStmt extends SLILStmt {
-  override def mkString(ann: SLILStmt#Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String =
-    ppspec.indent(level) + "<no-op>"
+trait AbstractProperty {
+
 }

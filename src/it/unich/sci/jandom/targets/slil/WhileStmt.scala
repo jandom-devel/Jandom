@@ -32,7 +32,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
   var savedInvariant: NumericalProperty[_] = null
   var savedFirst: NumericalProperty[_] = null
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: SLILStmt#Annotation[Property]): Property = {
     var newinvariant = input
     var invariant = input
     val widening = params.wideningFactory(this, 1)
@@ -46,15 +46,15 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
       newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, ann))
     } while (newinvariant < invariant)
     ann((this, 1)) = invariant
-    if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)
+    if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)    
     return condition.opposite.analyze(invariant)
   }
 
-  override def mkString(ann: PerProgramPointAnnotation[SLILStmt, _], level: Int, ppspec: PrettyPrinterSpec) = {
+  override def mkString(ann: SLILStmt#Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {  
     val spaces = ppspec.indent(level)
-    spaces + "while (" + condition + ")" +
-      (if (ann(this, 1) != null) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +
-      (if (ann(this, 2) != null) ppspec.indent(level+1) + ppspec.decorator(ann(this, 2)) + "\n" else "") +
+    spaces + "while (" + condition + ")" +""+
+      (if (ann contains (this, 1)) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +
+      (if (ann contains (this, 2)) ppspec.indent(level+1) + ppspec.decorator(ann(this, 2)) + "\n" else "") +
       body.mkString(ann, level+1, ppspec) + '\n' +
       spaces + '}'
   }

@@ -29,7 +29,7 @@ import scala.collection.mutable.ListBuffer
  * @param stmts the sequence of statements that form the compound statement
  */
 case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: SLILStmt#Annotation[Property]): Property = {
     var current = input
     var index = 0
     for (stmt <- stmts) {
@@ -40,15 +40,15 @@ case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
     current
   }
 
-  override def mkString(ann: PerProgramPointAnnotation[SLILStmt, _], level: Int, ppspec: PrettyPrinterSpec) = {
+  override def mkString(ann: SLILStmt#Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {    
     val spaces = ppspec.indent(level)
     val result = new StringBuilder()
     var index = 1
-    for (stmt <- stmts) {
-      if (index > 1) result += '\n'
+    for (stmt <- stmts) {     
+      if (index > 1) result += '\n'        
       result ++= stmt.mkString(ann, level, ppspec)
-      if (ann(this, index) != null)
-        result ++= '\n' + spaces + ppspec.decorator(ann(this, index))
+      if (ann.get(this,index) != None) 
+        result ++= '\n' + spaces + ppspec.decorator(ann(this,index))
       index += 1
     }
     result.toString

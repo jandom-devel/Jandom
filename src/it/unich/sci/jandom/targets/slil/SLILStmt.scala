@@ -22,7 +22,6 @@ package targets.slil
 import targets.{ Target }
 import domains.{ NumericalProperty, NumericalPropertyAnnotation }
 import annotations._
-import scala.collection.mutable.HashMap
 
 /**
  * The abstract class for program statements. Each object in SLILStmt represents a statement
@@ -31,12 +30,13 @@ import scala.collection.mutable.HashMap
 abstract class SLILStmt extends Target {
   type ProgramPoint = (SLILStmt, Int)
   type Tgt = SLILStmt
-
+  type Annotation[Property] = scala.collection.mutable.HashMap[ProgramPoint,Property]  
+  
   /**
    * Program associated with this statement.
    */
   protected var program: SLILProgram = null
-
+  
   /**
    * A method to pretty print a SLILStmt with corresponding annotations
    * @param ann the annotation to print together with the program
@@ -45,7 +45,7 @@ abstract class SLILStmt extends Target {
    * standard pretty printer specification
    * @return the string representation of the program
    */
-  def mkString(ann: PerProgramPointAnnotation[SLILStmt, _], level: Int = 0, ppspec: PrettyPrinterSpec = PrettyPrinterSpec()): String
+  def mkString(ann: SLILStmt#Annotation[_], level: Int = 0, ppspec: PrettyPrinterSpec = PrettyPrinterSpec()): String
 
   /**
    * The analyzer for a SLIL statement. This methods is different from the one declared in Target since it takes
@@ -57,18 +57,18 @@ abstract class SLILStmt extends Target {
    * @param ann an annotation where to put informations on the inner program points
    * @return the property at the end of the statement
    */
-  def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation): Property = input
+  def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: SLILStmt#Annotation[Property]): Property = input
 
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation = {
-    val ann = SLILStmt.SLILProgramPointAnnotationBuilder(this, NumericalPropertyAnnotation)
+  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property] = {
+    val ann = new Annotation[Property]()
     val input = params.domain.full(program.environment.size)
     analyze(input, params, ann)
     return ann
   }
-    
+  
   def size = 1
 
-  override def toString = mkString(SLILStmt.SLILProgramPointAnnotationBuilder(this, EmptyAnnotationType))
+  override def toString = mkString(new Annotation[Nothing])
 }
 
 /**
@@ -81,7 +81,7 @@ object SLILStmt {
   implicit object SLILProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[SLILStmt] {
     def apply[Ann <: AnnotationType](t: SLILStmt, ann: Ann): PerProgramPointAnnotation[SLILStmt, Ann] =
       new PerProgramPointAnnotation[SLILStmt, Ann] {
-        private val a = new HashMap[SLILStmt#ProgramPoint, Ann#T]
+        private val a = new scala.collection.mutable.HashMap[SLILStmt#ProgramPoint, Ann#T]
         def apply(pp: SLILStmt#ProgramPoint) = a.get(pp) match {
           case None => { a(pp) = ann.defaultValue; ann.defaultValue }
           case Some(v) => v

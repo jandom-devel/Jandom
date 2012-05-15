@@ -35,13 +35,13 @@ object Jandom extends App {
   PPL.initialize_library()
  
   { 
-    val source = scala.io.Source.fromFile("examples/Random/octagon-1.R").getLines.mkString("\n")
+    val source = scala.io.Source.fromFile("examples/Random/incr.R").getLines.mkString("\n")
     val parsed = parsers.RandomParser.parseProgram(source)  
     if (parsed.successful) {
 	  val program = parsed.get 
-	  val params = new targets.Parameters[domains.PPLCPolyhedron,SLILStmt](domains.PPLCPolyhedron,program)
-      params.narrowingFactory = MemoizingFactory[SLILStmt,Narrowing](DelayedNarrowingFactory(DefaultNarrowing,2),program)
-      val ann = program.analyze(params)
+	  val params = new targets.Parameters[domains.PPLBoxDouble,SLILStmt](domains.PPLBoxDouble,program)
+      params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing,2),program)
+      val ann = program.analyze(params)	  
       println(program.mkString(ann))
     } else {
       println(parsed)

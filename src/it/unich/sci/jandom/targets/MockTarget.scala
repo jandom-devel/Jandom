@@ -31,11 +31,13 @@ import scala.collection.mutable.ArrayBuffer
  */
 private[jandom] class MockTarget extends Target {
   type Tgt = MockTarget
-  type ProgramPoint = Int
+  type ProgramPoint = Int  
+  type Annotation[Property] = scala.collection.mutable.HashMap[ProgramPoint, Property]
+  
   def size = 10
-  def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property]): Annotation = { 
-    MockTarget.MockProgramPointAnnotationBuilder(this,NumericalPropertyAnnotation) 
-  }
+  
+  def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property]): Annotation[Property] = 
+    new Annotation[Property]
 }
 
 /** 

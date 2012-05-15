@@ -20,12 +20,12 @@ package domains
 import annotations.AnnotationType
 
 /**
- * Trait for numerical properties, such as Box, Octagon, etc... The classes extending NumericalProperty should be 
+ * Trait for all numerical properties, such as Box, Octagon, etc... The classes extending NumericalProperty should be 
  * immutables. 
  * 
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-trait NumericalProperty[Property] extends PartiallyOrdered[Property] {
+trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered[Property] {
     
   /**
    * The standard widening for two abstract objects

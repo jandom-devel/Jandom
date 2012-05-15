@@ -20,7 +20,6 @@ package it.unich.sci.jandom
 package targets
 
 import domains.{ NumericalProperty, NumericalPropertyAnnotation }
-import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
 /**
  * The abstract class for targets.
@@ -44,27 +43,25 @@ trait Target {
   type Tgt <: Target
 
   /**
-   * Returns the size of the target as the number of program points.
-   * @return the size of the target as the number of program points
+   * The class for program annotations
    */
-  def size: Int
-
-  /**
-   * An alias for annotations returned by the analyzer
-   */
-  protected type Annotation = PerProgramPointAnnotation[Tgt, NumericalPropertyAnnotation.type]
-
+  type Annotation[Property] <: scala.collection.mutable.Map[ProgramPoint, Property] 
+  
   /**
    * An alias for parameters in input by the analyzer
    */
-
   protected type Parameters[Property <: NumericalProperty[Property]] = targets.Parameters[Property, Tgt]
+  
+  /** 
+   * Returns the size of the target in terms of the number of program points
+   */  
+  def size: Int
+  
   /**
    * Perform a static analysis over the target.
    * @tparam Property the type of the property we want to analyze
    * @param param the parameters which drive the analyzer
    * @param bb the blackboard where it is possible to put annotation during the analysis
    */
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation
-
+  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property]
 }

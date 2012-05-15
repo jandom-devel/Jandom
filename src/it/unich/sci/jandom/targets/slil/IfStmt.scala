@@ -33,7 +33,7 @@ import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
 case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: SLILStmt#Annotation[Property]): Property = {
     val thenStart = condition.analyze(input)
     val elseStart = condition.opposite.analyze(input)
     val thenEnd = then_branch.analyze(thenStart, params, ann)
@@ -47,17 +47,17 @@ case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLI
     return thenEnd union elseEnd
   }
 
-  override def mkString(ann: PerProgramPointAnnotation[SLILStmt, _], level: Int, ppspec: PrettyPrinterSpec): String = {
+  override def mkString(ann: SLILStmt#Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level+1)
     val s = spaces + "if (" + condition.toString + ") {\n" +
-      (if (ann(this, 1) != null) innerspaces + ppspec.decorator(ann(this, 1)) + "\n" else "") +
+      (if (ann.get(this, 1) != None) innerspaces + ppspec.decorator(ann(this, 1)) + "\n" else "") +
       then_branch.mkString(ann,level+1,ppspec) + "\n" +
-      (if (ann(this, 3) != null) innerspaces + ppspec.decorator(ann(this, 3)) + "\n" else "") +
+      (if (ann.get(this, 3) != None) innerspaces + ppspec.decorator(ann(this, 3)) + "\n" else "") +
       spaces + "} else {\n" +
-      (if (ann(this, 2) != null) innerspaces + ppspec.decorator(ann(this, 2)) + '\n' else "") +
+      (if (ann.get(this, 2) != None) innerspaces + ppspec.decorator(ann(this, 2)) + '\n' else "") +
       else_branch.mkString(ann,level+1,ppspec) + "\n" +
-      (if (ann(this, 4) != null) innerspaces + ppspec.decorator(ann(this, 4)) + '\n' else "") +
+      (if (ann.get(this, 4) != None) innerspaces + ppspec.decorator(ann(this, 4)) + '\n' else "") +
       spaces + '}'
     return s
   }

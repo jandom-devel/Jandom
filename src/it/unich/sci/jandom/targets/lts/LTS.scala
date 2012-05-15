@@ -19,13 +19,12 @@
 package it.unich.sci.jandom
 package targets.lts
 
-import domains.{ NumericalProperty, NumericalPropertyAnnotation }
+import domains.NumericalProperty
 import targets.{ Environment, Parameters, Target }
 import annotations._
 import widenings.Widening
 import narrowings.Narrowing
-
-import scala.collection.mutable.{ ArrayBuffer, Map }
+import scala.collection.mutable.{Map, ArrayBuffer}
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -49,8 +48,23 @@ class LTS(private val locations: IndexedSeq[Location], private val transitions: 
   type Tgt = LTS
 
   def size = s
-
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation = {
+  
+  class Annotation[Property] extends Map[ProgramPoint, Property]  {
+	private val buffer = Array.fill[Option[Property]](s)(None)
+	def get(key: ProgramPoint) = buffer(key.id)
+	def iterator = buffer.indices.filter( buffer(_) != None).map { i => (locations(i),buffer(i).get ) }.toIterator
+	def +=(kv: (ProgramPoint, Property)): this.type = {	  
+	  buffer(kv._1.id) = Some(kv._2)
+	  return this
+	}
+	def -=(key: ProgramPoint): this.type = {
+	  buffer(key.id) = None
+	  return this
+	}
+	override def empty = new Annotation[Property]
+  } 
+  
+  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property] = {
     // build widening and narrowing for each program point    
     val widenings = locations map params.wideningFactory
     val narrowings = locations map params.narrowingFactory
@@ -83,7 +97,7 @@ class LTS(private val locations: IndexedSeq[Location], private val transitions: 
         narrowings(loc.id)(current(loc.id), unionednew)
       }
     }
-    val ann = LTS.LTSProgramPointAnnotationBuilder(this, NumericalPropertyAnnotation)
+    val ann = new Annotation[Property]	    	    
     locations.foreach { loc => ann(loc) = current(loc.id) }
     return ann
   }
