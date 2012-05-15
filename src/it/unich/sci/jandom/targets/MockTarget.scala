@@ -33,6 +33,7 @@ private[jandom] class MockTarget extends Target {
   type Tgt = MockTarget
   type ProgramPoint = Int  
   type Annotation[Property] = scala.collection.mutable.HashMap[ProgramPoint, Property]
+  def getAnnotation[Property] = new Annotation[Property]
   
   def size = 10
   
@@ -41,21 +42,12 @@ private[jandom] class MockTarget extends Target {
 }
 
 /** 
- * The companion object for the MockTarget. It defines the AnnotationBuilder for program point annotations.
+ * The companion object for the MockTarget.
  * @author Gianluca Amato <amato@sci.unich.it> 
  */
 private[jandom] object MockTarget {
-  implicit object MockProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[MockTarget] {
-	 def apply[Ann <: AnnotationType](t: MockTarget, ann: Ann): PerProgramPointAnnotation[MockTarget,Ann] = 
-	   new PerProgramPointAnnotation[MockTarget,Ann]{
-	     val a = ArrayBuffer.fill[Ann#T](t.size)(ann.defaultValue)
-	     def apply(pp: MockTarget#ProgramPoint) = a(pp)
-	     def update(pp: MockTarget#ProgramPoint, v: Ann#T) { a(pp) = v }
-	     def iterator = new Iterator[(MockTarget#ProgramPoint,Ann#T)] {
-	       var index: Int = -1
-	       def hasNext = index < a.size -1
-	       def next = { index +=1 ; (index,a(index)) }
-	     }
-	 }
-  } 
+  /**
+   * Creates a mock target.
+   */
+  def apply() = new MockTarget()  
 }

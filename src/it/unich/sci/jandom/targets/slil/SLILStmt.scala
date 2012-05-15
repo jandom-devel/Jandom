@@ -32,6 +32,8 @@ abstract class SLILStmt extends Target {
   type Tgt = SLILStmt
   type Annotation[Property] = scala.collection.mutable.HashMap[ProgramPoint,Property]  
   
+  def getAnnotation[Property] = new Annotation[Property]
+
   /**
    * Program associated with this statement.
    */
@@ -69,25 +71,4 @@ abstract class SLILStmt extends Target {
   def size = 1
 
   override def toString = mkString(new Annotation[Nothing])
-}
-
-/**
- * The companion object for SLILStmt. It defines the AnnotationBuilder for program point annotations.
- */
-object SLILStmt {
-  /**
-   * The annotation builder for program point annotations in statements.
-   */
-  implicit object SLILProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[SLILStmt] {
-    def apply[Ann <: AnnotationType](t: SLILStmt, ann: Ann): PerProgramPointAnnotation[SLILStmt, Ann] =
-      new PerProgramPointAnnotation[SLILStmt, Ann] {
-        private val a = new scala.collection.mutable.HashMap[SLILStmt#ProgramPoint, Ann#T]
-        def apply(pp: SLILStmt#ProgramPoint) = a.get(pp) match {
-          case None => { a(pp) = ann.defaultValue; ann.defaultValue }
-          case Some(v) => v
-        }
-        def update(pp: SLILStmt#ProgramPoint, v: Ann#T) { a(pp) = v }
-        def iterator = a.iterator
-      }
-  }
 }

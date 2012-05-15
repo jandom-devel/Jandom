@@ -24,6 +24,4 @@ package domains
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-trait AbstractProperty {
-
-}
+trait AbstractProperty { }

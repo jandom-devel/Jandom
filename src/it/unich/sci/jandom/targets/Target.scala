@@ -48,6 +48,11 @@ trait Target {
   type Annotation[Property] <: scala.collection.mutable.Map[ProgramPoint, Property] 
   
   /**
+   * Returns an empty annotation
+   */
+  def getAnnotation[Property]: Annotation[Property]
+  
+  /**
    * An alias for parameters in input by the analyzer
    */
   protected type Parameters[Property <: NumericalProperty[Property]] = targets.Parameters[Property, Tgt]

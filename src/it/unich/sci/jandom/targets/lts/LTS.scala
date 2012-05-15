@@ -64,6 +64,8 @@ class LTS(private val locations: IndexedSeq[Location], private val transitions: 
 	override def empty = new Annotation[Property]
   } 
   
+  def getAnnotation[Property] = new Annotation[Property]
+  
   def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property] = {
     // build widening and narrowing for each program point    
     val widenings = locations map params.wideningFactory
@@ -106,26 +108,11 @@ class LTS(private val locations: IndexedSeq[Location], private val transitions: 
 }
 
 /**
- * The companion object for LTS. It defines the AnnotationBuilder for program point annotations.
+ * The companion object for LTS.
  */
 object LTS {
-
-  def apply(locations: IndexedSeq[Location], transitions: Seq[Transition], env: Environment) = new LTS(locations, transitions, env)
-
   /**
-   * The annotation builder for program point annotations in LTS's
+   * Creates an LTS given locations, transitions and environment.
    */
-  implicit object LTSProgramPointAnnotationBuilder extends PerProgramPointAnnotationBuilder[LTS] {
-    def apply[Ann <: AnnotationType](t: LTS, ann: Ann): PerProgramPointAnnotation[LTS, Ann] =
-      new PerProgramPointAnnotation[LTS, Ann] {
-        val a = ArrayBuffer.fill[Ann#T](t.size)(ann.defaultValue)
-        def apply(pp: LTS#ProgramPoint) = a(pp.id)
-        def update(pp: LTS#ProgramPoint, v: Ann#T) { a(pp.id) = v }
-        def iterator = new Iterator[(LTS#ProgramPoint, Ann#T)] {
-          var index: Int = -1
-          def hasNext = index < a.size - 1
-          def next = { index += 1; (t.locations(index), a(index)) }
-        }
-      }
-  }
+  def apply(locations: IndexedSeq[Location], transitions: Seq[Transition], env: Environment) = new LTS(locations, transitions, env)
 }

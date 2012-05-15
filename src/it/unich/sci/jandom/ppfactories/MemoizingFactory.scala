@@ -23,14 +23,6 @@ import targets.Target
 import annotations._
 import scala.collection.mutable.Map
 
-/** 
- * An annotation type used to store the memoized objects
- */
-private object PerPPAnnotation extends AnnotationType {
-  type T = Any
-  val defaultValue = null
-}
-
 /**
  * A "per program point factory" which reuses objects for the same program point.
  * @tparam Tgt the type of target for the factory
@@ -40,17 +32,18 @@ private object PerPPAnnotation extends AnnotationType {
  */
 
 class MemoizingFactory[Tgt <: Target,T] (private val factory: PPFactory[Tgt,T], 
-                                           private val ann: PerProgramPointAnnotation[Tgt,PerPPAnnotation.type]) extends PPFactory[Tgt,T] {
+                                          private val ann: Tgt#Annotation[T]) extends PPFactory[Tgt,T] {
   
   def apply(pp: Tgt#WideningPoint) = {
-    var w: T = ann(pp).asInstanceOf[T]
-    if (w == null) { 
-      w = factory(pp)
-      ann(pp) = w
+    // this is not typesafe: I am converting a dependent type into an independent type. But,
+    // otherwise, each factory should contain a target
+    val ann2 = ann.asInstanceOf[scala.collection.mutable.Map[Tgt#WideningPoint, T]]
+    ann2.get(pp) match {
+      case Some(v) => v
+      case None => { val v= factory(pp); ann2(pp)=v; v }
     }
-    w
-  }
-}   
+  }  
+} 
 
 /**
  * The companion object for per program points factories
@@ -64,8 +57,8 @@ object MemoizingFactory {
    * @param ann a per-pp annotation used to stored the generated widenings
    * @return the factory
    */
-  def apply[Tgt <: Target, T](factory: PPFactory[Tgt,T], ann: PerProgramPointAnnotation[Tgt,PerPPAnnotation.type]) = 
-    new MemoizingFactory[Tgt, T](factory, ann)
+  def apply[Tgt <: Target, T](factory: PPFactory[Tgt,T], ann: Tgt#Annotation[T]) = 
+    new MemoizingFactory(factory, ann)
   
   /**
    * Builds  a "per program point" factory using the standard PerProgramPointAnnotation for a given target
@@ -76,6 +69,6 @@ object MemoizingFactory {
    * @param annBuilder the program point annotation builder for the given target
    * @return the factory
    */
-  def apply[Tgt <: Target, T](factory: PPFactory[Tgt,T], tgt: Tgt)(implicit annBuilder: PerProgramPointAnnotationBuilder[Tgt]) = 
-    new MemoizingFactory[Tgt, T](factory, annBuilder(tgt, PerPPAnnotation))
+  def apply[Tgt <: Target, T](factory: PPFactory[Tgt,T], tgt: Tgt) = 
+    new MemoizingFactory(factory, tgt.getAnnotation[T])
 }
