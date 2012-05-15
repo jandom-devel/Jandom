@@ -1,5 +1,5 @@
 /**
- * This class implements integer with infinities
+ * This class implements extended integers (integers with infinities)
  *
  * Copyright 2011 Gianluca Amato
  *
@@ -18,15 +18,21 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.numberextensions
+package it.unich.sci.jandom
+package numberextensions
 
 import NumberExt.SpecialValues._
 
 /**
+ * This is the class of extended integers.
+ * @param val the integer value of the numbers, when special is NORMAL
+ * @param special the special value of the number, or NORMAL if it is an integer
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class IntegerExt(val value: Int, val special: Value) extends NumberExt {    
+@SerialVersionUID(1)
+class IntegerExt(val value: Int, val special: Value) extends NumberExt with Serializable {    
+
   type Extension = IntegerExt
   
   override def +(that: IntegerExt): IntegerExt = (special,that.special) match {
@@ -88,14 +94,41 @@ class IntegerExt(val value: Int, val special: Value) extends NumberExt {
   }
 }
 
+/**
+ * The companion object for extended integers
+ */
 object IntegerExt {
+  /** 
+   * An implicit conversion of integer to extended integers.
+   */
   implicit def intToIntegerExt(i: Int) = apply(i)   
   
+  /**
+   * The positive infinity for extended integers 
+   */
   val PositiveInfinity = new IntegerExt(0, POSINF)
+  
+  /**
+   * The negative infinity for extended integers 
+   */
   val NegativeInfinity = new IntegerExt(0, NEGINF)
+  
+  /**
+   * The NAN for extended integers 
+   */
   val NaN = new IntegerExt(0, NAN)
   
+  /** 
+   * Build an extended integers
+   * @param n an integer
+   * @return the corresponding extended integer
+   */
+  
   def apply(n: Int) = new IntegerExt(n, NORMAL)
+  
+  /**
+   * The extractor for extended integers
+   */
   def unapply(v: IntegerExt) = v.special match {
     case NORMAL => Some(v.value)
     case _ => None    

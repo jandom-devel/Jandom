@@ -22,13 +22,17 @@ package it.unich.sci.jandom
 package numberextensions
 
 /**
+ * This is the base class for numeric extensions.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 abstract class NumberExt extends java.lang.Number with Serializable {
   import NumberExt.SpecialValues._
   
-  type Extension <: NumberExt
+  /**
+   * This is the real type of the NumberExt.
+   */
+  protected type Extension <: NumberExt
 
   def +(that: Extension): Extension
   def -(that: Extension): Extension
@@ -36,8 +40,15 @@ abstract class NumberExt extends java.lang.Number with Serializable {
   def unary_+(): Extension
 }
 
-object NumberExt {
-  object SpecialValues extends Enumeration {
+/** 
+ * The companion object of NumberExt keeps the enumeration of all the special values
+ * (i.e. infinities and NAN), used internally by our implementations.
+ */
+object NumberExt {  
+  /**
+   * The enumeration of special values.
+   */
+  private[numberextensions] object SpecialValues extends Enumeration {
     val POSINF = Value
     val NEGINF = Value
     val NAN = Value

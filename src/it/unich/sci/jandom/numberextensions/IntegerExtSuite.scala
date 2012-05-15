@@ -1,5 +1,6 @@
 /**
- *
+ * This is the test suite for extended integers
+ * 
  * Copyright 2011 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
@@ -25,6 +26,7 @@ import org.scalatest.prop.Checkers
 import org.scalacheck.Prop._
 
 /**
+ * Test suite for extended integers
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */

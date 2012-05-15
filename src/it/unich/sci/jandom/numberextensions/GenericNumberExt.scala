@@ -21,6 +21,10 @@
 package it.unich.sci.jandom
 package numberextensions
 
+/** 
+ * This is the class of generic extended integers, with extends an type T with 
+ * infinities.
+ */
 @SerialVersionUID(1)
 sealed abstract class GenericNumberExt[T] extends NumberExt with Serializable {
   type Extension = GenericNumberExt[T]
@@ -39,30 +43,53 @@ object GenericNumberExt {
   private val cachedNegativeInfinity = NEGINF()
   private val cachedNaN = NAN()
 
+  /** 
+   * Implicitly convert and int into an extended int
+   */
+  
   implicit def intToGenericNumberExt(i: Int) = GenericNumberExt(i)
+  /** 
+   * Implicitly convert an long into an extended long
+   */
   implicit def longToGenericNumberExt(l: Long) = GenericNumberExt(l)
 
+  /**
+   * Given a number (a type T with a Numeric[T]), build the corresponding extended number
+   */
   def apply[T](n: T)(implicit numeric: Numeric[T]): GenericNumberExt[T] = new GenericNumberExtNormal(n)
+  
+  /**
+   * Extractor for extended number
+   */
   def unapply[T](v: GenericNumberExt[T]): Option[T] = v match {
     case v: GenericNumberExtNormal[_] => Some(v.value)
     case _ => None
   }
 
+  /** 
+   * A sort of companion object for the class of NAN
+   */
   object NaN {
     def apply[T]() = cachedNaN.asInstanceOf[GenericNumberExt[T]]
     def unapply[T](v: GenericNumberExt[T])() = v eq cachedNaN
   }
 
+  /** 
+   * A sort of companion object for the class of positive infinite numbers
+   */
   object PositiveInfinity {
     def apply[T]() = cachedPositiveInfinity.asInstanceOf[GenericNumberExt[T]]
     def unapply[T](v: GenericNumberExt[T])() = v eq cachedPositiveInfinity
   }
 
+  /** 
+   * A sort of companion object for the class of negative infinite numbers
+   */
   object NegativeInfinity {
     def apply[T]() = cachedNegativeInfinity.asInstanceOf[GenericNumberExt[T]]
     def unapply[T](v: GenericNumberExt[T])() = v eq cachedNegativeInfinity
   }
-
+  
   private case class POSINF[T]() extends GenericNumberExt[T] {
     override def +(that: GenericNumberExt[T]): GenericNumberExt[T] = {
       that match {
@@ -124,5 +151,4 @@ object GenericNumberExt {
     override def longValue = value.toLong
     override def intValue = value.toInt
   }
-
 }

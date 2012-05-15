@@ -24,8 +24,8 @@ package numberextensions
 import org.scalatest.FunSuite
 
 /**
+ * Test suite for generic extended numbers
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 class GenericNumberExtSuite extends FunSuite { 
    
@@ -69,9 +69,9 @@ class GenericNumberExtSuite extends FunSuite {
   
   test("matches") {
     val x = PositiveInfinity    
-    /*assert( x match {
+    assert( x match {
       case PositiveInfinity => true
       case _ => false
-    } )*/
+    } )
   }
 } 
