@@ -27,5 +27,6 @@ import org.scalatest.FunSuite
  *
  */
 class ParsersSuite extends FunSuite {
-  override def nestedSuites = List(new LinearExpressionParserSuite, new LinearConditionParserSuite, new RandomParserSuite, new NumericalPropertyParserSuite)
+  override def nestedSuites = List(new LinearExpressionParserSuite, new LinearConditionParserSuite, new RandomParserSuite, new NumericalPropertyParserSuite,
+      new LPInvParserSuite)
 }
