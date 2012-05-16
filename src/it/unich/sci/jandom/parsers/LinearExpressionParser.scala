@@ -19,34 +19,47 @@
 package it.unich.sci.jandom
 package parsers
 
-import targets.{Environment,LinearForm}
+import targets.{ Environment, LinearForm }
 import scala.util.parsing.combinator.JavaTokenParsers
 
-
 /**
- * A trait for parsing linear expressions. To be inherited by real parsers. An implementation
+ * A trait for parsing integer linear expressions. To be inherited by real parsers. An implementation
  * should define a parser ''variable'' of type ''Parser[Int]'' and provide a variable ''env''
- * of type ''Environment''. 
+ * of type ''Environment''. The result of variable is the id of the variable in the environment
+ * ''env''. It provides a parser ''expr'' for linear expressions.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract trait LinearExpressionParser extends JavaTokenParsers {    
-    protected val env: Environment
-	protected val variable: Parser[Int]
-    
-	protected val term: Parser[LinearForm[Int]] = 
-	  (opt(wholeNumber <~ "*") ~ variable) ^^ {
-	    case Some(coeff) ~ v => LinearForm.fromCoefficientVar[Int](coeff.toInt, v+1, env)  
-	    case None~v =>  LinearForm.fromVar[Int](v+1 ,env)
-      } |
-      wholeNumber ^^ { case coeff => LinearForm.fromCoefficient(coeff.toInt,env) }	
-         
-	private val term_with_operator: Parser[LinearForm[Int]] =
-	  "+" ~> term |
-	  "-" ~> term ^^ { lf => -lf  }	  	
-	  
-	protected val expr: Parser[LinearForm[Int]] = 
-	  term ~ rep(term_with_operator) ^^ {
-	    case lf1 ~ lfarr => (lf1 /: lfarr) { (lfa, lfb) => lfa + lfb }   
-   	  }	
+trait LinearExpressionParser extends JavaTokenParsers {
+  /**
+   * Environment for variables
+   */
+  protected val env: Environment
+
+  /**
+   * Parser for variables
+   */
+  protected val variable: Parser[Int]
+
+  /**
+   * Parser for terms
+   */
+  protected val term: Parser[LinearForm[Int]] =
+    (opt(wholeNumber <~ "*") ~ variable) ^^ {
+      case Some(coeff) ~ v => LinearForm.fromCoefficientVar[Int](coeff.toInt, v + 1, env)
+      case None ~ v => LinearForm.fromVar[Int](v + 1, env)
+    } |
+    wholeNumber ^^ { case coeff => LinearForm.fromCoefficient(coeff.toInt, env) }
+
+  private val term_with_operator: Parser[LinearForm[Int]] =
+    "+" ~> term |
+    "-" ~> term ^^ { lf => -lf }
+
+  /**
+   * Parser for integer linear expressions
+   */
+  protected val expr: Parser[LinearForm[Int]] =
+    term ~ rep(term_with_operator) ^^ {
+      case lf1 ~ lfarr => (lf1 /: lfarr) { (lfa, lfb) => lfa + lfb }
+    }
 }

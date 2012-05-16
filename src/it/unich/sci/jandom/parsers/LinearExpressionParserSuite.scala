@@ -20,23 +20,21 @@ package parsers
 
 import targets.{Environment,LinearForm}
 import org.scalatest.FunSuite
-import org.scalatest.prop.Checkers
-
 
 /**
  * Test suite for LinearExpressionParser
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class LinearExpressionParserSuite extends FunSuite with Checkers {
+class LinearExpressionParserSuite extends FunSuite {
 	val parser = new LinearExpressionParser {
-	    val variable = ident ^^ { env.getBindingOrAdd(_) }
-	    val env = new Environment()
+	  	val env = Environment()
+	  	val variable = ident ^^ { env.getBindingOrAdd(_) }
 	    def parseExpr(s: String) = parseAll(expr,s)
 	 }
 	  
 	test("linear expression parser") {
-	  val expParsed = parser.parseExpr("3*x+y-z")
-	  val expBuild = LinearForm(List(0,3,1,-1), Environment("x","y","z"))
+	  val expParsed = parser.parseExpr("3*x+y-z").get
+	  val expBuild = LinearForm(Seq(0,3,1,-1), Environment("x","y","z"))
 	  expect(expBuild) { expParsed }
 	}
 }
