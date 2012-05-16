@@ -24,30 +24,42 @@ import targets.linearcondition._
 import scala.util.parsing.combinator.JavaTokenParsers
 
 /**
- * A trait for parsing linear conditions. To be inherited by real parsers. An implementation
- * should define a parser ''expr'' of type ''Parser[LinearForm[Int]]'' and an optional parser 
- * ''operator_alias'' of type ''Parser[String]'' for atomic operators additional w.r.t. 
- * the standard ones.
+ * A trait for parsing integer linear conditions. To be inherited by real parsers. An implementation
+ * should define a parser ''expr'' of type ''Parser[LinearForm[Int]]'' and an optional parser
+ * ''operator_alias'' of type ''Parser[String]'' for atomic operators additional w.r.t.
+ * the standard ones. It provides a parser ''condition'' for the parsing of linear conditions
+ * in C/Java notation.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 trait LinearConditionParser extends JavaTokenParsers {
-    protected val expr: Parser[LinearForm[Int]]     
-    protected val operator_alias: Parser[String] = failure("no aliases in standard LinearConditionParser")
-    
-	private def comparison: Parser[AtomicCond.ComparisonOperators.Value] =
-	  ("==" | "<=" | ">=" | "!=" | "<"  | ">" | operator_alias) ^^ { AtomicCond.ComparisonOperators.withName(_) } |
-	  failure("invalid comparison operator")
-	
-	protected def atomic_condition: Parser[LinearCond] =
-	  "FALSE" ^^ { s => FalseCond } |
-	  "TRUE" ^^ { s => TrueCond } |	 
-	  "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
-	  expr ~ comparison ~ expr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1-lf2, op)} 
-	 
-	protected def condition: Parser[LinearCond] = 
-	  atomic_condition |
-	  atomic_condition ~ "&&" ~ condition ^^ { case c1 ~ _ ~ c2 => AndCond(c1,c2) } |
-	  atomic_condition ~ "||" ~ condition ^^ { case c1 ~ _ ~ c2 => OrCond(c1,c2) } |
-	  "!" ~> condition ^^ { case c => NotCond(c) }
+  /**
+   * A parser for linear expressions. Should be provided in a real implementation
+   */
+  protected val expr: Parser[LinearForm[Int]]
+
+  /**
+   * Parser for comparison operators
+   */
+  protected def comparison: Parser[AtomicCond.ComparisonOperators.Value] =
+    ("==" | "<=" | ">=" | "!=" | "<" | ">" ) ^^ { AtomicCond.ComparisonOperators.withName(_) } |
+      failure("invalid comparison operator")
+
+  /**
+   * Parser for atomic conditions
+   */
+  protected def atomic_condition: Parser[LinearCond] =
+    "FALSE" ^^ { s => FalseCond } |
+    "TRUE" ^^ { s => TrueCond } |
+    "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
+    expr ~ comparison ~ expr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1 - lf2, op) }
+
+  /**
+   * Parser for linear conditions
+   */
+  protected def condition: Parser[LinearCond] =
+    atomic_condition ~ "&&" ~ condition ^^ { case c1 ~ _ ~ c2 => AndCond(c1, c2) } |
+    atomic_condition ~ "||" ~ condition ^^ { case c1 ~ _ ~ c2 => OrCond(c1, c2) } |
+    "!" ~> condition ^^ { case c => NotCond(c) } |
+    atomic_condition
 }
