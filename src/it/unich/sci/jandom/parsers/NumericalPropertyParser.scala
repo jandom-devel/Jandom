@@ -20,25 +20,48 @@ package it.unich.sci.jandom
 package parsers
 
 import targets.Environment
-import domains.NumericalDomain
-import domains.NumericalProperty
-
+import domains.{ NumericalDomain, NumericalProperty }
 import scala.util.parsing.combinator.JavaTokenParsers
 
 /**
+ * A parser for numerical properties.
+ * @param env environment to use for parsing the property
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class PropertyParser extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser  {
-	val env = Environment()
-	var closedVariables = false;
-    
-    protected val variable: Parser[Int] = new Parser[Int] {
-      def apply(in: Input) = ident(in) match {
-        case Success(i,in1) => env.getBinding(i) match {
-        	case Some(v) => Success(v,in1)
-        	case None => if (closedVariables) Failure("Unexpected variable",in1) else Success(env.addBinding(i),in1)
-        }}}
-    
-	def parse[Property<: NumericalProperty[Property]] (s: String, domain: NumericalDomain[Property]) = parseAll(condition,s).get.analyze(domain.full(env.size))
+class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
+  /**
+   * If this variable is false, unrecognized variables will be treated as errors, otherwise they will be
+   * added to the environment
+   */
+  var closedVariables = false
+
+  /**
+   * Parser for variables
+   */
+  override val variable: Parser[Int] = new Parser[Int] {
+    def apply(in: Input) = ident(in) match {
+      case Success(i, in1) => env.getBinding(i) match {
+        case Some(v) => Success(v, in1)
+        case None => if (closedVariables) Failure("Unexpected variable", in1) else Success(env.addBinding(i), in1)
+      }
+      case default => default.asInstanceOf[ParseResult[Int]]
+    }
+  }
+
+  /**
+   * Parser for properties
+   */
+  protected def property[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property]) =
+    condition ^^ { _.analyze(domain.full(env.size)) }
+  
+  /**
+   * Parsing function.
+   * @tparam Property the type of the numerical property we want
+   * @param s string to parse
+   * @param domain the numerical domain corresponding to the type Property
+   * @return a ParseResult[Property] with the result with the parsed property, or corresponding error condition 
+   */
+  def parseProperty[Property <: NumericalProperty[Property]](s: String, domain: NumericalDomain[Property]) =
+    parseAll(property(domain),s)
 }

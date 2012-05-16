@@ -20,25 +20,23 @@ package it.unich.sci.jandom
 package parsers
 
 import targets.{ Environment, LinearForm }
-import targets.linearcondition._
+import domains.BoxDouble
 import org.scalatest.FunSuite
 
 /**
- * Test suite for LinearExpressionParser
+ * Test suite for NumericalProperty
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class LinearConditionParserSuite extends FunSuite {
-  val parser = new LinearConditionParser with LinearExpressionParser {
-    val env = Environment()
-    val variable = ident ^^ { env.getBindingOrAdd(_) }
-    def parseExpr(s: String) = parseAll(condition, s)
-  }
-
-  test("linear condition parser") {
-    val expParsed = parser.parseExpr("3*x+y-z==0 && x<=z").get
-    val exp1Build = LinearForm(Seq(0, 3, 1, -1), Environment("x", "y", "z"))
-    val exp2Build = LinearForm(Seq(0, 1, 0, -1), Environment("x", "y", "z"))
-    val expCond = AndCond(AtomicCond(exp1Build, AtomicCond.ComparisonOperators.EQ), AtomicCond(exp2Build, AtomicCond.ComparisonOperators.LTE))
-    expect(expCond) { expParsed }
+class NumericalPropertyParserSuite extends FunSuite { 
+  val env = Environment()
+  val parser = new NumericalPropertyParser(env)
+ 
+  test("numerical property parser") {
+    val prop1 = parser.parseProperty("x<=5 && y>=-3", BoxDouble).get  
+    expect( BoxDouble(Array(Double.NegativeInfinity,-3), Array(5,Double.PositiveInfinity)) ) { prop1 }
+    parser.closedVariables=true
+    val prop2 = parser.parseProperty("x<=5 && y>=-3", BoxDouble).get
+    expect (prop1) { prop2 }
+    expect ( false ) { parser.parseProperty("z<=5 && y>=-3", BoxDouble).successful }
   }
 }
