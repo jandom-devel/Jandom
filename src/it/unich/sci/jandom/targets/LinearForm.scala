@@ -28,7 +28,7 @@ package targets
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 
-class LinearForm[T] (val coefficients: Seq[T], val env: Environment) (implicit numeric: Numeric[T]) {
+case class LinearForm[T] (val coefficients: Seq[T], val env: Environment) (implicit numeric: Numeric[T]) {
   
   import numeric._
      
@@ -114,7 +114,7 @@ object LinearForm {
   /**
    * Builds a linear form given coefficients and environment
    */
-  def apply[T](coeffs: Seq[T], env: Environment)(implicit numeric: Numeric[T]) = new LinearForm(coeffs, env)
+  //def apply[T](coeffs: Seq[T], env: Environment)(implicit numeric: Numeric[T]) = new LinearForm(coeffs, env)
   
   /**
    * Builds the linear form "coeff*v(i)" 

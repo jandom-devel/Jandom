@@ -54,4 +54,15 @@ class LinearFormSuite extends FunSuite {
     val lf3 = LinearForm(List(2,2,2),env)
   	expect(lf3) { lf1+lf2 }    
   }  
+  
+  test("Equality") {
+    val env2 = Environment("v1","v2")
+    val lf1 = LinearForm(Seq(1,0,3),env)
+    val lf2 = LinearForm(IndexedSeq(1,0,3),env)
+    expect(lf1) { lf2 }
+    val lf3 = LinearForm(Seq(1,0,1), env)
+    expect(false) (lf1 == lf3)
+    val lf4 = LinearForm(Seq(1,0,3), Environment("v1","v4"))
+    expect(false) (lf1 == lf4)
+  }
 }
