@@ -68,5 +68,10 @@ object RandomParser extends JavaTokenParsers  with LinearExpressionParser with L
 	private val progWithCases: Parser[SLILProgram] = 
 	  opt("if" ~ "(" ~ "FALSE" ~ ")" ~ stringLiteral) ~> prog <~ skip
 	  
+	/**
+	 * The parse function
+	 * @param s the string containing the Random Program
+	 * @return a ParseResult with the program parsed in the target SLILProgram  
+	 */
 	def parseProgram(s: String) = parseAll(progWithCases,s)
 }

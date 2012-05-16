@@ -36,7 +36,7 @@ class RandomParserSuite extends FunSuite with Checkers {
       xyz <- function(x,y) x = 1
     """    
     val env = Environment("x","y")    
-    val program = SLILProgram(env,  Seq(1,2), AssignStmt(1, new LinearForm(List(1,0),env)))
+    val program = SLILProgram(env,  Seq(0,1), AssignStmt(0, new LinearForm(List(1,0,0),env)))
     val parsed = RandomParser.parseProgram(prog).get
     expect(program) { parsed }
   }
@@ -50,11 +50,11 @@ class RandomParserSuite extends FunSuite with Checkers {
       }
     """      
     val env = Environment("x","y")
-    val program = SLILProgram(env, List(1),
+    val program = SLILProgram(env, List(0),
         CompoundStmt(List(
-            AssignStmt(2,LinearForm.fromCoefficient[Int](0,env)),
+            AssignStmt(1,LinearForm.fromCoefficient[Int](0,env)),
             WhileStmt(AtomicCond(new LinearForm(List(0,-1,1),env), AtomicCond.ComparisonOperators.LT), 
-                AssignStmt(2,new LinearForm(List(1,0,1),env))
+                AssignStmt(1,new LinearForm(List(1,0,1),env))
             )
        )))
     expect(program) { RandomParser.parseProgram(prog).get }     
