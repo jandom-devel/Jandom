@@ -43,4 +43,10 @@ class EnvironmentSuite  extends FunSuite {
     val env = Environment("A","B","C")
     expect ("C") { env(env("C")) }
   }
+  
+  test("Environment equality") {
+    val env1 = Environment("x","y","z")
+    val env2 = Environment("x","y","z")
+    expect (env1) { env2 }
+  }
 }
