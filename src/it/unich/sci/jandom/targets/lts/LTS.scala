@@ -35,7 +35,7 @@ import scala.collection.mutable.{Map, ArrayBuffer}
  *
  */
 
-class LTS(private val locations: IndexedSeq[Location], private val transitions: Seq[Transition], private val env: Environment) extends Target {
+case class LTS(private val locations: IndexedSeq[Location], private val transitions: Seq[Transition], private val env: Environment) extends Target {
 
   // fill locations with their numerical index.. this is used to speed up execution
   locations.zipWithIndex.foreach { case (loc, index) => loc.id = index }
@@ -105,14 +105,4 @@ class LTS(private val locations: IndexedSeq[Location], private val transitions: 
   }
 
   override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")
-}
-
-/**
- * The companion object for LTS.
- */
-object LTS {
-  /**
-   * Creates an LTS given locations, transitions and environment.
-   */
-  def apply(locations: IndexedSeq[Location], transitions: Seq[Transition], env: Environment) = new LTS(locations, transitions, env)
 }
