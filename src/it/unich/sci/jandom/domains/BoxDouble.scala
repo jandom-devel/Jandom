@@ -114,14 +114,14 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     val newhigh = (this.high, that.high).zipped.map(_ max _)
     new BoxDouble(newlow, newhigh)
   }
-  
+
   override def intersection(that: BoxDouble): BoxDouble = {
     require(dimension == that.dimension)
     val newlow = (this.low, that.low).zipped.map(_ max _)
     val newhigh = (this.high, that.high).zipped.map(_ min _)
     new BoxDouble(newlow, newhigh)
   }
-  
+
   /**
    * The standard widening on boxes based on CC76.
    */
@@ -134,12 +134,12 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
 
   /**
    * The standard narrowing on boxes based on CC76.
-   */  
-  def narrowing(that: BoxDouble) = {     
+   */
+  def narrowing(that: BoxDouble) = {
     require(dimension == that.dimension)
     val newlow = (low, that.low).zipped.map((l1, l2) => if (l1 == Double.NegativeInfinity) l2 else l1 min l2)
     val newhigh = (high, that.high).zipped.map((l1, l2) => if (l1 == Double.PositiveInfinity) l2 else l1 max l2)
-    new BoxDouble(newlow, newhigh)   
+    new BoxDouble(newlow, newhigh)
   }
 
   /**
@@ -175,7 +175,6 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    */
   private def linearArgmin(coeff: Array[Double]): Array[Double] = {
     require(coeff.length <= dimension)
-    coeff.padTo(dimension, 0)
     (coeff zipWithIndex) map { case (c, i) => if (c > 0) low(i) else high(i) }
   }
 
@@ -187,7 +186,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * @return the coordinates of the point which maximizes the linear form
    */
   private def linearArgmax(coeff: Array[Double]): Array[Double] = {
-    require(coeff.length == dimension)
+    require(coeff.length <= dimension)
     (coeff zipWithIndex) map { case (c, i) => if (c < 0) low(i) else high(i) }
   }
 
@@ -215,7 +214,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * @throws IllegalDomainException if parameters are not correct
    */
   override def linearInequality(coeff: Array[Double], known: Double): BoxDouble = {
-    require(coeff.length == dimension)
+    require(coeff.length <= dimension)
 
     /* if the box is empty the result is empty */
     if (isEmpty) return this
@@ -228,7 +227,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     val newlow = low.clone
     val newhigh = high.clone
 
-    val infinities = (0 to (dimension - 1)) filter { i => lfArgmin(i).isInfinity && coeff(i) != 0 }
+    val infinities = (0 to (coeff.length - 1)) filter { i => lfArgmin(i).isInfinity && coeff(i) != 0 }
     infinities.size match {
       case 0 =>
         for (i <- 0 to (coeff.length - 1)) {
@@ -238,9 +237,9 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
       case 1 => {
         val posinf = infinities.head
         if (coeff(posinf) < 0)
-          newlow(posinf) = low(posinf) max ( (-dotprod_lo(coeff, lfArgmin, posinf) - known) / coeff(posinf))
+          newlow(posinf) = low(posinf) max ((-dotprod_lo(coeff, lfArgmin, posinf) - known) / coeff(posinf))
         else
-          newhigh(posinf) = high(posinf) min ( (-dotprod_hi(coeff, lfArgmin, posinf) - known )/ coeff(posinf))
+          newhigh(posinf) = high(posinf) min ((-dotprod_hi(coeff, lfArgmin, posinf) - known) / coeff(posinf))
       }
       case _ =>
     }
@@ -342,7 +341,7 @@ object BoxDouble extends NumericalDomain[BoxDouble] {
     else
       new BoxDouble(low, high)
   }
-  
+
   def apply(poDouble: Array[Double]): BoxDouble = apply(poDouble, poDouble)
 
   def full(n: Int): BoxDouble = {
