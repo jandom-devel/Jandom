@@ -31,7 +31,7 @@ import org.scalatest.prop.Checkers
  *
  */
 class RandomParserSuite extends FunSuite with Checkers {
-  test ("very simple program") {
+  test ("very simple random program") {
     val prog: String =  """
       xyz <- function(x,y) x = 1
     """    
