@@ -30,19 +30,25 @@ import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
 
 /**
- * The class for Polyhedra in PPL.
+ * The domain for not necessarily closed polyhedra implemented within $PPL. This is essentially
+ * a wrapper transforming methods of `C_Polyhedron` to methods of `NumericalProperty`. We clone
+ * objects in order have an immutable class.
+ * @param pplpolyhedron an object of class `C_Polyhedron` which is the $PPL wrapped object.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends NumericalProperty[PPLCPolyhedron] {
      
-  def widening(that: PPLCPolyhedron): PPLCPolyhedron = {
+  override def widening(that: PPLCPolyhedron): PPLCPolyhedron = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     newpplpolyhedron.upper_bound_assign(that.pplpolyhedron)
     newpplpolyhedron.widening_assign(pplpolyhedron,null)    
     new PPLCPolyhedron(newpplpolyhedron)
   }
   
+  /**
+   * Since there is no standard narrowing for polyehdra, this is a fake narrowing which
+   * always return `this`.
+   */
   def narrowing(that: PPLCPolyhedron): PPLCPolyhedron = {
     this
   }   
@@ -105,6 +111,12 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
   
   override def toString : String = pplpolyhedron.toString
   
+  /**
+   * Converts a sequence of homogeneous and in-homogeneous coefficients into a `Linear_Expression`, which
+   * is a PPL internal object.
+   * @param coeff the homogeneous coefficients.
+   * @param known the in-homogeneous coefficient.
+   */
   private def toPPLLinearExpression(coeff:Array[Double], known:Double): Linear_Expression = {
     var le : Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(known.toInt))
 	for (i <- 0 to (coeff.length - 1)) {
@@ -115,7 +127,7 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
 }
 
 /**
- * This is the PPLCPolyhedron domain.
+ * This is the factory for ``PPLBoxDouble`` properties.
  */
 object PPLCPolyhedron extends NumericalDomain[PPLCPolyhedron] {  
 

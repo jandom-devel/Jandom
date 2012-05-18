@@ -23,11 +23,12 @@ package domains
  * This is the box abstract domain over doubles.
  *
  * It is actually a proof of concept on how to implement an abstract domain entirely in Scala. It
- * is not correct since it does not implement rounding correctly. Real domains should be implemented within PPL or APRON.
+ * is not safe to use, since it does not implement rounding correctly. Real domains should be implemented
+ * within $PPL or $APRON.
  *
- * @author Gianluca Amato <amato@sci.unich.it>
  * @param low the lower bounds for the box
  * @param high the upper bounds for the box
+ * @author Gianluca Amato <amato@sci.unich.it>
  */
 
 final class BoxDouble(private val low: Array[Double], private val high: Array[Double]) extends NumericalProperty[BoxDouble] {
@@ -35,9 +36,10 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
 
   /**
    * This checks whether the box is normalized. This should always be the case. A box is normalized when
-   * the lower and higher bounds are of the same length, and either a) there are no lower bounds equal to +Inf,
-   * there are no upper bounds equal to -Inf, the lower bounds are smaller of the corresponding upper bounds or
-   * b) all the lower bound are +Inf and all the upper bounds are -Inf.
+   * the lower and higher bounds are of the same length, and either
+   *   1. there are no lower bounds equal to +Inf,
+   *     there are no upper bounds equal to -Inf, the lower bounds are smaller of the corresponding upper bounds or
+   *   2. all the lower bound are +Inf and all the upper bounds are -Inf.
    * @return whether the box is normalized.
    */
   private def normalized: Boolean =
@@ -53,17 +55,17 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   /**
    * Returns the sum of x and y, rounded towards +Inf.
    * @note This is not implemented correctly.
-   * @param x first number to sum
-   * @param y second number to som
-   * @returns x+y rounded towards +Inf
+   * @param x first number to sum.
+   * @param y second number to sum.
+   * @returns x+y rounded towards +Inf.
    */
   private def add_hi(x: Double, y: Double): Double = x + y
 
   /**
    * Returns the sum of x and y, rounded towards -Inf.
    * @note This is not implemented correctly.
-   * @param x first number to sum
-   * @param y second number to som
+   * @param x first number to sum.
+   * @param y second number to sum.
    * @returns x+y rounded towards -Inf
    */
   private def add_lo(x: Double, y: Double): Double = x + y
@@ -72,8 +74,8 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * Returns the product of x and y, rounded towards +Inf. Moreover,
    * if x is 0, the product is 0 independently from the value of y.
    * @note This is not implemented correctly.
-   * @param x first number to multiply
-   * @param y second number to multiply
+   * @param x first number to multiply.
+   * @param y second number to multiply.
    * @returns x*y rounded towards +Inf
    */
   private def mul_hi(x: Double, y: Double): Double = if (x == 0) 0 else x * y
@@ -82,15 +84,15 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * Returns the product of x and y, rounded towards -Inf. Moreover, if x is 0,
    * the product is 0 independently from the value of y.
    * @note This is not implemented correctly.
-   * @param x first number to multiply
-   * @param y second number to multiply
-   * @returns x*y rounded towards -Inf
+   * @param x first number to multiply.
+   * @param y second number to multiply.
+   * @returns x*y rounded towards -Inf.
    */
   private def mul_lo(x: Double, y: Double): Double = if (x == 0) 0 else x * y
 
   /**
    * Return the dot product of x and y, rounded towards -Inf.
-   *
+   * @note This is not implemented correctly.
    */
   private def dotprod_lo(x: Array[Double], y: Array[Double], remove: Int = -1): Double = {
     var sum: Double = 0
@@ -100,7 +102,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
 
   /**
    * Return the dot product of x and y, rounded towards +Inf.
-   *
+   * @note This is not implemented correctly.
    */
   private def dotprod_hi(x: Array[Double], y: Array[Double], remove: Int = -1): Double = {
     var sum: Double = 0
@@ -123,7 +125,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   }
 
   /**
-   * The standard widening on boxes based on CC76.
+   * This is the standard widening on boxes based on [[http://www.di.ens.fr/~cousot/COUSOTpapers/ISOP76.shtml CC76]].
    */
   def widening(that: BoxDouble) = {
     require(dimension == that.dimension)
@@ -133,7 +135,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   }
 
   /**
-   * The standard narrowing on boxes based on CC76.
+   * This is the standard narrowing on boxes based on [[http://www.di.ens.fr/~cousot/COUSOTpapers/ISOP76.shtml CC76]].
    */
   def narrowing(that: BoxDouble) = {
     require(dimension == that.dimension)
@@ -145,10 +147,10 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   /**
    * Compute the minimum and maximum value of a linear form in a box.
    * @note should be generalized to linear forms over arbitrary types.
-   * @param coeff the homogeneous coefficients
-   * @param known the unhomogeneous coefficient
+   * @param coeff the homogeneous coefficients.
+   * @param known the in-homogeneous coefficient.
    * @return a tuple with two components: the first component is the least value, the second component is the greatest value
-   * 		 of the linear form over the tuple.
+   * of the linear form over the box.
    */
   private def linearEvaluation(coeff: Array[Double], known: Double): Tuple2[Double, Double] = {
     require(coeff.length <= dimension)
@@ -167,11 +169,11 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   }
 
   /**
-   * Compute the corner of the box which minimizes a linear form. We do not need the inhomogenous coefficients since it is not
+   * Compute the corner of the box which minimizes a linear form. We do not need the in-homogenous coefficients since it is not
    * relevant for the computation.
    * @note should be generalized to linear forms over arbitrary types.
-   * @param coeff the homogeneous coefficients
-   * @return the coordinates of the point which minimizes the linear form
+   * @param coeff the homogeneous coefficients.
+   * @return the coordinates of the point which minimizes the linear form.
    */
   private def linearArgmin(coeff: Array[Double]): Array[Double] = {
     require(coeff.length <= dimension)
@@ -192,12 +194,8 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
 
   /**
    * Linear assignment over a box.
-   * @note should be generalized to linear forms over arbitrary types.
-   * @param n the variable to be reassigned
-   * @param coeff the homogeneous coefficients
-   * @param known the inhomogeneous coefficient
-   * @return the least box which contains the result of the linear assignment
-   * @throws IllegalDomainException if parameters are not correct
+   * @return the least box which contains the result of the linear assignment.
+   * @throws IllegalDomainException if parameters are not correct.
    */
   override def linearAssignment(n: Int, coeff: Array[Double], known: Double): BoxDouble = {
     require(n <= low.length && coeff.length <= dimension)
@@ -207,11 +205,8 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   }
 
   /**
-   * Intersection with an half-plane. It should be generalized to linear forms over arbitrary types.
-   * @param coeff the homogeneous coefficients
-   * @param known the inhomogeneous coefficient
-   * @return the least box which contains the intersection wih the half-plane coeff*v+knwown <= 0
-   * @throws IllegalDomainException if parameters are not correct
+   * @return the least box which contains the intersection with the half-plane `coeff*v+knwown <= 0`.
+   * @throws IllegalDomainException if parameters are not correct.
    */
   override def linearInequality(coeff: Array[Double], known: Double): BoxDouble = {
     require(coeff.length <= dimension)
@@ -247,11 +242,8 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   }
 
   /**
-   * Intersection with the complements of a line. It should be generalized to linear forms over arbitrary types.
-   * @param coeff the homogeneous coefficients
-   * @param known the inhomogeneous coefficient
-   * @return the least box which contains the intersection with the complement of the line coeff*v+knwown==0
-   * @throws IllegalDomainException if parameters are not correct
+   * @return the least box which contains the intersection with the complement of the line `coeff*v+knwown==0`.
+   * @throws IllegalDomainException if parameters are not correct.
    */
   override def linearDisequality(coeff: Array[Double], known: Double): BoxDouble =
     throw new IllegalAccessException("Unimplemented feature");
@@ -261,32 +253,14 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   override def linearEquality(n: Int, coeff: Array[Double], known: Double)
   */
 
-  /**
-   * Returns the dimension of the environment space.
-   * @return the dimension of the environment space.
-   */
   override val dimension: Int = low.length
 
-  /**
-   * Test of emptyness
-   * @return whether the abstract objecy is empty.
-   */
   override def isEmpty: Boolean = (low, high).zipped.exists(_ > _)
 
-  /**
-   * Test for fullness
-   * @return whether the abstract object represents the full environment space.
-   */
   override def isFull: Boolean = low.forall(_ isNegInfinity) && high.forall(_ isPosInfinity)
 
-  /**
-   * Return an empty object of the same type
-   */
   def empty = BoxDouble.empty(low.length)
 
-  /**
-   * Return a full object of the same type
-   */
   def full = BoxDouble.empty(low.length)
 
   def tryCompareTo[B >: BoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
@@ -317,22 +291,26 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
 }
 
 /**
- * This object provides a set of operations needed to work with boxes on doubles.
+ * The factory object for `BoxDouble` properties. It caches the value of `empty(n)` for
+ * different `n`, so that we do not create multiple copies of them. This works since 
+ * numerical properties should be implemented to be immutables.
+ * 
+ * The caching should be probably implemented in [[it.unich.sci.jandom.domains.NumericalDomain]], and
+ * should be extended to both full and empty values.
  */
 object BoxDouble extends NumericalDomain[BoxDouble] {
   /**
-   * This is a cache for empty boxes. In this way, we avoid to generate several different
-   * objects for empty boxes.
+   * This is a cache for empty boxes.
    */
   private var cacheEmpty: Map[Int, BoxDouble] = Map()
 
   /**
    * Returns a box with given bounds. The box is normalized: if it is empty, it is replaced by a well-behaved empty box
-   * generated by the method empty.
-   * @param low lower bounds
-   * @param high upper bounds
-   * @return the normalized box with the specified bounds
-   * @throws IllegalArgumentExpection if the length of low and high is not the same
+   * generated by the method `empty`.
+   * @param low lower bounds.
+   * @param high upper bounds.
+   * @return the normalized box with the specified bounds.
+   * @throws IllegalArgumentExpection if the lengths of low and high are not the same.
    */
   def apply(low: Array[Double], high: Array[Double]): BoxDouble = {
     require(low.length == high.length)
@@ -342,6 +320,9 @@ object BoxDouble extends NumericalDomain[BoxDouble] {
       new BoxDouble(low, high)
   }
 
+  /**
+   * Returns a box consisting of the single point `poDouble`.
+   */
   def apply(poDouble: Array[Double]): BoxDouble = apply(poDouble, poDouble)
 
   def full(n: Int): BoxDouble = {
@@ -354,5 +335,9 @@ object BoxDouble extends NumericalDomain[BoxDouble] {
     cacheEmpty(n)
   }
 
+  /**
+   * Check whether the possibly unnormalized box with bounds `low` and `high` is empty.
+   * @return true if the box is empty.
+   */
   private def unnormalizedIsEmpty(low: Array[Double], high: Array[Double]) = (low, high).zipped.exists(_ > _)
 }

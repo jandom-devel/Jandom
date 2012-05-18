@@ -30,9 +30,11 @@ import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
 
 /**
- * The class for Boxes in PPL.
+ * The domain for possibly opened box over doubles implemented within $PPL. This is essentially
+ * a wrapper transforming methods of `Double_Box` to methods of `NumericalProperty`. We clone
+ * objects in order have an immutable class.
+ * @param pplbox an object of class `Double_Box` which is the $PPL wrapped object.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PPLBoxDouble] {
   
@@ -79,15 +81,15 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
      throw new IllegalAccessException("Unimplemented feature");
   }
 
-  def dimension(): Int = pplbox.space_dimension.toInt
+  def dimension: Int = pplbox.space_dimension.toInt
 
-  def isEmpty(): Boolean = pplbox.is_empty
+  def isEmpty: Boolean = pplbox.is_empty
 
-  def isFull(): Boolean = pplbox.is_universe
+  def isFull: Boolean = pplbox.is_universe
   
-  def empty  = PPLBoxDouble.empty(pplbox.space_dimension.toInt)
+  def empty()  = PPLBoxDouble.empty(pplbox.space_dimension.toInt)
   
-  def full  = PPLBoxDouble.full(pplbox.space_dimension.toInt)
+  def full()  = PPLBoxDouble.full(pplbox.space_dimension.toInt)
 
   def tryCompareTo [B >: PPLBoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLBoxDouble => 
@@ -107,6 +109,12 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
   
   override def toString : String = pplbox.toString
   
+  /**
+   * Converts a sequence of homogeneous and in-homogeneous coefficients into a `Linear_Expression`, which
+   * is a PPL internal object.
+   * @param coeff the homogeneous coefficients.
+   * @param known the in-homogeneous coefficient.
+   */
   private def toPPLLinearExpression(coeff:Array[Double], known:Double): Linear_Expression = {
     var le : Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(known.toInt))
 	for (i <- 0 to (coeff.length - 1)) {
@@ -117,7 +125,7 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
 }
 
 /**
- * This is the PPLBoxDouble domain.
+ * This is the factory for ``PPLBoxDouble`` properties.
  */
 object PPLBoxDouble extends NumericalDomain[PPLBoxDouble] {  
 

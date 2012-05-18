@@ -20,60 +20,65 @@ package domains
 import annotations.AnnotationType
 
 /**
- * Trait for all numerical properties, such as Box, Octagon, etc... The classes extending NumericalProperty should be 
- * immutables. 
+ * Base trait for numerical property operations. A concrete class `C` implementing a numerical
+ * property should mix-in `NumericalProperty[C]`. Note that binary operations only works between
+ * compatible properties, i.e. properties over vector spaces of the same dimension.
  * 
+ * @tparam Property the property type we attach to and provide numerical operations.
  * @author Gianluca Amato <amato@sci.unich.it>
+ * @define PPL [[http://bugseng.com/products/ppl/ PPL]] 
+ * @define APRON [[http://apron.cri.ensmp.fr/library/ APRON]]
  */
 trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered[Property] {
     
   /**
-   * The standard widening for two abstract objects
-   * @param that the abstract object to be widened with this
-   * @return the widening of the two abstract objects
+   * The standard widening for two abstract objects. 
+   * @param that the abstract object to be widened with this. `That` is NOT assumed to be bigger than `this`. 
+   * @return the widening of the two abstract objects.
    */  
   def widening(that: Property): Property 
   
   /**
-   * The standard widening for two abstract objects
-   * @param that the abstract object to be narrowed with this
-   * @return the narrowing of the two abstract objects
+   * The standard widening for two abstract objects.
+   * @param that the abstract object to be narrowed with this. `That` IS assumed to be smaller than `this`.
+   * @note `That` should be be bigger than `this`. 
+   * @return the narrowing of the two abstract objects.
    */  
   def narrowing(that: Property): Property
   
   /**
    * Union of two abstract objects.
-   * @param that the abstract object to be unioned with this
-   * @return the union of the two abstract objects
+   * @param that the abstract object to be joined with this.
+   * @return the union of the two abstract objects.
    */
   def union(that: Property): Property
   
   /**
    * Intersection of two abstract objects.
    * @param that the abstract object to be intersected with this.
-   * @return the intersection of the two abstract objects
+   * @return the intersection of the two abstract objects.
    */
   def intersection(that: Property): Property
   
   /**
    * Linear assignment over an abstract object. It should be generalized to linear forms over arbitrary types.
-   * @param n the variable to be reassigned
-   * @param coeff the homogeneous coefficients
-   * @param known the unhomogeneous coefficient
+   * @param n the variable to be reassigned.
+   * @param coeff the homogeneous coefficients.
+   * @param known the in-homogeneous coefficient.
    */
   def linearAssignment(n: Int, coeff:Array[Double], known: Double): Property
   
    /**
    * Intersection with an half-plane. It should be generalized to linear forms over arbitrary types.
-   * @param coeff the homogeneous coefficients
-   * @param known the inhomogeneous coefficient
+   * @param coeff the homogeneous coefficients.
+   * @param known the in-homogeneous coefficient.
    */
   def linearInequality(coeff: Array[Double], known: Double): Property
   
    /**
    * Intersection with the complements of a line. It should be generalized to linear forms over arbitrary types.
-   * @param coeff the homogeneous coefficients
-   * @param known the inhomogeneous coefficient
+   * @param coeff the homogeneous coefficients.
+   * @param known the in-homogeneous coefficient.
    */
   def linearDisequality(coeff: Array[Double], known: Double): Property
   
@@ -84,32 +89,24 @@ trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered
   def dimension: Int
   
   /** 
-   * Test of emptyness
-   * @return whether the abstract objecy is empty.
+   * Test of emptiness
+   * @return whether the abstract object is empty.
    */
   def isEmpty: Boolean
   
   /**
-   * Test for fullness
+   * Test for fullness.
    * @return whether the abstract object represents the full environment space.
    */
   def isFull: Boolean    
   
   /**
-   * Return an empty object compatible with this
+   * Returns an empty object compatible with `this`.
    */
   def empty: Property
   
   /**
-   * Return a full object compatible with this
+   * Returns a full object compatible with `this`.
    */
   def full: Property  
-}
-
-/**
- * This declares a new annotation type for numerical properties
- */
-object NumericalPropertyAnnotation extends AnnotationType {
-  type T = NumericalProperty[_]
-  val defaultValue = null
 }
