@@ -19,14 +19,28 @@
 package it.unich.sci.jandom
 package targets
 
+import domains.{BoxDouble,NumericalPropertyAnnotation}
+import linearcondition.AtomicCond
+import slil._
 import org.scalatest.FunSuite
 
 /**
- * The test suite for Jandom targets.
+ * Test suite for SLIL programs.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class TargetsSuite extends FunSuite {
-  override def nestedSuites = List(new EnvironmentSuite, new VariableSuite, new LinearFormSuite, new LinearAssignmentSuite,
-      new linearcondition.LinearCondSuite, new slil.SLILProgramSuite, new lts.LTSSuite)
+class SLILProgramSuite extends FunSuite {
+  test ("simple program 1") {
+    val env = targets.Environment("x")
+    val program = SLILProgram(env, Seq(1),
+        CompoundStmt(Seq(
+            AssignStmt(0,LinearForm.fromCoefficient(0,env)),
+            WhileStmt(AtomicCond(LinearForm(List(-10,1),env), AtomicCond.ComparisonOperators.LT), 
+                AssignStmt(0,LinearForm(List(1,1),env))
+            )
+       )))      
+    val params = new targets.Parameters[BoxDouble,SLILStmt](BoxDouble,program)
+    val ann = program.analyze(params)
+    expect ( BoxDouble(Array(10), Array(11)) ) { ann(program,2) }
+  }  
 }

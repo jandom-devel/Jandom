@@ -17,9 +17,9 @@
  */
 
 package it.unich.sci.jandom
-package targets.linearcondition
+package targets
 
-import targets.{Environment,LinearForm}
+import linearcondition._
 import domains.BoxDouble
 import org.scalatest.FunSuite
 

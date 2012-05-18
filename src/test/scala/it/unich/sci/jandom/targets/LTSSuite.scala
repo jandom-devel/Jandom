@@ -17,12 +17,12 @@
  */
 
 package it.unich.sci.jandom
-package targets.lts
+package targets
 
 import annotations._
 import domains.{BoxDouble,NumericalPropertyAnnotation}
-import targets.{LinearAssignment,LinearForm}
-import targets.linearcondition.{FalseCond,AtomicCond}
+import linearcondition.{FalseCond,AtomicCond}
+import lts._
 import org.scalatest.FunSuite
 
 /**
