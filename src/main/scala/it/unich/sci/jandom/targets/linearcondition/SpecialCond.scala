@@ -22,9 +22,8 @@ package targets.linearcondition
 import domains.NumericalProperty
 
 /**
- * An atomic condition for a non-deterministic choice
+ * An atomic condition for a non-deterministic choice.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 object BRandomCond extends LinearCond {
   def opposite = BRandomCond
@@ -35,7 +34,6 @@ object BRandomCond extends LinearCond {
 /**
  * The valid condition.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 object TrueCond extends LinearCond {
   def opposite = FalseCond
@@ -46,7 +44,6 @@ object TrueCond extends LinearCond {
 /**
  * The false condition.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 object FalseCond extends LinearCond {
   def opposite = TrueCond

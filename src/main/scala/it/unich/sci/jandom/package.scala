@@ -19,7 +19,7 @@
 package it.unich.sci
 
 /**
- * ''Jandom'' is a framework for developing static analysis based on ''Abstract Interpretation''. 
+ * ''Jandom'' is a framework for developing static analysis tools based on [[http://www.di.ens.fr/~cousot/AI/ ''Abstract Interpretation'']].
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */

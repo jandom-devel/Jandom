@@ -25,7 +25,7 @@ import domains.NumericalProperty
  * This is the class for the logical and of two conditions.
  * @param cond1 the first condition
  * @param cond2 the second condition
- * @returns the logical "and" of cond1 and cond2
+ * @return the logical "and" of cond1 and cond2
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
@@ -39,7 +39,7 @@ case class AndCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
  * This is the class for the logical or of two conditions.
  * @param cond1 the first condition
  * @param cond2 the second condition
- * @returns the logical "or" of cond1 and cond2
+ * @return the logical "or" of cond1 and cond2
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
@@ -54,7 +54,7 @@ case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
 /**
  * This is the class for the logical not of a condition.
  * @param cond the original condition
- * @returns the logical "not" of cond
+ * @return the logical "not" of cond
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */

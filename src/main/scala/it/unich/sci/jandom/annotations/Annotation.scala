@@ -22,52 +22,58 @@ package annotations
 import targets.Target
 
 /**
- * This is the class for annotation. An annotation is parameteric w.r.t.
- * a target and an annotation type. An annotation contain a global objecet and
- * "per program point" annotations which are built when needed using an 
- * object of class PerProgramPointAnnotationBuilder.
- * @tparam Tgt the target for the annotation
- * @param ann the annotation type
- * @maker an object which build per-programpoint annotations
+ * An annotation is a value we can attach to compiled programs (''targets'' in ''Jandom'''s terminology). 
+ * Therefore, annotations are parametric w.r.t. a [[it.unich.sci.jandom.targets.Target]] and an 
+ * [[it.unich.sci.jandom.annotations.AnnotationType]]. An annotation contains both a global value
+ * and values attached to the single program points. The latter are kept in a field of type
+ * [[it.unich.sci.jandom.annotations.PerProgramPointAnnotation]] which is built, when needed, by
+ * a factory  of type [[it.unich.sci.jandom.annotations.PerProgramPointAnnotationBuilder]].
+ * @tparam Tgt the target type for this annotation.
+ * @tparam Ann the annotation type class for this annotation.
+ * @param t the target for this annotation.
+ * @param ann the annotation type for this annotation.
+ * @param maker the factory for [[it.unich.sci.jandom.annotations.PerProgramPointAnnotation]]. It is generally
+ * provided implicitly by the companion object of `Tgt`.
+ * @return an annotation
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class Annotation[Tgt <: Target, Ann <: AnnotationType](t:Tgt, ann: Ann) (implicit maker: PerProgramPointAnnotationBuilder[Tgt]) {
-  type T = Ann#T  
+class Annotation[Tgt <: Target, Ann <: AnnotationType](t: Tgt, ann: Ann)(implicit maker: PerProgramPointAnnotationBuilder[Tgt]) {
   
   /**
-   * The "per-program point" annotation
+   * The field which contains the values attached to the single program points.
    */
-  private[this] var perPP: PerProgramPointAnnotation[Tgt,Ann] = null
-  
+  private[this] var perPP: PerProgramPointAnnotation[Tgt, Ann] = null
+
   /**
-   * The global annotation
+   * The global value.
    */
-  var global: T = _    
-  
+  var global: Ann#T = _
+
   /**
-   * Returns the PerPerProgramPointAnnotation corresponding to this.
+   * Returns the corresponding  [[it.unich.sci.jandom.annotations.PerProgramPointAnnotation]],
+   * eventually building it if needed.
    */
   def toPPAnnotation = {
-	if (perPP == null) {
+    if (perPP == null) {
       perPP = maker.apply[Ann](t, ann)
     }
-   	perPP
+    perPP
   }
-  
+
   /**
-   * Given a program point, returns the corresponding annotation.
+   * Given a program point, returns the value for the annotation at that program point.
    */
-  def apply(pp: Tgt#ProgramPoint): T = {
+  def apply(pp: Tgt#ProgramPoint): Ann#T = {
     if (perPP == null) {
       perPP = maker.apply[Ann](t, ann)
     }
     perPP(pp)
   }
-  
+
   /**
-   * Given a program point and a value, update the corresponding annotation.
+   * Given a program point and a value, updates the  annotation.
    */
-  def update(pp: Tgt#ProgramPoint, v: T) {
+  def update(pp: Tgt#ProgramPoint, v: Ann#T) {
     if (perPP == null) {
       perPP = maker.apply[Ann](t, ann)
     }

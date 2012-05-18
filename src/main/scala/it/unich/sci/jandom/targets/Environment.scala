@@ -67,7 +67,7 @@ class Environment {
    * Get a binding from the environment based on the name.
    * @param name the name of the variable
    * @return the variable with the given name in the environment
-   * @throw NoSuchElementException if there is no variables with such an index
+   * @throws NoSuchElementException if there is no variables with such an index
    */
   def apply(name: String): Int = nameHash(name)
 
@@ -75,7 +75,7 @@ class Environment {
    * Get a variable name from the environment based on the binding.
    * @param index the index of the variable
    * @return the variable name with the given index in the environment
-   * @throw NoSuchElementException if there is no variables with such an index
+   * @throws NoSuchElementException if there is no variables with such an index
    */
   def apply(index: Int): String = variables(index)
 

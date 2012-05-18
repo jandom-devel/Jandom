@@ -19,9 +19,8 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.{ NumericalProperty, NumericalPropertyAnnotation }
+import domains.NumericalProperty
 import targets.linearcondition.LinearCond
-import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
 /**
  * The class for a while statement.

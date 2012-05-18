@@ -13,55 +13,56 @@
  * You should have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  *
- * (c) 2011 Gianluca Amato
+ * (c) 2011,2012 Gianluca Amato
  */
 
 package it.unich.sci.jandom
 
-import parma_polyhedra_library.{Parma_Polyhedra_Library => PPL}
-import domains.PPLCPolyhedron
-import targets.slil.SLILProgram
+import parma_polyhedra_library.{ Parma_Polyhedra_Library => PPL }
+import targets.slil.{ SLILProgram, SLILStmt }
 import targets.lts.LTS
 import domains._
 import widenings._
 import narrowings._
 import ppfactories._
-import annotations.BlackBoard
-import it.unich.sci.jandom.targets.slil.SLILStmt
 
+/**
+ * Example program using ''Jandom''.
+ * @todo remove from ''Jandom'' and put into a related project.
+ */
 object Jandom extends App {
 
   System.load("/usr/local/lib/ppl/libppl_java.so")
   PPL.initialize_library()
- 
-  { 
+
+  {
     val source = scala.io.Source.fromFile("examples/Random/incr.R").getLines.mkString("\n")
-    val parsed = parsers.RandomParser().parseProgram(source)  
+    val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
-	  val program = parsed.get 
-	  val params = new targets.Parameters[domains.PPLBoxDouble,SLILStmt](domains.PPLBoxDouble,program)
-      params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing,2),program)
-      val ann = program.analyze(params)	  
+      val program = parsed.get
+      val params = new targets.Parameters[PPLBoxDouble, SLILStmt](domains.PPLBoxDouble, program)
+      params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing, 2), program)
+      val ann = program.analyze(params)
       println(program.mkString(ann))
     } else {
       println(parsed)
     }
   }
-  
+
   {
     val source = scala.io.Source.fromFile("examples/LPinv/berkeley.in").getLines.mkString("\n")
-    val parsed = parsers.LPInvParser().parseProgram(source)  
+    val parsed = parsers.LPInvParser().parseProgram(source)
     if (parsed.successful) {
-   	  val program = parsed.get 
-      val params = new targets.Parameters(domains.PPLCPolyhedron,program)
-      params.wideningFactory = MemoizingFactory(DelayedWideningFactory(DefaultWidening,2),program)
-   	  println(program)
-   	  val ann = program.analyze(params)        
+      val program = parsed.get
+      val params = new targets.Parameters(PPLCPolyhedron, program)
+      params.wideningFactory = MemoizingFactory(DelayedWideningFactory(DefaultWidening, 2), program)
+      println(program)
+      val ann = program.analyze(params)
       println(ann)
     } else {
       println(parsed)
-    }      
+    }
   }
-  
+
   PPL.finalize_library()
 }

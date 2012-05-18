@@ -19,8 +19,8 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import targets.{ Target }
-import domains.{ NumericalProperty, NumericalPropertyAnnotation }
+import targets.Target
+import domains.NumericalProperty
 import annotations._
 
 /**

@@ -19,7 +19,7 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.{ NumericalProperty, NumericalPropertyAnnotation }
+import domains.NumericalProperty
 import targets.Parameters
 import annotations.{ BlackBoard, PerProgramPointAnnotation }
 import scala.collection.mutable.ListBuffer

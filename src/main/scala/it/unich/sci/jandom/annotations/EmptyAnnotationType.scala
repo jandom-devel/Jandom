@@ -20,27 +20,14 @@ package it.unich.sci.jandom
 package annotations
 
 /**
- * This is the abstract classes used for typing annotations. For every kind of property
- * we want to put into an [[it.sci.unich.jandom.annotations.Annotation]], we need
- * to define an object extending `AnnotationType`
- * which instantiates the type field `T` and the value `defaultValue`.
- * @author Gianluca Amato <g.amato@unich.it>
+ * This is the annotation type for empty annotations, those whose only value is `null`.
+ * @author Gianluca Amato <amato@sci.unich.it>
  */
-abstract class AnnotationType {
+object EmptyAnnotationType extends AnnotationType {
+  type T = Null
+  
   /**
-   * The type of properties.
+   * The default value for this annotation type is `null`
    */
-  type T
-
-  /**
-   * The default value for this annotation type.
-   */
-  val defaultValue: T
-
-  /**
-   * The string version of an `AnnotationType` is the simple class name (i.e. 
-   * the class name without packages)
-   */
-  override def toString = getClass.getSimpleName
+  val defaultValue = null  
 }
-

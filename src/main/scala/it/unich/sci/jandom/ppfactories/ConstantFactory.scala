@@ -22,19 +22,18 @@ package ppfactories
 import targets.Target
 
 /**
- * A "per program point" factory which always returns the same value 
- * @taparam T the type of the object built by the factory
+ * A "per program point" factory which always returns the same value
+ * @tparam T the type of the object built by the factory
  * @param obj the object returned by the factory
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
-class ConstantFactory[T] (private val obj: T) extends PPFactory[Target,T] {
+class ConstantFactory[T](private val obj: T) extends PPFactory[Target, T] {
   def apply(pp: Target#WideningPoint) = obj
 }
 
 /**
  * The companion object for constant "per program point" factories
- **/
-object ConstantFactory {  
+ */
+object ConstantFactory {
   def apply[T](obj: T) = new ConstantFactory(obj)
 }

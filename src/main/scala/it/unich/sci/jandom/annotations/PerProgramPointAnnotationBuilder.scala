@@ -22,14 +22,14 @@ package annotations
 import targets.Target
 
 /**
- * A PerProgramPointAnnotationBuilder is a factory for a PerProgramPointAnnotation. It is
- * generally provided as an implicit object by Target who wants to use the Blackboard system.
+ * This a factory for a [[it.unich.sci.jandom.annotations.PerProgramPointAnnotation]]. It is
+ * generally provided as an implicit object by a target who wants to use the annotation system.
+ * @tparam Tgt the target type for this annotation builder.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 abstract class PerProgramPointAnnotationBuilder[Tgt <: Target] {
   /**
-   * Given a target and an annotation type, build a corresponding PerProgramAnnotation
+   * Given a target and an annotation type, builds a corresponding `PerProgramAnnotation`.
    */
   def apply[Ann <: AnnotationType](t: Tgt, ann: Ann): PerProgramPointAnnotation[Tgt,Ann]
 }

@@ -19,12 +19,10 @@
 package it.unich.sci.jandom
 
 /**
- * The package annotations contains classes which implements a sort of
- * blackboard where multiple annotations may be put and removed. At the 
- * moment it is dead code, since annotation are implemented with a different
- * schema which is much more easier.
+ * This package contains classes which implements a blackboard, which is
+ * a collection of annotations, indexed by an [[it.unich.sci.jandom.annotations.AnnotationType]]. 
+ * At the moment this is dead code.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 package object annotations {
 

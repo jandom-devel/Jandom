@@ -33,7 +33,7 @@ trait Widening  {
    * @tparam Property the type of the property 
    * @param current the property at the current iteration
    * @param next the property at the next iteration.  This is NOT assumed to be bigger than current.
-   * @result the result of widening 
+   * @return the result of widening 
    */
   def apply[Property <: NumericalProperty[Property]](current: Property, next: Property): Property
 }

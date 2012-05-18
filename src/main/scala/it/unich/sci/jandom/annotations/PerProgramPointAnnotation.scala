@@ -22,21 +22,24 @@ package annotations
 import targets.Target
 
 /**
- * A PerProgramPointAnnotation is an target-defined implementation of a map
- * from program points to values of a given annotation type.
- * @tparam Tgt the target of this annotation
- * @tparam Ann the annotation type
+ * This is the abstract base class for target-defined implementations of a map
+ * from program points to values of a given annotation type. Similarly to
+ * [[it.unich.sci.jandom.annotations.Annotation]], they are parametric w.r.t. a
+ * [[it.unich.sci.jandom.targets.Target]] and an 
+ * [[it.unich.sci.jandom.annotations.AnnotationType]].
+ * @tparam Tgt the target type for this annotation.
+ * @tparam Ann the annotation type class for this annotation.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 abstract class PerProgramPointAnnotation[Tgt <: Target, Ann <: AnnotationType] extends scala.collection.mutable.Iterable[(Tgt#ProgramPoint,Ann#T)]  {
   /** 
-   * Method to access the annotation of a given program point
+   * Returns the annotation at a given program point. If no annotation exists, a new one is created
+   * with the default value of `Ann`.
    */
   def apply(pp: Tgt#ProgramPoint): Ann#T
   
   /**
-   * Method to update the annotation of a given program point
+   * Updates the annotation at a given program point.
    */
   def update(pp: Tgt#ProgramPoint, v: Ann#T)
   

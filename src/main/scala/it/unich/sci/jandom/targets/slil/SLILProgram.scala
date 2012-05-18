@@ -19,7 +19,7 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.{ NumericalProperty, NumericalPropertyAnnotation }
+import domains.NumericalProperty
 import targets.{ Environment, LinearForm, Target }
 import widenings.Widening
 import annotations._

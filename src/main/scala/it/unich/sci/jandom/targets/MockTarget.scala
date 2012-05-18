@@ -19,7 +19,7 @@
 package it.unich.sci.jandom
 package targets
 
-import domains.{NumericalProperty, NumericalPropertyAnnotation}
+import domains.NumericalProperty
 
 import annotations._
 import scala.collection.mutable.ArrayBuffer

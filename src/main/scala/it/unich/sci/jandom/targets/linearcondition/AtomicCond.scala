@@ -79,7 +79,7 @@ object AtomicCond {
  
     /**
      * Returns the opposite comparison symbol.
-     * @returns the opposite comparison symbol
+     * @return the opposite comparison symbol
      */
     def opposite(v: Value):Value = {      
       return v match {

@@ -25,8 +25,7 @@ import targets.ProgramPoint
 /**
  * A class for locations (i.e. nodes in a linear transition system)
  * @param name name of the location
- * @param id numerical id of the location
- * @conditions linear conditions which should hold at the location
+ * @param conditions linear conditions which should hold at the location
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */

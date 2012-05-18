@@ -25,18 +25,17 @@ import domains.NumericalProperty
  * This is the abstract class for all linear conditions. Each condition has an opposite method
  * which returns the opposite condition, and an analyze method which performs static analysis.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 abstract class LinearCond {
   /**
    * The analyzer for linear conditions. 
    * @param input the property which holds 
-   * @returns the property given by the logical and of input and the condition itself
+   * @return the property given by the logical and of input and the condition itself
    */
   def analyze[Property <: NumericalProperty[Property]] (input: Property): Property
   /**
    * Returns the opposite linear condition (the one obtained by reversing the order of inequalities)
-   * @returns the opposite linear condition
+   * @return the opposite linear condition
    */
   def opposite : LinearCond
 }
