@@ -37,7 +37,7 @@ class RandomParserSuite extends FunSuite with Checkers {
     """    
     val env = Environment("x","y")    
     val program = SLILProgram(env,  Seq(0,1), AssignStmt(0, new LinearForm(List(1,0,0),env)))
-    val parsed = RandomParser.parseProgram(prog).get
+    val parsed = RandomParser().parseProgram(prog).get
     expect(program) { parsed }
   }
   
@@ -57,6 +57,6 @@ class RandomParserSuite extends FunSuite with Checkers {
                 AssignStmt(1,new LinearForm(List(1,0,1),env))
             )
        )))
-    expect(program) { RandomParser.parseProgram(prog).get }     
+    expect(program) { RandomParser().parseProgram(prog).get }     
   }
 }

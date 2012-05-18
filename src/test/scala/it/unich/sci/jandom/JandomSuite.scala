@@ -22,7 +22,7 @@ package it.unich.sci.jandom
 import org.scalatest.FunSuite
 
 /**
- * The test suite fgor Jandom.
+ * The test suite for Jandom.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */

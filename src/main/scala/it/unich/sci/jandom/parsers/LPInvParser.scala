@@ -1,20 +1,20 @@
 /**
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
- *
- * (c) 2012 Gianluca Amato
- */
+  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+  * JANDOM is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * JANDOM is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+  *
+  * (c) 2012 Gianluca Amato
+  */
 
 package it.unich.sci.jandom
 package parsers
@@ -27,14 +27,13 @@ import scala.util.parsing.combinator.JavaTokenParsers
 import scala.collection.mutable.HashMap
 
 /**
- * Parser for transition systems as they appear in the [[http://www.cs.colorado.edu/~srirams/Software/lpinv.html LPInv]]
- * invariant generator by Sriram Sankaranarayanan. It generates an LTS (Linear Transition System) target.
- * It actually parser a super-set of the LPInv transitions systems, since it possible to specify complex
- * conditions with &&, || and ! in the locations.
- * @author Gianluca Amato <amato@sci.unich.it>
- */
-object LPInvParser extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
-  val env = Environment()
+  * Parser for transition systems as they appear in the [[http://www.cs.colorado.edu/~srirams/Software/lpinv.html LPInv]]
+  * invariant generator by Sriram Sankaranarayanan. It generates an LTS (Linear Transition System) target.
+  * It actually parser a super-set of the LPInv transitions systems, since it possible to specify complex
+  * conditions with &&, || and ! in the locations.
+  * @author Gianluca Amato <amato@sci.unich.it>
+  */
+class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
   private val location_env = new HashMap[String, Location]
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
@@ -87,9 +86,19 @@ object LPInvParser extends JavaTokenParsers with LinearExpressionParser with Lin
     }
 
   /**
-   * The parse function
-   * @param s the string containing the linear transition system
-   * @return a ParseResult with the transition system parsed in the target LTS
-   */
+    * The parse function
+    * @param s the string containing the linear transition system
+    * @return a ParseResult with the transition system parsed in the target LTS
+    */
   def parseProgram(s: String) = parseAll(prog, s)
 }
+
+/** Factory for [[it.unich.sci.jandom.LPInvParser]] instances. */
+object LPInvParser {
+  /** 
+   * Create a parser for LPInv transition systems with a given environment.
+   * @param env the environment. It is optional and defaults to the empty environment.
+   */
+  def apply(env: Environment = new Environment()) = new LPInvParser(env)
+}
+
