@@ -19,8 +19,7 @@
 package it.unich.sci.jandom
 package targets
 
-import annotations._
-import domains.{BoxDouble,NumericalPropertyAnnotation}
+import domains.BoxDouble
 import linearcondition.{FalseCond,AtomicCond}
 import lts._
 import org.scalatest.FunSuite
