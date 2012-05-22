@@ -128,6 +128,7 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
  * This is the factory for ``PPLBoxDouble`` properties.
  */
 object PPLBoxDouble extends NumericalDomain[PPLBoxDouble] {  
+  PPLInitializer
 
   def full(n: Int): PPLBoxDouble = {
     val pplbox = new Double_Box(n, Degenerate_Element.UNIVERSE)

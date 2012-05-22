@@ -15,20 +15,23 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom 
+package it.unich.sci.jandom.domains
+
+import parma_polyhedra_library.Parma_Polyhedra_Library
 
 /**
- * This package contains all the abstract domains available in ''Jandom''. There are 
- * two parallel hierarchies: properties and domains. A property is a single abstract
- * object, such a polyhedron or a box. A domain is essentially a factory for abstract
- * objects. 
+ * This is an object whose only purpose is to initialize the PPL library.
  * 
- * At the moment, only numerical domains are implemented. The base traits
- * for numerical properties and numerical domains are 
- * [[it.unich.sci.jandom.domains.NumericalProperty]] and [[it.unich.sci.jandom.domains.NumericalDomain]]
- * respectively.   
- * @author Gianluca Amato <amato@sci.unich.it>
+ * It should be referred as a first statement by the initialization code of a 
+ * [[it.unich.sci.jandom.domains.NumericalDomain]] which uses PPL.
+ * @author Gianluca Amato <g.amato@unich.it>
  */
-package object domains {
 
+private[domains] object PPLInitializer {  
+  System.load("/usr/local/lib/ppl/libppl_java.so")
+  Parma_Polyhedra_Library.initialize_library()
+  
+  override def finalize {
+    Parma_Polyhedra_Library.finalize_library()
+  }
 }

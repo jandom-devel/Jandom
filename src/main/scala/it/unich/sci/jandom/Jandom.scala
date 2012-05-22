@@ -18,13 +18,13 @@
 
 package it.unich.sci.jandom
 
-import parma_polyhedra_library.{ Parma_Polyhedra_Library => PPL }
 import targets.slil.{ SLILProgram, SLILStmt }
 import targets.lts.LTS
 import domains._
 import widenings._
 import narrowings._
 import ppfactories._
+import parma_polyhedra_library.Octagonal_Shape_double
 
 /**
  * Example program using ''Jandom''.
@@ -32,15 +32,13 @@ import ppfactories._
  */
 object Jandom extends App {
 
-  System.load("/usr/local/lib/ppl/libppl_java.so")
-  PPL.initialize_library()
-
   {
     val source = scala.io.Source.fromFile("examples/Random/incr.R").getLines.mkString("\n")
     val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
-      val params = new targets.Parameters[PPLBoxDouble, SLILStmt](domains.PPLBoxDouble, program)
+      val domain = new domains.PPLDomain[Octagonal_Shape_double]
+      val params = new targets.Parameters[domains.PPLProperty[Octagonal_Shape_double],SLILStmt](domain, program)
       params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing, 2), program)
       val ann = program.analyze(params)
       println(program.mkString(ann))
@@ -63,6 +61,4 @@ object Jandom extends App {
       println(parsed)
     }
   }
-
-  PPL.finalize_library()
 }

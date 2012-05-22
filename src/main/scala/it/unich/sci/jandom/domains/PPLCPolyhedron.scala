@@ -55,7 +55,6 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
 
   def union(that: PPLCPolyhedron): PPLCPolyhedron = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)    
-    val x = new C_Polyhedron(pplpolyhedron.space_dimension(), Degenerate_Element.EMPTY)
     newpplpolyhedron.upper_bound_assign(that.pplpolyhedron)
     new PPLCPolyhedron(newpplpolyhedron)
   }
@@ -130,6 +129,7 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
  * This is the factory for ``PPLBoxDouble`` properties.
  */
 object PPLCPolyhedron extends NumericalDomain[PPLCPolyhedron] {  
+  PPLInitializer
 
   def full(n: Int): PPLCPolyhedron = {
     val pplpolyhedron = new C_Polyhedron(n, Degenerate_Element.UNIVERSE)
