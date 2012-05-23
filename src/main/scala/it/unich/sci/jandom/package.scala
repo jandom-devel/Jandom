@@ -24,5 +24,23 @@ package it.unich.sci
  *
  */
 package object jandom {
-
+  /**
+   * This is the major version of Jandom. The API is considered to be stable within the same major version.
+   */
+  val major_version = 0
+  
+  /**
+   * This is the minor version of Jandom.
+   */
+  val minor_version = 1
+  
+  /**
+   * This is the patchlevel of Jandom. Th
+   */
+  val patchlevel_version = 1
+  
+  /**
+   * This is a string representation of Jandom's version
+   */
+  val version = major_version + "." + minor_version + "." + patchlevel_version
 }

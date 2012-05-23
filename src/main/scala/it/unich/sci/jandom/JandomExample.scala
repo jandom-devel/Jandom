@@ -25,12 +25,13 @@ import widenings._
 import narrowings._
 import ppfactories._
 import parma_polyhedra_library.Octagonal_Shape_double
+import parma_polyhedra_library.Parma_Polyhedra_Library
 
 /**
  * Example program using ''Jandom''.
  * @todo remove from ''Jandom'' and put into a related project.
  */
-object Jandom extends App {
+object JandomExample extends App {
 
   {
     val source = scala.io.Source.fromFile("examples/Random/incr.R").getLines.mkString("\n")
@@ -61,4 +62,6 @@ object Jandom extends App {
       println(parsed)
     }
   }
+  println("Jandom version: "+version)
+  println("PPL version: "+Parma_Polyhedra_Library.version);  
 }
