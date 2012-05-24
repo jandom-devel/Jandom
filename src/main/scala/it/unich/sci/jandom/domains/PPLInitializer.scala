@@ -28,7 +28,7 @@ import parma_polyhedra_library.Parma_Polyhedra_Library
  */
 
 private[domains] object PPLInitializer {  
-  System.load("/usr/local/lib/ppl/libppl_java.so")
+  System.loadLibrary("ppl_java")
   Parma_Polyhedra_Library.initialize_library()
   
   override def finalize {
