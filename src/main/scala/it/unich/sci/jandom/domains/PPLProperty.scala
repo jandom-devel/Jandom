@@ -102,7 +102,6 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
   def empty() = domain.empty(domain.space_dimension(pplobject).toInt)
 
   def full() = domain.full(domain.space_dimension(pplobject).toInt)
-
  
   def tryCompareTo[B >: PPLProperty[PPLNativeProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLProperty[_] =>
