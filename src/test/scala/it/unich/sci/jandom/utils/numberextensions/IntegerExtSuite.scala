@@ -19,7 +19,7 @@
  */
 
 package it.unich.sci.jandom
-package numberextensions
+package utils.numberext
 
 import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers 

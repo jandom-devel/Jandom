@@ -29,7 +29,7 @@ import org.scalatest.FunSuite
 class JandomSuite extends FunSuite {
   override def nestedSuites = List ( 
       new domains.DomainsSuite, 
-      new numberextensions.NumberExtensionsSute,     
+      new utils.numberext.NumberExtensionsSute,     
       new targets.TargetsSuite,
       new parsers.ParsersSuite,
       new narrowings.NarrowingsSuite,

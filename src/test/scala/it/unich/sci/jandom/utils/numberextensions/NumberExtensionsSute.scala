@@ -17,7 +17,8 @@
  */
 
 package it.unich.sci.jandom
-package numberextensions
+package utils.numberext
+
 import org.scalatest.Suite
 
 /**
