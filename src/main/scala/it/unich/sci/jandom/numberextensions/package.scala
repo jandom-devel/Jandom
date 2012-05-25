@@ -19,11 +19,9 @@
 package it.unich.sci.jandom
 
 /**
- * This is the package for numeric extensions. It is a tentative implementation of
- * numbers with infinities entirely in Scala and transparent to the user. At the moment
- * is dead code.
+ * This is the package for numeric extensions. It is an implementation of
+ * numbers with infinities entirely in Scala and transparent to the user.
  * @author Gianluca Amato <amato@sci.unich.it>
- *
  */
 package object numberextensions {
 

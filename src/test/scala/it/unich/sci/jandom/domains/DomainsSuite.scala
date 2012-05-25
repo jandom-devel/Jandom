@@ -25,5 +25,5 @@ import org.scalatest.Suite
  *
  */
 class DomainsSuite extends Suite {
-  override def nestedSuites = List ( new BoxSuite, new PPLPropertySuite )  
+  override def nestedSuites = List ( new BoxSuite, new PPLPropertySuite, new ParallelotopeSuite )  
 }

@@ -20,28 +20,34 @@
 
 package it.unich.sci.jandom
 package numberextensions
+import scala.math.ScalaNumber
+import scala.math.ScalaNumericConversions
 
 /** 
- * This is the class of generic extended integers, with extends an type T with 
- * infinities.
+ * This is the class of generic extended integer numbers, with extends an type T supporting 
+ * Numeric with infinities.
  */
 @SerialVersionUID(1)
-sealed abstract class GenericNumberExt[T] extends NumberExt with Serializable {
-  type Extension = GenericNumberExt[T]
-  type Base = T
+sealed abstract class GenericNumberExt[T : Numeric] 
+	 extends ScalaNumber with ScalaNumericConversions with PartiallyOrdered[GenericNumberExt[T]] with Serializable {
 
   def +(that: GenericNumberExt[T]): GenericNumberExt[T]
+  def -(that: GenericNumberExt[T]): GenericNumberExt[T] = that - this
+  def *(that: GenericNumberExt[T]): GenericNumberExt[T] 
+  def abs: GenericNumberExt[T] = if (false) this else -this
+  def min(that: GenericNumberExt[T]) = if (this <= that) this else that
+  def max(that: GenericNumberExt[T]) = if (this >= that) this else that
+    
   def unary_-(): GenericNumberExt[T]
-
-  def unary_+(): GenericNumberExt[T] = this
-  def -(that: GenericNumberExt[T]): GenericNumberExt[T] = this + (-that)
+  val isWhole = true
 }
+
 
 object GenericNumberExt {
   // These are needed for some limitation of Scala type system
-  private val cachedPositiveInfinity = POSINF()
-  private val cachedNegativeInfinity = NEGINF()
-  private val cachedNaN = NAN()
+  private val cachedPositiveInfinity = POSINF[Int]()
+  private val cachedNegativeInfinity = NEGINF[Int]()
+  private val cachedNaN = NAN[Int]()
 
   /** 
    * Implicitly convert and int into an extended int
@@ -90,7 +96,7 @@ object GenericNumberExt {
     def unapply[T](v: GenericNumberExt[T])() = v eq cachedNegativeInfinity
   }
   
-  private case class POSINF[T]() extends GenericNumberExt[T] {
+  private case class POSINF[T: Numeric]() extends GenericNumberExt[T] {    
     override def +(that: GenericNumberExt[T]): GenericNumberExt[T] = {
       that match {
         case that: NAN[_] => that
@@ -98,16 +104,34 @@ object GenericNumberExt {
         case _ => this
       }
     }
+    override def*(that: GenericNumberExt[T]): GenericNumberExt[T] = that match {
+      case that: NAN[_] => that
+      case that: NEGINF[_] => that
+      case that: POSINF[_] => this
+      case that: GenericNumberExtNormal[_] => 
+        if (that.value == implicitly[Numeric[T]].zero)
+          GenericNumberExt.NaN[T]
+        else if (implicitly[Numeric[T]].compare(that.value,implicitly[Numeric[T]].zero) > 0)
+          this     
+        else
+          GenericNumberExt.NegativeInfinity[T]
+    }    
+    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) ⇒ PartiallyOrdered[B]) = that match {
+      case that: NAN[_] => None
+      case _ => Some(1)
+    } 
     override def unary_- = GenericNumberExt.NegativeInfinity[T]
 
     override def toString = "+Inf"
-    override def doubleValue = scala.Double.PositiveInfinity
-    override def floatValue = scala.Float.PositiveInfinity
+    override def doubleValue = Double.PositiveInfinity
+    override def floatValue = Float.PositiveInfinity
     override def longValue = Long.MaxValue
     override def intValue = Int.MaxValue
+    
+    def underlying = null
   }
 
-  private case class NEGINF[T]() extends GenericNumberExt[T] {
+  private case class NEGINF[T: Numeric]() extends GenericNumberExt[T] {
     override def +(that: GenericNumberExt[T]): GenericNumberExt[T] = {
       that match {
         case that: NAN[_] => that
@@ -115,6 +139,22 @@ object GenericNumberExt {
         case _ => this
       }
     }
+    override def*(that: GenericNumberExt[T]): GenericNumberExt[T] = that match {
+      case that: NAN[_] => that
+      case that: NEGINF[_] => GenericNumberExt.PositiveInfinity[T]
+      case that: POSINF[_] => this
+      case that: GenericNumberExtNormal[_] => 
+        if (that.value == implicitly[Numeric[T]].zero)
+          GenericNumberExt.NaN[T]
+        else if (implicitly[Numeric[T]].compare(that.value,implicitly[Numeric[T]].zero) > 0)
+          this     
+        else
+          GenericNumberExt.PositiveInfinity[T]          
+    }    
+    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) ⇒ PartiallyOrdered[B]) = that match {
+      case that: NAN[_] => None
+      case _ => Some(-1)
+    } 
     override def unary_- = GenericNumberExt.PositiveInfinity[T]
 
     override def toString = "-Inf"
@@ -122,17 +162,24 @@ object GenericNumberExt {
     override def floatValue = scala.Float.NegativeInfinity
     override def longValue = Long.MinValue
     override def intValue = Int.MinValue
+    
+    def underlying = null
   }
 
-  private case class NAN[T]() extends GenericNumberExt[T] {
+  private case class NAN[T: Numeric]() extends GenericNumberExt[T] {
     override def +(that: GenericNumberExt[T]): GenericNumberExt[T] = this
+    override def *(that: GenericNumberExt[T]): GenericNumberExt[T] = this
     override def unary_- = this
-
+    
+    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) ⇒ PartiallyOrdered[B]) = None      
+   
     override def toString = "NaN"
     override def doubleValue = scala.Double.NaN
     override def floatValue = scala.Float.NaN
     override def longValue = 0
     override def intValue = 0
+    
+    def underlying = null
   }
 
   private case class GenericNumberExtNormal[T](val value: T)(implicit numeric: Numeric[T]) extends GenericNumberExt[T] {
@@ -143,6 +190,16 @@ object GenericNumberExt {
         case that => that
       }
     }
+    override def *(that: GenericNumberExt[T]): GenericNumberExt[T] = that match {
+      case that: GenericNumberExtNormal[_] => new GenericNumberExtNormal(value * that.value)
+      case that => that*this     
+    }
+    
+    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) ⇒ PartiallyOrdered[B]) = that match {
+        case that: GenericNumberExtNormal[T] => Some(implicitly[Numeric[T]].compare(this.value, that.value))
+        case that => that.tryCompareTo(this)
+    }      
+
     override def unary_- = new GenericNumberExtNormal(-value)
 
     override def toString = value.toString
@@ -150,5 +207,7 @@ object GenericNumberExt {
     override def floatValue = value.toFloat
     override def longValue = value.toLong
     override def intValue = value.toInt
+    
+    def underlying = value.asInstanceOf[AnyRef]    
   }
 }
