@@ -51,8 +51,15 @@ class ParallelotopeSuite extends FunSuite {
   test("comparison of parallelotopes") {
 	val box2 = Parallelotope(DenseVector(-0.5, -0.5), DenseMatrix.eye(2), DenseVector(0.5, 0.5))
 	assert ( box2<=box )
+	assert ( box>=box2)
+	assert ( box2<box )
+	assert ( box>box2 )
 	val box3 = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (-1.0, 1.0)), DenseVector(1, 1))
 	assert ( box3<=box )
+	assert ( box3<box )
+	assert ( box>=box3 )
+	assert ( box>box3 )
+	expect ( Some(1) ) { box.tryCompareTo(box3) }
   }
 
   test("rotation of shapes") {
@@ -60,5 +67,16 @@ class ParallelotopeSuite extends FunSuite {
     val protcalc = box.rotate(m)
     val protdef = Parallelotope(DenseVector(-2, -2), m, DenseVector(2, 2))
     expect(protdef) { protcalc }
+  }
+  
+  test("non-deterministic assignment") {
+  	val box2 = Parallelotope(DenseVector(-1, -Double.NegativeInfinity), DenseMatrix.eye(2), DenseVector(1, Double.PositiveInfinity))
+  	expect (box2) { box.nondeterministicAssignment(1)}
+  	expect (box2) { box2.nondeterministicAssignment(1)}
+  }
+  
+  test("linear invertible assignment") {
+    val box2 = Parallelotope(DenseVector(-1,-2),DenseMatrix((1.0,0.0),(-1.0,1.0)),DenseVector(1,2))
+    expect (box2) { box.linearAssignment(1,Array(1,2),0) }
   }
 }
