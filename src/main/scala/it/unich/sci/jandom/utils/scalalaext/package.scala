@@ -16,6 +16,7 @@
  * (c) 2012 Gianluca Amato
  */
 package it.unich.sci.jandom
+package utils
 
 import scalala.scalar.Scalar
 import scalala.collection.sparse.DefaultArrayValue

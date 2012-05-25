@@ -19,7 +19,7 @@
  */
 
 package it.unich.sci.jandom
-package numberextensions
+package utils.numberext
 
 import NumberExt.SpecialValues._
 

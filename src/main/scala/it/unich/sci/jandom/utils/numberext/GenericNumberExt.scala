@@ -19,7 +19,8 @@
  */
 
 package it.unich.sci.jandom
-package numberextensions
+package utils.numberext
+
 import scala.math.ScalaNumber
 import scala.math.ScalaNumericConversions
 

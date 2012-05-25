@@ -17,12 +17,13 @@
  */
 
 package it.unich.sci.jandom
+package utils
 
 /**
  * This is the package for numeric extensions. It is an implementation of
  * numbers with infinities entirely in Scala and transparent to the user.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-package object numberextensions {
+package object numberext {
 
 }

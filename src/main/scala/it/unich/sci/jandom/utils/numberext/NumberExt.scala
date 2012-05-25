@@ -19,7 +19,7 @@
  */
 
 package it.unich.sci.jandom
-package numberextensions
+package utils.numberext
 
 /**
  * This is the base class for numeric extensions.
@@ -48,7 +48,7 @@ object NumberExt {
   /**
    * The enumeration of special values.
    */
-  private[numberextensions] object SpecialValues extends Enumeration {
+  private[numberext] object SpecialValues extends Enumeration {
     val POSINF = Value
     val NEGINF = Value
     val NAN = Value
