@@ -30,6 +30,9 @@ import scalala.tensor.dense.DenseMatrix
 class ParallelotopeSuite extends FunSuite {
 
   val box = Parallelotope(DenseVector(-1, -1), DenseMatrix.eye(2), DenseVector(1, 1))
+  val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0,1.0),(1.0,-1.0)), DenseVector(1, 1))
+  val empty = Parallelotope.empty(2)
+  val full= Parallelotope.full(2)
   
   test("constructors should only work with compatible sizes of bounds and shapes") {
     intercept[IllegalArgumentException] { Parallelotope(DenseVector(0, 2), DenseMatrix.eye(2), DenseVector(0, 2, 3)) }
@@ -41,25 +44,37 @@ class ParallelotopeSuite extends FunSuite {
     expect(false) { box.isFull }
   }
 
-  test("constructors and extractors for full parallelotopes") {
-    val p = Parallelotope.full(2)
-    expect(2) { p.dimension }
-    expect(false) { p.isEmpty }
-    expect(true) { p.isFull }
+  test("constructors and extractors for full parallelotopes") {    
+    expect(2) { full.dimension }
+    expect(false) { full.isEmpty }
+    expect(true) { full.isFull }
   }
-
+  
+  test("constructors and extractors for empty parallelotopes") {
+    expect(2) { empty.dimension }
+    expect(true) { empty.isEmpty }
+    expect(false) { empty.isFull }
+  }
+   
   test("comparison of parallelotopes") {
+    assert (empty < box)
+    assert (box < full)
+    assert (empty < full)
+    assert (diamond < box)
+    assert (diamond <= box)
+    assert (box > diamond)
+    assert (box >= diamond)    
+ 	expect ( Some(1) ) { box.tryCompareTo(diamond) }
+    expect ( Some(-1) ) { diamond.tryCompareTo(box) }
+    assert (box == box)
+    expect ( Some(0) ) { box.tryCompareTo(box) }
 	val box2 = Parallelotope(DenseVector(-0.5, -0.5), DenseMatrix.eye(2), DenseVector(0.5, 0.5))
 	assert ( box2<=box )
 	assert ( box>=box2)
 	assert ( box2<box )
 	assert ( box>box2 )
-	val box3 = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (-1.0, 1.0)), DenseVector(1, 1))
-	assert ( box3<=box )
-	assert ( box3<box )
-	assert ( box>=box3 )
-	assert ( box>box3 )
-	expect ( Some(1) ) { box.tryCompareTo(box3) }
+    val box3 = Parallelotope(DenseVector(0, 0), DenseMatrix.eye(2), DenseVector(2, 2))
+    expect ( None ) { box.tryCompareTo(box3) }
   }
 
   test("rotation of shapes") {
@@ -68,15 +83,59 @@ class ParallelotopeSuite extends FunSuite {
     val protdef = Parallelotope(DenseVector(-2, -2), m, DenseVector(2, 2))
     expect(protdef) { protcalc }
   }
+
+  test("linear invertible assignment") {
+    val li1 = Parallelotope(DenseVector(0,-1), DenseMatrix((1.0, -1.0),(0.0 ,1.0)), DenseVector(2,1))
+    expect (li1) { box.linearAssignment(0,Array(1,1),1) }
+    val li2 = Parallelotope(DenseVector(1,-1), DenseMatrix((1.0, 0.0),(-1.0 ,1.0)), DenseVector(1,0))
+    val li3 = Parallelotope(DenseVector(2,-2), DenseMatrix((1.0, 0.0),(-1.0 ,1.0)), DenseVector(2,-1))
+    expect (li3) { li2.linearAssignment(0,Array(1,0),1) }
+    val li4 = Parallelotope(DenseVector(-1,-2),DenseMatrix((1.0,0.0),(-1.0,1.0)),DenseVector(1,2))
+    expect (li4) { box.linearAssignment(1,Array(1,2),0) }
+  }
+  
+  test("non-invertible linear assignment") {
+    val ln1 = Parallelotope(DenseVector(2,-1), DenseMatrix((1.0,-1.0),(0.0,1.0)), DenseVector(2,1))
+    expect (ln1) { box.linearAssignment(0, Array(0,1), 2)}
+    val ln2 = Parallelotope(DenseVector(0,Double.NegativeInfinity), DenseMatrix((-1.0,1.0),(0.0,1.0)), DenseVector(0,Double.PositiveInfinity))
+    val ln3 = Parallelotope(DenseVector(Double.NegativeInfinity,0), DenseMatrix((1.0,-1.0),(0.0,1.0)), DenseVector(Double.PositiveInfinity,0))
+    expect (ln2) { ln3.linearAssignment(1, Array(1,0), 0)}
+  }
   
   test("non-deterministic assignment") {
-  	val box2 = Parallelotope(DenseVector(-1, -Double.NegativeInfinity), DenseMatrix.eye(2), DenseVector(1, Double.PositiveInfinity))
-  	expect (box2) { box.nondeterministicAssignment(1)}
-  	expect (box2) { box2.nondeterministicAssignment(1)}
+    val nd1 = Parallelotope(DenseVector(Double.NegativeInfinity,-1), DenseMatrix.eye(2), DenseVector(Double.PositiveInfinity,1))
+    expect (nd1) { box.nondeterministicAssignment(0) }
+    expect (nd1) { nd1.nondeterministicAssignment(0) }
+    expect (nd1) { diamond.nondeterministicAssignment(0) }
+    val nd2 = Parallelotope(DenseVector(0,0), DenseMatrix((2.0,1.0),(2.0,-1.0)), DenseVector(1,1))
+    val nd3 = Parallelotope(DenseVector(Double.NegativeInfinity,-1), DenseMatrix((2.0,1.0),(0.0,-2.0)), DenseVector(Double.PositiveInfinity,1))
+    expect (nd3) { nd2.nondeterministicAssignment(0) }
+    val nd4 = Parallelotope(DenseVector(Double.NegativeInfinity,0), DenseMatrix((2.0,1.0),(4.0,0.0)), DenseVector(Double.PositiveInfinity,2))
+    expect (nd4) { nd2.nondeterministicAssignment(1) }
+    val nd5 = Parallelotope(DenseVector(10,-1), DenseMatrix((1.0,0.0),(1.0,1.0)), DenseVector(10,1))
+    val nd6 = Parallelotope(DenseVector(Double.NegativeInfinity,-11), DenseMatrix.eye(2), DenseVector(Double.PositiveInfinity,-9))
+    expect(nd6) { nd5.nondeterministicAssignment(0) }
+  }
+  /*		p8 <- new(c(-1,-1),c(0,0),  irot=matrix(c(1,1,1,-1),ncol=2,byrow=TRUE), expand=TRUE)
+		if (! is.equal(p8,select(p2,c(2,0,1)))) warning("error in select bounded")	
+		p9 <- new(c(-1,-Inf),c(1,Inf),irot=matrix(c(1,1,1,-1),ncol=2, byrow=2), expand=TRUE)
+		p10 <- new(c(-1,-Inf),c(1,-2),irot=matrix(c(1,1,1,0),ncol=2, byrow=2), expand=TRUE)
+		if (! is.equal(p10,select(p9,c(1,0,2)))) warning("error in select unbounded")
+		pa <- new(c(0,0), c(+Inf,+Inf), expand=TRUE)
+		# the old test 21 is for the version of select which also replaces bounded rows
+		# pb <- new(c(0,-Inf),c(Inf,0),irot=matrix(c(1,0,1,-1),ncol=2, byrow=TRUE), expand=TRUE)
+		# if (! is.equal(pb, select(pa,c(1,-1,0)))) warning("error in select unbounded 2") else print("test 21 passed")
+		if (! is.equal(pa, select(pa,c(1,-1,0)))) warning("error in select unbounded 2")
+		pa <- new(c(0,0), c(0,+Inf), expand=TRUE)
+		pb <- new(c(0,-Inf),c(0,0),irot=matrix(c(1,0,1,-1),ncol=2, byrow=TRUE), expand=TRUE)
+		if (! is.equal(pb, select(pa,c(1,-1,0)))) warning("error in select unbounded 3")
+		p11 <- new(c(10,-10),c(10,-10),expand=TRUE)
+		if (! is.equal(pe,select(p11,c(1,-1,0)))) warning("error in select on p11")		
+		p99 <- new.simple(c(2,0),c(4,2)) */
+  
+  test("linear inequalities") {
+    val li1 = Parallelotope(DenseVector(-1,-1), DenseMatrix((1.0,1.0),(1.0,-1.0)), DenseVector(0,0))
+    expect(li1) { diamond.linearInequality(Array(2,0), -1) }
   }
   
-  test("linear invertible assignment") {
-    val box2 = Parallelotope(DenseVector(-1,-2),DenseMatrix((1.0,0.0),(-1.0,1.0)),DenseVector(1,2))
-    expect (box2) { box.linearAssignment(1,Array(1,2),0) }
-  }
 }
