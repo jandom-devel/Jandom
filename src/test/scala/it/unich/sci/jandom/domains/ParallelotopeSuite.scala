@@ -32,7 +32,7 @@ class ParallelotopeSuite extends FunSuite {
   val box = Parallelotope(DenseVector(-1, -1), DenseMatrix.eye(2), DenseVector(1, 1))
   val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0,1.0),(1.0,-1.0)), DenseVector(1, 1))
   val empty = Parallelotope.empty(2)
-  val full= Parallelotope.full(2)
+  val full = Parallelotope.full(2)
   
   test("constructors should only work with compatible sizes of bounds and shapes") {
     intercept[IllegalArgumentException] { Parallelotope(DenseVector(0, 2), DenseMatrix.eye(2), DenseVector(0, 2, 3)) }
@@ -75,6 +75,9 @@ class ParallelotopeSuite extends FunSuite {
 	assert ( box>box2 )
     val box3 = Parallelotope(DenseVector(0, 0), DenseMatrix.eye(2), DenseVector(2, 2))
     expect ( None ) { box.tryCompareTo(box3) }
+	val r1 = Parallelotope(DenseVector(0,0), DenseMatrix.eye(2), DenseVector(0, Double.PositiveInfinity))
+    val r2 = Parallelotope(DenseVector(0,Double.NegativeInfinity), DenseMatrix((1.0,0.0),(1.0,-1.0)), DenseVector(0,0))
+    expect(r2) { r1 }
   }
 
   test("rotation of shapes") {
@@ -116,26 +119,17 @@ class ParallelotopeSuite extends FunSuite {
     val nd6 = Parallelotope(DenseVector(Double.NegativeInfinity,-11), DenseMatrix.eye(2), DenseVector(Double.PositiveInfinity,-9))
     expect(nd6) { nd5.nondeterministicAssignment(0) }
   }
-  /*		p8 <- new(c(-1,-1),c(0,0),  irot=matrix(c(1,1,1,-1),ncol=2,byrow=TRUE), expand=TRUE)
-		if (! is.equal(p8,select(p2,c(2,0,1)))) warning("error in select bounded")	
-		p9 <- new(c(-1,-Inf),c(1,Inf),irot=matrix(c(1,1,1,-1),ncol=2, byrow=2), expand=TRUE)
-		p10 <- new(c(-1,-Inf),c(1,-2),irot=matrix(c(1,1,1,0),ncol=2, byrow=2), expand=TRUE)
-		if (! is.equal(p10,select(p9,c(1,0,2)))) warning("error in select unbounded")
-		pa <- new(c(0,0), c(+Inf,+Inf), expand=TRUE)
-		# the old test 21 is for the version of select which also replaces bounded rows
-		# pb <- new(c(0,-Inf),c(Inf,0),irot=matrix(c(1,0,1,-1),ncol=2, byrow=TRUE), expand=TRUE)
-		# if (! is.equal(pb, select(pa,c(1,-1,0)))) warning("error in select unbounded 2") else print("test 21 passed")
-		if (! is.equal(pa, select(pa,c(1,-1,0)))) warning("error in select unbounded 2")
-		pa <- new(c(0,0), c(0,+Inf), expand=TRUE)
-		pb <- new(c(0,-Inf),c(0,0),irot=matrix(c(1,0,1,-1),ncol=2, byrow=TRUE), expand=TRUE)
-		if (! is.equal(pb, select(pa,c(1,-1,0)))) warning("error in select unbounded 3")
-		p11 <- new(c(10,-10),c(10,-10),expand=TRUE)
-		if (! is.equal(pe,select(p11,c(1,-1,0)))) warning("error in select on p11")		
-		p99 <- new.simple(c(2,0),c(4,2)) */
-  
+
   test("linear inequalities") {
     val li1 = Parallelotope(DenseVector(-1,-1), DenseMatrix((1.0,1.0),(1.0,-1.0)), DenseVector(0,0))
     expect(li1) { diamond.linearInequality(Array(2,0), -1) }
+    val li2 = Parallelotope(DenseVector(-1,Double.NegativeInfinity), DenseMatrix((1.0,1.0),(1.0,-1.0)), DenseVector(1,Double.PositiveInfinity))
+    val li3 = Parallelotope(DenseVector(-1,Double.NegativeInfinity), DenseMatrix((1.0,1.0),(1.0,0.0)), DenseVector(1,-2))
+    expect(li3) { li2.linearInequality(Array(1,0),-2) }
+    val quadrant = Parallelotope(DenseVector(0,0), DenseMatrix.eye(2), DenseVector(Double.PositiveInfinity, Double.PositiveInfinity))
+    expect(quadrant) { quadrant.linearInequality(Array(1,-1),0) }
+    val li4 = Parallelotope(DenseVector(10,-10), DenseMatrix.eye(2), DenseVector(10,-10))
+    expect (empty) { li4.linearInequality(Array(1,-1),0) }
   }
   
 }
