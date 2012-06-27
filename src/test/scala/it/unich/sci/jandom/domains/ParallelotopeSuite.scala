@@ -116,34 +116,27 @@ class ParallelotopeSuite extends FunSuite {
     val nd6 = Parallelotope(DenseVector(Double.NegativeInfinity,-11), DenseMatrix.eye(2), DenseVector(Double.PositiveInfinity,-9))
     expect(nd6) { nd5.nondeterministicAssignment(0) }
   }
-/*
- * # results changed with the new priorities for union
-		# if (! is.equal( new.simple(c(-4,-1),c(4,4),c(-1,3,1,0)),union.inverse(p1,p99))) warning("error in inverse union")
-		if (! is.equal( new.simple(c(-4,-1),c(4,2),c(-1,3,0,1)),union.inverse(p1,p99))) warning("error in inverse union")
-		if (! is.equal( p1,union.inverse(p1,p1))) warning("error in inverse union 2")		
-		# results changed with the new priorities for union
-		# if (! is.equal( new.simple(c(-6,-4),c(4,2),c(1,-4,-1,2)),union.inverse(p99,p2))) warning("error in inverse union 3")
-		if (! is.equal( new.simple(c(-1,-1),c(2,4),c(0,1,1,-1)),union.inverse(p99,p2))) warning("error in inverse union 3")	
-		p98 <- new.simple(c(-4,0),c(-2,2))
-		if (! is.equal( new.simple(c(-4,0),c(4,2)),union.inverse(p98,p99))) warning("error in inverse union 4")		
-		p96 <- new.simple(c(1,-Inf),c(1,1),c(1,0,1,-1))
-		p97 <- new.simple(c(0,-Inf),c(0,0),c(1,0,0,-1))				
-		if (! is.equal( new.simple(c(0,0),c(1,Inf)),union.inverse(p96,p97))) warning("error in inverse union 5")
-		p95 <- new.simple(c(0,0),c(0,Inf))
-		p94 <- new.simple(c(0,0),c(1,Inf))
-		if (! is.equal( p94,union.inverse(p95,p94))) warning("error in inverse union 6")
-		if (! is.equal( p94,union.inverse(p94,p95))) warning("error in inverse union 7")			
- */
+
   test("linear inequalities") {
     val li1 = Parallelotope(DenseVector(-1,-1), DenseMatrix((1.0,1.0),(1.0,-1.0)), DenseVector(0,0))
     expect(li1) { diamond.linearInequality(Array(2,0), -1) }
   }
   
   test("union") {		
-    val u1 =  Parallelotope(DenseVector(2,0), DenseMatrix.eye(2), DenseVector(4,2))
-    val u2 = Parallelotope(DenseVector(-4,-1), DenseMatrix((-1.0,3.0),(1.0,0.0)), DenseVector(4,2))
+    val u1 = Parallelotope(DenseVector(2,0), DenseMatrix.eye(2), DenseVector(4,2))
+    val u2 = Parallelotope(DenseVector(-4,-1), DenseMatrix((-1.0,3.0),(0.0,1.0)), DenseVector(4,2))
     expect(u2) { box union u1 }
+    val u3 = Parallelotope(DenseVector(-1,-1), DenseMatrix((0.0,1.0),(1.0,-1.0)), DenseVector(2,4))
+    expect(u3) { u1 union diamond }
+    val u4 = Parallelotope(DenseVector(-4,0), DenseMatrix.eye(2), DenseVector(-2,2))
+    val u5 = Parallelotope(DenseVector(-4,0), DenseMatrix.eye(2), DenseVector(4,2))
+    expect (u5) { u4 union u1 }
+    val u6 = Parallelotope(DenseVector(1, Double.NegativeInfinity), DenseMatrix((1.0,0.0),(1.0,-1.0)), DenseVector(1,1))
+    val u7 = Parallelotope(DenseVector(0, Double.NegativeInfinity), DenseMatrix((1.0,0.0),(0.0,-1.0)), DenseVector(0,0))
+    val u8 = Parallelotope(DenseVector(0, 0), DenseMatrix.eye(2), DenseVector(1,Double.PositiveInfinity))
+    expect (u8) { u6 union u7 }
+    val u9 =  Parallelotope(DenseVector(0, 0), DenseMatrix.eye(2), DenseVector(0,Double.PositiveInfinity))
+    expect (u8) { u9 union u8 }
+    expect (u8) { u8 union u9 }
   }
-
-  
 }

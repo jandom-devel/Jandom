@@ -131,8 +131,7 @@ class Parallelotope(
     val newA = DenseMatrix(Qsorted map (_._1.toArray): _*)
     val newlow = DenseVector(Qsorted map (_._2): _*)
     val newhigh = DenseVector(Qsorted map (_._3): _*) 
-    val qr = LinearAlgebra.qrp(newA.t.toDense)
-    val pvt = qr._4.take(dimension)
+    val pvt = Parallelotope.pivoting(Qsorted map (_._1))
     return new Parallelotope(false, newlow(pvt).toDense, newA(pvt,::).toDense, newhigh(pvt).toDense)
   }
 
@@ -334,5 +333,26 @@ object Parallelotope extends NumericalDomain[Parallelotope] {
         maxc += lf(i) * low(i)
       }
     return (minc, maxc)
+  }
+  
+  def pivoting(m: IndexedSeq[DenseVector[Double]]): Seq[Int]=  {
+    val dimension = m(0).length
+    var indexes = Seq[Int]()
+    var pivots = Seq[(DenseVector[Double],Int)]()
+    var i = 0
+    while (indexes.length <  dimension) {
+      val row = m(i).toDense
+      for (p <- pivots) row -= p._1 * row(p._2)
+      val col = row find (_ != 0)
+      col match {
+        case Some(col) => 
+          row /= row(col)
+          pivots :+= (row, col)
+          indexes :+= i
+        case None =>
+      }
+      i += 1
+    }
+    indexes
   }
 }
