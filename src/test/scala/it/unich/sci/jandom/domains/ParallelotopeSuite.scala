@@ -90,8 +90,10 @@ class ParallelotopeSuite extends FunSuite {
     val li2 = Parallelotope(DenseVector(1,-1), DenseMatrix((1.0, 0.0),(-1.0 ,1.0)), DenseVector(1,0))
     val li3 = Parallelotope(DenseVector(2,-2), DenseMatrix((1.0, 0.0),(-1.0 ,1.0)), DenseVector(2,-1))
     expect (li3) { li2.linearAssignment(0,Array(1,0),1) }
+    expect (li3) { li2.linearAssignment(0,Array(1),1) }
     val li4 = Parallelotope(DenseVector(-1,-2),DenseMatrix((1.0,0.0),(-1.0,1.0)),DenseVector(1,2))
     expect (li4) { box.linearAssignment(1,Array(1,2),0) }
+    assert(empty.linearAssignment(1, Array(1,1), 0).isEmpty)
   }
   
   test("non-invertible linear assignment") {
@@ -100,6 +102,8 @@ class ParallelotopeSuite extends FunSuite {
     val ln2 = Parallelotope(DenseVector(0,Double.NegativeInfinity), DenseMatrix((-1.0,1.0),(0.0,1.0)), DenseVector(0,Double.PositiveInfinity))
     val ln3 = Parallelotope(DenseVector(Double.NegativeInfinity,0), DenseMatrix((1.0,-1.0),(0.0,1.0)), DenseVector(Double.PositiveInfinity,0))
     expect (ln2) { ln3.linearAssignment(1, Array(1,0), 0)}
+    expect (ln2) { ln3.linearAssignment(1, Array(1), 0)}
+    assert(empty.linearAssignment(1, Array(1,0), 0).isEmpty)
   }
   
   test("non-deterministic assignment") {
@@ -115,11 +119,14 @@ class ParallelotopeSuite extends FunSuite {
     val nd5 = Parallelotope(DenseVector(10,-1), DenseMatrix((1.0,0.0),(1.0,1.0)), DenseVector(10,1))
     val nd6 = Parallelotope(DenseVector(Double.NegativeInfinity,-11), DenseMatrix.eye(2), DenseVector(Double.PositiveInfinity,-9))
     expect(nd6) { nd5.nondeterministicAssignment(0) }
+    assert(empty.nondeterministicAssignment(0).isEmpty)
   }
 
   test("linear inequalities") {
     val li1 = Parallelotope(DenseVector(-1,-1), DenseMatrix((1.0,1.0),(1.0,-1.0)), DenseVector(0,0))
     expect(li1) { diamond.linearInequality(Array(2,0), -1) }
+    expect(li1) { diamond.linearInequality(Array(2), -1) }
+    assert(empty.linearInequality(Array(1,0),-1).isEmpty)
   }
   
   test("union") {		
@@ -137,6 +144,6 @@ class ParallelotopeSuite extends FunSuite {
     expect (u8) { u6 union u7 }
     val u9 =  Parallelotope(DenseVector(0, 0), DenseMatrix.eye(2), DenseVector(0,Double.PositiveInfinity))
     expect (u8) { u9 union u8 }
-    expect (u8) { u8 union u9 }
+    expect (u8) { u8 union u9 }    
   }
 }

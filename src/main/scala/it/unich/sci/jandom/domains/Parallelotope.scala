@@ -39,16 +39,32 @@ class Parallelotope(
   require((low.length == A.numRows) && (low.length == high.length) && A.isSquare)
 
   def widening(that: Parallelotope): Parallelotope = {
-    throw new IllegalAccessException("Unimplemented feature")
+    require(dimension == that.dimension)
+    if (isEmpty) that
+    val thatRotated = that.rotate(A)
+    val newlow = low.toDense
+    val newhigh = high.toDense
+    for (i <- 0 to dimension-1) {
+      if (thatRotated.low(i)<low(i)) newlow(i)=Double.NegativeInfinity
+      if (thatRotated.high(i)>high(i)) newhigh(i)=Double.PositiveInfinity
+    }   
+    new Parallelotope(false, newlow, A, newhigh)
   }
-
+  
   def narrowing(that: Parallelotope): Parallelotope = {
-    throw new IllegalAccessException("Unimplemented feature")
+    require(dimension == that.dimension)
+    if (isEmpty) this
+    val thatRotated = that.rotate(A)
+    val newlow = low.toDense
+    val newhigh = high.toDense
+    for (i <- 0 to dimension-1) {
+      if (low(i).isInfinity) newlow(i)=thatRotated.low(i) else newlow(i)=newlow(i) min thatRotated.low(i)
+      if (high(i).isInfinity) newhigh(i)=thatRotated.high(i) else newhigh(i)=newhigh(i) max thatRotated.high(i)
+    }   
+    new Parallelotope(false, newlow, A, newhigh)
   }
 
-  def intersection(that: Parallelotope): Parallelotope = {
-    throw new IllegalAccessException("Unimplemented feature")
-  }
+  def intersection(that: Parallelotope): Parallelotope = intersectionWeak(that)
 
   def union(that: Parallelotope): Parallelotope = {
 
@@ -70,13 +86,13 @@ class Parallelotope(
           else if (l2 <= l1 && u2 >= l1 && u2 <= u1)
             2
           else 3
-        } else if (l1 == l2 && !l1.isInfinite && !l2.isInfinity)
+        } else if (l1 == l2 && !l1.isInfinity && !l2.isInfinity)
           4
-        else if (u1 == u2 && !u1.isInfinite && !u2.isInfinity)
+        else if (u1 == u2 && !u1.isInfinity && !u2.isInfinity)
           4
-        else if (!l1.isInfinite && !l2.isInfinity)
+        else if (!l1.isInfinity && !l2.isInfinity)
           5
-        else if (!u1.isInfinite && !u2.isInfinity)
+        else if (!u1.isInfinity && !u2.isInfinity)
           5
         else 7
       return (v, l1 min l2, u1 max u2, p)
@@ -102,7 +118,8 @@ class Parallelotope(
       else
         None
     }
-
+    
+    require(dimension == that.dimension)
     val thisRotated = this.rotate(that.A)
     val thatRotated = that.rotate(this.A)
     val Q = scala.collection.mutable.ArrayBuffer[PrioritizedConstraint]()
@@ -136,6 +153,7 @@ class Parallelotope(
   }
 
   def unionWeak(that: Parallelotope): Parallelotope = {
+    require(dimension == that.dimension)
     val result = that.rotate(A)
     for (i <- 0 to dimension - 1) {
       result.low(i) = result.low(i) min low(i)
@@ -143,8 +161,21 @@ class Parallelotope(
     }
     return result
   }
-
-  def linearAssignment(n: Int, coeff: Array[Double], known: Double): Parallelotope = {
+  
+  def intersectionWeak(that: Parallelotope): Parallelotope = {
+    require(dimension == that.dimension)
+    val result = that.rotate(A)
+    for (i <- 0 to dimension - 1) {
+      result.low(i) = result.low(i) max low(i)
+      result.low(i) = result.high(i) min high(i)
+    }
+    return result
+  }
+  
+  def linearAssignment(n: Int, tcoeff: Array[Double], known: Double): Parallelotope = {
+    require(n <= dimension && tcoeff.length <= dimension)
+    if (isEmpty) return this    
+    val coeff = tcoeff.padTo(dimension,0.0).toArray
     if (coeff(n) != 0) {
       val increment = A(::, n) :* known / coeff(n)
       val newlow = low :+ increment
@@ -168,7 +199,10 @@ class Parallelotope(
     }
   }
 
-  def linearInequality(coeff: Array[Double], known: Double): Parallelotope = {
+  def linearInequality(tcoeff: Array[Double], known: Double): Parallelotope = {
+    require(tcoeff.length <= dimension)
+    val coeff = tcoeff.padTo(dimension,0.0).toArray
+    if (isEmpty) return this
     val y = A.t.toDense \ DenseVector(coeff)
     val j = (0 to dimension - 1) find { i => y(i) != 0 && low(i).isInfinity && high(i).isInfinity }
     j match {
@@ -205,6 +239,7 @@ class Parallelotope(
    * @param n the variable we are applying a non-deterministic assignment.
    */
   def nondeterministicAssignment(n: Int): Parallelotope = {
+    require(n <= dimension)
     if (isEmpty) return this;
     val j = (0 to dimension - 1).filter { i => A(i, n) != 0 && (!low(i).isNegInfinity || !high(i).isPosInfinity) }
     if (j.isEmpty) return this
@@ -320,7 +355,8 @@ object Parallelotope extends NumericalDomain[Parallelotope] {
     val A = DenseMatrix.eye[Double](n)
     new Parallelotope(true, low, A, high)
   }
-
+  
+  
   private def extremalsInBox(lf: DenseVector[Double], low: DenseVector[Double], high: DenseVector[Double]): (Double, Double) = {
     var minc = 0.0
     var maxc = 0.0
