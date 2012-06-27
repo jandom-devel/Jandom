@@ -19,6 +19,7 @@
 package it.unich.sci.jandom
 package domains
 
+import scalala.library.LinearAlgebra
 import scalala.tensor.dense.DenseMatrix
 import scalala.tensor.::
 import scalala.tensor.sparse.SparseVector
@@ -45,12 +46,103 @@ class Parallelotope(
     throw new IllegalAccessException("Unimplemented feature")
   }
 
-  def union(that: Parallelotope): Parallelotope = {
+  def intersection(that: Parallelotope): Parallelotope = {
     throw new IllegalAccessException("Unimplemented feature")
   }
 
-  def intersection(that: Parallelotope): Parallelotope = {
-    throw new IllegalAccessException("Unimplemented feature")
+  def union(that: Parallelotope): Parallelotope = {
+
+    type PrioritizedConstraint = (DenseVector[Double], Double, Double, Int)
+
+    def priority(v: DenseVector[Double]): PrioritizedConstraint = {
+      val y1 = A.t.toDense \ v.asCol.toDense
+      val (l1, u1) = Parallelotope.extremalsInBox(y1, low, high)
+      val y2 = that.A.t.toDense \ v.asCol.toDense
+      val (l2, u2) = Parallelotope.extremalsInBox(y2, that.low, that.high)
+      val p =
+        if (l1 == l2 && l2 == u1 && u1 == u2)
+          0
+        else if (!l1.isInfinity && !l2.isInfinity && !u1.isInfinity && !u2.isInfinity) {
+          if (l1 == l2 && u1 == u2)
+            1
+          else if (l2 <= u1 && l2 >= l1 && u2 >= u1)
+            2
+          else if (l2 <= l1 && u2 >= l1 && u2 <= u1)
+            2
+          else 3
+        } else if (l1 == l2 && !l1.isInfinite && !l2.isInfinity)
+          4
+        else if (u1 == u2 && !u1.isInfinite && !u2.isInfinity)
+          4
+        else if (!l1.isInfinite && !l2.isInfinity)
+          5
+        else if (!u1.isInfinite && !u2.isInfinity)
+          5
+        else 7
+      return (v, l1 min l2, u1 max u2, p)
+    }
+
+    def linearDep(v1: DenseVector[Double], v2: DenseVector[Double]): Option[Double] = {
+      var i: Int = 0
+      while (i < dimension && (v1(i) == 0 || v2(i) == 0)) i += 1
+      if (i == dimension)
+        Some(1)
+      else if (v1 / v1(i) == v2 / v2(i))
+        return Some(v1(i) / v2(i))
+      else
+        None
+    }
+
+    def newConstraint(vi: DenseVector[Double], vj: DenseVector[Double], min1i: Double, min2i: Double, min1j: Double, min2j: Double): Option[DenseVector[Double]] = {
+      if (min1i.isInfinity || min2i.isInfinity || min1j.isInfinity || min2j.isInfinity) return None
+      if (linearDep(vi, vj).isEmpty) return None
+      val (deltai, deltaj) = if (min2j - min1j >= 0) (min1i - min2i, min2j - min1j) else (min2i - min1i, min1j - min2j)
+      if (deltai * deltaj > 0)
+        Some(-vi * deltaj - vj * deltai)
+      else
+        None
+    }
+
+    val thisRotated = this.rotate(that.A)
+    val thatRotated = that.rotate(this.A)
+    val Q = scala.collection.mutable.ArrayBuffer[PrioritizedConstraint]()
+
+    val bulk = DenseMatrix.vertcat(this.A, that.A)
+    val min1 = DenseVector.vertcat(this.low.asCol, thisRotated.low.asCol)
+    val min2 = DenseVector.vertcat(thatRotated.low.asCol, that.low.asCol)
+    val max1 = DenseVector.vertcat(this.high.asCol, thisRotated.high.asCol)
+    val max2 = DenseVector.vertcat(thatRotated.high.asCol, that.high.asCol)
+    for (i <- 0 to dimension - 1) Q += priority(this.A(i, ::))
+    for (i <- 0 to dimension - 1) Q += priority(that.A(i, ::))
+    for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
+      val v1 = bulk(i, ::)
+      val v2 = bulk(j, ::)
+      val nc1 = newConstraint(v1, v2, min1(i), min2(i), min1(j), min2(j))
+      if (nc1.isDefined) Q += priority(nc1.get)
+      val nc2 = newConstraint(v1, -v2, min1(i), min2(i), -max1(j), -max2(j))
+      if (nc2.isDefined) Q += priority(nc2.get)
+      val nc3 = newConstraint(-v1, -v2, -max1(i), -max2(i), -max1(j), -max2(j))
+      if (nc3.isDefined) Q += priority(nc3.get)
+      val nc4 = newConstraint(-v1, v2, -max1(i), -max2(i), min1(j), min2(j))
+      if (nc4.isDefined) Q += priority(nc4.get)
+    }
+    val Qsorted = Q.sortBy[Int](_._4)
+
+    val newA = DenseMatrix(Qsorted map (_._1.toArray): _*)
+    val newlow = DenseVector(Qsorted map (_._2): _*)
+    val newhigh = DenseVector(Qsorted map (_._3): _*) 
+    val qr = LinearAlgebra.qrp(newA.t.toDense)
+    val pvt = qr._4.take(dimension)
+    return new Parallelotope(false, newlow(pvt).toDense, newA(pvt,::).toDense, newhigh(pvt).toDense)
+  }
+
+  def unionWeak(that: Parallelotope): Parallelotope = {
+    val result = that.rotate(A)
+    for (i <- 0 to dimension - 1) {
+      result.low(i) = result.low(i) min low(i)
+      result.low(i) = result.high(i) max high(i)
+    }
+    return result
   }
 
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): Parallelotope = {
