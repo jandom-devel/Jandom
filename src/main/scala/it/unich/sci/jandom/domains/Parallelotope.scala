@@ -210,12 +210,12 @@ class Parallelotope(
         val newlow = low.toDense
         val newhigh = high.toDense
         val (minc, maxc) = Parallelotope.extremalsInBox(y, newlow, newhigh)
-        if (minc > known) return Parallelotope.empty(dimension)
+        if (minc > - known) return Parallelotope.empty(dimension)
         for (i <- 0 to dimension - 1) {
           if (y(i) > 0)
-            newhigh(i) = high(i) min ((known - minc + y(i) * low(i)) / y(i))
+            newhigh(i) = high(i) min ((- known - minc + y(i) * low(i)) / y(i))
           else if (y(i) < 0)
-            newlow(i) = low(i) max ((known - minc + y(i) * low(i)) / y(i))
+            newlow(i) = low(i) max ((- known - minc + y(i) * low(i)) / y(i))
         }
         return new Parallelotope(false, newlow, A, newhigh)
       }
@@ -223,7 +223,7 @@ class Parallelotope(
         val newA = A.copy
         val newhigh = high.toDense
         newA(j, ::) := DenseVector(coeff)
-        newhigh(j) = known
+        newhigh(j) = - known
         return new Parallelotope(false, low, newA, newhigh)
       }
     }
@@ -334,7 +334,15 @@ class Parallelotope(
     case _ => false
   }
 
-  override def toString = if (isEmpty) "<empty>" else "low:\n" + low + "\nhigh:\n" + high + "\nA:\n" + A
+  override def toString =
+    if (isEmpty)
+      "[void]"
+    else {
+      val s = new StringBuilder()
+      for (i <- 0 to dimension - 1)
+        s ++= low(i) + " <= <" + A(i, ::).toArray.mkString(",") + "> <= " + high(i) + "  "
+      s.toString
+    }
 }
 
 object Parallelotope extends NumericalDomain[Parallelotope] {
