@@ -124,8 +124,8 @@ class ParallelotopeSuite extends FunSuite {
 
   test("linear inequalities") {
     val li1 = Parallelotope(DenseVector(-1,-1), DenseMatrix((1.0,1.0),(1.0,-1.0)), DenseVector(0,0))
-    expect(li1) { diamond.linearInequality(Array(2,0), -1) }
-    expect(li1) { diamond.linearInequality(Array(2), -1) }
+    expect(li1) { diamond.linearInequality(Array(2,0), 1) }
+    expect(li1) { diamond.linearInequality(Array(2), 1) }
     assert(empty.linearInequality(Array(1,0),-1).isEmpty)
   }
   
@@ -145,5 +145,8 @@ class ParallelotopeSuite extends FunSuite {
     val u9 =  Parallelotope(DenseVector(0, 0), DenseMatrix.eye(2), DenseVector(0,Double.PositiveInfinity))
     expect (u8) { u9 union u8 }
     expect (u8) { u8 union u9 }    
+    val u10 = Parallelotope(DenseVector(2,0), DenseMatrix.eye(2), DenseVector(2,0))
+    val u11 = Parallelotope(DenseVector(0,2), DenseMatrix((0.0,1.0),(1.0,-2.0)), DenseVector(1,6))
+    expect (u11) { u10 union u11 }
   }
 }

@@ -44,23 +44,23 @@ class Parallelotope(
     val thatRotated = that.rotate(A)
     val newlow = low.toDense
     val newhigh = high.toDense
-    for (i <- 0 to dimension-1) {
-      if (thatRotated.low(i)<low(i)) newlow(i)=Double.NegativeInfinity
-      if (thatRotated.high(i)>high(i)) newhigh(i)=Double.PositiveInfinity
-    }   
+    for (i <- 0 to dimension - 1) {
+      if (thatRotated.low(i) < low(i)) newlow(i) = Double.NegativeInfinity
+      if (thatRotated.high(i) > high(i)) newhigh(i) = Double.PositiveInfinity
+    }
     new Parallelotope(false, newlow, A, newhigh)
   }
-  
+
   def narrowing(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
     if (isEmpty) this
     val thatRotated = that.rotate(A)
     val newlow = low.toDense
     val newhigh = high.toDense
-    for (i <- 0 to dimension-1) {
-      if (low(i).isInfinity) newlow(i)=thatRotated.low(i) else newlow(i)=newlow(i) min thatRotated.low(i)
-      if (high(i).isInfinity) newhigh(i)=thatRotated.high(i) else newhigh(i)=newhigh(i) max thatRotated.high(i)
-    }   
+    for (i <- 0 to dimension - 1) {
+      if (low(i).isInfinity) newlow(i) = thatRotated.low(i) else newlow(i) = newlow(i) min thatRotated.low(i)
+      if (high(i).isInfinity) newhigh(i) = thatRotated.high(i) else newhigh(i) = newhigh(i) max thatRotated.high(i)
+    }
     new Parallelotope(false, newlow, A, newhigh)
   }
 
@@ -70,7 +70,12 @@ class Parallelotope(
 
     type PrioritizedConstraint = (DenseVector[Double], Double, Double, Int)
 
-    def priority(v: DenseVector[Double]): PrioritizedConstraint = {
+    /**
+     * Compute the priority of a new constraint. The parameter ownedBy tells whether the linear
+     * form under consideration is one of the "native" forms of this (1) or that (2). This is used
+     * to refine properties, but can be improved.
+     */
+    def priority(v: DenseVector[Double], ownedBy: Int = 0): PrioritizedConstraint = {
       val y1 = A.t.toDense \ v.asCol.toDense
       val (l1, u1) = Parallelotope.extremalsInBox(y1, low, high)
       val y2 = that.A.t.toDense \ v.asCol.toDense
@@ -81,6 +86,10 @@ class Parallelotope(
         else if (!l1.isInfinity && !l2.isInfinity && !u1.isInfinity && !u2.isInfinity) {
           if (l1 == l2 && u1 == u2)
             1
+          else if (l1 >= l2 && u1 <= u2)
+            if (ownedBy==2) 2 else 3
+          else if  (l2 >= l1 && u2 <= u1)
+            if (ownedBy==1) 2 else 3
           else if (l2 <= u1 && l2 >= l1 && u2 >= u1)
             2
           else if (l2 <= l1 && u2 >= l1 && u2 <= u1)
@@ -118,7 +127,7 @@ class Parallelotope(
       else
         None
     }
-    
+
     require(dimension == that.dimension)
     val thisRotated = this.rotate(that.A)
     val thatRotated = that.rotate(this.A)
@@ -129,8 +138,8 @@ class Parallelotope(
     val min2 = DenseVector.vertcat(thatRotated.low.asCol, that.low.asCol)
     val max1 = DenseVector.vertcat(this.high.asCol, thisRotated.high.asCol)
     val max2 = DenseVector.vertcat(thatRotated.high.asCol, that.high.asCol)
-    for (i <- 0 to dimension - 1) Q += priority(this.A(i, ::))
-    for (i <- 0 to dimension - 1) Q += priority(that.A(i, ::))
+    for (i <- 0 to dimension - 1) Q += priority(this.A(i, ::),1)
+    for (i <- 0 to dimension - 1) Q += priority(that.A(i, ::),2)
     for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
       val v1 = bulk(i, ::)
       val v2 = bulk(j, ::)
@@ -147,9 +156,9 @@ class Parallelotope(
 
     val newA = DenseMatrix(Qsorted map (_._1.toArray): _*)
     val newlow = DenseVector(Qsorted map (_._2): _*)
-    val newhigh = DenseVector(Qsorted map (_._3): _*) 
+    val newhigh = DenseVector(Qsorted map (_._3): _*)
     val pvt = Parallelotope.pivoting(Qsorted map (_._1))
-    return new Parallelotope(false, newlow(pvt).toDense, newA(pvt,::).toDense, newhigh(pvt).toDense)
+    return new Parallelotope(false, newlow(pvt).toDense, newA(pvt, ::).toDense, newhigh(pvt).toDense)
   }
 
   def unionWeak(that: Parallelotope): Parallelotope = {
@@ -161,7 +170,7 @@ class Parallelotope(
     }
     return result
   }
-  
+
   def intersectionWeak(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
     val result = that.rotate(A)
@@ -171,11 +180,11 @@ class Parallelotope(
     }
     return result
   }
-  
+
   def linearAssignment(n: Int, tcoeff: Array[Double], known: Double): Parallelotope = {
     require(n <= dimension && tcoeff.length <= dimension)
-    if (isEmpty) return this    
-    val coeff = tcoeff.padTo(dimension,0.0).toArray
+    if (isEmpty) return this
+    val coeff = tcoeff.padTo(dimension, 0.0).toArray
     if (coeff(n) != 0) {
       val increment = A(::, n) :* known / coeff(n)
       val newlow = low :+ increment
@@ -201,7 +210,7 @@ class Parallelotope(
 
   def linearInequality(tcoeff: Array[Double], known: Double): Parallelotope = {
     require(tcoeff.length <= dimension)
-    val coeff = tcoeff.padTo(dimension,0.0).toArray
+    val coeff = tcoeff.padTo(dimension, 0.0).toArray
     if (isEmpty) return this
     val y = A.t.toDense \ DenseVector(coeff)
     val j = (0 to dimension - 1) find { i => y(i) != 0 && low(i).isInfinity && high(i).isInfinity }
@@ -210,12 +219,12 @@ class Parallelotope(
         val newlow = low.toDense
         val newhigh = high.toDense
         val (minc, maxc) = Parallelotope.extremalsInBox(y, newlow, newhigh)
-        if (minc > - known) return Parallelotope.empty(dimension)
+        if (minc > -known) return Parallelotope.empty(dimension)
         for (i <- 0 to dimension - 1) {
           if (y(i) > 0)
-            newhigh(i) = high(i) min ((- known - minc + y(i) * low(i)) / y(i))
+            newhigh(i) = high(i) min ((-known - minc + y(i) * low(i)) / y(i))
           else if (y(i) < 0)
-            newlow(i) = low(i) max ((- known - minc + y(i) * low(i)) / y(i))
+            newlow(i) = low(i) max ((-known - minc + y(i) * low(i)) / y(i))
         }
         return new Parallelotope(false, newlow, A, newhigh)
       }
@@ -223,7 +232,7 @@ class Parallelotope(
         val newA = A.copy
         val newhigh = high.toDense
         newA(j, ::) := DenseVector(coeff)
-        newhigh(j) = - known
+        newhigh(j) = -known
         return new Parallelotope(false, low, newA, newhigh)
       }
     }
@@ -363,8 +372,7 @@ object Parallelotope extends NumericalDomain[Parallelotope] {
     val A = DenseMatrix.eye[Double](n)
     new Parallelotope(true, low, A, high)
   }
-  
-  
+
   private def extremalsInBox(lf: DenseVector[Double], low: DenseVector[Double], high: DenseVector[Double]): (Double, Double) = {
     var minc = 0.0
     var maxc = 0.0
@@ -378,18 +386,18 @@ object Parallelotope extends NumericalDomain[Parallelotope] {
       }
     return (minc, maxc)
   }
-  
-  def pivoting(m: IndexedSeq[DenseVector[Double]]): Seq[Int]=  {
+
+  def pivoting(m: IndexedSeq[DenseVector[Double]]): Seq[Int] = {
     val dimension = m(0).length
     var indexes = Seq[Int]()
-    var pivots = Seq[(DenseVector[Double],Int)]()
+    var pivots = Seq[(DenseVector[Double], Int)]()
     var i = 0
-    while (indexes.length <  dimension) {
+    while (indexes.length < dimension) {
       val row = m(i).toDense
       for (p <- pivots) row -= p._1 * row(p._2)
       val col = row find (_ != 0)
       col match {
-        case Some(col) => 
+        case Some(col) =>
           row /= row(col)
           pivots :+= (row, col)
           indexes :+= i

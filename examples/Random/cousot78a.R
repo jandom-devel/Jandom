@@ -52,7 +52,7 @@ cousot78a = function() {
   i=2
   j=0
   while (TRUE) {
-    if (i*i==4)
+    if (brandom())
       i=i+4
     else {
       j=j+1
