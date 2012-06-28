@@ -149,4 +149,10 @@ class ParallelotopeSuite extends FunSuite {
     val u11 = Parallelotope(DenseVector(0,2), DenseMatrix((0.0,1.0),(1.0,-2.0)), DenseVector(1,6))
     expect (u11) { u10 union u11 }
   }
+  
+  test("string representation") {
+    expect(Seq("-1.0 <= x+y <= 1.0", "-1.0 <= x-y <= 1.0")) { diamond.mkString(IndexedSeq("x","y")) } 
+    expect("[ empty ]") { empty.toString }
+    expect("[ -Infinity <= v0 <= Infinity , -Infinity <= v1 <= Infinity ]") { full.toString }    
+  }
 }

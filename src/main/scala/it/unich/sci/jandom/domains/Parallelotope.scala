@@ -87,9 +87,9 @@ class Parallelotope(
           if (l1 == l2 && u1 == u2)
             1
           else if (l1 >= l2 && u1 <= u2)
-            if (ownedBy==2) 2 else 3
-          else if  (l2 >= l1 && u2 <= u1)
-            if (ownedBy==1) 2 else 3
+            if (ownedBy == 2) 2 else 3
+          else if (l2 >= l1 && u2 <= u1)
+            if (ownedBy == 1) 2 else 3
           else if (l2 <= u1 && l2 >= l1 && u2 >= u1)
             3
           else if (l2 <= l1 && u2 >= l1 && u2 <= u1)
@@ -138,8 +138,8 @@ class Parallelotope(
     val min2 = DenseVector.vertcat(thatRotated.low.asCol, that.low.asCol)
     val max1 = DenseVector.vertcat(this.high.asCol, thisRotated.high.asCol)
     val max2 = DenseVector.vertcat(thatRotated.high.asCol, that.high.asCol)
-    for (i <- 0 to dimension - 1) Q += priority(this.A(i, ::),1)
-    for (i <- 0 to dimension - 1) Q += priority(that.A(i, ::),2)
+    for (i <- 0 to dimension - 1) Q += priority(this.A(i, ::), 1)
+    for (i <- 0 to dimension - 1) Q += priority(that.A(i, ::), 2)
     for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
       val v1 = bulk(i, ::)
       val v2 = bulk(j, ::)
@@ -343,15 +343,36 @@ class Parallelotope(
     case _ => false
   }
 
-  override def toString =
-    if (isEmpty)
-      "[void]"
-    else {
-      val s = new StringBuilder()
-      for (i <- 0 to dimension - 1)
-        s ++= low(i) + " <= <" + A(i, ::).toArray.mkString(",") + "> <= " + high(i) + "  "
-      s.toString
+  def mkString(vars: IndexedSeq[String]): Seq[String] = {
+
+    def lfToString(lf: DenseVector[Double]): String = {
+      var first = true
+      var s = ""
+
+      for (index <- 0 until dimension) {
+        val coeff = lf(index)
+        val term = coeff match {
+          case 0 => ""
+          case 1 =>  vars(index)
+          case -1 =>  "-" + vars(index)
+          case c => c.toString + "*" + vars(index)
+        }
+        if (coeff != 0) {
+          if (first || coeff < 0) {
+            s += term
+            first = false
+          } else if (coeff != 0)
+            s += "+" + term
+        }
+      }
+      if (s.isEmpty) "0" else s
     }
+
+    if (isEmpty)
+      Seq("empty")
+    else
+      for (i <- 0 until dimension) yield low(i) + " <= " + lfToString(A(i, ::)) + " <= " + high(i)
+  }
 }
 
 object Parallelotope extends NumericalDomain[Parallelotope] {

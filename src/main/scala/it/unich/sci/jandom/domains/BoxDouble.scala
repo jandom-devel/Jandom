@@ -110,14 +110,14 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     return sum;
   }
 
-  override def union(that: BoxDouble): BoxDouble = {
+  def union(that: BoxDouble): BoxDouble = {
     require(dimension == that.dimension)
     val newlow = (this.low, that.low).zipped.map(_ min _)
     val newhigh = (this.high, that.high).zipped.map(_ max _)
     new BoxDouble(newlow, newhigh)
   }
 
-  override def intersection(that: BoxDouble): BoxDouble = {
+  def intersection(that: BoxDouble): BoxDouble = {
     require(dimension == that.dimension)
     val newlow = (this.low, that.low).zipped.map(_ max _)
     val newhigh = (this.high, that.high).zipped.map(_ min _)
@@ -197,7 +197,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * @return the least box which contains the result of the linear assignment.
    * @throws IllegalDomainException if parameters are not correct.
    */
-  override def linearAssignment(n: Int, coeff: Array[Double], known: Double): BoxDouble = {
+  def linearAssignment(n: Int, coeff: Array[Double], known: Double): BoxDouble = {
     require(n <= low.length && coeff.length <= dimension)
     if (isEmpty) return this
     val interval = linearEvaluation(coeff, known)
@@ -208,7 +208,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * @return the least box which contains the intersection with the half-plane `coeff*v+knwown <= 0`.
    * @throws IllegalDomainException if parameters are not correct.
    */
-  override def linearInequality(coeff: Array[Double], known: Double): BoxDouble = {
+  def linearInequality(coeff: Array[Double], known: Double): BoxDouble = {
     require(coeff.length <= dimension)
 
     /* if the box is empty the result is empty */
@@ -245,19 +245,21 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * @return the least box which contains the intersection with the complement of the line `coeff*v+knwown==0`.
    * @throws IllegalDomainException if parameters are not correct.
    */
-  override def linearDisequality(coeff: Array[Double], known: Double): BoxDouble =
+  def linearDisequality(coeff: Array[Double], known: Double): BoxDouble =
     throw new IllegalAccessException("Unimplemented feature");
 
-  /*
-  override def linearStrictInequality(n: Int, coeff: Array[Double], known: Double)
-  override def linearEquality(n: Int, coeff: Array[Double], known: Double)
-  */
+  def mkString(vars: IndexedSeq[String]): Seq[String] = {
+    if (isEmpty)
+      Seq("[void]")
+    else
+      for (i <- 0 until dimension) yield low(i) + " <= " + vars(i) + " <= " + high(i)
+  }
 
-  override val dimension: Int = low.length
+  val dimension: Int = low.length
 
-  override def isEmpty: Boolean = (low, high).zipped.exists(_ > _)
+  def isEmpty: Boolean = (low, high).zipped.exists(_ > _)
 
-  override def isFull: Boolean = low.forall(_ isNegInfinity) && high.forall(_ isPosInfinity)
+  def isFull: Boolean = low.forall(_ isNegInfinity) && high.forall(_ isPosInfinity)
 
   def empty = BoxDouble.empty(low.length)
 
@@ -281,20 +283,14 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     case _ => false
   }
 
-  override def hashCode: Int = 41 * (41 + low.hashCode) + high.hashCode
-
-  override def toString: String =
-    if (isEmpty)
-      "[void]"
-    else
-      "[ <" + low.mkString(",") + "> --- <" + high.mkString(",") + "> ]"
+  override def hashCode: Int = 41 * (41 + low.hashCode) + high.hashCode 
 }
 
 /**
  * The factory object for `BoxDouble` properties. It caches the value of `empty(n)` for
- * different `n`, so that we do not create multiple copies of them. This works since 
+ * different `n`, so that we do not create multiple copies of them. This works since
  * numerical properties should be implemented to be immutables.
- * 
+ *
  * The caching should be probably implemented in [[it.unich.sci.jandom.domains.NumericalDomain]], and
  * should be extended to both full and empty values.
  */

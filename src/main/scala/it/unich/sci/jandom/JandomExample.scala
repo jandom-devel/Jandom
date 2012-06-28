@@ -34,7 +34,7 @@ import parma_polyhedra_library.Parma_Polyhedra_Library
 object JandomExample extends App {
 
   {
-    val source = scala.io.Source.fromFile("examples/Random/incr.R").getLines.mkString("\n")
+    val source = scala.io.Source.fromFile("examples/Random/xyline.R").getLines.mkString("\n")
     val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get

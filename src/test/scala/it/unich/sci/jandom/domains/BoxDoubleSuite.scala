@@ -28,7 +28,7 @@ import org.scalatest.FunSuite
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class BoxSuite extends FunSuite {
+class BoxDoubleSuite extends FunSuite {
     
     test("constructors should only work with normalized bounds")  {
       intercept[IllegalArgumentException] { BoxDouble(Array(0,2),Array(0,2,3)) }
@@ -57,5 +57,11 @@ class BoxSuite extends FunSuite {
       val j = BoxDouble(Array(0,0),Array(5,5)).linearInequality(Array(1,1),-4)
       expect(BoxDouble(Array(Double.NegativeInfinity,Double.NegativeInfinity), Array(3,Double.PositiveInfinity))) { i }
       expect(BoxDouble(Array(0,0),Array(4,4))) { j }
+    }
+    
+    test("string conversion") {
+      val i = BoxDouble(Array(0,-1), Array(2,3))
+      expect(Seq("0.0 <= x <= 2.0","-1.0 <= y <= 3.0")) { i.mkString(IndexedSeq("x","y")) }
+      expect("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
     }
 }

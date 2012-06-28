@@ -25,7 +25,8 @@ package it.unich.sci
  */
 package object jandom {
   /**
-   * This is the major version of Jandom. The API is considered to be stable within the same major version.
+   * This is the major version of Jandom. The API is considered to be stable within the same major version, but only
+   * from major_version 1 onwards. 
    */
   val major_version = 0
   
@@ -35,7 +36,7 @@ package object jandom {
   val minor_version = 1
   
   /**
-   * This is the patchlevel of Jandom. Th
+   * This is the patchlevel of Jandom.
    */
   val patchlevel_version = 1
   

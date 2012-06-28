@@ -19,15 +19,8 @@
 package it.unich.sci.jandom
 package domains
 
-import parma_polyhedra_library.Linear_Expression
-import parma_polyhedra_library.Linear_Expression_Coefficient
-import parma_polyhedra_library.Linear_Expression_Variable
-import parma_polyhedra_library.Variable
-import parma_polyhedra_library.Coefficient
-import parma_polyhedra_library.Relation_Symbol
-import parma_polyhedra_library.Constraint
-import parma_polyhedra_library.Degenerate_Element
-import parma_polyhedra_library.By_Reference
+import utils.PPLUtils
+import parma_polyhedra_library._
 
 /** 
  * This is the universal PPL numerical property. It is able to represent (almost) any property
@@ -78,12 +71,12 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
 
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLProperty[PPLNativeProperty] = {
     val newpplobject = domain.copyConstructor(pplobject)
-    domain.affine_image(newpplobject, new Variable(n), toPPLLinearExpression(coeff, known), new Coefficient(1))
+    domain.affine_image(newpplobject, new Variable(n), PPLUtils.toPPLLinearExpression(coeff, known), new Coefficient(1))
     new PPLProperty(domain, newpplobject)
   }
 
   def linearInequality(coeff: Array[Double], known: Double): PPLProperty[PPLNativeProperty] = {
-    val le = toPPLLinearExpression(coeff, known)
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
     val newpplobject = domain.copyConstructor(pplobject)
     domain.refine_with_constraint(newpplobject, new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
     new PPLProperty(domain, newpplobject)
@@ -124,20 +117,9 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
 
   override def hashCode: Int = pplobject.hashCode
 
-  override def toString: String = pplobject.toString
-
-  /**
-   * Converts a sequence of homogeneous and in-homogeneous coefficients into a `Linear_Expression`, which
-   * is a PPL internal object.
-   * @param coeff the homogeneous coefficients.
-   * @param known the in-homogeneous coefficient.
-   */
-  private def toPPLLinearExpression(coeff: Array[Double], known: Double): Linear_Expression = {
-    var le: Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(known.toInt))
-    for (i <- 0 to (coeff.length - 1)) {
-      le = le.sum((new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(coeff(i).toInt))))
-    }
-    return le
+  def mkString(vars: IndexedSeq[String]): Seq[String] = {
+    //val cs: Constraint_System = domain.minimized_constraints(pplobject)
+    PPLUtils.replaceOutputWithVars(pplobject.toString, vars)
   }
 }
 
@@ -162,6 +144,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   private val strictlyContainsHandle = PPLClass.getMethod("strictly_contains", PPLClass)
   private val isEmptyHandle = PPLClass.getMethod("is_empty")
   private val isUniverseHandle = PPLClass.getMethod("is_universe")
+  //private val minimizedConstraintsHandle = PPLClass.getMethod("minimized_constraints")
 
   private[domains] def constructor(n: Int, el: Degenerate_Element) = constructorHandle.newInstance(n: java.lang.Integer, el)
   private[domains] def copyConstructor(pplobject: PPLNativeProperty) = copyConstructorHandle.newInstance(pplobject)
@@ -174,6 +157,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   private[domains] def strictly_contains(me: PPLNativeProperty, that: PPLNativeProperty) = strictlyContainsHandle.invoke(me, that).asInstanceOf[Boolean]
   private[domains] def is_empty(me: PPLNativeProperty) = isEmptyHandle.invoke(me).asInstanceOf[Boolean]
   private[domains] def is_universe(me: PPLNativeProperty) = isUniverseHandle.invoke(me).asInstanceOf[Boolean]
+  //private[domains] def minimized_constraints(me: PPLNativeProperty) = minimizedConstraintsHandle.invoke(me).asInstanceOf[Constraint_System]
 
   def full(n: Int): PPLProperty[PPLNativeProperty] = {
     val pplobject = constructor(n, Degenerate_Element.UNIVERSE)

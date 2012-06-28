@@ -19,6 +19,7 @@
 package it.unich.sci.jandom
 package domains
 
+import utils.PPLUtils
 import parma_polyhedra_library.Double_Box
 import parma_polyhedra_library.Linear_Expression
 import parma_polyhedra_library.Linear_Expression_Coefficient
@@ -66,12 +67,12 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
 
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLBoxDouble = { 
     val newpplbox = new Double_Box(pplbox)
-    newpplbox.affine_image(new Variable(n), toPPLLinearExpression(coeff,known), new Coefficient(1))
+    newpplbox.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(coeff,known), new Coefficient(1))
     new PPLBoxDouble(newpplbox)
   }
 
   def linearInequality(coeff: Array[Double], known: Double): PPLBoxDouble = { 
-	 val le = toPPLLinearExpression(coeff,known)
+	 val le = PPLUtils.toPPLLinearExpression(coeff,known)
 	 val newpplbox = new Double_Box(pplbox)
 	 newpplbox.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
 	 new PPLBoxDouble(newpplbox)
@@ -107,21 +108,8 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
 
   override def hashCode: Int = pplbox.hashCode
   
-  override def toString : String = pplbox.toString
-  
-  /**
-   * Converts a sequence of homogeneous and in-homogeneous coefficients into a `Linear_Expression`, which
-   * is a PPL internal object.
-   * @param coeff the homogeneous coefficients.
-   * @param known the in-homogeneous coefficient.
-   */
-  private def toPPLLinearExpression(coeff:Array[Double], known:Double): Linear_Expression = {
-    var le : Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(known.toInt))
-	for (i <- 0 to (coeff.length - 1)) {
-	  le = le.sum ( (new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(coeff(i).toInt)) ))
-	}
-    return le
-  }
+  def mkString(vars: IndexedSeq[String]): Seq[String] = 
+    PPLUtils.replaceOutputWithVars(pplbox.toString, vars)
 }
 
 /**

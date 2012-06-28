@@ -19,6 +19,7 @@
 package it.unich.sci.jandom
 package domains
 
+import utils.PPLUtils
 import parma_polyhedra_library.C_Polyhedron
 import parma_polyhedra_library.Linear_Expression
 import parma_polyhedra_library.Linear_Expression_Coefficient
@@ -67,12 +68,12 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
 
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLCPolyhedron = { 
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
-    newpplpolyhedron.affine_image(new Variable(n), toPPLLinearExpression(coeff,known), new Coefficient(1))
+    newpplpolyhedron.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(coeff,known), new Coefficient(1))
     new PPLCPolyhedron(newpplpolyhedron)
   }
 
   def linearInequality(coeff: Array[Double], known: Double): PPLCPolyhedron = { 
-	 val le = toPPLLinearExpression(coeff,known)
+	 val le = PPLUtils.toPPLLinearExpression(coeff,known)
 	 val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
 	 newpplpolyhedron.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
 	 new PPLCPolyhedron(newpplpolyhedron)
@@ -108,21 +109,8 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
 
   override def hashCode: Int = pplpolyhedron.hashCode
   
-  override def toString : String = pplpolyhedron.toString
-  
-  /**
-   * Converts a sequence of homogeneous and in-homogeneous coefficients into a `Linear_Expression`, which
-   * is a PPL internal object.
-   * @param coeff the homogeneous coefficients.
-   * @param known the in-homogeneous coefficient.
-   */
-  private def toPPLLinearExpression(coeff:Array[Double], known:Double): Linear_Expression = {
-    var le : Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(known.toInt))
-	for (i <- 0 to (coeff.length - 1)) {
-	  le = le.sum ( (new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(coeff(i).toInt)) ))
-	}
-    return le
-  }
+  def mkString(vars: IndexedSeq[String]): Seq[String] = 
+    PPLUtils.replaceOutputWithVars(pplpolyhedron.toString, vars)
 }
 
 /**
