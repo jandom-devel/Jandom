@@ -32,7 +32,7 @@ package domains
  */
 
 final class BoxDouble(private val low: Array[Double], private val high: Array[Double]) extends NumericalProperty[BoxDouble] {
-  require(normalized, "The paramters low:" + low.mkString(",") + " and high: " + high.mkString(",") + " are not normalized")
+  require(normalized, "The parameters low:" + low.mkString(",") + " and high: " + high.mkString(",") + " are not normalized")
 
   /**
    * This checks whether the box is normalized. This should always be the case. A box is normalized when
