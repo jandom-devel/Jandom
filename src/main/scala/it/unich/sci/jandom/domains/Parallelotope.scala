@@ -91,19 +91,19 @@ class Parallelotope(
           else if  (l2 >= l1 && u2 <= u1)
             if (ownedBy==1) 2 else 3
           else if (l2 <= u1 && l2 >= l1 && u2 >= u1)
-            2
+            3
           else if (l2 <= l1 && u2 >= l1 && u2 <= u1)
-            2
-          else 3
+            3
+          else 4
         } else if (l1 == l2 && !l1.isInfinity && !l2.isInfinity)
-          4
+          5
         else if (u1 == u2 && !u1.isInfinity && !u2.isInfinity)
-          4
+          5
         else if (!l1.isInfinity && !l2.isInfinity)
-          5
+          6
         else if (!u1.isInfinity && !u2.isInfinity)
-          5
-        else 7
+          6
+        else 100
       return (v, l1 min l2, u1 max u2, p)
     }
 
