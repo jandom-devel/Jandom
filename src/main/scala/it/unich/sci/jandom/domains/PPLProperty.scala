@@ -52,7 +52,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
   def widening(that: PPLProperty[PPLNativeProperty]): PPLProperty[PPLNativeProperty] = {
     val newpplobject = domain.copyConstructor(pplobject)
     domain.upper_bound_assign(newpplobject, that.pplobject)
-    domain.widening_assign(newpplobject, that.pplobject)
+    domain.widening_assign(newpplobject, pplobject)
     new PPLProperty(domain, newpplobject)
   }
 
