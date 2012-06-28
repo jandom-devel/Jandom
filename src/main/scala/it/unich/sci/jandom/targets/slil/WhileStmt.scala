@@ -37,8 +37,8 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     val widening = params.wideningFactory(this, 1)
     val narrowing = params.narrowingFactory(this, 1)
     do {
-      invariant = newinvariant
-      newinvariant = widening(invariant, input union body.analyze(condition.analyze(invariant), params, ann))
+      invariant = newinvariant 
+      newinvariant = widening(invariant, body.analyze(condition.analyze(invariant), params, ann))
     } while (newinvariant > invariant)
     do {
       invariant = newinvariant
