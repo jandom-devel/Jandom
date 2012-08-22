@@ -116,10 +116,18 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
   }
 
   override def hashCode: Int = pplobject.hashCode
-
+    
   def mkString(vars: IndexedSeq[String]): Seq[String] = {
-    //val cs: Constraint_System = domain.minimized_constraints(pplobject)
-    PPLUtils.replaceOutputWithVars(pplobject.toString, vars)
+    import collection.JavaConversions._
+    
+    val vs = new Variable_Stringifier {
+      def stringify(x: Long) = vars(x.toInt)
+    }
+    Variable.setStringifier(vs)    
+    val result = for (c <- domain.minimized_constraints(pplobject))
+      yield c.toString        
+    Variable.setStringifier(null)
+    result
   }
 }
 
@@ -144,7 +152,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   private val strictlyContainsHandle = PPLClass.getMethod("strictly_contains", PPLClass)
   private val isEmptyHandle = PPLClass.getMethod("is_empty")
   private val isUniverseHandle = PPLClass.getMethod("is_universe")
-  //private val minimizedConstraintsHandle = PPLClass.getMethod("minimized_constraints")
+  private val minimizedConstraintsHandle = PPLClass.getMethod("minimized_constraints")
 
   private[domains] def constructor(n: Int, el: Degenerate_Element) = constructorHandle.newInstance(n: java.lang.Integer, el)
   private[domains] def copyConstructor(pplobject: PPLNativeProperty) = copyConstructorHandle.newInstance(pplobject)
@@ -157,7 +165,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   private[domains] def strictly_contains(me: PPLNativeProperty, that: PPLNativeProperty) = strictlyContainsHandle.invoke(me, that).asInstanceOf[Boolean]
   private[domains] def is_empty(me: PPLNativeProperty) = isEmptyHandle.invoke(me).asInstanceOf[Boolean]
   private[domains] def is_universe(me: PPLNativeProperty) = isUniverseHandle.invoke(me).asInstanceOf[Boolean]
-  //private[domains] def minimized_constraints(me: PPLNativeProperty) = minimizedConstraintsHandle.invoke(me).asInstanceOf[Constraint_System]
+  private[domains] def minimized_constraints(me: PPLNativeProperty) = minimizedConstraintsHandle.invoke(me).asInstanceOf[Constraint_System]
 
   def full(n: Int): PPLProperty[PPLNativeProperty] = {
     val pplobject = constructor(n, Degenerate_Element.UNIVERSE)
