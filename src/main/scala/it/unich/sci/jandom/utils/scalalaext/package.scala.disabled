@@ -24,7 +24,8 @@ import scalala.tensor.dense.DenseMatrix
 import scalala.operators._
 
 /**
- * This package extends scalala with support for BigDecimal.
+ * This package extends scalala with support for BigDecimal. It requires a patched version
+ * of Scalala, hence it is disabled at the moment.
  * @author Gianluca Amato <g.amato@unich.it>
  */
 
