@@ -1,0 +1,50 @@
+Scalala is a high performance numeric linear algebra library for Scala,
+with rich Matlab-like operators on vectors and matrices; a library of
+numerical routines; support for plotting.
+
+This software is released under the LGPL.  See LICENSE for details. 
+
+(c) 2008- | Daniel Ramage | dramage | http://cs.stanford.edu/~dramage 
+
+With contributions from:
+  David Hall <dlwh>
+  Jason Zaugg <retronym>
+  Alexander Lehmann <afwlehmann>
+  Jonathan Merritt <lancelet>
+  aerskine
+  And others (email me if you've contributed code and aren't listed)
+
+Building upon and/or borrowing from solid libraries:
+  JFreeChart  http://www.jfree.org/jfreechart/
+  Netlib      http://code.google.com/p/netlib-java/
+  MTJ         http://code.google.com/p/matrix-toolkits-java/ 
+  iText       http://www.itextpdf.com/
+
+The source currently lives on github.  You can download a copy:
+
+  git clone https://github.com/scalala/Scalala.git
+
+Scalala is built with sbt, which is included in the repository or
+can be downloaded from https://github.com/harrah/xsbt/wiki.
+
+Run sbt (./sbt) and invoke one or more of the following targets:
+  update      -- Downloads scalala's dependencies
+  compile     -- Builds the library
+  test        -- Runs the unit tests
+  doc         -- Builds scaladoc for the public API
+  proguard    -- Builds a distributable jar
+  gen-idea    -- Generate an IntelliJ IDEA project
+
+For project maintainers, the project can be deployed with:
+  publish
+
+To run an interactive console, either do so through sbt (console or
+console-quick) or run sbt's proguard target, and then:
+  java -jar target/scala_2.8.1/scalala*.min.jar
+
+Documentation is available here:
+  https://github.com/scalala/Scalala/wiki/Scalala
+
+And informal support is available here:
+  http://groups.google.com/group/scalala
+
