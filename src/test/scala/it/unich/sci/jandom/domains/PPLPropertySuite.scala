@@ -68,15 +68,15 @@ class PPLPropertySuite extends FunSuite {
   test ("string conversion") {
     val obj = full.linearInequality(Array(1,1,0),1)
     val obj2 = obj.linearInequality(Array(1,0,0), 2)
-    expect( Seq("x <= -2", "x + y <= -1") ) { obj2.mkString(IndexedSeq("x","y","z")) }
-    expect( "[ v0 <= -2 , v0 + v1 <= -1 ]" ) { obj2.toString }       
+    expect( Seq("-x >= 2", "-x - y >= 1") ) { obj2.mkString(IndexedSeq("x","y","z")).toSeq }
+    expect( "[ -v0 >= 2 , -v0 - v1 >= 1 ]" ) { obj2.toString }       
   }
   
   test ("string conversion for high-dimensional spaces") {
     val a = Array.fill(33)(0.0)
     a(27) = 1.0
     val obj3 = octDomain.full(33).linearInequality(a,0)
-    expect ( "[ v27 <= 0 ]" ) { obj3.toString }
+    expect ( "[ -v27 >= 0 ]" ) { obj3.toString }
   }
 
 }
