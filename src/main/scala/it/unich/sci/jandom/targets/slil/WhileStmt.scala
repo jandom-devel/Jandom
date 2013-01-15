@@ -28,22 +28,41 @@ import targets.linearcondition.LinearCond
  * @param body the body of the statement
  */
 case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
-  var savedInvariant: NumericalProperty[_] = null
-  var savedFirst: NumericalProperty[_] = null
+  var lastInvariant: NumericalProperty[_] = null
+  var lastBodyResult: NumericalProperty[_] = null
 
   override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = {
-    var newinvariant = input
-    var invariant = input
+    import params.WideningScope._
+    
     val widening = params.wideningFactory(this, 1)
     val narrowing = params.narrowingFactory(this, 1)
-    do {
-      invariant = newinvariant 
-      newinvariant = widening(invariant, body.analyze(condition.analyze(invariant), params, ann))
-    } while (newinvariant > invariant)
+    
+    var bodyResult = if (lastBodyResult != null) lastBodyResult.asInstanceOf[Property] else input.empty
+    var newinvariant =  if (lastInvariant != null) lastInvariant.asInstanceOf[Property] else input.empty
+    if (params.wideningScope == Random) newinvariant = newinvariant union input
+    var invariant = newinvariant
     do {
       invariant = newinvariant
-      newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, ann))
-    } while (newinvariant < invariant)
+      params.wideningScope  match {        
+        case Random =>
+          bodyResult = body.analyze(condition.analyze(invariant), params, ann)
+          newinvariant = widening(invariant,bodyResult)	
+        case BackEdges => 
+          newinvariant = input union bodyResult
+          bodyResult = body.analyze(condition.analyze(input union newinvariant), params, ann)
+        case Output => 
+          newinvariant = widening(invariant,input union bodyResult)
+          bodyResult = body.analyze(condition.analyze(newinvariant), params, ann)         
+      }
+      println(invariant)
+      println(newinvariant)
+      
+    } while (newinvariant > invariant)
+    if (params.narrowingStrategy == params.NarrowingStrategy.Separate)   
+    	do {
+    		invariant = newinvariant
+    		newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, ann))
+    	} while (newinvariant < invariant)
     ann((this, 1)) = invariant
     if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)    
     return condition.opposite.analyze(invariant)

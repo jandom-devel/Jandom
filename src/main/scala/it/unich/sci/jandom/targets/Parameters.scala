@@ -47,4 +47,41 @@ class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val do
    * This parameter determines whether results are saved for each program point or only for widening points.
    */
   var allPPResult = true
+  
+  /**
+   * This objects determines the scope for widenings. The available alternatives are:
+   * - Output: standard application of widening at the exit of join nodes
+   * - BackEdges: widening is applied at the entrance of join nodes, but only on back edges
+   * - Random: the scope used on Random. Widening is applied at the exit of join nodes, but join is only
+   *           applied once.
+   */
+  object WideningScope extends Enumeration {
+    type WideningScope = Value
+    val Output, BackEdges, Random = Value
+  }
+  
+  /**
+   * This parameter determines whether standard or local widening is used. At the moment, this is only supported
+   * by the SLSL target.
+   */
+  var wideningScope = WideningScope.Output
+  
+  /**
+   * This ojects determines the strategy used for narrowings. The available alternatives are:
+   * - None: no narrowing is performed
+   * - Separate: first only widenings are perfomed, then all narrowings
+   * - Restart: the standard Random strategy of perfoming Narrowing intertwined with Widening
+   * - Continue: similar to Restart, but during narrowing of outer loops, inner loops only performs narrowing
+   * At the moment, this is only supported by the SLIL target.
+   */
+  object NarrowingStrategy extends Enumeration {
+    type NarrowingStrategy = Value
+    val None, Separate, Restart, Continue = Value
+  }
+  
+  /**
+   * This parameter determine the interlacing strategy between narrowing and widening
+   */
+  var narrowingStrategy = NarrowingStrategy.Restart
+  
 }

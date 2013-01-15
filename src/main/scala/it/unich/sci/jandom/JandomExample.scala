@@ -26,6 +26,7 @@ import narrowings._
 import ppfactories._
 import parma_polyhedra_library.Octagonal_Shape_double
 import parma_polyhedra_library.Parma_Polyhedra_Library
+import parma_polyhedra_library.Double_Box
 
 /**
  * Example program using ''Jandom''.
@@ -34,13 +35,14 @@ import parma_polyhedra_library.Parma_Polyhedra_Library
 object JandomExample extends App {
 
   {
-    val source = scala.io.Source.fromFile("examples/Random/xyline.R").getLines.mkString("\n")
+    val source = scala.io.Source.fromFile("examples/local-widening.R").getLines.mkString("\n")
     val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
-      val domain = new domains.PPLDomain[Octagonal_Shape_double]
-      val params = new targets.Parameters[domains.PPLProperty[Octagonal_Shape_double],SLILStmt](domain, program)
-      params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing, 2), program)
+      val domain =  domains.BoxDouble
+      val params = new targets.Parameters[BoxDouble,SLILStmt](domain, program)
+      params.narrowingStrategy = params.NarrowingStrategy.None
+      params.wideningScope = params.WideningScope.Output
       val ann = program.analyze(params)
       println(program.mkString(ann))
     } else {
@@ -55,6 +57,7 @@ object JandomExample extends App {
       val program = parsed.get
       val params = new targets.Parameters(PPLCPolyhedron, program)
       params.wideningFactory = MemoizingFactory(DelayedWideningFactory(DefaultWidening, 2), program)
+      params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing, 2), program)
       println(program)
       val ann = program.analyze(params)
       println(ann)

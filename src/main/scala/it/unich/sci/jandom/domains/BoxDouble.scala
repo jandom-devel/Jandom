@@ -128,7 +128,6 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * This is the standard widening on boxes based on [[http://www.di.ens.fr/~cousot/COUSOTpapers/ISOP76.shtml CC76]].
    */
   def widening(that: BoxDouble) = {
-    require(dimension == that.dimension)
     val newlow = (low, that.low).zipped.map((l1, l2) => if (l1 == Double.PositiveInfinity) l2 else if (l1 <= l2) l1 else Double.NegativeInfinity)
     val newhigh = (high, that.high).zipped.map((l1, l2) => if (l1 == Double.NegativeInfinity) l2 else if (l1 >= l2) l1 else Double.PositiveInfinity)
     new BoxDouble(newlow, newhigh)
