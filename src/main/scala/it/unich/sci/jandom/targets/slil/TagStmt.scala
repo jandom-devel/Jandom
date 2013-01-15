@@ -19,23 +19,26 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import targets.linearcondition.LinearCond
 import domains.NumericalProperty
-import targets.Parameters
+import targets.{ LinearForm, Parameters, Environment }
 import annotations.{ BlackBoard, PerProgramPointAnnotation }
 
 /**
- * The class for the statement assume. It takes a linear condition as a parameter, and forces this condition to hold. It is
- * somewhat equivalent to "if (not cond) loop-forever".
- * @param cond the linear condition
+ * The class for the assignment statement "variable := linearForm".
+ * @tparam T the type of the numerical expression involved in the assignment. It should be endowed with an implicit Numeric[T] object.
+ * @param variable the variable we are assign a value to
+ * @param linearForm the linear form of the assignment
+ * @param numeric the implicit Numeric[T] object
  */
-case class AssumeStmt(cond: LinearCond) extends SLILStmt {
+case class TagStmt[T](tag: Int) extends SLILStmt {
   import AnalysisPhase._
-  
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], phase: AnalysisPhase, 
-      ann: Annotation[Property]): Property =
-    cond.analyze(input)
-    
-  override def mkString(ann: Annotation[_], level:Int, ppspec: PrettyPrinterSpec) =
-    ppspec.indent(level) + "assume(" + cond + ")"
+
+  override def analyze[Property <: NumericalProperty[Property]](input: Property,  params: Parameters[Property], 
+      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
+    params.tag(tag) = input
+    input
+  }
+
+  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec) =
+    ppspec.indent(level) + "tag(" + tag + ")"
 }

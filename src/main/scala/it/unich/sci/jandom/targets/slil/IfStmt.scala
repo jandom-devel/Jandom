@@ -32,12 +32,15 @@ import annotations.{ BlackBoard, PerProgramPointAnnotation }
  */
 
 case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
+  import AnalysisPhase._
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], 
+      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
+    
     val thenStart = condition.analyze(input)
     val elseStart = condition.opposite.analyze(input)
-    val thenEnd = then_branch.analyze(thenStart, params, ann)
-    val elseEnd = else_branch.analyze(elseStart, params, ann)
+    val thenEnd = then_branch.analyze(thenStart, params, phase, ann)
+    val elseEnd = else_branch.analyze(elseStart, params, phase, ann)
     if (params.allPPResult) {
       ann((this, 1)) = thenStart
       ann((this, 2)) = elseStart

@@ -42,5 +42,39 @@ class SLILProgramSuite extends FunSuite {
     val params = new targets.Parameters[BoxDouble,SLILStmt](BoxDouble,program)
     val ann = program.analyze(params)
     expect ( BoxDouble(Array(10), Array(11)) ) { ann(program,2) }
-  }  
+  } 
+  
+  test("input vs output widening") {
+    val source="""
+      localwidening = function() {
+    		i = 0
+    		while (TRUE) {
+              tag(0)
+    		  if (brandom()) 
+    		     i = 1
+    		  else
+    		     i = -1
+            }
+      }     
+    """
+    val parsed = parsers.RandomParser().parseProgram(source)
+    val program = parsed.get
+    val domain =  domains.BoxDouble
+    
+    val params = new targets.Parameters[BoxDouble,SLILStmt](domain, program)
+    params.narrowingStrategy = targets.NarrowingStrategy.None
+    params.wideningScope = targets.WideningScope.Output
+    program.analyze(params)
+    expect ( BoxDouble.full(1) ) { params.tag(0) }
+    
+    params.narrowingStrategy = targets.NarrowingStrategy.None
+    params.wideningScope = targets.WideningScope.Random
+    program.analyze(params)
+    expect ( BoxDouble.full(1) ) { params.tag(0) }
+    
+    params.narrowingStrategy = targets.NarrowingStrategy.None
+    params.wideningScope = targets.WideningScope.BackEdges
+    program.analyze(params)
+    expect ( BoxDouble(Array(-1), Array(1)) ) { params.tag(0) }
+  }
 }

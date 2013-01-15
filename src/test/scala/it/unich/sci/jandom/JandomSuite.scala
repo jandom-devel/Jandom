@@ -26,6 +26,7 @@ import org.scalatest.FunSuite
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
+
 class JandomSuite extends FunSuite {
   override def nestedSuites = List ( 
       new domains.DomainsSuite, 

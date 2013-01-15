@@ -41,6 +41,7 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
   val variable: Parser[Int] = ident ^^ { env.getBindingOrAdd(_) }
 
   private val stmt: Parser[SLILStmt] =
+    "tag" ~> "(" ~> wholeNumber <~ ")" ^^ { case s => TagStmt(s.toInt) } |
     "assume" ~> "(" ~> condition <~ ")" ^^ { AssumeStmt(_) } |
       ("if" ~> "(" ~> condition <~ ")") ~ stmt ~ opt("else" ~> stmt) ^^ {
         case c ~ s1 ~ Some(s2) => IfStmt(c, s1, s2)

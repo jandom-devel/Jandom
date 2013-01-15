@@ -29,13 +29,16 @@ import scala.collection.mutable.ListBuffer
  * @param stmts the sequence of statements that form the compound statement
  */
 case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = {
+  import AnalysisPhase._
+
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], 
+      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
     var current = input
     var index = 0
     for (stmt <- stmts) {
       if (index > 0 && params.allPPResult) ann((this, index)) = current
       index += 1
-      current = stmt.analyze(current, params, ann)
+      current = stmt.analyze(current, params, phase, ann)
     }
     current
   }

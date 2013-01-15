@@ -31,6 +31,7 @@ abstract class SLILStmt extends Target {
   type ProgramPoint = (SLILStmt, Int)
   type Tgt = SLILStmt
   type Annotation[Property] = scala.collection.mutable.HashMap[ProgramPoint,Property]  
+  import AnalysisPhase._
   
   def getAnnotation[Property] = new Annotation[Property]
 
@@ -48,7 +49,7 @@ abstract class SLILStmt extends Target {
    * @return the string representation of the program
    */
   def mkString(ann: Annotation[_], level: Int = 0, ppspec: PrettyPrinterSpec = PrettyPrinterSpec()): String
-
+  
   /**
    * The analyzer for a SLIL statement. This methods is different from the one declared in Target since it takes
    * an annotations as a parameter, and update it with the result of the analysis. Moreover, it returns a numerical
@@ -56,15 +57,17 @@ abstract class SLILStmt extends Target {
    * @tparam Property the class of the properties we want to analyze
    * @param input the property at the program point before the statement
    * @param params the parameter which control the analysis
+   * @param phase the current analysis phase
    * @param ann an annotation where to put informations on the inner program points
    * @return the property at the end of the statement
    */
-  def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = input
+  def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], phase: AnalysisPhase, 
+      ann: Annotation[Property]): Property = input
 
   def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property] = {
     val ann = new Annotation[Property]()
     val input = params.domain.full(program.environment.size)
-    analyze(input, params, ann)
+    analyze(input, params, AscendingRestart, ann)
     return ann
   }
   

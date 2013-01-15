@@ -20,11 +20,8 @@ package it.unich.sci.jandom
 package targets.slil
 
 import domains.NumericalProperty
-import targets.{ Environment, LinearForm, Target }
-import widenings.Widening
+import targets._
 import annotations._
-import scala.collection.mutable.HashMap
-import scala.collection.mutable.ListBuffer
 
 /**
  * The target for a simple imperative language, similar to the one analyzed
@@ -36,7 +33,9 @@ import scala.collection.mutable.ListBuffer
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 case class SLILProgram(private val env: Environment, private val inputVars: Seq[Int], private val stmt: SLILStmt) extends SLILStmt {
-
+  import AnalysisPhase._
+  import NarrowingStrategy._
+  
   program = this
 
   /**
@@ -54,9 +53,16 @@ case class SLILProgram(private val env: Environment, private val inputVars: Seq[
       spaces + '}'    
   }
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], 
+      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
     if (params.allPPResult) ann((this, 1)) = input
-    val output = stmt.analyze(input, params, ann)
+    val output = params.narrowingStrategy match {
+      case Separate => 
+        stmt.analyze(input, params, Ascending, ann)
+     	stmt.analyze(input, params, Descending, ann) 
+      case _ =>
+    	stmt.analyze(input, params, Ascending, ann)
+    }
     if (params.allPPResult) ann((this, 2)) = output
     return output
   }

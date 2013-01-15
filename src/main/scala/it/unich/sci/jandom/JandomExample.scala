@@ -35,14 +35,14 @@ import parma_polyhedra_library.Double_Box
 object JandomExample extends App {
 
   {
-    val source = scala.io.Source.fromFile("examples/local-widening.R").getLines.mkString("\n")
+    val source = scala.io.Source.fromFile("examples/nested.R").getLines.mkString("\n")
     val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
       val domain =  domains.BoxDouble
       val params = new targets.Parameters[BoxDouble,SLILStmt](domain, program)
-      params.narrowingStrategy = params.NarrowingStrategy.None
-      params.wideningScope = params.WideningScope.Output
+      params.narrowingStrategy = targets.NarrowingStrategy.Restart
+      params.wideningScope = targets.WideningScope.BackEdges
       val ann = program.analyze(params)
       println(program.mkString(ann))
     } else {

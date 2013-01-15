@@ -32,8 +32,10 @@ import annotations.{ BlackBoard, PerProgramPointAnnotation }
  */
 case class AssignStmt[T](variable: Int, linearForm: LinearForm[T])(implicit numeric: Numeric[T]) extends SLILStmt {
   import numeric._
+  import AnalysisPhase._
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property,  params: Parameters[Property], 
+      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
     val coefficients = linearForm.coefficients
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
   }

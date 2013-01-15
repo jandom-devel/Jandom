@@ -28,42 +28,56 @@ import targets.linearcondition.LinearCond
  * @param body the body of the statement
  */
 case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
+  import AnalysisPhase._
+  
   var lastInvariant: NumericalProperty[_] = null
   var lastBodyResult: NumericalProperty[_] = null
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], ann: Annotation[Property]): Property = {
-    import params.WideningScope._
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], 
+      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
+    import targets.WideningScope._
+    import targets.NarrowingStrategy._
     
+    // Determines widening operators to use
     val widening = params.wideningFactory(this, 1)
     val narrowing = params.narrowingFactory(this, 1)
     
-    var bodyResult = if (lastBodyResult != null) lastBodyResult.asInstanceOf[Property] else input.empty
-    var newinvariant =  if (lastInvariant != null) lastInvariant.asInstanceOf[Property] else input.empty
-    if (params.wideningScope == Random) newinvariant = newinvariant union input
+    // Determines initial value of the analysis, depending on the current phase
+    var bodyResult = if (lastBodyResult != null && phase != AscendingRestart) lastBodyResult.asInstanceOf[Property] else input.empty
+    var newinvariant = if (lastInvariant != null && phase != AscendingRestart) lastInvariant.asInstanceOf[Property] else input.empty
     var invariant = newinvariant
-    do {
+
+    // If needed, perform ascending phase. If in AscendingRestart, perform first step in AscendingRestart,
+    // and later steps in Ascending
+    if (phase == Ascending || phase == AscendingRestart) do {
+      if (params.wideningScope == Random) newinvariant = newinvariant union input
+      var currentPhase = phase
       invariant = newinvariant
       params.wideningScope  match {        
         case Random =>
-          bodyResult = body.analyze(condition.analyze(invariant), params, ann)
+          bodyResult = body.analyze(condition.analyze(invariant), params, currentPhase, ann)
           newinvariant = widening(invariant,bodyResult)	
         case BackEdges => 
           newinvariant = input union bodyResult
-          bodyResult = body.analyze(condition.analyze(input union newinvariant), params, ann)
+          bodyResult = body.analyze(condition.analyze(input union newinvariant), params, currentPhase, ann)
         case Output => 
           newinvariant = widening(invariant,input union bodyResult)
-          bodyResult = body.analyze(condition.analyze(newinvariant), params, ann)         
+          bodyResult = body.analyze(condition.analyze(newinvariant), params, currentPhase, ann)         
       }
-      println(invariant)
-      println(newinvariant)
-      
+      currentPhase = Ascending
     } while (newinvariant > invariant)
-    if (params.narrowingStrategy == params.NarrowingStrategy.Separate)   
-    	do {
-    		invariant = newinvariant
-    		newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, ann))
-    	} while (newinvariant < invariant)
+      
+    // If needed, perform descending step
+    if (phase == Descending || params.narrowingStrategy == Restart || params.narrowingStrategy == Continue ) {
+      val newphase = if (params.narrowingStrategy == Restart) AscendingRestart else Descending 
+      do {
+    	invariant = newinvariant
+    	newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, newphase, ann))
+      } while (newinvariant < invariant)
+    }
     ann((this, 1)) = invariant
+    lastInvariant = invariant
+    lastBodyResult = bodyResult
     if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)    
     return condition.opposite.analyze(invariant)
   }
