@@ -44,4 +44,9 @@ package object jandom {
    * This is a string representation of Jandom's version
    */
   val version = major_version + "." + minor_version + "." + patchlevel_version
+  
+  /**
+   * This is the name of the software
+   */
+  val name = "Jandom"
 }

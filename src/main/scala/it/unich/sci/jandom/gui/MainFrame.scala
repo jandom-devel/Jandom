@@ -26,6 +26,12 @@ class MainFrame extends Frame {
       if ( editorPane.ensureSaved ) sys.exit(0)
     }
   }
+  
+  val aboutAction = new Action("About") {
+    def apply() {
+      AboutDialog.visible = true
+    }
+  }
 
   /**
    * Closing the frame causes the program to exit
@@ -81,6 +87,9 @@ class MainFrame extends Frame {
         contents += new MenuItem(editorPane.saveAsAction)
         contents += new Separator
         contents += new MenuItem(quitAction)
+      }
+      contents += new Menu("Help") {
+        contents += new MenuItem(aboutAction)
       }
     }
 
