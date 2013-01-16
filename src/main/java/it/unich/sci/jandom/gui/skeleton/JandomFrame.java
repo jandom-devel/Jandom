@@ -1,6 +1,7 @@
-package it.unich.sci.jandom.gui;
+package it.unich.sci.jandom.gui.skeleton;
 
-import it.unich.sci.jandom.domains.*;
+import it.unich.sci.jandom.gui.AnalysisController;
+import it.unich.sci.jandom.gui.EditorController;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
