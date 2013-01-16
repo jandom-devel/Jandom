@@ -10,5 +10,7 @@ libraryDependencies ++= Seq(
   "org.scalala" % "scalala_2.9.2" % "1.0.0.RC3-SNAPSHOT"
 )
 
+libraryDependencies <+= scalaVersion { "org.scala-lang" % "scala-swing" % _ }
+
 fork  := true
 

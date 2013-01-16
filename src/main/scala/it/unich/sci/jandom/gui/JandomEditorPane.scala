@@ -10,7 +10,7 @@ import java.awt.event.KeyEvent
 import java.awt.event.InputEvent
 
 class JandomEditorPane extends EditorPane {
-  private val fileChooser = new FileChooser()
+  private val fileChooser = new FileChooser(new File("."))
   private var modifiedSource = false
   private var currentFile: Option[File] = None
   clear()
@@ -43,7 +43,8 @@ class JandomEditorPane extends EditorPane {
    * Asks whether the user wants to save the current editor content, and save it in case. Returns false
    * if the current action should be cancelled.
    */
-  private def askConfirmation(): Boolean = {
+  def ensureSaved(): Boolean = {
+    if (! modifiedSource) return true
     val retval = Dialog.showConfirmation(this, "The current file has meed modified. Do you want to save it?",
       "Save Resource", Dialog.Options.YesNoCancel, Dialog.Message.Question)
     retval match {
@@ -82,7 +83,7 @@ class JandomEditorPane extends EditorPane {
    * Clear the current content.
    */
   def clear() {
-    if (modifiedSource && !askConfirmation()) return ;
+    if (!ensureSaved()) return ;
     text = ""
     currentFile = None
     modifiedSource = false
@@ -93,8 +94,9 @@ class JandomEditorPane extends EditorPane {
    * Open a new file.
    */
   def open() {
-    if (modifiedSource && !askConfirmation()) return ;
+    if (!ensureSaved()) return ;
     val returnVal = fileChooser.showOpenDialog(this)
+    if (returnVal != FileChooser.Result.Approve) return ;
     val file = fileChooser.selectedFile
     try {
       peer.read(new FileReader(file), file)
