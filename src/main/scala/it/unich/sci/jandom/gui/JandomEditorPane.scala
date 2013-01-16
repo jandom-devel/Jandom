@@ -1,21 +1,16 @@
 package it.unich.sci.jandom
 package gui
 
-import javax.swing.text.JTextComponent
-import javax.swing.JFileChooser
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
-import javax.swing.JOptionPane
-import java.io.FileReader
+import scala.swing._
+import java.io._
 import javax.swing.event.DocumentListener
 import javax.swing.event.DocumentEvent
+import javax.swing.KeyStroke
+import java.awt.event.KeyEvent
+import java.awt.event.InputEvent
 
-/**
- * This is the controller for the Editor tab in the GUI.
- */
-class EditorController(private val pane: JTextComponent) {
-  private val fileChooser = new JFileChooser(System.getProperty("user.dir"))
+class JandomEditorPane extends EditorPane {
+  private val fileChooser = new FileChooser()
   private var modifiedSource = false
   private var currentFile: Option[File] = None
   clear()
@@ -28,14 +23,14 @@ class EditorController(private val pane: JTextComponent) {
     val file = (currentFile, forceDialog) match {
       case (Some(f), false) => f
       case _ =>
-        val returnVal = fileChooser.showSaveDialog(pane);
-        if (returnVal == JFileChooser.APPROVE_OPTION)
-          fileChooser.getSelectedFile()
+        val returnVal = fileChooser.showSaveDialog(this);
+        if (returnVal == FileChooser.Result.Approve)
+          fileChooser.selectedFile
         else
           return false
     }
     try {
-      pane.write(new FileWriter(file))
+      peer.write(new FileWriter(file))
       modifiedSource = false
       currentFile = Some(file)
     } catch {
@@ -49,22 +44,21 @@ class EditorController(private val pane: JTextComponent) {
    * if the current action should be cancelled.
    */
   private def askConfirmation(): Boolean = {
-    val retval = JOptionPane.showConfirmDialog(pane, "The current file has meed modified. Do you want to save it?",
-      "Save Resource", JOptionPane.YES_NO_CANCEL_OPTION,
-      JOptionPane.QUESTION_MESSAGE, null)
+    val retval = Dialog.showConfirmation(this, "The current file has meed modified. Do you want to save it?",
+      "Save Resource", Dialog.Options.YesNoCancel, Dialog.Message.Question)
     retval match {
-      case JOptionPane.YES_OPTION => doSave(false)
-      case JOptionPane.NO_OPTION => true
-      case JOptionPane.CANCEL_OPTION => false
+      case Dialog.Result.Yes => doSave(false)
+      case Dialog.Result.No => true
+      case Dialog.Result.Cancel => false
     }
   }
 
   /**
-   * Set the DocumentListener for the Editor. It should be called after every method which change 
+   * Set the DocumentListener for the Editor. It should be called after every method which change
    * the current Document.
    */
   private def setDocumentListener() {
-    pane.getDocument().addDocumentListener(new DocumentListener {
+    peer.getDocument().addDocumentListener(new DocumentListener {
       def changedUpdate(e: DocumentEvent) { listen(e) };
       def insertUpdate(e: DocumentEvent) { listen(e) };
       def removeUpdate(e: DocumentEvent) { listen(e) };
@@ -89,7 +83,7 @@ class EditorController(private val pane: JTextComponent) {
    */
   def clear() {
     if (modifiedSource && !askConfirmation()) return ;
-    pane.setText("")
+    text = ""
     currentFile = None
     modifiedSource = false
     setDocumentListener()
@@ -100,22 +94,34 @@ class EditorController(private val pane: JTextComponent) {
    */
   def open() {
     if (modifiedSource && !askConfirmation()) return ;
-    val returnVal = fileChooser.showOpenDialog(pane);
-    if (returnVal == JFileChooser.APPROVE_OPTION) {
-      val file = fileChooser.getSelectedFile()
-      try {
-        pane.read(new FileReader(file), file)
-      } catch {
-        case e: IOException =>
-      }
-      currentFile = Some(file)
-      modifiedSource = false
-      setDocumentListener()
+    val returnVal = fileChooser.showOpenDialog(this)
+    val file = fileChooser.selectedFile
+    try {
+      peer.read(new FileReader(file), file)
+    } catch {
+      case e: IOException =>
     }
+    currentFile = Some(file)
+    modifiedSource = false
+    setDocumentListener()
+  }
+
+  val newAction = new Action("New") {
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK))
+    def apply() { clear() }
+  }
+
+  val openAction = new Action("Open...") {
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
+    def apply() { open() }
   }
   
-  /**
-   * Returns the current text of the editor
-   */
-  def text = pane.getText()
+  val saveAction = new Action("Save") {
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK))
+    def apply() { save() }
+  }
+  
+  val saveAsAction = new Action("Save As") {
+    def apply() { open() }
+  } 
 }

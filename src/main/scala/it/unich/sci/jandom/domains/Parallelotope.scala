@@ -37,7 +37,7 @@ class Parallelotope(
   extends NumericalProperty[Parallelotope] {
 
   require((low.length == A.numRows) && (low.length == high.length) && A.isSquare)
-
+    
   def widening(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
     if (isEmpty) that

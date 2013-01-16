@@ -1,12 +1,11 @@
 package it.unich.sci.jandom
 package gui
 
-import it.unich.sci.jandom.gui.skeleton.JandomFrame;
+import scala.swing.SimpleSwingApplication
 
 /**
  * The main GUI of Jandom.
  */
-object JandomGUI extends App {
-  val frame = new JandomFrame()
-  frame.setVisible(true);
+object JandomGUI extends SimpleSwingApplication {
+	def top = new MainFrame()
 }
