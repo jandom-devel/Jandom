@@ -30,5 +30,5 @@ package it.unich.sci.jandom
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 package object domains {
-
+	
 }

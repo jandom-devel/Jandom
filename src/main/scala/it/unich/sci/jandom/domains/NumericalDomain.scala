@@ -38,6 +38,15 @@ trait NumericalDomain[Property <: NumericalProperty[Property]] {
    * @param n the dimension of the environment space.
    * @return the empty n-dimensional space.
    */
-  def empty(n:Int): Property
-  
+  def empty(n:Int): Property  
+}
+
+/**
+ * Object which returns informations on the current available domains
+ */
+object NumericalDomain {
+  /**
+   * The list of available standard domains
+   */
+  def standardDomainList() = Seq(BoxDouble, PPLBoxDouble, PPLCPolyhedron)
 }
