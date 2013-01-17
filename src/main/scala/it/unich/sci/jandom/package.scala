@@ -48,5 +48,5 @@ package object jandom {
   /**
    * This is the name of the software
    */
-  val name = "Jandom"
+  val softwareName = "Jandom"
 }

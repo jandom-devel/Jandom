@@ -14,7 +14,7 @@ class MainFrame extends Frame {
 
   val domainList = Seq[NumericalDomain[T] forSome { type T <: NumericalProperty[T] }](domains.BoxDouble, 
       domains.PPLBoxDouble, domains.PPLCPolyhedron)
-  val editorPane = new JandomEditorPane
+  val editorPane = new JandomEditorPane(this)
   val domainComboBox = new ComboBox(domainList)
 
   /** 
@@ -50,9 +50,9 @@ class MainFrame extends Frame {
         val outputPane = new EditorPane
         val parameterPanel = new GridBagPanel {
           border = Swing.EmptyBorder(5, 5, 5, 5)
-          layout(new Label("Domain:")) = new Constraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER,
+          layout(new Label("Domain:")) = new Constraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE,
             GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0)
-          layout(domainComboBox) = new Constraints(1, 0, 1, 1, 1.0, 1.0, GridBagConstraints.CENTER,
+          layout(domainComboBox) = new Constraints(1, 0, 1, 1, 1.0, 1.0, GridBagConstraints.BASELINE,
             GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0)
         }
         pages += new TabbedPane.Page("Editor", editorPane)

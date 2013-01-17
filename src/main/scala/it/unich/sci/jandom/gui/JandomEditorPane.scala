@@ -12,15 +12,55 @@ import javax.swing.undo.UndoManager
 import javax.swing.event.UndoableEditListener
 import javax.swing.event.UndoableEditEvent
 
-class JandomEditorPane extends EditorPane {
+class JandomEditorPane(val frame: Frame) extends EditorPane {
   val fileChooser = new FileChooser(new File("."))
   val actionMap = Map(peer.getActions() map
     { action => action.getValue(javax.swing.Action.NAME) -> action }: _*)
-  var undo = new UndoManager
-  var modifiedSource = false
-  var currentFile: Option[File] = None
+  var undo = new UndoManager  
+  var _currentFile: Option[File] = None
+  var _modified = false
 
-  clear()
+  def modified = _modified
+  def modified_=(v: Boolean) {
+    _modified = v
+    updateFrameTitle()
+  }
+  
+  def currentFile = _currentFile
+  def currentFile_= (f: Option[File]) {
+    _currentFile = f
+    updateFrameTitle()
+  }
+
+  peer.getDocument().addDocumentListener(new DocumentListener {
+    def changedUpdate(e: DocumentEvent) { listen(e) };
+    def insertUpdate(e: DocumentEvent) { listen(e) };
+    def removeUpdate(e: DocumentEvent) { listen(e) };
+    def listen(e: DocumentEvent) {
+      modified = true
+    }
+  })
+
+  peer.getDocument().addUndoableEditListener(new UndoableEditListener {
+    def undoableEditHappened(e: UndoableEditEvent) {
+      undo.addEdit(e.getEdit())
+      undoAction.updateUndoState()
+      redoAction.updateRedoState()
+    }
+  })
+
+  private def updateFrameTitle() {
+    val newTitle = softwareName +
+      (currentFile match {
+        case None => ""
+        case Some(f) => " - " + f.getName()
+      }) +
+      (modified match {
+        case true => " (modified) "
+        case false => ""
+      })
+    frame.title = newTitle
+  }
 
   /**
    * Saves the current file. It asks for the filename if it is not known or if
@@ -38,7 +78,7 @@ class JandomEditorPane extends EditorPane {
     }
     try {
       peer.write(new FileWriter(file))
-      modifiedSource = false
+      modified = false
       currentFile = Some(file)
     } catch {
       case e: IOException => return false
@@ -51,7 +91,7 @@ class JandomEditorPane extends EditorPane {
    * if the current action should be cancelled.
    */
   def ensureSaved(): Boolean = {
-    if (!modifiedSource) return true
+    if (!modified) return true
     val retval = Dialog.showConfirmation(this, "The current file has meed modified. Do you want to save it?",
       "Save Resource", Dialog.Options.YesNoCancel, Dialog.Message.Question)
     retval match {
@@ -59,29 +99,6 @@ class JandomEditorPane extends EditorPane {
       case Dialog.Result.No => true
       case Dialog.Result.Cancel => false
     }
-  }
-
-  /**
-   * Set the DocumentListener for the Editor. It should be called after every method which change
-   * the current Document.
-   */
-  private def setDocumentListener() {
-    peer.getDocument().addDocumentListener(new DocumentListener {
-      def changedUpdate(e: DocumentEvent) { listen(e) };
-      def insertUpdate(e: DocumentEvent) { listen(e) };
-      def removeUpdate(e: DocumentEvent) { listen(e) };
-      def listen(e: DocumentEvent) {
-        modifiedSource = true        
-      }
-    })
-    peer.getDocument().addUndoableEditListener(new UndoableEditListener {
-      def undoableEditHappened(e: UndoableEditEvent) {
-        undo.addEdit(e.getEdit());
-        undoAction.updateUndoState();
-        redoAction.updateRedoState();
-      }
-    })
-    undo = new UndoManager()
   }
 
   /**
@@ -101,8 +118,7 @@ class JandomEditorPane extends EditorPane {
     if (!ensureSaved()) return ;
     text = ""
     currentFile = None
-    modifiedSource = false
-    setDocumentListener()
+    modified = false
   }
 
   /**
@@ -114,13 +130,12 @@ class JandomEditorPane extends EditorPane {
     if (returnVal != FileChooser.Result.Approve) return ;
     val file = fileChooser.selectedFile
     try {
-      peer.read(new FileReader(file), file)
+      text = scala.io.Source.fromFile(file).mkString
     } catch {
       case e: IOException =>
     }
     currentFile = Some(file)
-    modifiedSource = false
-    setDocumentListener()
+    modified = false
   }
 
   val newAction = new Action("New") {
@@ -156,7 +171,7 @@ class JandomEditorPane extends EditorPane {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK))
     def apply() { actionMap("copy-to-clipboard").actionPerformed(null) }
   }
-  
+
   object undoAction extends Action("Undo") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK))
 
@@ -179,7 +194,7 @@ class JandomEditorPane extends EditorPane {
 
   object redoAction extends Action("Redo") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK))
-    
+
     def apply() {
       undo.redo()
       updateRedoState()

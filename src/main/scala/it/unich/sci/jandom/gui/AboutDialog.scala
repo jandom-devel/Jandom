@@ -15,7 +15,7 @@ object AboutDialog extends Dialog {
       font = new Font(java.awt.Font.SERIF, 0, 36)
     }
     contents += Swing.VStrut(10)
-    contents += new CenteredLabel("This is "+it.unich.sci.jandom.name+" "+version+", an experimental")
+    contents += new CenteredLabel("This is "+softwareName+" "+version+", an experimental")
     contents += new CenteredLabel("static analyzer written in Scala")
     contents += Swing.VStrut(10)
     contents += new CenteredLabel ("\u00A9 2012-2013 Gianluca Amato")
