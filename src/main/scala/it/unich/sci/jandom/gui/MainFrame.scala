@@ -88,6 +88,14 @@ class MainFrame extends Frame {
         contents += new Separator
         contents += new MenuItem(quitAction)
       }
+      contents += new Menu("Edit") {
+        contents += new MenuItem(editorPane.undoAction)
+        contents += new MenuItem(editorPane.redoAction)
+        contents += new Separator
+        contents += new MenuItem(editorPane.cutAction)
+        contents += new MenuItem(editorPane.copyAction)
+        contents += new MenuItem(editorPane.pasteAction)
+      }
       contents += new Menu("Help") {
         contents += new MenuItem(aboutAction)
       }
