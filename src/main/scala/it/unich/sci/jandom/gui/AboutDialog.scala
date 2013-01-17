@@ -7,7 +7,8 @@ private class CenteredLabel(s: String) extends Label(s) {
     xLayoutAlignment = 0.5
 }
 
-object AboutDialog extends Dialog { 
+object AboutDialog extends Dialog {
+  modal = true
   title = "About Jandom"
   contents = new BoxPanel(Orientation.Vertical) {
     contents += new CenteredLabel(name) {
