@@ -282,7 +282,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     case _ => false
   }
 
-  override def hashCode: Int = 41 * (41 + low.hashCode) + high.hashCode 
+  override def hashCode: Int = 41 * (41 + low.hashCode) + high.hashCode
 }
 
 /**
@@ -336,3 +336,4 @@ object BoxDouble extends NumericalDomain[BoxDouble] {
    */
   private def unnormalizedIsEmpty(low: Array[Double], high: Array[Double]) = (low, high).zipped.exists(_ > _)
 }
+

@@ -1,4 +1,5 @@
-package it.unich.sci.jandom.targets
+package it.unich.sci.jandom
+package targets
 
 /**
  * This objects determines the scope for widenings. The available alternatives are:
@@ -9,6 +10,6 @@ package it.unich.sci.jandom.targets
  * At the moment, this is only supported by the SLIL target.
  */
 object WideningScope extends Enumeration {
-	type WideningScope = Value
-	val Output, BackEdges, Random = Value
+  type WideningScope = Value
+  val Output, BackEdges, Random = Value
 }

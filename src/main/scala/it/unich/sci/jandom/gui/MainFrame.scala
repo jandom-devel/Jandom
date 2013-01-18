@@ -12,21 +12,18 @@ import java.awt.event.InputEvent
 
 class MainFrame extends Frame {
 
-  val domainList = Seq[NumericalDomain[T] forSome { type T <: NumericalProperty[T] }](domains.BoxDouble, 
-      domains.PPLBoxDouble, domains.PPLCPolyhedron)
   val editorPane = new JandomEditorPane(this)
-  val domainComboBox = new ComboBox(domainList)
 
-  /** 
+  /**
    * This is the Action to invoke when user wants to quit the application
    */
   val quitAction = new Action("Quit") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_MASK))
     def apply() {
-      if ( editorPane.ensureSaved ) sys.exit(0)
+      if (editorPane.ensureSaved) sys.exit(0)
     }
   }
-  
+
   val aboutAction = new Action("About") {
     def apply() {
       AboutDialog.visible = true
@@ -39,25 +36,19 @@ class MainFrame extends Frame {
   override def closeOperation() {
     quitAction()
   }
- 
+
   init()
-  
+
   def init() {
     title = "Jandom"
 
     contents = new BorderPanel {
       val tabbedPane = new TabbedPane {
         val outputPane = new EditorPane
-        val parameterPanel = new GridBagPanel {
-          border = Swing.EmptyBorder(5, 5, 5, 5)
-          layout(new Label("Domain:")) = new Constraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.BASELINE,
-            GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0)
-          layout(domainComboBox) = new Constraints(1, 0, 1, 1, 1.0, 1.0, GridBagConstraints.BASELINE,
-            GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0)
-        }
+        val parametersPane = new ParametersPane
         pages += new TabbedPane.Page("Editor", editorPane)
         pages += new TabbedPane.Page("Output", outputPane)
-        pages += new TabbedPane.Page("Parameters", parameterPanel)
+        pages += new TabbedPane.Page("Parameters", parametersPane)
       }
       val analyzeButton = new Button()
       analyzeButton.action = new Action("ANALYZE!") {
@@ -66,8 +57,8 @@ class MainFrame extends Frame {
           val parsed = parsers.RandomParser().parseProgram(source)
           if (parsed.successful) {
             val program = parsed.get
-            val domain = domainList(domainComboBox.selection.index)
-            val params = new targets.Parameters(domain, program.asInstanceOf[SLILStmt])
+            val domain = tabbedPane.parametersPane.selectedDomain
+            val params = tabbedPane.parametersPane.getParameters(program.asInstanceOf[SLILStmt])
             val ann = program.analyze(params)
             tabbedPane.outputPane.text = program.mkString(ann)
             tabbedPane.selection.index = 1
@@ -102,7 +93,7 @@ class MainFrame extends Frame {
     }
 
     bounds = new Rectangle(100, 100, 800, 600)
-          
+
     import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
     peer.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE)
 

@@ -17,26 +17,26 @@
 package it.unich.sci.jandom
 package domains
 
-/** 
+/**
  * Base trait for numerical domains. A numerical domain is a factory for numerical properties. It
- * should be used as a base class for companion objects of the descendants of 
+ * should be used as a base class for companion objects of the descendants of
  * [[it.unich.sci.domains.jandom.NumericalProperty]].
  * @tparam Property the property class corresponding to this domain
  * @author Gianluca Amato <g.amato@unich.it>
  */
 trait NumericalDomain[Property <: NumericalProperty[Property]] {
-  
-  /** 
+
+  /**
    * Create an abstract property representing the full n-dimensional space.
    * @param n the dimension of the environment space.
    * @return the full n-dimensional space.
    */
-  def full(n:Int): Property
-  
+  def full(n: Int): Property
+
   /**
    * Create an abstract property representing the empty n-dimensional space.
    * @param n the dimension of the environment space.
    * @return the empty n-dimensional space.
    */
-  def empty(n:Int): Property
+  def empty(n: Int): Property
 }

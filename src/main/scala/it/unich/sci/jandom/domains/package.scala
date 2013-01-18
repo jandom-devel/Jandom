@@ -15,20 +15,24 @@
  *
  * (c) 2012 Gianluca Amato
  */
-package it.unich.sci.jandom 
+package it.unich.sci.jandom
 
 /**
- * This package contains all the abstract domains available in ''Jandom''. There are 
+ * This package contains all the abstract domains available in ''Jandom''. There are
  * two parallel hierarchies: properties and domains. A property is a single abstract
  * object, such a polyhedron or a box. A domain is essentially a factory for abstract
- * objects. 
- * 
+ * objects.
+ *
  * At the moment, only numerical domains are implemented. The base traits
- * for numerical properties and numerical domains are 
+ * for numerical properties and numerical domains are
  * [[it.unich.sci.jandom.domains.NumericalProperty]] and [[it.unich.sci.jandom.domains.NumericalDomain]]
- * respectively.   
+ * respectively.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 package object domains {
-	
+  /**
+   * An existential type which subsumes all NumericDomains
+   */
+  type GenericNumericalDomain = NumericalDomain[T] forSome { type T <: NumericalProperty[T] }
 }
+
