@@ -46,8 +46,8 @@ class MainFrame extends Frame {
       val tabbedPane = new TabbedPane {
         val outputPane = new EditorPane
         val parametersPane = new ParametersPane
-        pages += new TabbedPane.Page("Editor", editorPane)
-        pages += new TabbedPane.Page("Output", outputPane)
+        pages += new TabbedPane.Page("Editor", new ScrollPane(editorPane))
+        pages += new TabbedPane.Page("Output", new ScrollPane(outputPane))
         pages += new TabbedPane.Page("Parameters", parametersPane)
       }
       val analyzeButton = new Button()
