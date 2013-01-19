@@ -17,6 +17,12 @@
 package it.unich.sci.jandom
 package domains
 
+import it.unich.sci.jandom.parameters.Parameter
+import it.unich.sci.jandom.parameters.ParameterValue
+import scala.collection.SortedSet
+import parma_polyhedra_library.Parma_Polyhedra_Library
+import parma_polyhedra_library.Octagonal_Shape_double
+
 /**
  * Base trait for numerical domains. A numerical domain is a factory for numerical properties. It
  * should be used as a base class for companion objects of the descendants of
@@ -39,4 +45,11 @@ trait NumericalDomain[Property <: NumericalProperty[Property]] {
    * @return the empty n-dimensional space.
    */
   def empty(n: Int): Property
+}
+
+object NumericalDomain extends Parameter[NumericalDomain[T] forSome { type T <: NumericalProperty[T]}] {
+  val name = "Domain"
+  val description = "The numerical domain to use for the analysis."
+  val enabledValues = Seq[NumericalDomain[T] with ParameterValue forSome { type T <: NumericalProperty[T]}](
+      BoxDouble, PPLBoxDouble, PPLCPolyhedron, new PPLDomain[Octagonal_Shape_double])
 }

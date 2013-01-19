@@ -1,5 +1,5 @@
 package it.unich.sci.jandom
-package targets
+package parameters
 
 /**
  * This objects determines the scope for widenings. The available alternatives are:
@@ -9,7 +9,9 @@ package targets
  *           applied once.
  * At the moment, this is only supported by the SLIL target.
  */
-object WideningScope extends Enumeration {
+object WideningScope extends ParameterEnumeration("Widening Scope", "The Widening scope") {
   type WideningScope = Value
-  val Output, BackEdges, Random = Value
+  val Output = Value("Output", "The standard widening, which is applied to the output edge")
+  val BackEdges = Value("Back Edges", "The widening is applied at the input back edges")
+  val Random = Value("Random", "The widening is applied like in Random (a variant of Back Edge)")
 }

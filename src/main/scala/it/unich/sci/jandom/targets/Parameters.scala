@@ -23,6 +23,8 @@ import domains.{NumericalProperty,NumericalDomain}
 import widenings.{Widening, DefaultWidening}
 import narrowings.{Narrowing, DefaultNarrowing}
 import ppfactories.PPFactory
+import it.unich.sci.jandom.parameters.WideningScope
+import it.unich.sci.jandom.parameters.NarrowingStrategy
 
 /**
  * This class is used to keep parameters for analyzers.

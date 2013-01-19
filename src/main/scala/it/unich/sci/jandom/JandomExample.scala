@@ -41,8 +41,8 @@ object JandomExample extends App {
       val program = parsed.get
       val domain =  domains.BoxDouble
       val params = new targets.Parameters[BoxDouble,SLILStmt](domain, program)
-      params.narrowingStrategy = targets.NarrowingStrategy.Restart
-      params.wideningScope = targets.WideningScope.BackEdges
+      params.narrowingStrategy = it.unich.sci.jandom.parameters.NarrowingStrategy.Restart
+      params.wideningScope = it.unich.sci.jandom.parameters.WideningScope.BackEdges
       val ann = program.analyze(params)
       println(program.mkString(ann))
     } else {

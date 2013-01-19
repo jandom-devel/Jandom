@@ -21,14 +21,15 @@ package domains
 
 import utils.PPLUtils
 import parma_polyhedra_library._
+import it.unich.sci.jandom.parameters.ParameterValue
 
-/** 
+/**
  * This is the universal PPL numerical property. It is able to represent (almost) any property
  * representable by PPL. It only requires that some methods and constructors are defined in the
  * PPL class, and access them using reflection. It does not currently works with polyhedra due
  * to the fact both C_Polyhedron and NCC_Polyhedron inherit from a base class Polyhedron.
- * 
- * Since it uses reflexivity, this should be slower than a direct implementation such as 
+ *
+ * Since it uses reflexivity, this should be slower than a direct implementation such as
  * PPLBoxDouble, but probably the overhead of native code execution is bigger than the overhead
  * of reflextion.
  *
@@ -36,12 +37,12 @@ import parma_polyhedra_library._
  * Octagonal_Shape_double, etc...
  * @param domain refers to the [[it.unich.sci.jandom.domain.PPLDomain] object which is the proxy for
  * the interesting methods in PPLNativeProperty.
- * @param pplobject is the PPL property we are encapsulating. 
+ * @param pplobject is the PPL property we are encapsulating.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPLNativeProperty], private val pplobject: PPLNativeProperty)
   extends NumericalProperty[PPLProperty[PPLNativeProperty]] {
-  
+
   def widening(that: PPLProperty[PPLNativeProperty]): PPLProperty[PPLNativeProperty] = {
     val newpplobject = domain.copyConstructor(pplobject)
     domain.upper_bound_assign(newpplobject, that.pplobject)
@@ -91,11 +92,11 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
   def isEmpty: Boolean = domain.is_empty(pplobject)
 
   def isFull: Boolean = domain.is_universe(pplobject)
-  
+
   def empty() = domain.empty(domain.space_dimension(pplobject).toInt)
 
   def full() = domain.full(domain.space_dimension(pplobject).toInt)
- 
+
   def tryCompareTo[B >: PPLProperty[PPLNativeProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLProperty[_] =>
       if (pplobject.getClass != other.pplobject.getClass)
@@ -116,16 +117,16 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
   }
 
   override def hashCode: Int = pplobject.hashCode
-    
+
   def mkString(vars: IndexedSeq[String]): Seq[String] = {
     import collection.JavaConversions._
-    
+
     val vs = new Variable_Stringifier {
       def stringify(x: Long) = vars(x.toInt)
     }
-    Variable.setStringifier(vs)    
+    Variable.setStringifier(vs)
     val result = for (c <- domain.minimized_constraints(pplobject))
-      yield c.toString        
+      yield c.toString
     Variable.setStringifier(null)
     result
   }
@@ -135,10 +136,13 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
  * This is the factory for PPLDomain objects. It contains handles to the methods in the PPL object
  * we want to call, and plays the role of a proxy for the PPLProperty class.
  * @tparam PPLNativeProperty is the PPL class implementing the abstract property, such as Double_Box,
- * Octagonal_Shape_double, etc... 
+ * Octagonal_Shape_double, etc...
  */
-class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[PPLProperty[PPLNativeProperty]] {
+class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[PPLProperty[PPLNativeProperty]]
+  with ParameterValue {
+  
   PPLInitializer
+
   
   private val PPLClass: java.lang.Class[PPLNativeProperty] = implicitly[Manifest[PPLNativeProperty]].erasure.asInstanceOf[java.lang.Class[PPLNativeProperty]]
   private val constructorHandle = PPLClass.getConstructor(classOf[Long], classOf[Degenerate_Element])
@@ -153,6 +157,10 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   private val isEmptyHandle = PPLClass.getMethod("is_empty")
   private val isUniverseHandle = PPLClass.getMethod("is_universe")
   private val minimizedConstraintsHandle = PPLClass.getMethod("minimized_constraints")
+  
+  val name = PPLClass.getSimpleName()
+  val description = "A domain which uses the class "+name+" of the PPL library. It works using reflection, hence it is slower" +
+  		"than other non-reflective domains."
 
   private[domains] def constructor(n: Int, el: Degenerate_Element) = constructorHandle.newInstance(n: java.lang.Integer, el)
   private[domains] def copyConstructor(pplobject: PPLNativeProperty) = copyConstructorHandle.newInstance(pplobject)

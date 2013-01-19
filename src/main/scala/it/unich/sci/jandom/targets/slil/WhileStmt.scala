@@ -35,8 +35,8 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
 
   override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], 
       phase: AnalysisPhase, ann: Annotation[Property]): Property = {
-    import targets.WideningScope._
-    import targets.NarrowingStrategy._
+    import parameters.WideningScope._
+    import parameters.NarrowingStrategy._
     
     // Determines widening operators to use
     val widening = params.wideningFactory(this, 1)

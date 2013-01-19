@@ -29,6 +29,7 @@ import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
+import it.unich.sci.jandom.parameters.ParameterValue
 
 /**
  * The domain for not necessarily closed polyhedra implemented within $PPL. This is essentially
@@ -116,9 +117,14 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
 /**
  * This is the factory for ``PPLBoxDouble`` properties.
  */
-object PPLCPolyhedron extends NumericalDomain[PPLCPolyhedron] {  
+object PPLCPolyhedron extends NumericalDomain[PPLCPolyhedron] with ParameterValue {  
   PPLInitializer
+    
+  val name = "PPL Closed Polyhedra"
 
+  val description = 
+    "This is a PPL-based implementation of closed polyhedra."
+  
   def full(n: Int): PPLCPolyhedron = {
     val pplpolyhedron = new C_Polyhedron(n, Degenerate_Element.UNIVERSE)
 	new PPLCPolyhedron(pplpolyhedron)

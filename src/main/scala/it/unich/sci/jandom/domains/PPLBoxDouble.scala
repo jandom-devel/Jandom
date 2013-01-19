@@ -29,6 +29,7 @@ import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
+import it.unich.sci.jandom.parameters.ParameterValue
 
 /**
  * The domain for possibly opened box over doubles implemented within $PPL. This is essentially
@@ -115,8 +116,13 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
 /**
  * This is the factory for ``PPLBoxDouble`` properties.
  */
-object PPLBoxDouble extends NumericalDomain[PPLBoxDouble] {  
+object PPLBoxDouble extends NumericalDomain[PPLBoxDouble] with ParameterValue {  
   PPLInitializer
+  
+  val name = "PPL Box Double"
+
+  val description = 
+    "This is a PPL-based implementation of boxes."
 
   def full(n: Int): PPLBoxDouble = {
     val pplbox = new Double_Box(n, Degenerate_Element.UNIVERSE)

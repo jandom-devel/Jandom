@@ -19,6 +19,8 @@
 package it.unich.sci.jandom
 package domains
 
+import it.unich.sci.jandom.parameters.ParameterValue
+
 /**
  * This is the box abstract domain over doubles.
  *
@@ -293,7 +295,14 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
  * The caching should be probably implemented in [[it.unich.sci.jandom.domains.NumericalDomain]], and
  * should be extended to both full and empty values.
  */
-object BoxDouble extends NumericalDomain[BoxDouble] {
+object BoxDouble extends NumericalDomain[BoxDouble] with ParameterValue {
+
+  val name = "Box Double"
+
+  val description = 
+    "This is a native Scala implementation of boxes. It is not safe" +
+    "and should not be used."
+
   /**
    * This is a cache for empty boxes.
    */

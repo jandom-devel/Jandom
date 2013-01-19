@@ -34,7 +34,7 @@ import annotations._
  */
 case class SLILProgram(private val env: Environment, private val inputVars: Seq[Int], private val stmt: SLILStmt) extends SLILStmt {
   import AnalysisPhase._
-  import NarrowingStrategy._
+  import parameters.NarrowingStrategy._
   
   program = this
 
