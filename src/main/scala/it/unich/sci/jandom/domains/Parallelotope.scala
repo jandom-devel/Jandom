@@ -13,37 +13,34 @@
  * You should have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  *
- * (c) 2012 Gianluca Amato
+ * (c) 2013 Gianluca Amato
  */
 
 package it.unich.sci.jandom
 package domains
 
-import scalala.library.LinearAlgebra
-import scalala.tensor.dense.DenseMatrix
-import scalala.tensor.::
-import scalala.tensor.sparse.SparseVector
-import scalala.tensor.dense.DenseVector
+import breeze.linalg._
+import it.unich.sci.jandom.parameters.ParameterValue
 
 /**
  * This is the abstract domain of parallelotopes.
  * @author Gianluca Amato <g.amato@unich.it>
  */
-class Parallelotope(
+class Parallelotope (
   val isEmpty: Boolean,
   private val low: DenseVector[Double],
   private val A: DenseMatrix[Double],
   private val high: DenseVector[Double])
   extends NumericalProperty[Parallelotope] {
 
-  require((low.length == A.numRows) && (low.length == high.length) && A.isSquare)
-    
+  require((low.length == A.rows) && (low.length == A.cols) && (low.length == high.length) )
+
   def widening(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
-    if (isEmpty) that
+    if (isEmpty) return that
     val thatRotated = that.rotate(A)
-    val newlow = low.toDense
-    val newhigh = high.toDense
+    val newlow = low.copy
+    val newhigh = high.copy
     for (i <- 0 to dimension - 1) {
       if (thatRotated.low(i) < low(i)) newlow(i) = Double.NegativeInfinity
       if (thatRotated.high(i) > high(i)) newhigh(i) = Double.PositiveInfinity
@@ -55,8 +52,8 @@ class Parallelotope(
     require(dimension == that.dimension)
     if (isEmpty) this
     val thatRotated = that.rotate(A)
-    val newlow = low.toDense
-    val newhigh = high.toDense
+    val newlow = low.copy
+    val newhigh = high.copy
     for (i <- 0 to dimension - 1) {
       if (low(i).isInfinity) newlow(i) = thatRotated.low(i) else newlow(i) = newlow(i) min thatRotated.low(i)
       if (high(i).isInfinity) newhigh(i) = thatRotated.high(i) else newhigh(i) = newhigh(i) max thatRotated.high(i)
@@ -69,16 +66,22 @@ class Parallelotope(
   def union(that: Parallelotope): Parallelotope = {
 
     type PrioritizedConstraint = (DenseVector[Double], Double, Double, Int)
-
+    		
+    def toDenseVector(v: Vector[Double]): DenseVector[Double] =
+      DenseVector(v.valuesIterator.toArray[Double])
+    
+    def toDenseMatrix(v: Matrix[Double]): DenseMatrix[Double] =
+      new DenseMatrix(v.rows, v.cols, v.valuesIterator.toArray[Double])
+    
     /**
      * Compute the priority of a new constraint. The parameter ownedBy tells whether the linear
      * form under consideration is one of the "native" forms of this (1) or that (2). This is used
      * to refine properties, but can be improved.
      */
     def priority(v: DenseVector[Double], ownedBy: Int = 0): PrioritizedConstraint = {
-      val y1 = A.t.toDense \ v.asCol.toDense
+      val y1 = A.t \ v
       val (l1, u1) = Parallelotope.extremalsInBox(y1, low, high)
-      val y2 = that.A.t.toDense \ v.asCol.toDense
+      val y2 = that.A.t \ v
       val (l2, u2) = Parallelotope.extremalsInBox(y2, that.low, that.high)
       val p =
         if (l1 == l2 && l2 == u1 && u1 == u2)
@@ -134,15 +137,16 @@ class Parallelotope(
     val Q = scala.collection.mutable.ArrayBuffer[PrioritizedConstraint]()
 
     val bulk = DenseMatrix.vertcat(this.A, that.A)
-    val min1 = DenseVector.vertcat(this.low.asCol, thisRotated.low.asCol)
-    val min2 = DenseVector.vertcat(thatRotated.low.asCol, that.low.asCol)
-    val max1 = DenseVector.vertcat(this.high.asCol, thisRotated.high.asCol)
-    val max2 = DenseVector.vertcat(thatRotated.high.asCol, that.high.asCol)
-    for (i <- 0 to dimension - 1) Q += priority(this.A(i, ::), 1)
-    for (i <- 0 to dimension - 1) Q += priority(that.A(i, ::), 2)
+    val min1 = DenseVector.vertcat(this.low, thisRotated.low)
+    val min2 = DenseVector.vertcat(thatRotated.low, that.low)
+    val max1 = DenseVector.vertcat(this.high, thisRotated.high)
+    val max2 = DenseVector.vertcat(thatRotated.high, that.high)
+    // the copy method in the following lines is due to a bug in breeze
+    for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i).copy, 1)  // bug
+    for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i).copy, 2)  // bug
     for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
-      val v1 = bulk(i, ::)
-      val v2 = bulk(j, ::)
+      val v1 = bulk.t(::,i).copy	// bug
+      val v2 = bulk.t(::,j).copy	// bug
       val nc1 = newConstraint(v1, v2, min1(i), min2(i), min1(j), min2(j))
       if (nc1.isDefined) Q += priority(nc1.get)
       val nc2 = newConstraint(v1, -v2, min1(i), min2(i), -max1(j), -max2(j))
@@ -158,7 +162,8 @@ class Parallelotope(
     val newlow = DenseVector(Qsorted map (_._2): _*)
     val newhigh = DenseVector(Qsorted map (_._3): _*)
     val pvt = Parallelotope.pivoting(Qsorted map (_._1))
-    return new Parallelotope(false, newlow(pvt).toDense, newA(pvt, ::).toDense, newhigh(pvt).toDense)
+    return new Parallelotope(false, toDenseVector(newlow(pvt)),
+        toDenseMatrix(newA(pvt, ::)), toDenseVector(newhigh(pvt)))
   }
 
   def unionWeak(that: Parallelotope): Parallelotope = {
@@ -191,15 +196,15 @@ class Parallelotope(
       val newhigh = high :+ increment
       val ei = SparseVector.zeros[Double](dimension)
       ei(n) = 1
-      val newA = A :- (A(::, n) * (DenseVector(coeff) - ei).asRow) / coeff(n)
+      val newA = A :- (A(::, n) * (DenseVector(coeff) - ei).t) / coeff(n)
       new Parallelotope(false, newlow, newA, newhigh)
     } else {
       val newP = nondeterministicAssignment(n)
       val Aprime = newP.A
-      val j = (Aprime(::, n) find { _ != 0 }).get
+      val j = (( 0 to Aprime.rows - 1 ) find { Aprime(_,n) != 0 }).get 
       for (s <- 0 to dimension - 1 if Aprime(s, n) != 0 && s != j)
         Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
-      val ei = SparseVector.zeros[Double](dimension)
+      val ei = DenseVector.zeros[Double](dimension)
       ei(n) = 1
       Aprime(j, ::) := ei :- DenseVector(coeff)
       newP.low(j) = known
@@ -212,12 +217,12 @@ class Parallelotope(
     require(tcoeff.length <= dimension)
     val coeff = tcoeff.padTo(dimension, 0.0).toArray
     if (isEmpty) return this
-    val y = A.t.toDense \ DenseVector(coeff)
+    val y = A.t \ DenseVector(coeff)
     val j = (0 to dimension - 1) find { i => y(i) != 0 && low(i).isInfinity && high(i).isInfinity }
     j match {
       case None => {
-        val newlow = low.toDense
-        val newhigh = high.toDense
+        val newlow = low.copy
+        val newhigh = high.copy
         val (minc, maxc) = Parallelotope.extremalsInBox(y, newlow, newhigh)
         if (minc > -known) return Parallelotope.empty(dimension)
         for (i <- 0 to dimension - 1) {
@@ -230,7 +235,7 @@ class Parallelotope(
       }
       case Some(j) => {
         val newA = A.copy
-        val newhigh = high.toDense
+        val newhigh = high.copy
         newA(j, ::) := DenseVector(coeff)
         newhigh(j) = -known
         return new Parallelotope(false, low, newA, newhigh)
@@ -253,8 +258,8 @@ class Parallelotope(
     val j = (0 to dimension - 1).filter { i => A(i, n) != 0 && (!low(i).isNegInfinity || !high(i).isPosInfinity) }
     if (j.isEmpty) return this
     val newA = A.copy
-    val newlow = low.toDense
-    val newhigh = high.toDense
+    val newlow = low.copy
+    val newhigh = high.copy
     val j0 = j.filter { i => low(i) == high(i) }
     val j1 = j.filter { i => !low(i).isInfinity && !high(i).isInfinity }
     val r = if (!j0.isEmpty) j0(0) else if (!j1.isEmpty) j1(0) else j(0)
@@ -274,7 +279,7 @@ class Parallelotope(
     new Parallelotope(false, newlow, newA, newhigh)
   }
 
-  val dimension = A.numCols
+  val dimension = A.cols
 
   val isFull = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
 
@@ -303,13 +308,13 @@ class Parallelotope(
    * @param Aprime the new shape matrix.
    */
   def rotate(Aprime: DenseMatrix[Double]): Parallelotope = {
-    require(dimension == Aprime.numRows && dimension == Aprime.numCols)
+    require(dimension == Aprime.rows && dimension == Aprime.cols)
     if (isEmpty) return this;
     val B = Aprime * (A \ DenseMatrix.eye[Double](dimension))
     val newlow = DenseVector.zeros[Double](dimension)
     val newhigh = DenseVector.zeros[Double](dimension)
-    B.foreachNonZeroTriple {
-      case (i, j, v) =>
+    B.foreachPair {
+      case ((i, j), v) =>
         if (v > 0) {
           newlow(i) += v * low(j)
           newhigh(i) += v * high(j)
@@ -325,8 +330,7 @@ class Parallelotope(
     if (isEmpty) return (true)
     if (that.isEmpty) return (false)
     val ptemp = this.rotate(that.A)
-    (ptemp.low :>= that.low).forallValues(identity[Boolean]) &&
-      (ptemp.high :<= that.high).forallValues(identity[Boolean])
+    ( 0 to ptemp.low.length-1 ) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) } 
   }
 
   def >=[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Boolean =
@@ -371,12 +375,17 @@ class Parallelotope(
     if (isEmpty)
       Seq("empty")
     else
-      for (i <- 0 until dimension) yield low(i) + " <= " + lfToString(A(i, ::)) + " <= " + high(i)
+      for (i <- 0 until dimension) yield low(i) + " <= " + lfToString(A.t(::, i)) + " <= " + high(i)
   }
 }
 
-object Parallelotope extends NumericalDomain[Parallelotope] {
-
+object Parallelotope extends NumericalDomain[Parallelotope] with ParameterValue {
+    
+  val name = "Parallelotope"
+    
+  val description = "The abstract domain of parallelotopes, in a native Scala implementation. It is not" +
+  		"safe, hence it is better not to use it."
+  
   def apply(low: DenseVector[Double], A: DenseMatrix[Double], high: DenseVector[Double]) =
     new Parallelotope(false, low, A, high)
 
@@ -414,9 +423,9 @@ object Parallelotope extends NumericalDomain[Parallelotope] {
     var pivots = Seq[(DenseVector[Double], Int)]()
     var i = 0
     while (indexes.length < dimension) {
-      val row = m(i).toDense
+      val row = m(i).copy
       for (p <- pivots) row -= p._1 * row(p._2)
-      val col = row find (_ != 0)
+      val col = (0 to row.length -1) find ( row(_) != 0)
       col match {
         case Some(col) =>
           row /= row(col)

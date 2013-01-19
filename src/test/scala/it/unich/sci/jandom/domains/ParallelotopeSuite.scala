@@ -1,3 +1,5 @@
+package it.unich.sci.jandom.domains
+
 /**
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -16,12 +18,8 @@
  * (c) 2012 Gianluca Amato
  */
 
-package it.unich.sci.jandom
-package domains
-
 import org.scalatest.FunSuite
-import scalala.tensor.dense.DenseVector
-import scalala.tensor.dense.DenseMatrix
+import breeze.linalg._
 
 /**
  * Test suite for the parallelotope domain. Disabled at the moment due to non-functionin domain.
@@ -29,7 +27,7 @@ import scalala.tensor.dense.DenseMatrix
  *
  */
 class ParallelotopeSuite extends FunSuite {
-/*
+
   val box = Parallelotope(DenseVector(-1, -1), DenseMatrix.eye(2), DenseVector(1, 1))
   val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0,1.0),(1.0,-1.0)), DenseVector(1, 1))
   val empty = Parallelotope.empty(2)
@@ -156,5 +154,5 @@ class ParallelotopeSuite extends FunSuite {
     expect("[ empty ]") { empty.toString }
     expect("[ -Infinity <= v0 <= Infinity , -Infinity <= v1 <= Infinity ]") { full.toString }    
   }
-  */
+  
 }
