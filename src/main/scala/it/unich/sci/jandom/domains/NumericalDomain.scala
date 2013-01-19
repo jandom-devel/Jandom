@@ -51,5 +51,5 @@ object NumericalDomain extends Parameter[NumericalDomain[T] forSome { type T <: 
   val name = "Domain"
   val description = "The numerical domain to use for the analysis."
   val enabledValues = Seq[NumericalDomain[T] with ParameterValue forSome { type T <: NumericalProperty[T]}](
-      BoxDouble, PPLBoxDouble, PPLCPolyhedron, new PPLDomain[Octagonal_Shape_double])
+      BoxDouble, ParallelotopeBreeze, PPLBoxDouble, PPLCPolyhedron, new PPLDomain[Octagonal_Shape_double])
 }
