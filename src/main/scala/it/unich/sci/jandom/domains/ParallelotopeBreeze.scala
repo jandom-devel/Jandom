@@ -72,6 +72,7 @@ class ParallelotopeBreeze (
     
     def toDenseMatrix(v: Matrix[Double]): DenseMatrix[Double] =
       new DenseMatrix(v.rows, v.cols, v.valuesIterator.toArray[Double])
+    
     /**
      * Compute the priority of a new constraint. The parameter ownedBy tells whether the linear
      * form under consideration is one of the "native" forms of this (1) or that (2). This is used
@@ -140,11 +141,12 @@ class ParallelotopeBreeze (
     val min2 = DenseVector.vertcat(thatRotated.low, that.low)
     val max1 = DenseVector.vertcat(this.high, thisRotated.high)
     val max2 = DenseVector.vertcat(thatRotated.high, that.high)
-    for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i), 1)
-    for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i), 2)
+    // the copy method in the following lines is due to a bug in breeze
+    for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i).copy, 1)  // bug
+    for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i).copy, 2)  // bug
     for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
-      val v1 = bulk.t(::,i)
-      val v2 = bulk.t(::,i)
+      val v1 = bulk.t(::,i).copy	// bug
+      val v2 = bulk.t(::,j).copy	// bug
       val nc1 = newConstraint(v1, v2, min1(i), min2(i), min1(j), min2(j))
       if (nc1.isDefined) Q += priority(nc1.get)
       val nc2 = newConstraint(v1, -v2, min1(i), min2(i), -max1(j), -max2(j))
