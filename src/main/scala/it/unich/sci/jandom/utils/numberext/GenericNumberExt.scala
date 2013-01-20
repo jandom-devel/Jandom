@@ -45,6 +45,8 @@ sealed abstract class GenericNumberExt[T : Numeric]
 
 
 object GenericNumberExt {
+  import language.implicitConversions
+  
   // These are needed for some limitation of Scala type system
   private val cachedPositiveInfinity = POSINF[Int]()
   private val cachedNegativeInfinity = NEGINF[Int]()

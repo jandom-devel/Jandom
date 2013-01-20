@@ -28,7 +28,7 @@ import org.scalatest.FunSuite
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 class LinearConditionParserSuite extends FunSuite {
-  val parser = new LinearConditionParser with LinearExpressionParser {
+  object parser extends LinearConditionParser with LinearExpressionParser {
     val env = Environment()
     val variable = ident ^^ { env.getBindingOrAdd(_) }
     def parseExpr(s: String) = parseAll(condition, s)

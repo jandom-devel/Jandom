@@ -98,6 +98,8 @@ class IntegerExt(val value: Int, val special: Value) extends NumberExt with Seri
  * The companion object for extended integers
  */
 object IntegerExt {
+  import language.implicitConversions
+
   /** 
    * An implicit conversion of integer to extended integers.
    */

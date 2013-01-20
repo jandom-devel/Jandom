@@ -47,12 +47,12 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
   private def normalized: Boolean =
     low.length == high.length &&
       (
-        low.forall { (x) => !(x isPosInfinity) } &&
-        high.forall { (x) => !(x isNegInfinity) } &&
+        low.forall { (x) => !(x.isPosInfinity) } &&
+        high.forall { (x) => !(x.isNegInfinity) } &&
         (low, high).zipped.forall(_ <= _)
         ||
-        low.forall { _ isPosInfinity } &&
-        high.forall { _ isNegInfinity })
+        low.forall { _.isPosInfinity } &&
+        high.forall { _.isNegInfinity })
 
   /**
    * Returns the sum of x and y, rounded towards +Inf.
@@ -178,7 +178,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    */
   private def linearArgmin(coeff: Array[Double]): Array[Double] = {
     require(coeff.length <= dimension)
-    (coeff zipWithIndex) map { case (c, i) => if (c > 0) low(i) else high(i) }
+    (coeff.zipWithIndex) map { case (c, i) => if (c > 0) low(i) else high(i) }
   }
 
   /**
@@ -190,7 +190,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    */
   private def linearArgmax(coeff: Array[Double]): Array[Double] = {
     require(coeff.length <= dimension)
-    (coeff zipWithIndex) map { case (c, i) => if (c < 0) low(i) else high(i) }
+    (coeff.zipWithIndex) map { case (c, i) => if (c < 0) low(i) else high(i) }
   }
 
   /**
@@ -260,7 +260,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
 
   def isEmpty: Boolean = (low, high).zipped.exists(_ > _)
 
-  def isFull: Boolean = low.forall(_ isNegInfinity) && high.forall(_ isPosInfinity)
+  def isFull: Boolean = low.forall(_.isNegInfinity) && high.forall(_.isPosInfinity)
 
   def empty = BoxDouble.empty(low.length)
 
