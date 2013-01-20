@@ -22,6 +22,7 @@ package targets.slil
 import domains.NumericalProperty
 import targets.{ LinearForm, Parameters, Environment }
 import annotations.{ BlackBoard, PerProgramPointAnnotation }
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * The class for the assignment statement "variable := linearForm".
@@ -39,6 +40,6 @@ case class TagStmt[T](tag: Int) extends SLILStmt {
     input
   }
 
-  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec) =
+  override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + "tag(" + tag + ")"
 }

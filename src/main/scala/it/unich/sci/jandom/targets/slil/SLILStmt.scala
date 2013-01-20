@@ -22,6 +22,7 @@ package targets.slil
 import targets.Target
 import domains.NumericalProperty
 import annotations._
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * The abstract class for program statements. Each object in SLILStmt represents a statement
@@ -48,7 +49,7 @@ abstract class SLILStmt extends Target {
    * standard pretty printer specification
    * @return the string representation of the program
    */
-  def mkString(ann: Annotation[_], level: Int = 0, ppspec: PrettyPrinterSpec = PrettyPrinterSpec()): String
+  def mkString[T <: AbstractProperty](ann: Annotation[T], level: Int = 0, ppspec: PrettyPrinterSpec): String
   
   /**
    * The analyzer for a SLIL statement. This methods is different from the one declared in Target since it takes
@@ -73,5 +74,5 @@ abstract class SLILStmt extends Target {
   
   def size = 1
 
-  override def toString = mkString(new Annotation[Nothing])
+  //override def toString = mkString(new Annotation[Nothing])
 }

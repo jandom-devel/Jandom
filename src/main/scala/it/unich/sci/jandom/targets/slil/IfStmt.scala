@@ -23,6 +23,7 @@ import domains.NumericalProperty
 import targets.Parameters
 import targets.linearcondition.LinearCond
 import annotations.{ BlackBoard, PerProgramPointAnnotation }
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * The class for an if/then/else statement
@@ -50,7 +51,7 @@ case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLI
     return thenEnd union elseEnd
   }
 
-  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {
+  override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level+1)
     val s = spaces + "if (" + condition.toString + ") {\n" +

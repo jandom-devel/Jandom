@@ -109,16 +109,7 @@ trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered
    * Returns a full object compatible with `this`.
    */
   def full: Property
-  
-  /**
-   * Returns a string representation of the property.
-   * @param vars an array with the name of the variables
-   * @return an sequence of string. The idea is that each string is an atomic piece of information
-   * which should be printed out together, while different strings may be also printed out
-   * separately.
-   */
-  def mkString(vars: IndexedSeq[String]): Seq[String]
-  
+
   /** 
    * Returns the string representation of the property. It calls `mkString` with the standard
    * variables names `v1` ... `vn`. 

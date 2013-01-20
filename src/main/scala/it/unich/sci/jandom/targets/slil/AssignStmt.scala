@@ -22,6 +22,7 @@ package targets.slil
 import domains.NumericalProperty
 import targets.{ LinearForm, Parameters, Environment }
 import annotations.{ BlackBoard, PerProgramPointAnnotation }
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * The class for the assignment statement "variable := linearForm".
@@ -40,6 +41,6 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T])(implicit nume
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
   }
 
-  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec) =
+  override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + linearForm.env(variable) + " = " + linearForm.toString
 }

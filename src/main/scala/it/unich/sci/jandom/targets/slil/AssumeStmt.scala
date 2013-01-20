@@ -23,6 +23,7 @@ import targets.linearcondition.LinearCond
 import domains.NumericalProperty
 import targets.Parameters
 import annotations.{ BlackBoard, PerProgramPointAnnotation }
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * The class for the statement assume. It takes a linear condition as a parameter, and forces this condition to hold. It is
@@ -36,6 +37,6 @@ case class AssumeStmt(cond: LinearCond) extends SLILStmt {
       ann: Annotation[Property]): Property =
     cond.analyze(input)
     
-  override def mkString(ann: Annotation[_], level:Int, ppspec: PrettyPrinterSpec) =
+  override def mkString[U <: AbstractProperty](ann: Annotation[U], level:Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + "assume(" + cond + ")"
 }

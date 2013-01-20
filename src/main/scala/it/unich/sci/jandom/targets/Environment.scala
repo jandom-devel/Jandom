@@ -31,8 +31,13 @@ import scala.collection.mutable.{ ArrayBuffer, LinkedHashMap }
  */
 
 class Environment {
-  private val variables = new ArrayBuffer[String]()
+  private val _variables = new ArrayBuffer[String]()
   private val nameHash = new LinkedHashMap[String, Int]()
+  
+  /**
+   * Return the variables which are part of the environment
+   */
+  def variables = _variables.toIndexedSeq
 
   /**
    * Add a new binding to the environment. If a variable with the same name is already in the environment,
@@ -41,9 +46,9 @@ class Environment {
    * @return the index of the new binding (first variable has index 0)
    */
   def addBinding(name: String): Int = {
-    variables += name
-    nameHash += name -> (variables.size - 1)
-    return variables.size - 1
+    _variables += name
+    nameHash += name -> (_variables.size - 1)
+    return _variables.size - 1
   }
 
   /**
@@ -83,17 +88,17 @@ class Environment {
    * Returns the name of variables in the environment
    * @return the variable with the given index in the environment
    */
-  def getNames: IndexedSeq[String] = variables.toIndexedSeq
+  def getNames: IndexedSeq[String] = _variables.toIndexedSeq
 
   /**
    * Returns the size of the environment, i.e. the number of bindings
    * @return the size of the environment
    */
-  def size = variables.size
+  def size = _variables.size
 
   override def equals(that: Any) = {
     that match {
-      case that: Environment => variables == that.variables
+      case that: Environment => _variables == that._variables
       case _ => false
     }
   }

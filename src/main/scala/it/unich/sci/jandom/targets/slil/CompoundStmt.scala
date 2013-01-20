@@ -23,6 +23,7 @@ import domains.NumericalProperty
 import targets.Parameters
 import annotations.{ BlackBoard, PerProgramPointAnnotation }
 import scala.collection.mutable.ListBuffer
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * A class for the compound statement (sequential composition)
@@ -43,7 +44,7 @@ case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
     current
   }
 
-  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {    
+  override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {    
     val spaces = ppspec.indent(level)
     val result = new StringBuilder()
     var index = 1

@@ -19,11 +19,13 @@
 package it.unich.sci.jandom
 package targets.slil
 
+import it.unich.sci.jandom.domains.AbstractProperty
+import it.unich.sci.jandom.targets.Environment
 /**
  * This is a class containing parameters for pretty printing a SLILProgram with annotations.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class PrettyPrinterSpec {
+class PrettyPrinterSpec(val env: Environment) {
   /**
    * Indent is a function which takes an indentation level, and returns a set of whitespaces (or other string)
    * which realizes this indentation. The default is to print two spaces for each indentation level. 
@@ -31,11 +33,11 @@ class PrettyPrinterSpec {
   private[slil] var indent: Int => String = { level => " " * level * 2}
   
   /**
-   * Decorator is a function which takes  annotation (of any kind), and returns its string representation.
+   * Decorator is a function which takes annotation (of any kind), and returns its string representation.
    * The default simply prints the annotation between brackets.   
    */
   
-  private[slil] var decorator: Any => String = { v => '[' + v.toString + ']'}
+  private[slil] def decorator (p: AbstractProperty): String = ('[' + p.mkString(env.variables).mkString(" , ") + ']')
 }
 
 
@@ -47,7 +49,7 @@ object PrettyPrinterSpec {
   /** 
    * Builds a pretty printer specification with all the default values
    */
-  def apply() = new PrettyPrinterSpec()  
+  def apply(env: Environment) = new PrettyPrinterSpec(env)  
 }   
   
 

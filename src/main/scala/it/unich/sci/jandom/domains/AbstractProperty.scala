@@ -28,4 +28,13 @@ package domains
  */
 trait AbstractProperty { 
   
+  /**
+   * Returns a string representation of the property.
+   * @param vars an array with the name of the variables
+   * @return an sequence of string. The idea is that each string is an atomic piece of information
+   * which should be printed out together, while different strings may be also printed out
+   * separately.
+   */
+  def mkString(vars: IndexedSeq[String]): Seq[String]
+  
 }

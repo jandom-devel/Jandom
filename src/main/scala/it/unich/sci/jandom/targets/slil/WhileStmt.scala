@@ -21,6 +21,8 @@ package targets.slil
 
 import domains.NumericalProperty
 import targets.linearcondition.LinearCond
+import it.unich.sci.jandom.domains.AbstractProperty
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * The class for a while statement.
@@ -82,7 +84,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     return condition.opposite.analyze(invariant)
   }
 
-  override def mkString(ann: Annotation[_], level: Int, ppspec: PrettyPrinterSpec): String = {  
+  override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {  
     val spaces = ppspec.indent(level)
     spaces + "while (" + condition + ")" +""+
       (if (ann contains (this, 1)) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +
