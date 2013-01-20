@@ -32,23 +32,23 @@ class EnvironmentSuite  extends FunSuite {
     val env: Environment = new Environment()
     val v1 = env.addBinding("prova")
     val v2 = env.getBindingOrAdd("micio")
-    expect(2) { env.size }
-    expect(Some(v1)) { env.getBinding("prova")}
-    expect(v1) { env("prova")}
-    expect("micio") { env(v2) }
-    expect(Seq("prova", "micio")) { env.getNames }
+    expectResult(2) { env.size }
+    expectResult(Some(v1)) { env.getBinding("prova")}
+    expectResult(v1) { env("prova")}
+    expectResult("micio") { env(v2) }
+    expectResult(Seq("prova", "micio")) { env.getNames }
   }
   
   test ("Environment companion object constructors") {
     val env = Environment("A","B","C")
-    expect ("C") { env(env("C")) }
+    expectResult ("C") { env(env("C")) }
   }
   
   test("Environment equality") {
     val env1 = Environment("x","y","z")
     val env2 = Environment("x","y","z")
-    expect (env1) { env2 }
+    expectResult (env1) { env2 }
     val env3 = Environment("a","b","c")
-    expect (false) { env1 == env3 }
+    expectResult (false) { env1 == env3 }
   }
 }

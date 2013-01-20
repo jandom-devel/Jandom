@@ -35,6 +35,6 @@ class LinearExpressionParserSuite extends FunSuite {
 	test("linear expression parser") {
 	  val expParsed = parser.parseExpr("3*x+y-z").get
 	  val expBuild = LinearForm(Seq(0,3,1,-1), Environment("x","y","z"))
-	  expect(expBuild) { expParsed }
+	  expectResult(expBuild) { expParsed }
 	}
 }

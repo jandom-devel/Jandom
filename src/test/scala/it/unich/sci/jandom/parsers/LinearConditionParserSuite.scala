@@ -39,6 +39,6 @@ class LinearConditionParserSuite extends FunSuite {
     val exp1Build = LinearForm(Seq(0, 3, 1, -1), Environment("x", "y", "z"))
     val exp2Build = LinearForm(Seq(0, 1, 0, -1), Environment("x", "y", "z"))
     val expCond = AndCond(AtomicCond(exp1Build, AtomicCond.ComparisonOperators.EQ), AtomicCond(exp2Build, AtomicCond.ComparisonOperators.LTE))
-    expect(expCond) { expParsed }
+    expectResult(expCond) { expParsed }
   }
 }

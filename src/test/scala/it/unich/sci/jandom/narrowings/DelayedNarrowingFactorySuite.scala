@@ -36,14 +36,14 @@ class DelayedNarrowingFactorySuite extends FunSpec {
       val d1 = BoxDouble(Array(0),Array(3))
       val d2 = BoxDouble(Array(1),Array(3))
       val d3 = wd(d1,d2)    
-      expect ( BoxDouble(Array(1),Array(3)) ) { d3 }
+      expectResult ( BoxDouble(Array(1),Array(3)) ) { d3 }
       val wd2 = dwf(0)
       val d4 = BoxDouble(Array(2),Array(3))
       val d5 = wd(d3,d4)
-      expect ( BoxDouble(Array(1),Array(3)) ) { d5 }
+      expectResult ( BoxDouble(Array(1),Array(3)) ) { d5 }
       val wd3 = dwf(1)
       val d6 = wd3(d3,d4)
-      expect ( BoxDouble(Array(2),Array(3)) ) { d6 }          
+      expectResult ( BoxDouble(Array(2),Array(3)) ) { d6 }          
     }
     
     it ("should reject negative delays") {

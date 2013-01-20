@@ -144,7 +144,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   PPLInitializer
 
   
-  private val PPLClass: java.lang.Class[PPLNativeProperty] = implicitly[Manifest[PPLNativeProperty]].erasure.asInstanceOf[java.lang.Class[PPLNativeProperty]]
+  private val PPLClass: java.lang.Class[PPLNativeProperty] = implicitly[Manifest[PPLNativeProperty]].runtimeClass.asInstanceOf[java.lang.Class[PPLNativeProperty]]
   private val constructorHandle = PPLClass.getConstructor(classOf[Long], classOf[Degenerate_Element])
   private val copyConstructorHandle = PPLClass.getConstructor(PPLClass)
   private val upperBoundAssignHandle = PPLClass.getMethod("upper_bound_assign", PPLClass)

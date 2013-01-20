@@ -41,7 +41,7 @@ class SLILProgramSuite extends FunSuite {
        )))      
     val params = new targets.Parameters[BoxDouble,SLILStmt](BoxDouble,program)
     val ann = program.analyze(params)
-    expect ( BoxDouble(Array(10), Array(11)) ) { ann(program,2) }
+    expectResult ( BoxDouble(Array(10), Array(11)) ) { ann(program,2) }
   } 
   
   test("input vs output widening") {
@@ -65,16 +65,16 @@ class SLILProgramSuite extends FunSuite {
     params.narrowingStrategy = it.unich.sci.jandom.parameters.NarrowingStrategy.None
     params.wideningScope = it.unich.sci.jandom.parameters.WideningScope.Output
     program.analyze(params)
-    expect ( BoxDouble.full(1) ) { params.tag(0) }
+    expectResult ( BoxDouble.full(1) ) { params.tag(0) }
     
     params.narrowingStrategy = it.unich.sci.jandom.parameters.NarrowingStrategy.None
     params.wideningScope = it.unich.sci.jandom.parameters.WideningScope.Random
     program.analyze(params)
-    expect ( BoxDouble.full(1) ) { params.tag(0) }
+    expectResult ( BoxDouble.full(1) ) { params.tag(0) }
     
     params.narrowingStrategy = it.unich.sci.jandom.parameters.NarrowingStrategy.None
     params.wideningScope = it.unich.sci.jandom.parameters.WideningScope.BackEdges
     program.analyze(params)
-    expect ( BoxDouble(Array(-1), Array(1)) ) { params.tag(0) }
+    expectResult ( BoxDouble(Array(-1), Array(1)) ) { params.tag(0) }
   }
 }

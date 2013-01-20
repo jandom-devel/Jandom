@@ -42,6 +42,6 @@ class LTSSuite extends FunSuite {
 	val lts = LTS(IndexedSeq(l1,l2), Seq(t1,t2), env)
 	val params = new targets.Parameters(BoxDouble,lts)    
     val ann = lts.analyze(params)
-    expect ( BoxDouble(Array(0), Array(11)) ) { ann(l2) }
+    expectResult ( BoxDouble(Array(0), Array(11)) ) { ann(l2) }
   }   
 }

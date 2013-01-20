@@ -33,20 +33,20 @@ class DelayedWideningSuite extends FunSuite {
     val wd = new DelayedWidening(DefaultWidening,2)
     val d2 = BoxDouble(Array(1),Array(2))
     val d3 = wd(d1,d2)
-    expect ( BoxDouble(Array(0),Array(2)) ) { d3 }	
+    expectResult ( BoxDouble(Array(0),Array(2)) ) { d3 }	
     val d4 = BoxDouble(Array(2),Array(3))
     val d5 = wd(d3,d4)
-    expect ( BoxDouble(Array(0),Array(3)) ) { d5 }
+    expectResult ( BoxDouble(Array(0),Array(3)) ) { d5 }
     val d6 = BoxDouble(Array(3),Array(4))
     val d7 = wd(d5,d6)
-    expect ( BoxDouble(Array(0),Array(Double.PositiveInfinity)) ) { d7 }
+    expectResult ( BoxDouble(Array(0),Array(Double.PositiveInfinity)) ) { d7 }
   }
   test ("delayed widening with 0 delay") {
     val d1 = BoxDouble(Array(0),Array(1))
     val wd = new DelayedWidening(DefaultWidening,0)
     val d2 = BoxDouble(Array(1),Array(2))
     val d3 = wd(d1,d2)
-    expect ( BoxDouble(Array(0),Array(Double.PositiveInfinity)) ) { d3 }	
+    expectResult ( BoxDouble(Array(0),Array(Double.PositiveInfinity)) ) { d3 }	
   }
   test ("delayed widening with negative delay") {
     intercept[IllegalArgumentException] { new DelayedWidening(DefaultWidening,-1) }

@@ -34,8 +34,8 @@ class ConstantFactorySuite extends FunSpec  {
       val d0 = dwf(0)
       val d1= dwf(0)
       val d2= dwf(2)
-      expect(d0) { d1 }
-      expect(d1) { d2 }
+      expectResult(d0) { d1 }
+      expectResult(d1) { d2 }
     }
   }
 }

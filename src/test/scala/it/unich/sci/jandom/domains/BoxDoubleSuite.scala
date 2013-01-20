@@ -38,30 +38,30 @@ class BoxDoubleSuite extends FunSuite {
     test("operations on boxes") {
     	val i = BoxDouble(Array(1,2),Array(5,4))
         val j = BoxDouble(Array(0,3),Array(3,4))        
-        expect(i union j) { BoxDouble(Array(0,2),Array(5,4)) }     
-    	expect(i intersection j) { BoxDouble(Array(1,3),Array(3,4))}    	
+        expectResult(i union j) { BoxDouble(Array(0,2),Array(5,4)) }     
+    	expectResult(i intersection j) { BoxDouble(Array(1,3),Array(3,4))}    	
     } 
             
     test("empty boxes") {
       val i = BoxDouble(Array(-1,-2),Array(-4,3))
       val j = BoxDouble(Array(0,0),Array(5,5))
-      expect(i) { BoxDouble.empty(2) }
-      expect(i union j) { j }
-      expect(i intersection j) { i }
-      expect(i.linearAssignment(1,Array(1,1),1)) { i }
-      expect(i.linearAssignment(1,Array(0,0),0)) { i }
+      expectResult(i) { BoxDouble.empty(2) }
+      expectResult(i union j) { j }
+      expectResult(i intersection j) { i }
+      expectResult(i.linearAssignment(1,Array(1,1),1)) { i }
+      expectResult(i.linearAssignment(1,Array(0,0),0)) { i }
     }
     
     test("linear inequations") {
       val i = BoxDouble.full(2).linearInequality(Array(1,0),-3)
       val j = BoxDouble(Array(0,0),Array(5,5)).linearInequality(Array(1,1),-4)
-      expect(BoxDouble(Array(Double.NegativeInfinity,Double.NegativeInfinity), Array(3,Double.PositiveInfinity))) { i }
-      expect(BoxDouble(Array(0,0),Array(4,4))) { j }
+      expectResult(BoxDouble(Array(Double.NegativeInfinity,Double.NegativeInfinity), Array(3,Double.PositiveInfinity))) { i }
+      expectResult(BoxDouble(Array(0,0),Array(4,4))) { j }
     }
     
     test("string conversion") {
       val i = BoxDouble(Array(0,-1), Array(2,3))
-      expect(Seq("0.0 <= x <= 2.0","-1.0 <= y <= 3.0")) { i.mkString(IndexedSeq("x","y")) }
-      expect("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
+      expectResult(Seq("0.0 <= x <= 2.0","-1.0 <= y <= 3.0")) { i.mkString(IndexedSeq("x","y")) }
+      expectResult("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
     }
 }

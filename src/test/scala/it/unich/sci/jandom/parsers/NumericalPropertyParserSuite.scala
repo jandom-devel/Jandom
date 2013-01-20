@@ -33,10 +33,10 @@ class NumericalPropertyParserSuite extends FunSuite {
  
   test("numerical property parser") {
     val prop1 = parser.parseProperty("x<=5 && y>=-3", BoxDouble).get  
-    expect( BoxDouble(Array(Double.NegativeInfinity,-3), Array(5,Double.PositiveInfinity)) ) { prop1 }
+    expectResult( BoxDouble(Array(Double.NegativeInfinity,-3), Array(5,Double.PositiveInfinity)) ) { prop1 }
     parser.closedVariables=true
     val prop2 = parser.parseProperty("x<=5 && y>=-3", BoxDouble).get
-    expect (prop1) { prop2 }
-    expect ( false ) { parser.parseProperty("z<=5 && y>=-3", BoxDouble).successful }
+    expectResult (prop1) { prop2 }
+    expectResult ( false ) { parser.parseProperty("z<=5 && y>=-3", BoxDouble).successful }
   }
 }

@@ -70,37 +70,37 @@ class IntegerExtSuite extends FunSuite with Checkers {
   } 
   
   test("sum on infinities") {
-    expect (PositiveInfinity) { IntegerExt(3) + PositiveInfinity }
-    expect (PositiveInfinity) { PositiveInfinity + IntegerExt(3)  }
-    expect (PositiveInfinity) { PositiveInfinity + PositiveInfinity  }
-    expect (NegativeInfinity) { IntegerExt(3) + NegativeInfinity }
-    expect (NegativeInfinity) { NegativeInfinity + IntegerExt(3)  }
-    expect (NegativeInfinity) { NegativeInfinity + NegativeInfinity }
-    expect (NaN) { NaN + IntegerExt(3) }
-    expect (NaN) { IntegerExt(3) + NaN }
-    expect (NaN) { PositiveInfinity + NegativeInfinity }
-    expect (NaN) { NegativeInfinity + PositiveInfinity }
-    expect (NaN) { NaN + NaN }
+    expectResult (PositiveInfinity) { IntegerExt(3) + PositiveInfinity }
+    expectResult (PositiveInfinity) { PositiveInfinity + IntegerExt(3)  }
+    expectResult (PositiveInfinity) { PositiveInfinity + PositiveInfinity  }
+    expectResult (NegativeInfinity) { IntegerExt(3) + NegativeInfinity }
+    expectResult (NegativeInfinity) { NegativeInfinity + IntegerExt(3)  }
+    expectResult (NegativeInfinity) { NegativeInfinity + NegativeInfinity }
+    expectResult (NaN) { NaN + IntegerExt(3) }
+    expectResult (NaN) { IntegerExt(3) + NaN }
+    expectResult (NaN) { PositiveInfinity + NegativeInfinity }
+    expectResult (NaN) { NegativeInfinity + PositiveInfinity }
+    expectResult (NaN) { NaN + NaN }
   }
   
   test("difference on infinities") {
-    expect (NegativeInfinity) { IntegerExt(3) - PositiveInfinity }
-    expect (PositiveInfinity) { PositiveInfinity - IntegerExt(3)  }
-    expect (NaN) { PositiveInfinity - PositiveInfinity  }
-    expect (PositiveInfinity) { IntegerExt(3) - NegativeInfinity }
-    expect (NegativeInfinity) { NegativeInfinity - IntegerExt(3)  }
-    expect (NaN) { NegativeInfinity - NegativeInfinity }
-    expect (NaN) { NaN - IntegerExt(3) }
-    expect (NaN) { IntegerExt(3) - NaN }
-    expect (PositiveInfinity) { PositiveInfinity - NegativeInfinity }
-    expect (NegativeInfinity) { NegativeInfinity - PositiveInfinity }
-    expect (NaN) { NaN - NaN }
+    expectResult (NegativeInfinity) { IntegerExt(3) - PositiveInfinity }
+    expectResult (PositiveInfinity) { PositiveInfinity - IntegerExt(3)  }
+    expectResult (NaN) { PositiveInfinity - PositiveInfinity  }
+    expectResult (PositiveInfinity) { IntegerExt(3) - NegativeInfinity }
+    expectResult (NegativeInfinity) { NegativeInfinity - IntegerExt(3)  }
+    expectResult (NaN) { NegativeInfinity - NegativeInfinity }
+    expectResult (NaN) { NaN - IntegerExt(3) }
+    expectResult (NaN) { IntegerExt(3) - NaN }
+    expectResult (PositiveInfinity) { PositiveInfinity - NegativeInfinity }
+    expectResult (NegativeInfinity) { NegativeInfinity - PositiveInfinity }
+    expectResult (NaN) { NaN - NaN }
   }   
     
   test ("toString method") {
     check( (w:Int) => IntegerExt(w).toString == w.toString )
-    expect ("+Inf") { PositiveInfinity.toString }
-    expect ("-Inf") { NegativeInfinity.toString }
-    expect ("NaN") { NaN.toString }
+    expectResult ("+Inf") { PositiveInfinity.toString }
+    expectResult ("-Inf") { NegativeInfinity.toString }
+    expectResult ("NaN") { NaN.toString }
   }
 }

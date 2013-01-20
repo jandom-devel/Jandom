@@ -32,24 +32,24 @@ class PPLPropertySuite extends FunSuite {
   val empty = octDomain.empty(3)
  
   test ("full should be full") { 
-    expect ( true ) { full.isFull }
+    expectResult ( true ) { full.isFull }
   }
   
   test ("full should not be empty") {  
-    expect ( false ) { full.isEmpty }  
+    expectResult ( false ) { full.isEmpty }  
   }
   
   test ("empty should be empty") {    
-    expect ( true ) { empty.isEmpty }
+    expectResult ( true ) { empty.isEmpty }
   }
   
   test ("empty should not be full") {
-	expect ( false ) { empty.isFull }  
+	expectResult ( false ) { empty.isFull }  
   }
 
   test ("empty should be strictly less than full") {
-    expect ( true ) { empty < full }
-    expect ( true ) { empty <= full }
+    expectResult ( true ) { empty < full }
+    expectResult ( true ) { empty <= full }
   }
 
   test ("various operations") {
@@ -58,25 +58,25 @@ class PPLPropertySuite extends FunSuite {
     val obj3 = full.linearAssignment(2, Array(0,0,0), 0)
     val obj4 = full.linearAssignment(2, Array(0,0,0), 1)
     val obj5 = obj4 union obj3
-    expect (true) { obj5 > obj4 }
+    expectResult (true) { obj5 > obj4 }
     val obj7 = obj5.linearInequality(Array(0,0,1), 1)
-    expect (empty) { obj7 }   
+    expectResult (empty) { obj7 }   
     val obj8 = obj4 widening obj3
-    expect (obj5) { obj8 }
+    expectResult (obj5) { obj8 }
   }
   
   test ("string conversion") {
     val obj = full.linearInequality(Array(1,1,0),1)
     val obj2 = obj.linearInequality(Array(1,0,0), 2)
-    expect( Seq("-x >= 2", "-x - y >= 1") ) { obj2.mkString(IndexedSeq("x","y","z")).toSeq }
-    expect( "[ -v0 >= 2 , -v0 - v1 >= 1 ]" ) { obj2.toString }       
+    expectResult( Seq("-x >= 2", "-x - y >= 1") ) { obj2.mkString(IndexedSeq("x","y","z")).toSeq }
+    expectResult( "[ -v0 >= 2 , -v0 - v1 >= 1 ]" ) { obj2.toString }       
   }
   
   test ("string conversion for high-dimensional spaces") {
     val a = Array.fill(33)(0.0)
     a(27) = 1.0
     val obj3 = octDomain.full(33).linearInequality(a,0)
-    expect ( "[ -v27 >= 0 ]" ) { obj3.toString }
+    expectResult ( "[ -v27 >= 0 ]" ) { obj3.toString }
   }
 
 }

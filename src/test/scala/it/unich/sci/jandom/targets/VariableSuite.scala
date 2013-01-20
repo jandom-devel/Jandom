@@ -30,12 +30,12 @@ class VariableSuite extends FunSuite {
 	test ("Variable standard constructors") {
 	  val v1 = new Variable("x")
 	  val v2 = new Variable("x")
-	  expect(false) { v1==v2 }	  
+	  expectResult(false) { v1==v2 }	  
 	}
 	
 	test ("Variable companion object constructors") {
 	  val v1 = Variable("x");
 	  val v2 = Variable("x");
-	  expect(false) { v1==v2 };
+	  expectResult(false) { v1==v2 };
 	}
 }

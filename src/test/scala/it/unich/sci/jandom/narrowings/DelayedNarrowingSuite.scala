@@ -34,13 +34,13 @@ class DelayedNarrowingSuite extends FunSpec {
       val wd = new DelayedNarrowing(DefaultNarrowing, 2)
       val d2 = BoxDouble(Array(1), Array(3))
       val d3 = wd(d1, d2)
-      expect(BoxDouble(Array(1), Array(3))) { d3 }
+      expectResult(BoxDouble(Array(1), Array(3))) { d3 }
       val d4 = BoxDouble(Array(2), Array(3))
       val d5 = wd(d3, d4)
-      expect(BoxDouble(Array(2), Array(3))) { d5 }
+      expectResult(BoxDouble(Array(2), Array(3))) { d5 }
       val d6 = BoxDouble(Array(3), Array(3))
       val d7 = wd(d5, d6)
-      expect(BoxDouble(Array(2), Array(3))) { d7 }
+      expectResult(BoxDouble(Array(2), Array(3))) { d7 }
     }
 
     it("should not delay when the delay parameter is set to zero") {
@@ -48,7 +48,7 @@ class DelayedNarrowingSuite extends FunSpec {
       val wd = new DelayedNarrowing(DefaultNarrowing, 0)
       val d2 = BoxDouble(Array(1), Array(3))
       val d3 = wd(d1, d2)
-      expect(BoxDouble(Array(0), Array(3))) { d3 }
+      expectResult(BoxDouble(Array(0), Array(3))) { d3 }
     }
     it("should not accept negative delays") {
       intercept[IllegalArgumentException] { new DelayedNarrowing(DefaultNarrowing, -1) }
