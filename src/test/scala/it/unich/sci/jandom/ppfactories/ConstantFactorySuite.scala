@@ -30,7 +30,7 @@ import org.scalatest.matchers.ShouldMatchers
 class ConstantFactorySuite extends FunSpec  {
   describe("Constant Factory") {
     it ("should return the same object each time it is called")  {
-      val dwf: PPFactory[MockTarget,String] = ConstantFactory("prova")
+      val dwf: PPFactory[MockTarget,String] = "prova"
       val d0 = dwf(0)
       val d1= dwf(0)
       val d2= dwf(2)

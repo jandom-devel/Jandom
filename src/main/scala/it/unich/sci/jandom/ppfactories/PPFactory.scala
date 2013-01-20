@@ -26,4 +26,10 @@ import targets.Target
  * which build objects parameterized by widening points.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-trait PPFactory[-Tgt <: Target, +Val] extends Function1[Tgt#WideningPoint,Val]
+trait PPFactory[-Tgt <: Target, +Val] extends Function1[Tgt#WideningPoint, Val]
+
+object PPFactory {
+  implicit class ConstantFactory[T](private val obj: T) extends PPFactory[Target, T] {
+    def apply(pp: Target#WideningPoint) = obj
+  }
+}

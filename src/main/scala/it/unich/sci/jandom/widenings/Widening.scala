@@ -21,7 +21,6 @@ package widenings
 
 import domains.NumericalProperty
 import targets.Target
-import ppfactories.ConstantFactory
 
 /**
  * This is the trait for widenings, operators used to accelerate fixpoint computations.
@@ -36,13 +35,4 @@ trait Widening  {
    * @return the result of widening 
    */
   def apply[Property <: NumericalProperty[Property]](current: Property, next: Property): Property
-}
-
-/**
- * The companion object for Widening. Contains implicit definition to transform automatically
- * a widening into a constant "per program point" factory.
- * @author Gianluca Amato <amato@sci.unich.it>
- */
-object Widening {
-  implicit def toWideningFactory[Tgt <: Target](narrowing: Widening) = ConstantFactory(narrowing)
 }

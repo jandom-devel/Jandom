@@ -21,7 +21,6 @@ package narrowings
 
 import domains.NumericalProperty
 import targets.Target
-import ppfactories.ConstantFactory
 
 /**
  * This is the trait for narrowings, operators used to accelerate fixpoint computations.
@@ -34,17 +33,4 @@ trait Narrowing {
    * @return the result of the narrowing.
    */
   def apply[Property <: NumericalProperty[Property]](current: Property, next: Property): Property
-}
-
-/**
- * The companion object for Narrowing. Contains implicit definition to transform automatically
- * a narrowing into a constant "per program point" factory.
- * @author Gianluca Amato <amato@sci.unich.it>
- */
-object Narrowing {
-  /**
-   * Transforms a narrowing in a constant narrowing factory
-   * @return a constant narrowing factory for the parameter narrowing.
-   */
-  implicit def toNarrowingFactory(narrowing: Narrowing) = ConstantFactory(narrowing)
 }
