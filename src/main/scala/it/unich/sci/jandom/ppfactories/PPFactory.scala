@@ -29,6 +29,12 @@ import targets.Target
 trait PPFactory[-Tgt <: Target, +Val] extends Function1[Tgt#WideningPoint, Val]
 
 object PPFactory {
+  /**
+   * A "per program point" implicit factory which always returns the same value
+   * @tparam T the type of the object built by the factory
+   * @param obj the object returned by the factory
+   * @author Gianluca Amato <amato@sci.unich.it>
+   */
   implicit class ConstantFactory[T](private val obj: T) extends PPFactory[Target, T] {
     def apply(pp: Target#WideningPoint) = obj
   }
