@@ -24,6 +24,9 @@ class MainFrame extends Frame {
     }
   }
 
+  /**
+   * This is the action to invoke when the user selects the About Box dialog
+   */
   val aboutAction = new Action("About") {
     def apply() {
       AboutDialog.visible = true
@@ -43,6 +46,7 @@ class MainFrame extends Frame {
     title = "Jandom"
 
     contents = new BorderPanel {
+      val statusBar = new Label("dd")
       val tabbedPane = new TabbedPane {
         val outputPane = new EditorPane
         val parametersPane = new ParametersPane
@@ -54,19 +58,25 @@ class MainFrame extends Frame {
       analyzeButton.action = new Action("ANALYZE!") {
         def apply() {
           val source = editorPane.text
-          val parsed = parsers.RandomParser().parseProgram(source)
-          if (parsed.successful) {
-            val program = parsed.get
-            val domain = tabbedPane.parametersPane.selectedDomain
-            val params = tabbedPane.parametersPane.getParameters(program.asInstanceOf[SLILStmt])
-            val ann = program.analyze(params)
-            tabbedPane.outputPane.text = program.mkString(ann)
-            tabbedPane.selection.index = 1
+          val parser = parsers.RandomParser()
+          parser.parseProgram(source) match {
+            case parser.Success(program, _) =>
+              val domain = tabbedPane.parametersPane.selectedDomain
+              val params = tabbedPane.parametersPane.getParameters(program.asInstanceOf[SLILStmt])
+              val ann = program.analyze(params)
+              tabbedPane.outputPane.text = program.mkString(ann)
+              tabbedPane.selection.index = 1
+            case parser.NoSuccess(msg, next) =>
+              statusBar.text = msg + " in line " + next.pos.line + " column " + next.pos.column
           }
         }
       }
+      val southPanel = new BorderPanel {
+        layout(analyzeButton) = BorderPanel.Position.North
+        layout(statusBar) = BorderPanel.Position.South
+      }
       layout(tabbedPane) = BorderPanel.Position.Center
-      layout(analyzeButton) = BorderPanel.Position.South
+      layout(southPanel) = BorderPanel.Position.South
     }
 
     menuBar = new MenuBar {

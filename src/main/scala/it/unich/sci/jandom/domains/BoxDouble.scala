@@ -264,7 +264,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
 
   def empty = BoxDouble.empty(low.length)
 
-  def full = BoxDouble.empty(low.length)
+  def full = BoxDouble.full(low.length)
 
   def tryCompareTo[B >: BoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: BoxDouble =>

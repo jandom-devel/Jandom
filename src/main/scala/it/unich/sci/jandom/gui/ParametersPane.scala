@@ -11,13 +11,23 @@ import it.unich.sci.jandom.parameters.ParameterEnumeration
 import it.unich.sci.jandom.parameters.ParameterValue
 import it.unich.sci.jandom.parameters.WideningScope
 import it.unich.sci.jandom.parameters.NarrowingStrategy
+import javax.swing.SpinnerNumberModel
+import javax.swing.JSpinner
+import it.unich.sci.jandom.widenings.DelayedWidening
+import it.unich.sci.jandom.widenings.DefaultWidening
 
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)
   val domainComboBox = addParameterEnumeration(0, NumericalDomain)
   val wideningComboBox = addParameterEnumeration(1, WideningScope)
   val narrowingComboBox = addParameterEnumeration(2, NarrowingStrategy)
-  layout(Swing.VGlue) = new Constraints(0, 3, 2, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
+  val delayModel = new SpinnerNumberModel(0, 0, Double.PositiveInfinity, 1)
+  val delay = Component.wrap(new JSpinner(delayModel))
+  layout(new Label("Widening Delay:")) = new Constraints(0, 3, 1, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
+      GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0)
+  layout(delay) = new Constraints(1, 3, 1, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
+      GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0)
+  layout(Swing.VGlue) = new Constraints(0, 4, 2, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
       GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0)
   
    object ParameterRenderer extends Renderer[ParameterValue] {
@@ -51,6 +61,12 @@ class ParametersPane extends GridBagPanel {
     val parameters = new Parameters(selectedDomain, tgt)
     parameters.wideningScope = WideningScope(wideningComboBox.selection.index)
     parameters.narrowingStrategy = NarrowingStrategy(narrowingComboBox.selection.index)
+    val delay = delayModel.getValue().asInstanceOf[Double].toInt
+    if (delay != 0) {
+      println("wow")
+      parameters.wideningFactory = new DelayedWidening(DefaultWidening,delay)
+    }
+            
     parameters
   }
 }
