@@ -51,7 +51,7 @@ case class SLILProgram(private val env: Environment, private val inputVars: Seq[
       (if (ann.get(this, 1) != None) innerspaces + ppspec.decorator(ann(this, 1)) + "\n" else "") +
       stmt.mkString(ann, level + 1, ppspec) + "\n" +
       (if (ann.get(this, 2) != None) innerspaces + ppspec.decorator(ann(this, 2)) + "\n" else "") +
-      spaces + '}'    
+      spaces + "}\n"    
   }
 
   override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], 

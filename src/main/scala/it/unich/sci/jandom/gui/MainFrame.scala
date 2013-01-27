@@ -9,10 +9,18 @@ import java.awt.GridBagConstraints
 import javax.swing.KeyStroke
 import java.awt.event.KeyEvent
 import java.awt.event.InputEvent
+import scala.swing.TabbedPane
 
 class MainFrame extends Frame {
 
   val editorPane = new JandomEditorPane(this)
+  val outputPane = new OutputPane
+  val parametersPane = new ParametersPane
+  val tabbedPane = new TabbedPane {
+    pages += new TabbedPane.Page("Editor", new ScrollPane(editorPane))
+    pages += new TabbedPane.Page("Output", new ScrollPane(outputPane))
+    pages += new TabbedPane.Page("Parameters", parametersPane)
+  }
 
   /**
    * This is the Action to invoke when user wants to quit the application
@@ -33,50 +41,40 @@ class MainFrame extends Frame {
     }
   }
 
+  val analyzeAction = new Action("ANALYZE!") {
+    def apply() {
+      val source = editorPane.text
+      val parser = parsers.RandomParser()
+      parser.parseProgram(source) match {
+        case parser.Success(program, _) =>
+          val domain = parametersPane.selectedDomain
+          val params = parametersPane.getParameters(program.asInstanceOf[SLILStmt])
+          val ann = program.analyze(params)
+          outputPane.text = outputPane.text + params.debugWriter.toString
+          outputPane.text = outputPane.text + program.mkString(ann)
+          tabbedPane.selection.index = 1
+        case parser.NoSuccess(msg, next) =>
+          Dialog.showMessage(editorPane, msg + " in line " + next.pos.line + " column " + next.pos.column,
+            "Error in parsing source code", Dialog.Message.Error)
+      }
+    }
+  }
+
   /**
    * Closing the frame causes the program to exit
    */
   override def closeOperation() {
     quitAction()
   }
-
   init()
 
   def init() {
     title = "Jandom"
 
     contents = new BorderPanel {
-      val statusBar = new Label("dd")
-      val tabbedPane = new TabbedPane {
-        val outputPane = new EditorPane
-        val parametersPane = new ParametersPane
-        pages += new TabbedPane.Page("Editor", new ScrollPane(editorPane))
-        pages += new TabbedPane.Page("Output", new ScrollPane(outputPane))
-        pages += new TabbedPane.Page("Parameters", parametersPane)
-      }
-      val analyzeButton = new Button()
-      analyzeButton.action = new Action("ANALYZE!") {
-        def apply() {
-          val source = editorPane.text
-          val parser = parsers.RandomParser()
-          parser.parseProgram(source) match {
-            case parser.Success(program, _) =>
-              val domain = tabbedPane.parametersPane.selectedDomain
-              val params = tabbedPane.parametersPane.getParameters(program.asInstanceOf[SLILStmt])
-              val ann = program.analyze(params)
-              tabbedPane.outputPane.text = program.mkString(ann)
-              tabbedPane.selection.index = 1
-            case parser.NoSuccess(msg, next) =>
-              statusBar.text = msg + " in line " + next.pos.line + " column " + next.pos.column
-          }
-        }
-      }
-      val southPanel = new BorderPanel {
-        layout(analyzeButton) = BorderPanel.Position.North
-        layout(statusBar) = BorderPanel.Position.South
-      }
+      val analyzeButton = new Button(analyzeAction)
       layout(tabbedPane) = BorderPanel.Position.Center
-      layout(southPanel) = BorderPanel.Position.South
+      layout(analyzeButton) = BorderPanel.Position.South
     }
 
     menuBar = new MenuBar {
@@ -96,6 +94,9 @@ class MainFrame extends Frame {
         contents += new MenuItem(editorPane.cutAction)
         contents += new MenuItem(editorPane.copyAction)
         contents += new MenuItem(editorPane.pasteAction)
+      }
+      contents += new Menu("Tool") {
+        contents += new MenuItem(outputPane.clear)
       }
       contents += new Menu("Help") {
         contents += new MenuItem(aboutAction)

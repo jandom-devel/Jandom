@@ -31,65 +31,105 @@ import it.unich.sci.jandom.domains.AbstractProperty
  */
 case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
   import AnalysisPhase._
-  
+
+  /**
+   * This variable keeps the last value for the invariant computed during the analysis.
+   */
   var lastInvariant: NumericalProperty[_] = null
+
+  /**
+   * This variable keeps the last result for the analysis of the body of the While statement.
+   */
   var lastBodyResult: NumericalProperty[_] = null
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], 
-      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
+  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property],
+    phase: AnalysisPhase, ann: Annotation[Property]): Property = {
     import parameters.WideningScope._
     import parameters.NarrowingStrategy._
-    
-    // Determines widening operators to use
+
+    // Determines widening/narrowing operators to use
     val widening = params.wideningFactory(this, 1)
     val narrowing = params.narrowingFactory(this, 1)
+
+    // Determines initial values for the analysis, depending on the calling phase
+    var (bodyResult, invariant) =
+      if (lastBodyResult != null && phase != AscendingRestart)
+        (lastBodyResult.asInstanceOf[Property], lastInvariant.asInstanceOf[Property])
+      else
+        (input.empty, input.empty)
+
+    // Debug
+    params.debugWriter.write("Beginnin Ascending Chain\n")
+    params.debugWriter.write(s"Starting Invariant: $invariant\n")
+
+    // Initialization phase: compute the effect of entering the while node from the
+    // outer cycle.
+    if (phase != Descending) {
+      params.wideningScope match {
+        case Random => invariant = invariant union input
+        case Output => invariant = invariant widening (input union bodyResult)
+        case BackEdges => 
+      }
+    }
     
-    // Determines initial value of the analysis, depending on the current phase
-    var bodyResult = if (lastBodyResult != null && phase != AscendingRestart) lastBodyResult.asInstanceOf[Property] else input.empty
-    var newinvariant = if (lastInvariant != null && phase != AscendingRestart) lastInvariant.asInstanceOf[Property] else input.empty
-    var invariant = newinvariant
+    // Debug
+    params.debugWriter.write(s"Entering Invariant: $invariant\n")
+
+    // Declare a variable for the loop
+    var newinvariant = invariant
 
     // If needed, perform ascending phase. If in AscendingRestart, perform first step in AscendingRestart,
     // and later steps in Ascending
     if (phase == Ascending || phase == AscendingRestart) do {
-      if (params.wideningScope == Random) newinvariant = newinvariant union input
+      // Keep the current phase (either Ascending or AscendingRestart)
       var currentPhase = phase
       invariant = newinvariant
-      params.wideningScope  match {        
+      params.wideningScope match {
         case Random =>
           bodyResult = body.analyze(condition.analyze(invariant), params, currentPhase, ann)
-          newinvariant = widening(invariant,bodyResult)	
-        case BackEdges => 
+          newinvariant = widening(invariant, bodyResult)
+        case BackEdges =>
+          bodyResult = bodyResult widening body.analyze(condition.analyze(input union newinvariant), params, currentPhase, ann)
           newinvariant = input union bodyResult
-          bodyResult = body.analyze(condition.analyze(input union newinvariant), params, currentPhase, ann)
-        case Output => 
-          newinvariant = widening(invariant,input union bodyResult)
-          bodyResult = body.analyze(condition.analyze(newinvariant), params, currentPhase, ann)         
+        case Output =>
+          bodyResult = body.analyze(condition.analyze(newinvariant), params, currentPhase, ann)
+          newinvariant = widening(invariant, input union bodyResult)
       }
       currentPhase = Ascending
-    } while (newinvariant > invariant)
       
+      // Debug     
+      params.debugWriter.write(s"Body Result: $bodyResult\n")
+      params.debugWriter.write(s"Invariant: $newinvariant\n")
+      
+    } while (newinvariant > invariant)
+
+    // Debug
+    params.debugWriter.write("Final invariant: " + invariant + "\n")
+
     // If needed, perform descending step
-    if (phase == Descending || params.narrowingStrategy == Restart || params.narrowingStrategy == Continue ) {
-      val newphase = if (params.narrowingStrategy == Restart) AscendingRestart else Descending 
+    if (phase == Descending || params.narrowingStrategy == Restart || params.narrowingStrategy == Continue) {
+      // Debug
+      params.debugWriter.write("Beginnin Descending Chain\n")
+      val newphase = if (params.narrowingStrategy == Restart) AscendingRestart else Descending
       do {
-    	invariant = newinvariant
-    	newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, newphase, ann))
+        invariant = newinvariant
+        newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, newphase, ann))
+        params.debugWriter.write("Invariant: " + invariant + "\n")
       } while (newinvariant < invariant)
     }
     ann((this, 1)) = invariant
     lastInvariant = invariant
     lastBodyResult = bodyResult
-    if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)    
+    if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)
     return condition.opposite.analyze(invariant)
   }
 
-  override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {  
+  override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
-    spaces + "while (" + condition + ")" +""+
+    spaces + "while (" + condition + ")" + "" +
       (if (ann contains (this, 1)) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +
-      (if (ann contains (this, 2)) ppspec.indent(level+1) + ppspec.decorator(ann(this, 2)) + "\n" else "") +
-      body.mkString(ann, level+1, ppspec) + '\n' +
+      (if (ann contains (this, 2)) ppspec.indent(level + 1) + ppspec.decorator(ann(this, 2)) + "\n" else "") +
+      body.mkString(ann, level + 1, ppspec) + '\n' +
       spaces + '}'
   }
 }

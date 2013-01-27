@@ -65,4 +65,14 @@ class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val do
    * This is used for putting results in tags
    */
   var tag = scala.collection.mutable.Map[Any, Property]()
+  
+  /**
+   * This is a java writer where the analyzer write debug informations
+   */
+  var debugWriter = new java.io.Writer {
+    override def write(cbuf: Array[Char], off: Int, len: Int) {}
+    override def flush() { }
+    override def close() { }
+    override def toString = ""
+  }
 }

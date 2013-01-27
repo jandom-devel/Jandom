@@ -23,11 +23,15 @@ class ParametersPane extends GridBagPanel {
   val narrowingComboBox = addParameterEnumeration(2, NarrowingStrategy)
   val delayModel = new SpinnerNumberModel(0, 0, Double.PositiveInfinity, 1)
   val delay = Component.wrap(new JSpinner(delayModel))
-  layout(new Label("Widening Delay:")) = new Constraints(0, 3, 1, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
-      GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0)
-  layout(delay) = new Constraints(1, 3, 1, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
+  val debug = new CheckBox("Debug")
+  
+  layout(new Label("Widening Delay:")) = new Constraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
+      GridBagConstraints.NONE, new Insets(0,0,5,5), 0, 0)
+  layout(delay) = new Constraints(1, 3, 1, 1, 0.0, 0.0, GridBagConstraints.WEST,
+      GridBagConstraints.HORIZONTAL, new Insets(0,0,5,0), 0, 0)
+  layout(debug) = new Constraints(0, 4, 2, 1, 0.0, 0.0, GridBagConstraints.BASELINE,
       GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0)
-  layout(Swing.VGlue) = new Constraints(0, 4, 2, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
+  layout(Swing.VGlue) = new Constraints(0, 5, 2, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
       GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0)
   
    object ParameterRenderer extends Renderer[ParameterValue] {
@@ -63,10 +67,9 @@ class ParametersPane extends GridBagPanel {
     parameters.narrowingStrategy = NarrowingStrategy(narrowingComboBox.selection.index)
     val delay = delayModel.getValue().asInstanceOf[Double].toInt
     if (delay != 0) {
-      println("wow")
       parameters.wideningFactory = new DelayedWidening(DefaultWidening,delay)
     }
-            
+    if (debug.selected) parameters.debugWriter = new java.io.StringWriter
     parameters
   }
 }
