@@ -59,7 +59,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
         (input.empty, input.empty)
 
     // Debug
-    params.debugWriter.write("Beginnin Ascending Chain\n")
+    params.debugWriter.write("Beginning Ascending Chain\n")
     params.debugWriter.write(s"Starting Invariant: $invariant\n")
 
     // Initialization phase: compute the effect of entering the while node from the
@@ -104,18 +104,23 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     } while (newinvariant > invariant)
 
     // Debug
-    params.debugWriter.write("Final invariant: " + invariant + "\n")
+    params.debugWriter.write(s"Final ascending invariant: $invariant\n")
 
     // If needed, perform descending step
     if (phase == Descending || params.narrowingStrategy == Restart || params.narrowingStrategy == Continue) {
       // Debug
-      params.debugWriter.write("Beginnin Descending Chain\n")
+      params.debugWriter.write("Beginning Descending Chain\n")
       val newphase = if (params.narrowingStrategy == Restart) AscendingRestart else Descending
-      do {
+      do {        
         invariant = newinvariant
-        newinvariant = narrowing(invariant, input union body.analyze(condition.analyze(invariant), params, newphase, ann))
-        params.debugWriter.write("Invariant: " + invariant + "\n")
+        val bodyResult = input union body.analyze(condition.analyze(invariant), params, newphase, ann)
+        newinvariant = narrowing(invariant, bodyResult)
+                
+        // Debug
+        params.debugWriter.write(s"Body Result: $bodyResult\n")
+        params.debugWriter.write(s"Invariant: $newinvariant\n")
       } while (newinvariant < invariant)
+      params.debugWriter.write(s"Final descending invariant: $newinvariant\n")
     }
     ann((this, 1)) = invariant
     lastInvariant = invariant

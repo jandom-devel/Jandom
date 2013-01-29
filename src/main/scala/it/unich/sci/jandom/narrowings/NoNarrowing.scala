@@ -26,6 +26,6 @@ import domains.NumericalProperty
  * current value.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class NoNarrowing extends Narrowing {
+object NoNarrowing extends Narrowing {
 	def apply[Property <: NumericalProperty[Property]] (current: Property, next: Property) = current
 }

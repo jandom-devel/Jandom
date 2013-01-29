@@ -5,16 +5,20 @@ import domains.{ NumericalDomain, NumericalProperty }
 import scala.swing._
 import java.awt.GridBagConstraints
 import scala.swing.ListView.Renderer
+import javax.swing.SpinnerNumberModel
+import javax.swing.JSpinner
 import it.unich.sci.jandom.targets.{Parameters,Target}
 import it.unich.sci.jandom.parameters.Parameter
 import it.unich.sci.jandom.parameters.ParameterEnumeration
 import it.unich.sci.jandom.parameters.ParameterValue
 import it.unich.sci.jandom.parameters.WideningScope
 import it.unich.sci.jandom.parameters.NarrowingStrategy
-import javax.swing.SpinnerNumberModel
-import javax.swing.JSpinner
 import it.unich.sci.jandom.widenings.DelayedWidening
 import it.unich.sci.jandom.widenings.DefaultWidening
+import it.unich.sci.jandom.narrowings.DelayedNarrowing
+import it.unich.sci.jandom.narrowings.NoNarrowing
+import it.unich.sci.jandom.widenings.DelayedWideningFactory
+import it.unich.sci.jandom.narrowings.DelayedNarrowingFactory
 
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)
@@ -67,8 +71,9 @@ class ParametersPane extends GridBagPanel {
     parameters.narrowingStrategy = NarrowingStrategy(narrowingComboBox.selection.index)
     val delay = delayModel.getValue().asInstanceOf[Double].toInt
     if (delay != 0) {
-      parameters.wideningFactory = new DelayedWidening(DefaultWidening,delay)
+      parameters.wideningFactory = DelayedWideningFactory(DefaultWidening,delay)
     }
+    //parameters.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)
     if (debug.selected) parameters.debugWriter = new java.io.StringWriter
     parameters
   }
