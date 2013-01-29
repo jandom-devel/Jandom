@@ -1,0 +1,11 @@
+var i:real, j:real;
+begin
+ i = 0;
+ while (i<=10) do
+   j = 0;
+   while (j<=10) do
+      j=j+1;
+   done;
+   i = i+1;
+ done;
+end
