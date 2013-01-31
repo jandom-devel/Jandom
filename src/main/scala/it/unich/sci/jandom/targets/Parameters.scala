@@ -66,6 +66,11 @@ class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val do
    */
   var tag = scala.collection.mutable.Map[Any, Property]()
   
+  /** 
+   * This is a variable globally used by the analyzer for keeping track of nested level
+   */
+  var nestingLevel = 0
+  
   /**
    * This is a java writer where the analyzer write debug informations
    */
@@ -74,5 +79,10 @@ class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val do
     override def flush() { }
     override def close() { }
     override def toString = ""
+  }
+  
+  def log(msg: String) {
+    debugWriter.write(" "*nestingLevel*3) 
+    debugWriter.write(msg)
   }
 }

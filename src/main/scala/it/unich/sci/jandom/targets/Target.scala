@@ -68,5 +68,5 @@ trait Target {
    * @param param the parameters which drive the analyzer
    * @param bb the blackboard where it is possible to put annotation during the analysis
    */
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property]
+  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property]    
 }

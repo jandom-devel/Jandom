@@ -1,6 +1,6 @@
 /**
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
+ * JANDOM is free softsare: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -47,6 +47,8 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     import parameters.WideningScope._
     import parameters.NarrowingStrategy._
 
+    params.nestingLevel +=  1
+    
     // Determines widening/narrowing operators to use
     val widening = params.wideningFactory(this, 1)
     val narrowing = params.narrowingFactory(this, 1)
@@ -59,8 +61,9 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
         (input.empty, input.empty)
 
     // Debug
-    params.debugWriter.write("Beginning Ascending Chain\n")
-    params.debugWriter.write(s"Starting Invariant: $invariant\n")
+    params.log("Beginning Ascending Chain\n")
+    params.log(s"Starting Invariant: $invariant\n")
+    params.log(s"Input: $input\n")
 
     // Initialization phase: compute the effect of entering the while node from the
     // outer cycle.
@@ -68,12 +71,12 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
       params.wideningScope match {
         case Random => invariant = invariant union input
         case Output => invariant = invariant widening (input union bodyResult)
-        case BackEdges => 
+        case BackEdges => invariant = bodyResult union input
       }
     }
     
     // Debug
-    params.debugWriter.write(s"Entering Invariant: $invariant\n")
+    params.log(s"Entering Invariant: $invariant\n")
 
     // Declare a variable for the loop
     var newinvariant = invariant
@@ -90,7 +93,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
           newinvariant = widening(invariant, bodyResult)
         case BackEdges =>
           bodyResult = bodyResult widening body.analyze(condition.analyze(input union newinvariant), params, currentPhase, ann)
-          newinvariant = input union bodyResult
+          newinvariant =  bodyResult union input
         case Output =>
           bodyResult = body.analyze(condition.analyze(newinvariant), params, currentPhase, ann)
           newinvariant = widening(invariant, input union bodyResult)
@@ -98,34 +101,37 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
       currentPhase = Ascending
       
       // Debug     
-      params.debugWriter.write(s"Body Result: $bodyResult\n")
-      params.debugWriter.write(s"Invariant: $newinvariant\n")
+      params.log(s"Body Result: $bodyResult\n")
+      params.log(s"Invariant: $newinvariant\n")
       
     } while (newinvariant > invariant)
 
     // Debug
-    params.debugWriter.write(s"Final ascending invariant: $invariant\n")
+    params.log(s"Final ascending invariant: $invariant\n")
 
     // If needed, perform descending step
     if (phase == Descending || params.narrowingStrategy == Restart || params.narrowingStrategy == Continue) {
       // Debug
-      params.debugWriter.write("Beginning Descending Chain\n")
+      params.log("Beginning Descending Chain\n")
       val newphase = if (params.narrowingStrategy == Restart) AscendingRestart else Descending
       do {        
         invariant = newinvariant
-        val bodyResult = input union body.analyze(condition.analyze(invariant), params, newphase, ann)
-        newinvariant = narrowing(invariant, bodyResult)
+        val bodyResult = body.analyze(condition.analyze(invariant), params, newphase, ann)
+        newinvariant = narrowing(invariant, input union bodyResult)
                 
         // Debug
-        params.debugWriter.write(s"Body Result: $bodyResult\n")
-        params.debugWriter.write(s"Invariant: $newinvariant\n")
+        params.log(s"Body Result: $bodyResult\n")
+        params.log(s"Invariant: $newinvariant\n")
       } while (newinvariant < invariant)
-      params.debugWriter.write(s"Final descending invariant: $newinvariant\n")
+      params.log(s"Final descending invariant: $newinvariant\n")
     }
     ann((this, 1)) = invariant
     lastInvariant = invariant
     lastBodyResult = bodyResult
     if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)
+    
+    params.nestingLevel -=  1
+    
     return condition.opposite.analyze(invariant)
   }
 
