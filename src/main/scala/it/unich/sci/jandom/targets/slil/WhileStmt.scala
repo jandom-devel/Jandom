@@ -47,8 +47,9 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     import parameters.WideningScope._
     import parameters.NarrowingStrategy._
 
-    params.nestingLevel +=  1
-    
+    // Increase nesting level since we are entering a loop
+    params.nestingLevel += 1
+
     // Determines widening/narrowing operators to use
     val widening = params.wideningFactory(this, 1)
     val narrowing = params.narrowingFactory(this, 1)
@@ -60,78 +61,94 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
       else
         (input.empty, input.empty)
 
-    // Debug
-    params.log("Beginning Ascending Chain\n")
-    params.log(s"Starting Invariant: $invariant\n")
-    params.log(s"Input: $input\n")
-
-    // Initialization phase: compute the effect of entering the while node from the
-    // outer cycle.
-    if (phase != Descending) {
-      params.wideningScope match {
-        case Random => invariant = invariant union input
-        case Output => invariant = invariant widening (input union bodyResult)
-        case BackEdges => invariant = bodyResult union input
-      }
-    }
-    
-    // Debug
-    params.log(s"Entering Invariant: $invariant\n")
+    // Keep the current phase in the variable currentPhase, and initialize
+    // with the input parameter
+    var currentPhase = phase
 
     // Declare a variable for the loop
     var newinvariant = invariant
 
-    // If needed, perform ascending phase. If in AscendingRestart, perform first step in AscendingRestart,
-    // and later steps in Ascending
-    if (phase == Ascending || phase == AscendingRestart) do {
-      // Keep the current phase (either Ascending or AscendingRestart)
-      var currentPhase = phase
-      invariant = newinvariant
+    if (currentPhase == Ascending || currentPhase == AscendingRestart) {
+      // Debug
+      params.log("Beginning Ascending Chain\n")
+      params.log(s"Starting Invariant: $invariant\n")
+      params.log(s"Input: $input\n")
+
+      // Initialization phase: compute the effect of entering the while node from the
+      // outer cycle.
       params.wideningScope match {
-        case Random =>
-          bodyResult = body.analyze(condition.analyze(invariant), params, currentPhase, ann)
-          newinvariant = widening(invariant, bodyResult)
-        case BackEdges =>
-          bodyResult = bodyResult widening body.analyze(condition.analyze(input union newinvariant), params, currentPhase, ann)
-          newinvariant =  bodyResult union input
-        case Output =>
-          bodyResult = body.analyze(condition.analyze(newinvariant), params, currentPhase, ann)
-          newinvariant = widening(invariant, input union bodyResult)
+        case Random => newinvariant = invariant union input
+        case Output => newinvariant = invariant widening (input union bodyResult)
+        case BackEdges => newinvariant = bodyResult union input
       }
-      currentPhase = Ascending
-      
-      // Debug     
-      params.log(s"Body Result: $bodyResult\n")
-      params.log(s"Invariant: $newinvariant\n")
-      
-    } while (newinvariant > invariant)
 
-    // Debug
-    params.log(s"Final ascending invariant: $invariant\n")
+      // Debug
+      params.log(s"Entering Invariant: $newinvariant\n")
 
-    // If needed, perform descending step
-    if (phase == Descending || params.narrowingStrategy == Restart || params.narrowingStrategy == Continue) {
+      do {
+        invariant = newinvariant
+        params.wideningScope match {
+          case Random =>
+            bodyResult = body.analyze(condition.analyze(invariant), params, currentPhase, ann)
+            newinvariant = widening(invariant, bodyResult)
+          case BackEdges =>
+            bodyResult = bodyResult widening body.analyze(condition.analyze(input union newinvariant), params, currentPhase, ann)
+            newinvariant = bodyResult union input
+          case Output =>
+            bodyResult = body.analyze(condition.analyze(newinvariant), params, currentPhase, ann)
+            newinvariant = widening(invariant, input union bodyResult)
+        }
+        // If we were in AscendingRestart phase, move to Ascending phase
+        currentPhase = Ascending
+
+        // Debug     
+        params.log(s"Body Result: $bodyResult\n")
+        params.log(s"Invariant: $newinvariant\n")
+
+      } while (newinvariant > invariant)
+
+      // Debug
+      params.log(s"Final ascending invariant: $invariant\n")
+
+      // If the strategy wants intertwined ascending and descending chains,
+      // move phase to Descending
+      if (params.narrowingStrategy == Restart || params.narrowingStrategy == Continue)
+        currentPhase = Descending
+    }
+
+    if (currentPhase == Descending) {
       // Debug
       params.log("Beginning Descending Chain\n")
+      params.log(s"Starting Invariant: $invariant\n")
+      params.log(s"Input: $input\n")
+      
+      // For narrowing, we only consider output scope
+      invariant = invariant narrowing (input union bodyResult)
+            
+      // Debug
+      params.log(s"Entering Invariant: $invariant\n")
+      
+      // Determines the phase for the inner loops
       val newphase = if (params.narrowingStrategy == Restart) AscendingRestart else Descending
-      do {        
+      do {
         invariant = newinvariant
         val bodyResult = body.analyze(condition.analyze(invariant), params, newphase, ann)
-        newinvariant = narrowing(invariant, input union bodyResult)
-                
+        newinvariant = invariant narrowing (input union bodyResult)
+
         // Debug
         params.log(s"Body Result: $bodyResult\n")
         params.log(s"Invariant: $newinvariant\n")
       } while (newinvariant < invariant)
+        
       params.log(s"Final descending invariant: $newinvariant\n")
     }
     ann((this, 1)) = invariant
     lastInvariant = invariant
     lastBodyResult = bodyResult
     if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)
-    
-    params.nestingLevel -=  1
-    
+
+    params.nestingLevel -= 1
+
     return condition.opposite.analyze(invariant)
   }
 
