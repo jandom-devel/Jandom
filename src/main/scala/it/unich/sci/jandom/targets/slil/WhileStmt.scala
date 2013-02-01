@@ -120,19 +120,22 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
       // Debug
       params.log("Beginning Descending Chain\n")
       params.log(s"Starting Invariant: $invariant\n")
+      params.log(s"Starting Body Result: $bodyResult\n")
       params.log(s"Input: $input\n")
       
+      
       // For narrowing, we only consider output scope
-      invariant = invariant narrowing (input union bodyResult)
+      newinvariant = invariant narrowing (input union bodyResult)
             
       // Debug
-      params.log(s"Entering Invariant: $invariant\n")
+      params.log(s"Entering Invariant: $newinvariant\n")
       
       // Determines the phase for the inner loops
       val newphase = if (params.narrowingStrategy == Restart) AscendingRestart else Descending
       do {
         invariant = newinvariant
-        val bodyResult = body.analyze(condition.analyze(invariant), params, newphase, ann)
+        
+        bodyResult = body.analyze(condition.analyze(invariant), params, newphase, ann)
         newinvariant = invariant narrowing (input union bodyResult)
 
         // Debug
@@ -142,11 +145,16 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
         
       params.log(s"Final descending invariant: $newinvariant\n")
     }
-    ann((this, 1)) = invariant
+    
+    // Save current values for later iterations of the loop
     lastInvariant = invariant
     lastBodyResult = bodyResult
+    
+    // Annotate results
+    ann((this, 1)) = invariant
     if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)
 
+    // Exit from this loop, hence decrement nesting level
     params.nestingLevel -= 1
 
     return condition.opposite.analyze(invariant)
