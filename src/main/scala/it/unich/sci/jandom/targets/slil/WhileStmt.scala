@@ -125,7 +125,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
       
       
       // For narrowing, we only consider output scope
-      newinvariant = invariant narrowing (input union bodyResult)
+      newinvariant = narrowing(invariant, input union bodyResult)
             
       // Debug
       params.log(s"Entering Invariant: $newinvariant\n")

@@ -73,7 +73,7 @@ class ParametersPane extends GridBagPanel {
     if (delay != 0) {
       parameters.wideningFactory = DelayedWideningFactory(DefaultWidening,delay)
     }
-    //parameters.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)
+    parameters.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)
     if (debug.selected) parameters.debugWriter = new java.io.StringWriter
     parameters
   }
