@@ -1,8 +1,6 @@
 /**
- * This is the class for extended GenericNumbers (GenericNumbers with infinities)
- *
- * Copyright 2011 Gianluca Amato
- *
+ * Copyright 2013 Gianluca Amato
+ * 
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
