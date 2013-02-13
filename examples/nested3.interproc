@@ -1,0 +1,14 @@
+var i:int, j:int;
+begin
+  i = 0;
+  while (true) do
+     i = i + 1;
+     j = 0;
+     while (j < 10) do
+       j = j + 1;
+     done;   
+     if (i > 9) then
+       i = 0;
+     endif;
+  done;
+end
