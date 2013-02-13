@@ -4,6 +4,8 @@ version := "0.1.1"
 
 scalaVersion := "2.10.0"
 
+seq(com.github.retronym.SbtOneJar.oneJarSettings: _*)
+
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "1.9.1" % "test",
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
