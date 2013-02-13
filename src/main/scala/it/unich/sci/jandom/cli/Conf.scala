@@ -16,14 +16,19 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.parameters
+package it.unich.sci.jandom.cli
 
-abstract class ParameterEnumeration extends Enumeration with Parameter[ParameterValue] { 
-  val default: Value
-  val name: String
-  val shortName: String
-  val description: String  
-  class Val(val name: String, val description: String) extends super.Val(name) with ParameterValue
-  protected final def Value(name: String = "", description : String = ""): Value = new Val(name, description)
-  def enabledValues =  values.toSeq.asInstanceOf[Seq[Val]] 
+import org.rogach.scallop._
+import it.unich.sci.jandom.parameters.WideningScope
+import it.unich.sci.jandom.parameters.NarrowingStrategy
+
+/**
+ * The class for command line parameters.
+ */
+class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
+  def enumConverter(e: Enumeration) = singleArgConverter ( e.withName(_) )
+  // we need to factour out common code here
+  val wideningScope = opt[WideningScope.Value]("widening", default = Some(WideningScope.default ) )( enumConverter( WideningScope ) )
+  val narrowingStrategy = opt[NarrowingStrategy.Value]("narrowing", default = Some(NarrowingStrategy.default) ) ( enumConverter( NarrowingStrategy) )
+  val file = opt[String]("input", required=true) 
 }

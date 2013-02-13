@@ -16,14 +16,8 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.parameters
+package it.unich.sci.jandom
 
-abstract class ParameterEnumeration extends Enumeration with Parameter[ParameterValue] { 
-  val default: Value
-  val name: String
-  val shortName: String
-  val description: String  
-  class Val(val name: String, val description: String) extends super.Val(name) with ParameterValue
-  protected final def Value(name: String = "", description : String = ""): Value = new Val(name, description)
-  def enabledValues =  values.toSeq.asInstanceOf[Seq[Val]] 
+package object cli {
+
 }

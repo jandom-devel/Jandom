@@ -27,11 +27,14 @@ package it.unich.sci.jandom.parameters
  * - Continue: similar to Restart, but during narrowing of outer loops, inner loops only performs narrowing
  * At the moment, this is only supported by the SLIL target.
  */
-object NarrowingStrategy extends ParameterEnumeration("Narrowing Strategy",
-    "This parameter specifies when and whether to build descending sequences during the analysis.") {
+object NarrowingStrategy extends ParameterEnumeration {   
 	type NarrowingStrategy = Value
+	val name = "Narrowing Strategy"
+	val shortName = "narrowing"
+	val description = "This parameter specifies when and whether to build descending sequences during the analysis."
 	val None = Value("None","No narrowing is performed")
 	val Separate = Value("Separate","Narrowing is performed at the end, after the ascending phase is concluded")
 	val Restart = Value("Restart", "Narrowing in intertwined with ascending phase")
 	val Continue = Value("Continue", "Similar to Restart, but after a node is descending, it never ascends again")
+	val default = Separate 
 }
