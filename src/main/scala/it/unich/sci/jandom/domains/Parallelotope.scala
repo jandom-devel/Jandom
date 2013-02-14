@@ -66,22 +66,18 @@ class Parallelotope (
   def union(that: Parallelotope): Parallelotope = {
 
     type PrioritizedConstraint = (DenseVector[Double], Double, Double, Int)
-    		
-    def toDenseVector(v: Vector[Double]): DenseVector[Double] =
-      DenseVector(v.valuesIterator.toArray[Double])
-    
-    def toDenseMatrix(v: Matrix[Double]): DenseMatrix[Double] =
-      new DenseMatrix(v.rows, v.cols, v.valuesIterator.toArray[Double])
-    
+
     /**
      * Compute the priority of a new constraint. The parameter ownedBy tells whether the linear
      * form under consideration is one of the "native" forms of this (1) or that (2). This is used
      * to refine properties, but can be improved.
      */
     def priority(v: DenseVector[Double], ownedBy: Int = 0): PrioritizedConstraint = {
-      val y1 = A.t \ v
+      
+      // the toDenseMatrix is due to bug 29 in Breeze
+      val y1 = A.t.toDenseMatrix \ v	// bug
       val (l1, u1) = Parallelotope.extremalsInBox(y1, low, high)
-      val y2 = that.A.t \ v
+      val y2 = that.A.t.toDenseMatrix \ v  // bug
       val (l2, u2) = Parallelotope.extremalsInBox(y2, that.low, that.high)
       val p =
         if (l1 == l2 && l2 == u1 && u1 == u2)
@@ -157,15 +153,15 @@ class Parallelotope (
       if (nc4.isDefined) Q += priority(nc4.get)
     }
     val Qsorted = Q.sortBy[Int](_._4)
-
-    val newA = DenseMatrix(Qsorted map (_._1.toArray): _*)
-    val newlow = DenseVector(Qsorted map (_._2): _*)
-    val newhigh = DenseVector(Qsorted map (_._3): _*)
     val pvt = Parallelotope.pivoting(Qsorted map (_._1))
-    return new Parallelotope(false, toDenseVector(newlow(pvt)),
-        toDenseMatrix(newA(pvt, ::)), toDenseVector(newhigh(pvt)))
+    
+    val newA = DenseMatrix(pvt map (Qsorted(_)._1.toArray): _*)
+    val newlow = DenseVector(pvt map (Qsorted(_)._2): _*)
+    val newhigh = DenseVector(pvt map (Qsorted(_)._3): _*)
+    
+    new Parallelotope(false, newlow, newA, newhigh)
   }
-
+    
   def unionWeak(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
     val result = that.rotate(A)
@@ -217,7 +213,7 @@ class Parallelotope (
     require(tcoeff.length <= dimension)
     val coeff = tcoeff.padTo(dimension, 0.0).toArray
     if (isEmpty) return this
-    val y = A.t \ DenseVector(coeff)
+    val y = A.t.toDenseMatrix \ DenseVector(coeff)   // bug
     val j = (0 to dimension - 1) find { i => y(i) != 0 && low(i).isInfinity && high(i).isInfinity }
     j match {
       case None => {
