@@ -21,6 +21,8 @@ package cli
 
 import it.unich.sci.jandom.domains.PPLCPolyhedron
 import it.unich.sci.jandom.targets.slil.SLILStmt
+import it.unich.sci.jandom.narrowings.DelayedNarrowingFactory
+import it.unich.sci.jandom.narrowings.NoNarrowing
 
 /**
  * A very minimalistic CLI.
@@ -35,7 +37,8 @@ object JandomCLI extends App {
     val domain = domains.PPLCPolyhedron
     val params = new targets.Parameters[PPLCPolyhedron,SLILStmt](domain, program)
     params.narrowingStrategy = conf.narrowingStrategy()
-    params.wideningScope = conf.wideningScope()
+    params.wideningScope = conf.wideningScope()        
+    params.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)
     val ann = program.analyze(params)
     println(program.mkString(ann))
   } else {
