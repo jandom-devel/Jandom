@@ -28,9 +28,9 @@ import parma_polyhedra_library.Octagonal_Shape_double
 /**
  * Base trait for numerical domains. A numerical domain is a factory for numerical properties. It
  * should be used as a base class for companion objects of the descendants of
- * [[it.unich.sci.domains.jandom.NumericalProperty]].
+ * [[it.unich.sci.jandom.domains.NumericalProperty]].
  * @tparam Property the property class corresponding to this domain
- * @author Gianluca Amato <g.amato@unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 trait NumericalDomain[Property <: NumericalProperty[Property]] {
 

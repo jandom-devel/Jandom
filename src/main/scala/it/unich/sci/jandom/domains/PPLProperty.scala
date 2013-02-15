@@ -180,8 +180,6 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   private val addSpaceDimensionsAndProjectHandle = PPLClass.getMethod("add_space_dimensions_and_project",classOf[Long])
   private val removeSpaceDimensions = PPLClass.getMethod("remove_space_dimensions",classOf[Variables_Set])
 
-  
-  
   val name = PPLClass.getSimpleName()
   val description = "A domain which uses the class "+name+" of the PPL library. It works using reflection, hence it is slower" +
   		"than other non-reflective domains."
