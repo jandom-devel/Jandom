@@ -46,8 +46,6 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
   
   val variable: Parser[Int] = ident <~ variableFollow  ^^ { env.getBindingOrAdd(_) }
 
-  private val line = """.*\r?\n""".r  // everything until end of line 
- 
   private val atom =
     ( wholeNumber | 
       funCall |
@@ -75,7 +73,7 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
         general_atomic_condition ~ "&&" ~ general_condition |
         general_atomic_condition ~ "||" ~ general_condition |
         "!" ~ general_condition |
-        "(" ~ general_condition ~ ")" ) ^^ { _ => BRandomCond}        
+        "(" ~ general_condition ~ ")" ) ^^ { _ => BRandomCond }        
     
   private val stmt: Parser[SLILStmt] =
     "tag" ~> "(" ~> wholeNumber <~ ")" <~ opt(";") ^^ { case s => TagStmt(s.toInt) } |
@@ -95,7 +93,7 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
        expr <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { _ => NopStmt }      
 
   private val prog: Parser[SLILProgram] =
-    (opt(ident) ~> ("=" | "<-") ~> "function" ~> "(" ~> repsep(variable, ",") <~ ")") ~ stmt ^^ {
+    (opt(ident ~> ("=" | "<-")) ~> "function" ~> "(" ~> repsep(variable, ",") <~ ")") ~ stmt ^^ {
       case vars ~ stmt => SLILProgram(env, vars, stmt)
     }
 
