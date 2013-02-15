@@ -21,7 +21,7 @@ array.limit=function(n) {
   assume(n>=1)
   x=1
   while (x<n)
-    x=x+1;  
+    x=x+1
 }
 
 array.limit.cases = function(n) {
@@ -29,6 +29,6 @@ array.limit.cases = function(n) {
   for (i in 1:n)
     params=c(params,list(list(n=i)))
   return(params)
-} 
+}
 
 list(array.limit, array.limit.cases(10))

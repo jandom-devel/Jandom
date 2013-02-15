@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,23 +35,64 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
 
   override def stringLiteral = "\"[^\"]*\"".r // allow CR in string literals
+    
+  override val ident = not(literal("function")) ~> """[a-zA-Z._][\w.]*""".r  // allow . in identifiers
+  
+  private val funCall = ident ~ "(" ~ repsep(expr,",") ~ ")" ^^ { _.toString }
+  
+  private val arrayAccess = ident ~ "[" ~ repsep(expr,",") ~ "]" ^^ { _.toString }
 
-  override val ident = not(literal("function")) ~> """[a-zA-Z._][\w.]*""".r // allow . in identifiers
+  private val variableFollow = not("""[\[(]""".r) // follow a valid variable
+  
+  val variable: Parser[Int] = ident <~ variableFollow  ^^ { env.getBindingOrAdd(_) }
 
-  val variable: Parser[Int] = ident ^^ { env.getBindingOrAdd(_) }
-
+  private val line = """.*\r?\n""".r  // everything until end of line 
+ 
+  private val atom =
+    ( wholeNumber | 
+      funCall |
+      arrayAccess |
+      "(" ~ expr ~ ")" |
+      ident ) ^^ { _.toString }
+  
+  private val expr: Parser[String] = 
+   ( atom <~ "+" <~ expr |
+     atom <~ "-" <~ expr |    
+     atom <~ "*" <~ expr |
+     atom <~ "/" <~ expr |
+     atom <~ "%/% " <~ expr |
+     atom	) ^^ { _.toString }
+    
+  private val general_atomic_condition: Parser[String] =
+    ( "TRUE" |
+    	"FALSE" |
+    	"brandom" |
+        expr ~ comparison ~ expr ) ^^ { _.toString }
+  
+  private val general_condition: Parser[LinearCond] =
+    condition |
+    (general_atomic_condition |
+        general_atomic_condition ~ "&&" ~ general_condition |
+        general_atomic_condition ~ "||" ~ general_condition |
+        "!" ~ general_condition |
+        "(" ~ general_condition ~ ")" ) ^^ { _ => BRandomCond}        
+    
   private val stmt: Parser[SLILStmt] =
-    "tag" ~> "(" ~> wholeNumber <~ ")" ^^ { case s => TagStmt(s.toInt) } |
-      "assume" ~> "(" ~> condition <~ ")" ^^ { AssumeStmt(_) } |
-      ("if" ~> "(" ~> condition <~ ")") ~ stmt ~ opt("else" ~> stmt) ^^ {
+    "tag" ~> "(" ~> wholeNumber <~ ")" <~ opt(";") ^^ { case s => TagStmt(s.toInt) } |
+      ".tracetag" ~ "(" ~ wholeNumber ~ ")" <~ opt(";") ^^ { _ => NopStmt } |
+      "assume" ~> "(" ~> condition <~ ")" <~ opt(";") ^^ { AssumeStmt(_) } |
+      ("if" ~> "(" ~> general_condition <~ ")") ~ stmt ~ opt("else" ~> stmt)  ^^ {
         case c ~ s1 ~ Some(s2) => IfStmt(c, s1, s2)
         case c ~ s1 ~ None => IfStmt(c, s1, NopStmt)
       } |
-      ("while" ~> "(" ~> condition <~ ")") ~ stmt ^^ {
+      ("while" ~> "(" ~> general_condition <~ ")") ~ stmt ^^ {
         case c ~ s => WhileStmt(c, s)
       } |
-      "{" ~> repsep(stmt, opt(";")) <~ "}" ^^ { CompoundStmt(_) } |
-      ident ~ ("=" | "<-") ~ expr ^^ { case v ~ _ ~ lf => AssignStmt(env.getBindingOrAdd(v), lf) }
+      ("return" ~ "(" ~ expr ~ ")") ^^ { _ => NopStmt } |
+      "{" ~> rep(stmt) <~ "}" ^^ { CompoundStmt(_) } |
+      ident ~ ("=" | "<-") ~ linexpr <~ opt(";") ^^ { case v ~ _ ~ lf => AssignStmt(env.getBindingOrAdd(v), lf) } | 
+      ident <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { case v => NondetStmt(env.getBindingOrAdd(v)) }  |   
+       expr <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { _ => NopStmt }      
 
   private val prog: Parser[SLILProgram] =
     (opt(ident) ~> ("=" | "<-") ~> "function" ~> "(" ~> repsep(variable, ",") <~ ")") ~ stmt ^^ {
