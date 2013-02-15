@@ -36,18 +36,20 @@ class BoxDoubleSuite extends FunSuite {
     test("operations on boxes") {
     	val i = BoxDouble(Array(1,2),Array(5,4))
         val j = BoxDouble(Array(0,3),Array(3,4))        
-        expectResult(i union j) { BoxDouble(Array(0,2),Array(5,4)) }     
-    	expectResult(i intersection j) { BoxDouble(Array(1,3),Array(3,4))}    	
+        expectResult(BoxDouble(Array(0,2),Array(5,4))) { i union j }     
+    	expectResult( BoxDouble(Array(1,3),Array(3,4))) { i intersection j }    	
     } 
             
     test("empty boxes") {
       val i = BoxDouble(Array(-1,-2),Array(-4,3))
       val j = BoxDouble(Array(0,0),Array(5,5))
-      expectResult(i) { BoxDouble.empty(2) }
-      expectResult(i union j) { j }
-      expectResult(i intersection j) { i }
-      expectResult(i.linearAssignment(1,Array(1,1),1)) { i }
-      expectResult(i.linearAssignment(1,Array(0,0),0)) { i }
+      expectResult(BoxDouble.empty(2)) { i }
+      expectResult(j) { i union j }
+      expectResult(i) { i intersection j }
+      expectResult(i) { i.linearAssignment(1,Array(1,1),1) }
+      expectResult(i) { i.linearAssignment(1,Array(0,0),0) }
+      intercept[IllegalArgumentException] { i.linearAssignment(-1,Array(1,1),1) }
+      intercept[IllegalArgumentException] { i.linearAssignment(2,Array(1,1),1) }
     }
     
     test("linear inequations") {
@@ -57,9 +59,31 @@ class BoxDoubleSuite extends FunSuite {
       expectResult(BoxDouble(Array(0,0),Array(4,4))) { j }
     }
     
+    test("non deterministic assignment") {
+      val i = BoxDouble(Array(0,0),Array(5,5))
+      val j = BoxDouble(Array(0,Double.NegativeInfinity), Array(5, Double.PositiveInfinity))
+      val l = BoxDouble(Array(Double.NegativeInfinity,0), Array(Double.PositiveInfinity,5))
+      expectResult (j) { i.nonDeterministicAssignment(1) }
+      expectResult (l) { i.nonDeterministicAssignment(0) }
+      intercept[IllegalArgumentException] { i.nonDeterministicAssignment(-1) }
+      intercept[IllegalArgumentException] { i.nonDeterministicAssignment(2) }
+    }
+    
+    test("dimensional variation") {
+      val i = BoxDouble(Array(0,0),Array(1,2))
+      val j = BoxDouble(Array(0,0,Double.NegativeInfinity),Array(1,2,Double.PositiveInfinity))
+      val h = BoxDouble(Array(0,Double.NegativeInfinity),Array(1,Double.PositiveInfinity))
+      expectResult (j) ( i.addDimension )
+      expectResult (h) ( j.delDimension(1) )
+      expectResult (i) ( j.delDimension(2) )
+      intercept[IllegalArgumentException] { i.delDimension(-1) }
+      intercept[IllegalArgumentException] { i.delDimension(2) }
+    }
+    
+    
     test("string conversion") {
       val i = BoxDouble(Array(0,-1), Array(2,3))
       expectResult(Seq("0.0 <= x <= 2.0","-1.0 <= y <= 3.0")) { i.mkString(IndexedSeq("x","y")) }
       expectResult("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
-    }
+    }       
 }

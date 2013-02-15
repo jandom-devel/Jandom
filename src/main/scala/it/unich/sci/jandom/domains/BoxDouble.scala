@@ -283,10 +283,10 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     require(n < low.length && n >= 0)
     val newlow = new Array[Double](dimension - 1)
     val newhigh = new Array[Double](dimension - 1)
-    low.copyToArray(newlow, 0, n-1)
-    high.copyToArray(newlow, 0, n-1)
-    low.copyToArray(newlow, n+1, dimension - n - 1)
-    high.copyToArray(newhigh, n+1, dimension - n - 1)
+    Array.copy(low, 0, newlow, 0, n)
+    Array.copy(high, 0, newhigh, 0, n)
+    Array.copy(low, n+1, newlow, n, dimension-n-1)
+    Array.copy(high, n+1, newhigh, n, dimension-n-1)    
     new BoxDouble(newlow, newhigh)  
   }
 
