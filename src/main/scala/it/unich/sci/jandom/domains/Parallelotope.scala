@@ -195,7 +195,7 @@ class Parallelotope (
       val newA = A :- (A(::, n) * (DenseVector(coeff) - ei).t) / coeff(n)
       new Parallelotope(false, newlow, newA, newhigh)
     } else {
-      val newP = nondeterministicAssignment(n)
+      val newP = nonDeterministicAssignment(n)
       val Aprime = newP.A
       val j = (( 0 to Aprime.rows - 1 ) find { Aprime(_,n) != 0 }).get 
       for (s <- 0 to dimension - 1 if Aprime(s, n) != 0 && s != j)
@@ -248,7 +248,7 @@ class Parallelotope (
    * to a variable.
    * @param n the variable we are applying a non-deterministic assignment.
    */
-  def nondeterministicAssignment(n: Int): Parallelotope = {
+  def nonDeterministicAssignment(n: Int): Parallelotope = {
     require(n <= dimension)
     if (isEmpty) return this;
     val j = (0 to dimension - 1).filter { i => A(i, n) != 0 && (!low(i).isNegInfinity || !high(i).isPosInfinity) }

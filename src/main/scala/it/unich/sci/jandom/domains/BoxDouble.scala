@@ -168,7 +168,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     }
     (newlow, newhigh)
   }
-
+  
   /**
    * Compute the corner of the box which minimizes a linear form. We do not need the in-homogenous coefficients since it is not
    * relevant for the computation.
@@ -193,6 +193,15 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
     (coeff.zipWithIndex) map { case (c, i) => if (c < 0) low(i) else high(i) }
   }
 
+  /**
+   * Non deterministic assignment over a box.
+   * @throws  IllegalDomainException if parameters are not correct.
+   */
+  def nonDeterministicAssignment(n: Int): BoxDouble =  {
+    require(n < low.length && n>=0)    
+    new BoxDouble(low.updated(n,Double.NegativeInfinity), high.updated(n,Double.PositiveInfinity))
+  }
+  
   /**
    * Linear assignment over a box.
    * @return the least box which contains the result of the linear assignment.

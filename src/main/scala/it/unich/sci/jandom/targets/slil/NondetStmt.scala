@@ -38,7 +38,7 @@ case class NondetStmt[T](variable: Int) extends SLILStmt {
    */
   override def analyze[Property <: NumericalProperty[Property]](input: Property,  params: Parameters[Property], 
       phase: AnalysisPhase, ann: Annotation[Property]): Property = {
-    input.full
+    input.nonDeterministicAssignment(variable)
   }
 
   override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =

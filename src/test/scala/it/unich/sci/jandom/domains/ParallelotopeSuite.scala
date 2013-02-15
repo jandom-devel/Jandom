@@ -106,18 +106,18 @@ class ParallelotopeSuite extends FunSuite {
   
   test("non-deterministic assignment") {
     val nd1 = Parallelotope(DenseVector(Double.NegativeInfinity,-1), DenseMatrix.eye(2), DenseVector(Double.PositiveInfinity,1))
-    expectResult (nd1) { box.nondeterministicAssignment(0) }
-    expectResult (nd1) { nd1.nondeterministicAssignment(0) }
-    expectResult (nd1) { diamond.nondeterministicAssignment(0) }
+    expectResult (nd1) { box.nonDeterministicAssignment(0) }
+    expectResult (nd1) { nd1.nonDeterministicAssignment(0) }
+    expectResult (nd1) { diamond.nonDeterministicAssignment(0) }
     val nd2 = Parallelotope(DenseVector(0,0), DenseMatrix((2.0,1.0),(2.0,-1.0)), DenseVector(1,1))
     val nd3 = Parallelotope(DenseVector(Double.NegativeInfinity,-1), DenseMatrix((2.0,1.0),(0.0,-2.0)), DenseVector(Double.PositiveInfinity,1))
-    expectResult (nd3) { nd2.nondeterministicAssignment(0) }
+    expectResult (nd3) { nd2.nonDeterministicAssignment(0) }
     val nd4 = Parallelotope(DenseVector(Double.NegativeInfinity,0), DenseMatrix((2.0,1.0),(4.0,0.0)), DenseVector(Double.PositiveInfinity,2))
-    expectResult (nd4) { nd2.nondeterministicAssignment(1) }
+    expectResult (nd4) { nd2.nonDeterministicAssignment(1) }
     val nd5 = Parallelotope(DenseVector(10,-1), DenseMatrix((1.0,0.0),(1.0,1.0)), DenseVector(10,1))
     val nd6 = Parallelotope(DenseVector(Double.NegativeInfinity,-11), DenseMatrix.eye(2), DenseVector(Double.PositiveInfinity,-9))
-    expectResult(nd6) { nd5.nondeterministicAssignment(0) }
-    assert(empty.nondeterministicAssignment(0).isEmpty)
+    expectResult(nd6) { nd5.nonDeterministicAssignment(0) }
+    assert(empty.nonDeterministicAssignment(0).isEmpty)
   }
 
   test("linear inequalities") {

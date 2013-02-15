@@ -67,6 +67,12 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
     new PPLCPolyhedron(newpplpolyhedron)
   }
 
+  def nonDeterministicAssignment(n:Int): PPLCPolyhedron = {
+    val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)    
+    newpplpolyhedron.unconstrain_space_dimension(new Variable(n))
+    new PPLCPolyhedron(newpplpolyhedron)
+  }
+    
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLCPolyhedron = { 
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     newpplpolyhedron.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(coeff,known), new Coefficient(1))

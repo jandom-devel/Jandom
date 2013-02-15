@@ -69,6 +69,12 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
     domain.intersection_assign(newpplobject, that.pplobject)
     new PPLProperty(domain, newpplobject)
   }
+  
+  def nonDeterministicAssignment(n:Int): PPLProperty[PPLNativeProperty] = {
+    val newpplobject = domain.copyConstructor(pplobject)
+    domain.unconstrain_space_dimension(newpplobject,new Variable(n))
+    new PPLProperty(domain,newpplobject)
+  }
 
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLProperty[PPLNativeProperty] = {
     val newpplobject = domain.copyConstructor(pplobject)
@@ -157,6 +163,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   private val isEmptyHandle = PPLClass.getMethod("is_empty")
   private val isUniverseHandle = PPLClass.getMethod("is_universe")
   private val minimizedConstraintsHandle = PPLClass.getMethod("minimized_constraints")
+  private val unconstrainSpaceDimensionHandle = PPLClass.getMethod("unconstrain_space_dimension",classOf[Variable])  
   
   val name = PPLClass.getSimpleName()
   val description = "A domain which uses the class "+name+" of the PPL library. It works using reflection, hence it is slower" +
@@ -174,6 +181,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   private[domains] def is_empty(me: PPLNativeProperty) = isEmptyHandle.invoke(me).asInstanceOf[Boolean]
   private[domains] def is_universe(me: PPLNativeProperty) = isUniverseHandle.invoke(me).asInstanceOf[Boolean]
   private[domains] def minimized_constraints(me: PPLNativeProperty) = minimizedConstraintsHandle.invoke(me).asInstanceOf[Constraint_System]
+  private[domains] def unconstrain_space_dimension(me: PPLNativeProperty, v: Variable) = unconstrainSpaceDimensionHandle.invoke(me, v).asInstanceOf[Constraint_System]
 
   def full(n: Int): PPLProperty[PPLNativeProperty] = {
     val pplobject = constructor(n, Degenerate_Element.UNIVERSE)

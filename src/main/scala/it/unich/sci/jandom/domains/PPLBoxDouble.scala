@@ -65,6 +65,12 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
     newpplbox.intersection_assign(that.pplbox)
     new PPLBoxDouble(newpplbox)
   }
+  
+  def nonDeterministicAssignment(n:Int): PPLBoxDouble = {
+    val newpplbox = new Double_Box(pplbox)
+    newpplbox.unconstrain_space_dimension(new Variable(n))
+    new PPLBoxDouble(newpplbox)
+  }
 
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLBoxDouble = { 
     val newpplbox = new Double_Box(pplbox)

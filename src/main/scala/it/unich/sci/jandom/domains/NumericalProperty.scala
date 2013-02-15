@@ -63,6 +63,12 @@ trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered
   def intersection(that: Property): Property
   
   /**
+   * Non deterministic assignment (also called `forget` operator)
+   * @param n the variable to which non-deterministic assignment should be applied.  
+   */
+  def nonDeterministicAssignment(n: Int): Property 
+  
+  /**
    * Linear assignment over an abstract object. It should be generalized to linear forms over arbitrary types.
    * @param n the variable to be reassigned.
    * @param coeff the homogeneous coefficients.
