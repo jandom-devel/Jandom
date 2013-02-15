@@ -76,19 +76,30 @@ trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered
    */
   def linearAssignment(n: Int, coeff:Array[Double], known: Double): Property
   
-   /**
+  /**
    * Intersection with an half-plane. It should be generalized to linear forms over arbitrary types.
    * @param coeff the homogeneous coefficients.
    * @param known the in-homogeneous coefficient.
    */
   def linearInequality(coeff: Array[Double], known: Double): Property
   
-   /**
+  /**
    * Intersection with the complements of a line. It should be generalized to linear forms over arbitrary types.
    * @param coeff the homogeneous coefficients.
    * @param known the in-homogeneous coefficient.
    */
   def linearDisequality(coeff: Array[Double], known: Double): Property
+  
+  /**
+   * Add a new undetermined dimension.
+   */
+  def addDimension: Property
+  
+  /**
+   * Delete a given dimension
+   * @param n the dimension to be suppressed.
+   */
+  def delDimension(n: Int): Property
   
   /**
    * Returns the dimension of the environment space.

@@ -275,8 +275,21 @@ class Parallelotope (
     new Parallelotope(false, newlow, newA, newhigh)
   }
 
-  val dimension = A.cols
-
+  def addDimension: Parallelotope = {
+    val e = DenseMatrix.zeros[Double](dimension+1,1)
+    e(dimension,0) = 1.0
+    val newA = DenseMatrix.horzcat(DenseMatrix.vertcat(A, DenseMatrix.zeros[Double](1,dimension)),e)
+    val newlow = DenseVector.vertcat(low,DenseVector(Double.NegativeInfinity))
+    val newhigh = DenseVector.vertcat(high,DenseVector(Double.PositiveInfinity))
+    new Parallelotope(false, newlow, newA, newhigh)
+  } 
+  
+  def delDimension(n: Int): Parallelotope = {
+    throw new IllegalAccessException("Unimplemented feature")    
+  }
+  
+  def dimension = A.rows
+  
   val isFull = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
 
   def empty = Parallelotope.empty(dimension)

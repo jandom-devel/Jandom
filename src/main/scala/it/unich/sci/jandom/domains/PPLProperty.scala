@@ -93,6 +93,20 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
     throw new IllegalAccessException("Unimplemented feature");
   }
 
+ def addDimension = {
+    val newpplobject = domain.copyConstructor(pplobject)
+    domain.add_space_dimensions_and_project(newpplobject,1)
+    new PPLProperty(domain,newpplobject)
+  }
+  
+  def delDimension(n: Int) = {
+    val newpplobject = domain.copyConstructor(pplobject)
+    val dims = new Variables_Set
+    dims.add(new Variable(n))
+    domain.remove_space_dimensions(newpplobject,dims)
+    new PPLProperty(domain,newpplobject)
+  }  
+  
   def dimension: Int = domain.space_dimension(pplobject).toInt
 
   def isEmpty: Boolean = domain.is_empty(pplobject)
@@ -148,8 +162,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   with ParameterValue {
   
   PPLInitializer
-
-  
+ 
   private val PPLClass: java.lang.Class[PPLNativeProperty] = implicitly[Manifest[PPLNativeProperty]].runtimeClass.asInstanceOf[java.lang.Class[PPLNativeProperty]]
   private val constructorHandle = PPLClass.getConstructor(classOf[Long], classOf[Degenerate_Element])
   private val copyConstructorHandle = PPLClass.getConstructor(PPLClass)
@@ -164,6 +177,10 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   private val isUniverseHandle = PPLClass.getMethod("is_universe")
   private val minimizedConstraintsHandle = PPLClass.getMethod("minimized_constraints")
   private val unconstrainSpaceDimensionHandle = PPLClass.getMethod("unconstrain_space_dimension",classOf[Variable])  
+  private val addSpaceDimensionsAndProjectHandle = PPLClass.getMethod("add_space_dimensions_and_project",classOf[Long])
+  private val removeSpaceDimensions = PPLClass.getMethod("remove_space_dimensions",classOf[Variables_Set])
+
+  
   
   val name = PPLClass.getSimpleName()
   val description = "A domain which uses the class "+name+" of the PPL library. It works using reflection, hence it is slower" +
@@ -181,7 +198,9 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[P
   private[domains] def is_empty(me: PPLNativeProperty) = isEmptyHandle.invoke(me).asInstanceOf[Boolean]
   private[domains] def is_universe(me: PPLNativeProperty) = isUniverseHandle.invoke(me).asInstanceOf[Boolean]
   private[domains] def minimized_constraints(me: PPLNativeProperty) = minimizedConstraintsHandle.invoke(me).asInstanceOf[Constraint_System]
-  private[domains] def unconstrain_space_dimension(me: PPLNativeProperty, v: Variable) = unconstrainSpaceDimensionHandle.invoke(me, v).asInstanceOf[Constraint_System]
+  private[domains] def unconstrain_space_dimension(me: PPLNativeProperty, v: Variable) = unconstrainSpaceDimensionHandle.invoke(me, v)
+  private[domains] def add_space_dimensions_and_project(me: PPLNativeProperty, l: Long) = addSpaceDimensionsAndProjectHandle.invoke(me, l: java.lang.Long)
+  private[domains] def remove_space_dimensions (me: PPLNativeProperty, vars: Variables_Set) = removeSpaceDimensions.invoke(me, vars) 
 
   def full(n: Int): PPLProperty[PPLNativeProperty] = {
     val pplobject = constructor(n, Degenerate_Element.UNIVERSE)

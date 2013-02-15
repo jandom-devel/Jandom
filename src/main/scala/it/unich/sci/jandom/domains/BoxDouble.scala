@@ -257,6 +257,24 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    */
   def linearDisequality(coeff: Array[Double], known: Double): BoxDouble =
     throw new IllegalAccessException("Unimplemented feature");
+  
+  def addDimension: BoxDouble = 
+    new BoxDouble(low :+ Double.NegativeInfinity, high :+ Double.PositiveInfinity)
+  
+  /**
+   * Deleting dimension for a box. This is a complete operator for boxes.
+   * @throws IllegalDomainException if parameters are not correct.
+   */
+  def delDimension(n: Int): BoxDouble = {
+    require(n < low.length && n >= 0)
+    val newlow = new Array[Double](dimension - 1)
+    val newhigh = new Array[Double](dimension - 1)
+    low.copyToArray(newlow, 0, n-1)
+    high.copyToArray(newlow, 0, n-1)
+    low.copyToArray(newlow, n+1, dimension - n - 1)
+    high.copyToArray(newhigh, n+1, dimension - n - 1)
+    new BoxDouble(newlow, newhigh)  
+  }
 
   def mkString(vars: IndexedSeq[String]): Seq[String] = {
     if (isEmpty)
