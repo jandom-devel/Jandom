@@ -22,14 +22,6 @@ libraryDependencies ++= Seq(
 
 libraryDependencies <+= scalaVersion { "org.scala-lang" % "scala-swing" % _ }
 
-// PPL setup
-
-fork  := true
-
-unmanagedJars in Compile += file("/usr/local/lib/ppl/ppl_java.jar")
-
-javaOptions += "-Djava.library.path=/usr/local/lib/ppl"
-
 // assembly plugin configuration
 
 assemblySettings
@@ -40,3 +32,12 @@ test in AssemblyKeys.assembly := {}  // skip tests in assembly
 
 EclipseKeys.configurations := Set(Compile,Test,Benchmark)  
 
+// PPL setup
+
+fork  := true
+
+unmanagedJars in Compile += file("/usr/local/lib/ppl/ppl_java.jar")
+
+javaOptions += "-Djava.library.path=/usr/local/lib/ppl"
+
+EclipseKeys.classpathTransformerFactories += NativeLibTransformerFactory("/usr/local/lib/ppl/ppl_java.jar") 

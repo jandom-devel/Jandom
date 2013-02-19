@@ -5,10 +5,9 @@ written in Scala. To try it, you need:
 * PPL 1.1.pre2 or later [http://bugseng.com/products/ppl/download/ftp/snapshots/]
 
 The configuration assume you have PPL in the directory /usr/local/lib/ppl.
-If this is not the case, please change the relevant lines in config.sbt.
+If this is not the case, please change the relevant lines in build.sbt.
 
 In the main directoy of Jandom, execute "sbt run" compile and execute Jandom. If
 asked about the program to run, choose "JandomGUI". It is possible to generate
-an Eclipse project with the command "sbt eclipse". The Eclipse project
-must be modified to include the native libraries of PPL (in the future, this 
-setting will be carried on by SBT). 
+an Eclipse project with the command "sbt eclipse".
+
