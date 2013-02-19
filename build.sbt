@@ -17,7 +17,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "1.9.1" % "test,benchmark",
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
   "org.scalanlp" %% "breeze-math" % "0.2-SNAPSHOT",
-  "org.rogach" %% "scallop" % "0.8.0"
+  "org.rogach" %% "scallop" % "0.8.0",
+  "com.google.caliper" % "caliper" % "0.5-rc1" % "benchmark"
 )
 
 libraryDependencies <+= scalaVersion { "org.scala-lang" % "scala-swing" % _ }
@@ -30,7 +31,7 @@ test in AssemblyKeys.assembly := {}  // skip tests in assembly
 
 // eclipse-sbt plugin configuration
 
-EclipseKeys.configurations := Set(Compile,Test,Benchmark)  
+EclipseKeys.configurations := Set(Compile, Test, Benchmark)  
 
 // PPL setup
 

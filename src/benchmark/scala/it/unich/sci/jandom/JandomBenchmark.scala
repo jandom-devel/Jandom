@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom
 
-import org.scalatest.FunSuite
+import com.google.caliper.SimpleBenchmark
 
 /**
  * The benchmark suite for Jandom. This is currently only a placeholder.
@@ -26,7 +26,8 @@ import org.scalatest.FunSuite
  *
  */
 
-class JandomBenchmarks extends FunSuite {
-   test("ok") { }
+class JandomBenchmark extends SimpleBenchmark {
+  def timeMyOperation(reps: Int) {
+     for (i <- 0 until reps) System.nanoTime()
+  }
 }
-
