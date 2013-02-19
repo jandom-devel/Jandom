@@ -74,10 +74,9 @@ class Parallelotope (
      */
     def priority(v: DenseVector[Double], ownedBy: Int = 0): PrioritizedConstraint = {
       
-      // the toDenseMatrix is due to bug 29 in Breeze
-      val y1 = A.t.toDenseMatrix \ v	// bug
+      val y1 = A.t \ v
       val (l1, u1) = Parallelotope.extremalsInBox(y1, low, high)
-      val y2 = that.A.t.toDenseMatrix \ v  // bug
+      val y2 = that.A.t \ v
       val (l2, u2) = Parallelotope.extremalsInBox(y2, that.low, that.high)
       val p =
         if (l1 == l2 && l2 == u1 && u1 == u2)
@@ -137,12 +136,11 @@ class Parallelotope (
     val min2 = DenseVector.vertcat(thatRotated.low, that.low)
     val max1 = DenseVector.vertcat(this.high, thisRotated.high)
     val max2 = DenseVector.vertcat(thatRotated.high, that.high)
-    // the copy method in the following lines is due to a bug in breeze
-    for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i).copy, 1)  // bug
-    for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i).copy, 2)  // bug
+    for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i), 1)
+    for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i), 2)
     for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
-      val v1 = bulk.t(::,i).copy	// bug
-      val v2 = bulk.t(::,j).copy	// bug
+      val v1 = bulk.t(::,i)
+      val v2 = bulk.t(::,j)
       val nc1 = newConstraint(v1, v2, min1(i), min2(i), min1(j), min2(j))
       if (nc1.isDefined) Q += priority(nc1.get)
       val nc2 = newConstraint(v1, -v2, min1(i), min2(i), -max1(j), -max2(j))
@@ -213,7 +211,7 @@ class Parallelotope (
     require(tcoeff.length <= dimension)
     val coeff = tcoeff.padTo(dimension, 0.0).toArray
     if (isEmpty) return this
-    val y = A.t.toDenseMatrix \ DenseVector(coeff)   // bug
+    val y = A.t \ DenseVector(coeff)
     val j = (0 to dimension - 1) find { i => y(i) != 0 && low(i).isInfinity && high(i).isInfinity }
     j match {
       case None => {
