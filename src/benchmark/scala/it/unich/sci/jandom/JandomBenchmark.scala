@@ -21,13 +21,13 @@ package it.unich.sci.jandom
 import com.google.caliper.SimpleBenchmark
 
 /**
- * The benchmark suite for Jandom. This is currently only a placeholder.
+ * The benchmark suite for Jandom. This is currently only a dummy test.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 
-class JandomBenchmark extends SimpleBenchmark {
-  def timeMyOperation(reps: Int) {
+class JandomBenchmark extends SimpleBenchmark { 
+  def timeDummy(reps: Int) {
      for (i <- 0 until reps) System.nanoTime()
   }
 }
