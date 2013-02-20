@@ -18,6 +18,7 @@ object CaliperPlugin extends sbt.Plugin {
  
   val benchmark = TaskKey[Unit]("benchmark", "Executes all benchmarks.")
   val benchmarkOnly = InputKey[Unit]("benchmark-only", "Executes specified benchmarks.")
+  lazy val benchmarkConfig = Jandom.Benchmark
    
   lazy val benchmarkTasks = Seq(
     benchmark <<= benchmarkTaskInit.zip(classDirectory in benchmarkConfig) {
