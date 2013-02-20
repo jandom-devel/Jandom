@@ -5,21 +5,23 @@ import sbt.Keys._
  * This is a plugin for using Caliper benchmarks within sbt. It is based upon
  * [[https://github.com/alno/sbt-caliper sbt-caliper]] with two differences:
  *  1. there is a new configuration called Benchmark
- *  1. the task `benchmark` looks for all classes in the Jandom.Benchmark 
+ *  1. the task `benchmark` looks for all classes in the Jandom.Benchmark
  * configuration whose names ends in Benchmark, and executes them with
  * [[http://code.google.com/p/caliper/ Caliper]].
- * 
+ *
  * With respect to point 2, I am not satisfied. I would like to control the
  * configurationt to use with a key, but I am not able to do this. Perahps
  * in sbt 0.13 with the use of the value method.
  */
 
 object CaliperPlugin extends sbt.Plugin {
- 
+
   val benchmark = TaskKey[Unit]("benchmark", "Executes all benchmarks.")
   val benchmarkOnly = InputKey[Unit]("benchmark-only", "Executes specified benchmarks.")
+  val benchmarkOptions = TaskKey[Seq[String]]("benchmark-options","Specify options for executing the benchmark.")
+  
   lazy val benchmarkConfig = Jandom.Benchmark
-   
+
   lazy val benchmarkTasks = Seq(
     benchmark <<= benchmarkTaskInit.zip(classDirectory in benchmarkConfig) {
       case (runTask, classdirs) =>
@@ -42,14 +44,18 @@ object CaliperPlugin extends sbt.Plugin {
               run { args }
           }
       }
-    })
+    },
+    
+    benchmarkOptions <<= javaOptions   
+  )
 
   override val settings = benchmarkTasks
 
   private def benchmarkTaskInit: Project.Initialize[Task[Seq[String] => Unit]] =
-    (fullClasspath in benchmarkConfig, scalaInstance, javaHome, javaOptions, baseDirectory, outputStrategy, streams) map {
-      (cpa, si, jhome, jopts, dir, strategy, s) =>
+    (fullClasspath in benchmarkConfig, scalaInstance, javaHome, javaOptions, baseDirectory, outputStrategy, streams, benchmarkOptions) map {
+      (cpa, si, jhome, jopts, dir, strategy, s, bopts) =>        
         val cp = "-classpath" :: Path.makeString(cpa.files) :: Nil
+        val outerOptions = "-Jouteroptions=" + bopts.mkString
         val fr = new ForkRun(
           ForkOptions(scalaJars = si.jars,
             javaHome = jhome,
@@ -61,7 +67,8 @@ object CaliperPlugin extends sbt.Plugin {
           if (args.isEmpty)
             println("No benchmarks specified - nothing to run")
           else
-            sbt.toError(fr.run("com.google.caliper.Runner", Build.data(cpa), args, s.log))
+            for (arg <- args)
+              sbt.toError(fr.run("com.google.caliper.Runner", Build.data(cpa), Seq(outerOptions,arg), s.log))
         }
     }
 }
