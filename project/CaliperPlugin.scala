@@ -20,7 +20,7 @@ object CaliperPlugin extends sbt.Plugin {
   val benchmarkOnly = InputKey[Unit]("benchmark-only", "Executes specified benchmarks.")
   val benchmarkOptions = TaskKey[Seq[String]]("benchmark-options","Specify options for executing the benchmark.")
   
-  lazy val benchmarkConfig = Jandom.Benchmark
+  lazy val benchmarkConfig = JandomBuild.Benchmark
 
   lazy val benchmarkTasks = Seq(
     benchmark <<= benchmarkTaskInit.zip(classDirectory in benchmarkConfig) {
@@ -49,7 +49,7 @@ object CaliperPlugin extends sbt.Plugin {
     benchmarkOptions <<= javaOptions   
   )
 
-  override val settings = benchmarkTasks
+  // override lazy val settings = benchmarkTasks
 
   private def benchmarkTaskInit: Project.Initialize[Task[Seq[String] => Unit]] =
     (fullClasspath in benchmarkConfig, scalaInstance, javaHome, javaOptions, baseDirectory, outputStrategy, streams, benchmarkOptions) map {
