@@ -138,9 +138,11 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
 /**
  * This is the factory for ``PPLBoxDouble`` properties.
  */
-object PPLCPolyhedron extends NumericalDomain[PPLCPolyhedron] with ParameterValue {  
+object PPLCPolyhedron extends NumericalDomain with ParameterValue {  
   PPLInitializer
     
+  type Property = PPLCPolyhedron
+  
   val name = "PPL Closed Polyhedra"
 
   val description = 

@@ -55,7 +55,7 @@ trait Target {
   /**
    * An alias for parameters in input by the analyzer
    */
-  protected type Parameters[Property <: NumericalProperty[Property]] = targets.Parameters[Property, Tgt]
+  protected type Parameters = targets.Parameters[Tgt]
   
   /** 
    * Returns the size of the target in terms of the number of program points
@@ -64,9 +64,8 @@ trait Target {
   
   /**
    * Perform a static analysis over the target.
-   * @tparam Property the type of the property we want to analyze
    * @param param the parameters which drive the analyzer
-   * @param bb the blackboard where it is possible to put annotation during the analysis
+   * @return an annotation for the program
    */
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property]    
+  def analyze(params: Parameters): Annotation[params.Property]  
 }

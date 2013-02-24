@@ -39,7 +39,7 @@ class SLILProgramSuite extends FunSuite {
                 AssignStmt(0,LinearForm(List(1,1),env))
             )
        )))      
-    val params = new targets.Parameters[BoxDouble,SLILStmt](BoxDouble,program)
+    val params = new targets.Parameters(BoxDouble,program: SLILStmt)
     val ann = program.analyze(params)
     expectResult ( BoxDouble(Array(10), Array(11)) ) { ann(program,2) }
   } 
@@ -61,7 +61,7 @@ class SLILProgramSuite extends FunSuite {
     val program = parsed.get
     val domain =  domains.BoxDouble
     
-    val params = new targets.Parameters[BoxDouble,SLILStmt](domain, program)
+    val params = new targets.Parameters(domain, program: SLILStmt)
     params.narrowingStrategy = it.unich.sci.jandom.parameters.NarrowingStrategy.None
     params.wideningScope = it.unich.sci.jandom.parameters.WideningScope.Output
     program.analyze(params)

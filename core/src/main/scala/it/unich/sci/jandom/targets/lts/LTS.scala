@@ -66,7 +66,7 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
   
   def getAnnotation[Property] = new Annotation[Property]
   
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property] = {
+  def analyze(params: Parameters): Annotation[params.Property] = {
     // build widening and narrowing for each program point    
     val widenings = locations map params.wideningFactory
     val narrowings = locations map params.narrowingFactory
@@ -99,7 +99,7 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
         narrowings(loc.id)(current(loc.id), unionednew)
       }
     }
-    val ann = new Annotation[Property]	    	    
+    val ann = new Annotation[params.Property]	    	    
     locations.foreach { loc => ann(loc) = current(loc.id) }
     return ann
   }

@@ -52,8 +52,7 @@ class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers wit
   /**
    * Parser for properties
    */
-  protected def property[Property <: NumericalProperty[Property]](domain: NumericalDomain[Property]) =
-    condition ^^ { _.analyze(domain.full(env.size)) }
+  protected def property(domain: NumericalDomain) = condition ^^ { _.analyze(domain.full(env.size)) }
   
   /**
    * Parsing function.
@@ -62,6 +61,5 @@ class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers wit
    * @param domain the numerical domain corresponding to the type Property
    * @return a ParseResult[Property] with the result with the parsed property, or corresponding error condition 
    */
-  def parseProperty[Property <: NumericalProperty[Property]](s: String, domain: NumericalDomain[Property]) =
-    parseAll(property(domain),s)
+  def parseProperty(s: String, domain: NumericalDomain) = parseAll(property(domain),s)
 }

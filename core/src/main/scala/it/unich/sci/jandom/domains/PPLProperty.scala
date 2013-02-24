@@ -158,8 +158,9 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
  * @tparam PPLNativeProperty is the PPL class implementing the abstract property, such as Double_Box,
  * Octagonal_Shape_double, etc...
  */
-class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain[PPLProperty[PPLNativeProperty]]
-  with ParameterValue {
+class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain with ParameterValue {
+  
+  type Property = PPLProperty[PPLNativeProperty]
   
   PPLInitializer
  

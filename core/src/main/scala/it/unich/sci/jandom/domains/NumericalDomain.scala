@@ -29,11 +29,17 @@ import parma_polyhedra_library.Octagonal_Shape_double
  * Base trait for numerical domains. A numerical domain is a factory for numerical properties. It
  * should be used as a base class for companion objects of the descendants of
  * [[it.unich.sci.jandom.domains.NumericalProperty]].
- * @tparam Property the property class corresponding to this domain
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait NumericalDomain[Property <: NumericalProperty[Property]] {
+trait NumericalDomain {
 
+  /**
+   * The type of the properties created by the domain. It used to be
+   * a parameter, but we moved into into a type fields since it works
+   * better in practice.
+   */
+  type Property <: NumericalProperty[Property]
+  
   /**
    * Create an abstract property representing the full n-dimensional space.
    * @param n the dimension of the environment space.
@@ -49,9 +55,3 @@ trait NumericalDomain[Property <: NumericalProperty[Property]] {
   def empty(n: Int): Property
 }
 
-object NumericalDomain extends Parameter[NumericalDomain[T] forSome { type T <: NumericalProperty[T]}] {
-  val name = "Domain"
-  val description = "The numerical domain to use for the analysis."
-  val enabledValues = Seq[NumericalDomain[T] with ParameterValue forSome { type T <: NumericalProperty[T]}](
-      BoxDouble, Parallelotope, PPLBoxDouble, PPLCPolyhedron, new PPLDomain[Octagonal_Shape_double])
-}

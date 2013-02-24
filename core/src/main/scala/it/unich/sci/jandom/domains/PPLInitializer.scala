@@ -28,7 +28,7 @@ import parma_polyhedra_library.Parma_Polyhedra_Library
  * @author Gianluca Amato <g.amato@unich.it>
  */
 
-private[domains] object PPLInitializer {  
+private[jandom] object PPLInitializer {  
   System.loadLibrary("ppl_java")
   Parma_Polyhedra_Library.initialize_library()
   

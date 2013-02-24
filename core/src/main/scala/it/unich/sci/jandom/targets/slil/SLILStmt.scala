@@ -62,13 +62,13 @@ abstract class SLILStmt extends Target {
    * @param ann an annotation where to put informations on the inner program points
    * @return the property at the end of the statement
    */
-  def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], phase: AnalysisPhase, 
-      ann: Annotation[Property]): Property = input
+  def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, 
+      ann: Annotation[params.Property]): params.Property = input
 
-  def analyze[Property <: NumericalProperty[Property]](params: Parameters[Property]): Annotation[Property] = {
-    val ann = new Annotation[Property]()
+  def analyze(params: Parameters): Annotation[params.Property] = {
+    val ann = new Annotation[params.Property]()
     val input = params.domain.full(program.environment.size)
-    analyze(input, params, AscendingRestart, ann)
+    analyzeStmt(params)(input, AscendingRestart, ann)
     return ann
   }
   

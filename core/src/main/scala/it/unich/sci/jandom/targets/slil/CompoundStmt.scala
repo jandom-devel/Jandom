@@ -32,14 +32,13 @@ import it.unich.sci.jandom.domains.AbstractProperty
 case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
   import AnalysisPhase._
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], 
-      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
     var current = input
     var index = 0
     for (stmt <- stmts) {
       if (index > 0 && params.allPPResult) ann((this, index)) = current
       index += 1
-      current = stmt.analyze(current, params, phase, ann)
+      current = stmt.analyzeStmt(params)(current, phase, ann)
     }
     current
   }

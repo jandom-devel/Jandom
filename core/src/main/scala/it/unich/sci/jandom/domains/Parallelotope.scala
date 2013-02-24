@@ -386,8 +386,10 @@ class Parallelotope (
   }
 }
 
-object Parallelotope extends NumericalDomain[Parallelotope] with ParameterValue {
+object Parallelotope extends NumericalDomain with ParameterValue {
     
+  type Property = Parallelotope
+  
   val name = "Parallelotope"
     
   val description = "The abstract domain of parallelotopes, in a native Scala implementation. It is not" +

@@ -26,11 +26,7 @@ import scala.swing.ListView.Renderer
 import javax.swing.SpinnerNumberModel
 import javax.swing.JSpinner
 import it.unich.sci.jandom.targets.{Parameters,Target}
-import it.unich.sci.jandom.parameters.Parameter
-import it.unich.sci.jandom.parameters.ParameterEnumeration
-import it.unich.sci.jandom.parameters.ParameterValue
-import it.unich.sci.jandom.parameters.WideningScope
-import it.unich.sci.jandom.parameters.NarrowingStrategy
+import it.unich.sci.jandom.parameters._
 import it.unich.sci.jandom.widenings.DelayedWidening
 import it.unich.sci.jandom.widenings.DefaultWidening
 import it.unich.sci.jandom.narrowings.DelayedNarrowing
@@ -40,7 +36,7 @@ import it.unich.sci.jandom.narrowings.DelayedNarrowingFactory
 
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)
-  val domainComboBox = addParameterEnumeration(0, NumericalDomain)
+  val domainComboBox = addParameterEnumeration(0, NumericalDomains)
   val wideningComboBox = addParameterEnumeration(1, WideningScope)
   val narrowingComboBox = addParameterEnumeration(2, NarrowingStrategy)
   val delayModel = new SpinnerNumberModel(0, 0, Double.PositiveInfinity, 1)
@@ -81,7 +77,7 @@ class ParametersPane extends GridBagPanel {
     comboBox
   }
 
-  def selectedDomain = NumericalDomain.enabledValues(domainComboBox.selection.index)
+  def selectedDomain = NumericalDomains.enabledValues(domainComboBox.selection.index)
   
   def getParameters[T <: Target](tgt: T) = {
     val parameters = new Parameters(selectedDomain, tgt)

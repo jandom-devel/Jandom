@@ -37,8 +37,8 @@ private[jandom] class MockTarget extends Target {
   
   def size = 10
   
-  def analyze[Property <: NumericalProperty[Property]] (params: Parameters[Property]): Annotation[Property] = 
-    new Annotation[Property]
+  def analyze(params: Parameters): Annotation[params.Property] = 
+    new Annotation[params.Property]
 }
 
 /** 

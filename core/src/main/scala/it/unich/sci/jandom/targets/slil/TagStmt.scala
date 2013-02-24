@@ -34,8 +34,7 @@ import it.unich.sci.jandom.domains.AbstractProperty
 case class TagStmt[T](tag: Int) extends SLILStmt {
   import AnalysisPhase._
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property,  params: Parameters[Property], 
-      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
     params.tag(tag) = input
     input
   }

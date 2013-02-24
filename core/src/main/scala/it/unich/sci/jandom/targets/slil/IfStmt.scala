@@ -35,13 +35,12 @@ import it.unich.sci.jandom.domains.AbstractProperty
 case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
   import AnalysisPhase._
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], 
-      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
     
     val thenStart = condition.analyze(input)
     val elseStart = condition.opposite.analyze(input)
-    val thenEnd = then_branch.analyze(thenStart, params, phase, ann)
-    val elseEnd = else_branch.analyze(elseStart, params, phase, ann)
+    val thenEnd = then_branch.analyzeStmt(params)(thenStart, phase, ann)
+    val elseEnd = else_branch.analyzeStmt(params)(elseStart, phase, ann)
     if (params.allPPResult) {
       ann((this, 1)) = thenStart
       ann((this, 2)) = elseStart

@@ -23,6 +23,8 @@ import it.unich.sci.jandom.domains.PPLCPolyhedron
 import it.unich.sci.jandom.targets.slil.SLILStmt
 import it.unich.sci.jandom.narrowings.DelayedNarrowingFactory
 import it.unich.sci.jandom.narrowings.NoNarrowing
+import it.unich.sci.jandom.targets.slil.SLILStmt
+import it.unich.sci.jandom.targets.slil.SLILStmt
 
 /**
  * A very minimalistic CLI.
@@ -35,7 +37,7 @@ object JandomCLI extends App {
   if (parsed.successful) {
     val program = parsed.get
     val domain = domains.PPLCPolyhedron
-    val params = new targets.Parameters[PPLCPolyhedron,SLILStmt](domain, program)
+    val params = new targets.Parameters(domain, program: SLILStmt)
     params.narrowingStrategy = conf.narrowingStrategy()
     params.wideningScope = conf.wideningScope()        
     params.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)

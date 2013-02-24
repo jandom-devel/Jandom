@@ -341,8 +341,10 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
  * The caching should be probably implemented in [[it.unich.sci.jandom.domains.NumericalDomain]], and
  * should be extended to both full and empty values.
  */
-object BoxDouble extends NumericalDomain[BoxDouble] with ParameterValue {
+object BoxDouble extends NumericalDomain with ParameterValue {
 
+  type Property = BoxDouble
+  
   val name = "Box Double"
 
   val description = 

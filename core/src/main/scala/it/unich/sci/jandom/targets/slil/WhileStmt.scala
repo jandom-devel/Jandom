@@ -42,8 +42,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
    */
   var lastBodyResult: NumericalProperty[_] = null
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property],
-    phase: AnalysisPhase, ann: Annotation[Property]): Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
     import parameters.WideningScope._
     import parameters.NarrowingStrategy._
 
@@ -57,7 +56,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     // Determines initial values for the analysis, depending on the calling phase
     var (bodyResult, invariant) =
       if (lastBodyResult != null && phase != AscendingRestart)
-        (lastBodyResult.asInstanceOf[Property], lastInvariant.asInstanceOf[Property])
+        (lastBodyResult.asInstanceOf[params.Property], lastInvariant.asInstanceOf[params.Property])
       else
         (input.empty, input.empty)
 
@@ -89,13 +88,13 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
         invariant = newinvariant
         params.wideningScope match {
           case Random =>
-            bodyResult = body.analyze(condition.analyze(invariant), params, currentPhase, ann)
+            bodyResult = body.analyzeStmt(params)(condition.analyze(invariant), currentPhase, ann)
             newinvariant = widening(invariant, bodyResult)
           case BackEdges =>
-            bodyResult = bodyResult widening body.analyze(condition.analyze(input union newinvariant), params, currentPhase, ann)
+            bodyResult = bodyResult widening body.analyzeStmt(params)(condition.analyze(input union newinvariant), currentPhase, ann)
             newinvariant = bodyResult union input
           case Output =>
-            bodyResult = body.analyze(condition.analyze(newinvariant), params, currentPhase, ann)
+            bodyResult = body.analyzeStmt(params)(condition.analyze(newinvariant), currentPhase, ann)
             newinvariant = widening(invariant, input union bodyResult)
         }
         // If we were in AscendingRestart phase, move to Ascending phase
@@ -135,7 +134,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
       do {
         invariant = newinvariant
         
-        bodyResult = body.analyze(condition.analyze(invariant), params, newphase, ann)
+        bodyResult = body.analyzeStmt(params)(condition.analyze(invariant), newphase, ann)
         newinvariant = invariant narrowing (input union bodyResult)
 
         // Debug

@@ -1,5 +1,4 @@
-/**
- * Copyright 2013 Gianluca Amato
+/* Copyright 2013 Gianluca Amato
  * 
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -16,21 +15,18 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
+package it.unich.sci.jandom.parameters
+
+import it.unich.sci.jandom.domains._
 
 /**
- * This package contains all the abstract domains available in ''Jandom''. There are
- * two parallel hierarchies: properties and domains. A property is a single abstract
- * object, such a polyhedron or a box. A domain is essentially a factory for abstract
- * objects.
- *
- * At the moment, only numerical domains are implemented. The base traits
- * for numerical properties and numerical domains are
- * [[it.unich.sci.jandom.domains.NumericalProperty]] and [[it.unich.sci.jandom.domains.NumericalDomain]]
- * respectively.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * This objects lists the numerical domains for analysis available
+ * in the UI.
  */
 
-package object domains {
+object NumericalDomains extends Parameter[NumericalDomain] {
+  val name = "Domain"
+  val description = "The numerical domain to use for the analysis."
+  val enabledValues = Seq[NumericalDomain with ParameterValue](
+    BoxDouble, Parallelotope, PPLBoxDouble, PPLCPolyhedron)
 }
-

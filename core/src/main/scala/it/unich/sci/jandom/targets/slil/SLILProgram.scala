@@ -54,15 +54,15 @@ case class SLILProgram(private val env: Environment, private val inputVars: Seq[
       spaces + "}\n"    
   }
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property, params: Parameters[Property], 
-      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, 
+      phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
     if (params.allPPResult) ann((this, 1)) = input
     val output = params.narrowingStrategy match {
       case Separate => 
-        stmt.analyze(input, params, Ascending, ann)
-     	stmt.analyze(input, params, Descending, ann) 
+        stmt.analyzeStmt(params)(input, Ascending, ann)
+     	stmt.analyzeStmt(params)(input, Descending, ann) 
       case _ =>
-    	stmt.analyze(input, params, Ascending, ann)
+    	stmt.analyzeStmt(params)(input, Ascending, ann)
     }
     if (params.allPPResult) ann((this, 2)) = output
     return output

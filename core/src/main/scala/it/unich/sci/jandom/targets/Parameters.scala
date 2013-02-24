@@ -28,13 +28,16 @@ import it.unich.sci.jandom.parameters.NarrowingStrategy
 
 /**
  * This class is used to keep parameters for analyzers.
- * @tparam Property the type of property described by the analysis
- * @param val the numerical domain for the analysis
+ * @tparam Tgt the target related to this parameter
+ * @param domain the numerical domain for the analysis
  * @param tgt the target for the analysis
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val domain: NumericalDomain[Property], val tgt: Tgt) {  
+class Parameters[Tgt <: Target] (val domain: NumericalDomain, val tgt: Tgt) {
+  
+  type Property = domain.Property
+  
   /**
   * The widening factory used in the analysis. Defaults to the factory for the standard domain widening.
   */

@@ -35,8 +35,7 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T])(implicit nume
   import numeric._
   import AnalysisPhase._
 
-  override def analyze[Property <: NumericalProperty[Property]](input: Property,  params: Parameters[Property], 
-      phase: AnalysisPhase, ann: Annotation[Property]): Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
     val coefficients = linearForm.coefficients
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
   }
