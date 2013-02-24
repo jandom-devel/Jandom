@@ -15,9 +15,8 @@ object JandomBuild extends Build {
         inConfig(Benchmark)(Defaults.testSettings) ++
         CaliperPlugin.benchmarkTasks :_*
       )
-      .dependsOn(macros)
 
   lazy val macros =
-    Project(id = "JandomMacros", base = file("macros"))
+    Project(id = "JandomExtended", base = file("extended"))
+    .dependsOn(core)
 }
-
