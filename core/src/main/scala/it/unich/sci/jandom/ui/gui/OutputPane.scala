@@ -16,7 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.gui
+package it.unich.sci.jandom.ui.gui
 
 import scala.swing._
 

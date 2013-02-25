@@ -17,10 +17,13 @@
  */
 
 package it.unich.sci.jandom
+package ui.gui
+
+import scala.swing.SimpleSwingApplication
 
 /**
- * A package for GUI related stuff
+ * The main GUI of Jandom.
  */
-package object gui {
-
+object JandomGUI extends SimpleSwingApplication {
+	def top = new MainFrame()
 }

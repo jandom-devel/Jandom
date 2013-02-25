@@ -17,14 +17,13 @@
  */
 
 package it.unich.sci.jandom
-package cli
-
-import it.unich.sci.jandom.domains.PPLCPolyhedron
+package ui.cli
 import it.unich.sci.jandom.targets.slil.SLILStmt
 import it.unich.sci.jandom.narrowings.DelayedNarrowingFactory
 import it.unich.sci.jandom.narrowings.NoNarrowing
 import it.unich.sci.jandom.targets.slil.SLILStmt
 import it.unich.sci.jandom.targets.slil.SLILStmt
+import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
 
 /**
  * A very minimalistic CLI.

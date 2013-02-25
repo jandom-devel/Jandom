@@ -16,8 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
+package it.unich.sci.jandom.ui
 
-package object cli {
+/**
+ * A package for GUI related stuff
+ */
+package object gui {
 
 }

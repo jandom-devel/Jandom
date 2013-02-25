@@ -16,11 +16,12 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.cli
+package it.unich.sci.jandom.ui.cli
 
 import org.rogach.scallop._
 import it.unich.sci.jandom.parameters.WideningScope
 import it.unich.sci.jandom.parameters.NarrowingStrategy
+import scala.reflect.runtime.universe
 
 /**
  * The class for command line parameters.

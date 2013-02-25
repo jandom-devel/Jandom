@@ -17,9 +17,7 @@
  */
 
 package it.unich.sci.jandom
-package gui
-
-import domains.{ NumericalDomain, NumericalProperty }
+package ui.gui
 import scala.swing._
 import java.awt.GridBagConstraints
 import scala.swing.ListView.Renderer
@@ -27,12 +25,11 @@ import javax.swing.SpinnerNumberModel
 import javax.swing.JSpinner
 import it.unich.sci.jandom.targets.{Parameters,Target}
 import it.unich.sci.jandom.parameters._
-import it.unich.sci.jandom.widenings.DelayedWidening
 import it.unich.sci.jandom.widenings.DefaultWidening
-import it.unich.sci.jandom.narrowings.DelayedNarrowing
 import it.unich.sci.jandom.narrowings.NoNarrowing
 import it.unich.sci.jandom.widenings.DelayedWideningFactory
 import it.unich.sci.jandom.narrowings.DelayedNarrowingFactory
+import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
 
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)

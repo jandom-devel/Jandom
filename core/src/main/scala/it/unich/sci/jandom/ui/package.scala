@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,10 @@
  */
 
 package it.unich.sci.jandom
-package gui
-
-import scala.swing.SimpleSwingApplication
 
 /**
- * The main GUI of Jandom.
+ * The base package for the Jandom user interfaces.
  */
-object JandomGUI extends SimpleSwingApplication {
-	def top = new MainFrame()
+package object ui {
+
 }

@@ -17,17 +17,17 @@
  */
 
 package it.unich.sci.jandom
-package gui
+package ui.gui
 
 import domains._
 import targets.slil.SLILStmt
 import scala.swing._
 import scala.swing.event._
-import java.awt.GridBagConstraints
 import javax.swing.KeyStroke
 import java.awt.event.KeyEvent
 import java.awt.event.InputEvent
 import scala.swing.TabbedPane
+import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 
 class MainFrame extends Frame {
 

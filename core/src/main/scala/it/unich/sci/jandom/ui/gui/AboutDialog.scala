@@ -17,7 +17,7 @@
  */
 
 package it.unich.sci.jandom
-package gui
+package ui.gui
 
 import scala.swing._
   
