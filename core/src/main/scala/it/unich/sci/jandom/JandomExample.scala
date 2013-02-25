@@ -18,15 +18,13 @@
 
 package it.unich.sci.jandom
 
-import targets.slil.{ SLILProgram, SLILStmt }
-import targets.lts.LTS
-import domains._
-import widenings._
-import narrowings._
-import ppfactories._
-import parma_polyhedra_library.Octagonal_Shape_double
+import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
+import domains.PPLCPolyhedron
+import narrowings.{DefaultNarrowing, DelayedNarrowingFactory}
 import parma_polyhedra_library.Parma_Polyhedra_Library
-import parma_polyhedra_library.Double_Box
+import ppfactories.MemoizingFactory
+import targets.slil.SLILStmt
+import widenings.{DefaultWidening, DelayedWideningFactory}
 
 /**
  * Example program using ''Jandom''.
@@ -41,8 +39,8 @@ object JandomExample extends App {
       val program = parsed.get
       val domain =  domains.BoxDouble
       val params = new targets.Parameters(domain, program: SLILStmt)
-      params.narrowingStrategy = it.unich.sci.jandom.parameters.NarrowingStrategy.Restart
-      params.wideningScope = it.unich.sci.jandom.parameters.WideningScope.BackEdges
+      params.narrowingStrategy = it.unich.sci.jandom.ui.NarrowingStrategy.Restart
+      params.wideningScope = it.unich.sci.jandom.ui.WideningScope.BackEdges
       val ann = program.analyze(params)
       println(program.mkString(ann))
     } else {

@@ -21,7 +21,7 @@ package domains
 
 import utils.PPLUtils
 import parma_polyhedra_library._
-import it.unich.sci.jandom.parameters.ParameterValue
+import it.unich.sci.jandom.ui.ParameterValue
 
 /**
  * This is the universal PPL numerical property. It is able to represent (almost) any property

@@ -21,7 +21,7 @@ package domains
 
 import language.experimental.macros
 import scala.reflect.macros.Context
-import parameters.ParameterValue
+import it.unich.sci.jandom.ui.ParameterValue
 
 /**
  * This class containts macros for compile-time creation of PPL backed

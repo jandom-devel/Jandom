@@ -19,7 +19,7 @@
 package it.unich.sci.jandom
 package domains
 
-import it.unich.sci.jandom.parameters.ParameterValue
+import it.unich.sci.jandom.ui.ParameterValue
 
 /**
  * This is the box abstract domain over doubles.

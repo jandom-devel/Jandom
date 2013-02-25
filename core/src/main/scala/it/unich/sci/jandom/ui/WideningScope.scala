@@ -17,7 +17,7 @@
  */
 
 package it.unich.sci.jandom
-package parameters
+package ui
 
 /**
  * This objects determines the scope for widenings. The available alternatives are:

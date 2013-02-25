@@ -24,12 +24,17 @@ import scala.swing.ListView.Renderer
 import javax.swing.SpinnerNumberModel
 import javax.swing.JSpinner
 import it.unich.sci.jandom.targets.{Parameters,Target}
-import it.unich.sci.jandom.parameters._
+import it.unich.sci.jandom.ui._
 import it.unich.sci.jandom.widenings.DefaultWidening
 import it.unich.sci.jandom.narrowings.NoNarrowing
 import it.unich.sci.jandom.widenings.DelayedWideningFactory
 import it.unich.sci.jandom.narrowings.DelayedNarrowingFactory
 import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
+import it.unich.sci.jandom.ui.WideningScope
+import it.unich.sci.jandom.ui.NarrowingStrategy
+import it.unich.sci.jandom.ui.NumericalDomains
+import it.unich.sci.jandom.ui.Parameter
+import it.unich.sci.jandom.ui.ParameterValue
 
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)

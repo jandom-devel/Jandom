@@ -20,7 +20,7 @@ package it.unich.sci.jandom
 package domains
 
 import breeze.linalg._
-import it.unich.sci.jandom.parameters.ParameterValue
+import it.unich.sci.jandom.ui.ParameterValue
 
 /**
  * This is the abstract domain of parallelotopes.

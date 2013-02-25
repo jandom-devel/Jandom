@@ -16,14 +16,25 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.parameters
+package it.unich.sci.jandom.ui
 
-abstract class ParameterEnumeration extends Enumeration with Parameter[ParameterValue] { 
-  val default: Value
+/** 
+ * Every parameter which may be used in the analyzer should mix the
+ * trait Parameter.
+ */
+trait Parameter[V] {
+  /**
+   * The name of the parameter, to appear in the UI
+   */
   val name: String
-  val shortName: String
+  
+  /**
+   * A description of the parameter to be used, for example, in tooltips
+   */
   val description: String  
-  class Val(val name: String, val description: String) extends super.Val(name) with ParameterValue
-  protected final def Value(name: String = "", description : String = ""): Value = new Val(name, description)
-  def enabledValues =  values.toSeq.asInstanceOf[Seq[Val]] 
+  
+  /**
+   * A list of enabled values for this parameter
+   */
+  def enabledValues: Seq[V with ParameterValue]
 }

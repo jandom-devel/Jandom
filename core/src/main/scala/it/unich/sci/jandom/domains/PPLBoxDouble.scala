@@ -29,7 +29,7 @@ import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
-import it.unich.sci.jandom.parameters.ParameterValue
+import it.unich.sci.jandom.ui.ParameterValue
 import parma_polyhedra_library.Variables_Set
 
 /**

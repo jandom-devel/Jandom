@@ -19,8 +19,8 @@
 package it.unich.sci.jandom
 package domains
 
-import it.unich.sci.jandom.parameters.Parameter
-import it.unich.sci.jandom.parameters.ParameterValue
+import it.unich.sci.jandom.ui.Parameter
+import it.unich.sci.jandom.ui.ParameterValue
 import scala.collection.SortedSet
 import parma_polyhedra_library.Parma_Polyhedra_Library
 import parma_polyhedra_library.Octagonal_Shape_double

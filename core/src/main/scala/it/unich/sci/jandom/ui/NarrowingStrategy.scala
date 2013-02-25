@@ -16,7 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.parameters
+package it.unich.sci.jandom.ui
 
 /**
  * This parameter specifies when and whether to build descending sequences during the analysis. 

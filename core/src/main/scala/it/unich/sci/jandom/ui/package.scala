@@ -19,7 +19,9 @@
 package it.unich.sci.jandom
 
 /**
- * The base package for the Jandom user interfaces.
+ * The base package for the Jandom user interfaces.  In particular,
+ * this packages contains the definition of all the parameters which may be 
+ * specified during the analysis.
  */
 package object ui {
 

@@ -19,9 +19,9 @@
 package it.unich.sci.jandom.ui.cli
 
 import org.rogach.scallop._
-import it.unich.sci.jandom.parameters.WideningScope
-import it.unich.sci.jandom.parameters.NarrowingStrategy
 import scala.reflect.runtime.universe
+import it.unich.sci.jandom.ui.NarrowingStrategy
+import it.unich.sci.jandom.ui.WideningScope
 
 /**
  * The class for command line parameters.

@@ -62,18 +62,18 @@ class SLILProgramSuite extends FunSuite {
     val domain =  domains.BoxDouble
     
     val params = new targets.Parameters(domain, program: SLILStmt)
-    params.narrowingStrategy = it.unich.sci.jandom.parameters.NarrowingStrategy.None
-    params.wideningScope = it.unich.sci.jandom.parameters.WideningScope.Output
+    params.narrowingStrategy = it.unich.sci.jandom.ui.NarrowingStrategy.None
+    params.wideningScope = it.unich.sci.jandom.ui.WideningScope.Output
     program.analyze(params)
     expectResult ( BoxDouble.full(1) ) { params.tag(0) }
     
-    params.narrowingStrategy = it.unich.sci.jandom.parameters.NarrowingStrategy.None
-    params.wideningScope = it.unich.sci.jandom.parameters.WideningScope.Random
+    params.narrowingStrategy = it.unich.sci.jandom.ui.NarrowingStrategy.None
+    params.wideningScope = it.unich.sci.jandom.ui.WideningScope.Random
     program.analyze(params)
     expectResult ( BoxDouble.full(1) ) { params.tag(0) }
     
-    params.narrowingStrategy = it.unich.sci.jandom.parameters.NarrowingStrategy.None
-    params.wideningScope = it.unich.sci.jandom.parameters.WideningScope.BackEdges
+    params.narrowingStrategy = it.unich.sci.jandom.ui.NarrowingStrategy.None
+    params.wideningScope = it.unich.sci.jandom.ui.WideningScope.BackEdges
     program.analyze(params)
     expectResult ( BoxDouble(Array(-1), Array(1)) ) { params.tag(0) }
   }

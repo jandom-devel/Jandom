@@ -15,9 +15,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.parameters
+package it.unich.sci.jandom.ui
 
 import it.unich.sci.jandom.domains._
+
 
 /**
  * This objects lists the numerical domains for analysis available
