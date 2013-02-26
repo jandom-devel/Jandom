@@ -269,7 +269,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
    * @throws $ILLEGAL
    */
   def linearDisequality(coeff: Array[Double], known: Double): BoxDouble =
-    throw new IllegalAccessException("Unimplemented feature");
+    throw new IllegalAccessException("Unimplemented feature")
   
   def addDimension: BoxDouble = 
     new BoxDouble(low :+ Double.NegativeInfinity, high :+ Double.PositiveInfinity)
