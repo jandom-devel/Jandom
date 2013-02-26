@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ import parma_polyhedra_library.Constraint_System
 import parma_polyhedra_library.Degenerate_Element
 import parma_polyhedra_library.Linear_Expression
 import parma_polyhedra_library.Linear_Expression_Coefficient
+import parma_polyhedra_library.Polyhedron
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variable_Stringifier
@@ -34,10 +35,8 @@ import it.unich.sci.jandom.utils.PPLUtils
 /**
  * This is the universal PPL numerical property. It is able to represent (almost) any property
  * representable by PPL. It only requires that some methods and constructors are defined in the
- * PPL class, and access them using reflection. It does not currently works with polyhedra due
- * to the fact both C_Polyhedron and NCC_Polyhedron inherit from a base class Polyhedron.
- *
- * Since it uses reflexivity, this is slower than a direct implementation.
+ * PPL class, and access them using reflection. Since it uses reflexivity, this is slower than 
+ * a direct implementation. 
  *
  * @constructor creates a new PPLProperty object
  * @tparam PPLNativeProperty is the PPL class implementing the abstract property, such as Double_Box,
@@ -59,12 +58,17 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
 
   /**
    * @inheritdoc
-   * Since there is no standard narrowing in the PPL library, this is a fake narrowing which
-   * always return `this`.
+   * Since there is no standard narrowing in the PPL library, this try to use the method
+   * `CC76_narrowing_assign` when it exists, returns `this` otherwise.
    * @note @inheritdoc
    */
   def narrowing(that: PPLProperty[PPLNativeProperty]): PPLProperty[PPLNativeProperty] = {
-    this
+    if (domain.supportsNarrowing) {
+      val newpplobject = domain.copyConstructor(pplobject)
+      domain.narrowing_assign(newpplobject, that.pplobject)
+      new PPLProperty(domain, newpplobject)
+    } else
+      this
   }
 
   def union(that: PPLProperty[PPLNativeProperty]): PPLProperty[PPLNativeProperty] = {
@@ -78,11 +82,11 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
     domain.intersection_assign(newpplobject, that.pplobject)
     new PPLProperty(domain, newpplobject)
   }
-  
-  def nonDeterministicAssignment(n:Int): PPLProperty[PPLNativeProperty] = {
+
+  def nonDeterministicAssignment(n: Int): PPLProperty[PPLNativeProperty] = {
     val newpplobject = domain.copyConstructor(pplobject)
-    domain.unconstrain_space_dimension(newpplobject,new Variable(n))
-    new PPLProperty(domain,newpplobject)
+    domain.unconstrain_space_dimension(newpplobject, new Variable(n))
+    new PPLProperty(domain, newpplobject)
   }
 
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLProperty[PPLNativeProperty] = {
@@ -107,20 +111,20 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
     throw new IllegalAccessException("Unimplemented feature");
   }
 
- def addDimension = {
+  def addDimension = {
     val newpplobject = domain.copyConstructor(pplobject)
-    domain.add_space_dimensions_and_project(newpplobject,1)
-    new PPLProperty(domain,newpplobject)
+    domain.add_space_dimensions_and_project(newpplobject, 1)
+    new PPLProperty(domain, newpplobject)
   }
-  
+
   def delDimension(n: Int) = {
     val newpplobject = domain.copyConstructor(pplobject)
     val dims = new Variables_Set
     dims.add(new Variable(n))
-    domain.remove_space_dimensions(newpplobject,dims)
-    new PPLProperty(domain,newpplobject)
-  }  
-  
+    domain.remove_space_dimensions(newpplobject, dims)
+    new PPLProperty(domain, newpplobject)
+  }
+
   def dimension: Int = domain.space_dimension(pplobject).toInt
 
   def isEmpty: Boolean = domain.is_empty(pplobject)
@@ -172,28 +176,53 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
  * @tparam PPLNativeProperty is the PPL class implementing the abstract property, such as Double_Box,
  * Octagonal_Shape_double, etc...
  */
-class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain  {
-  
+class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
+
   type Property = PPLProperty[PPLNativeProperty]
-  
+
   PPLInitializer
- 
-  private val PPLClass: java.lang.Class[PPLNativeProperty] = implicitly[Manifest[PPLNativeProperty]].runtimeClass.asInstanceOf[java.lang.Class[PPLNativeProperty]]
-  private val constructorHandle = PPLClass.getConstructor(classOf[Long], classOf[Degenerate_Element])
-  private val copyConstructorHandle = PPLClass.getConstructor(PPLClass)  
-  private val upperBoundAssignHandle =  PPLClass.getMethod("upper_bound_assign", PPLClass)   
-  private val intersectionAssignHandle = PPLClass.getMethod("intersection_assign", PPLClass)
-  private val wideningAssignHandle = PPLClass.getMethod("widening_assign", PPLClass, classOf[By_Reference[Int]])
-  private val affineImageHandle = PPLClass.getMethod("affine_image", classOf[Variable], classOf[Linear_Expression], classOf[Coefficient])
-  private val refineWithConstraintHandle = PPLClass.getMethod("refine_with_constraint", classOf[Constraint])
-  private val spaceDimensionHandle = PPLClass.getMethod("space_dimension")
-  private val strictlyContainsHandle = PPLClass.getMethod("strictly_contains", PPLClass)
-  private val isEmptyHandle = PPLClass.getMethod("is_empty")
-  private val isUniverseHandle = PPLClass.getMethod("is_universe")
-  private val minimizedConstraintsHandle = PPLClass.getMethod("minimized_constraints")
-  private val unconstrainSpaceDimensionHandle = PPLClass.getMethod("unconstrain_space_dimension",classOf[Variable])  
-  private val addSpaceDimensionsAndProjectHandle = PPLClass.getMethod("add_space_dimensions_and_project",classOf[Long])
-  private val removeSpaceDimensions = PPLClass.getMethod("remove_space_dimensions",classOf[Variables_Set])
+
+  /*
+   * The class object correspondening to PPLNativeProperty
+   */
+  
+  private val myClass =
+    implicitly[Manifest[PPLNativeProperty]].runtimeClass.asInstanceOf[java.lang.Class[PPLNativeProperty]]
+
+  /*
+   * The use of otherClass is a sort of hack, needed since C_Polyhedron is a subclass of Polyhedron.
+   * Some methods takes a Polyhedron as a secondary parameter, and getMethod requires the precise 
+   * signature of methods.
+   */
+
+  private val otherClass = {
+    val polyhedronClass = classOf[Polyhedron]
+    if (polyhedronClass.isAssignableFrom(myClass))
+      polyhedronClass
+    else
+      myClass
+  }
+
+  private val constructorHandle = myClass.getConstructor(classOf[Long], classOf[Degenerate_Element])
+  private val copyConstructorHandle = myClass.getConstructor(myClass)
+  private val upperBoundAssignHandle = myClass.getMethod("upper_bound_assign", otherClass)
+  private val intersectionAssignHandle = myClass.getMethod("intersection_assign", otherClass)
+  private val wideningAssignHandle = myClass.getMethod("widening_assign", otherClass, classOf[By_Reference[Int]])
+  private val affineImageHandle = myClass.getMethod("affine_image", classOf[Variable], classOf[Linear_Expression], classOf[Coefficient])
+  private val refineWithConstraintHandle = myClass.getMethod("refine_with_constraint", classOf[Constraint])
+  private val spaceDimensionHandle = myClass.getMethod("space_dimension")
+  private val strictlyContainsHandle = myClass.getMethod("strictly_contains", otherClass)
+  private val isEmptyHandle = myClass.getMethod("is_empty")
+  private val isUniverseHandle = myClass.getMethod("is_universe")
+  private val minimizedConstraintsHandle = myClass.getMethod("minimized_constraints")
+  private val unconstrainSpaceDimensionHandle = myClass.getMethod("unconstrain_space_dimension", classOf[Variable])
+  private val addSpaceDimensionsAndProjectHandle = myClass.getMethod("add_space_dimensions_and_project", classOf[Long])
+  private val removeSpaceDimensionsHandle = myClass.getMethod("remove_space_dimensions", classOf[Variables_Set])
+  private val narrowingAssignHandle = try {
+    myClass.getMethod("CC76_narrowing_assign", otherClass)
+  } catch {
+    case _: Throwable => null
+  }
 
   private[domains] def constructor(n: Int, el: Degenerate_Element) = constructorHandle.newInstance(n: java.lang.Integer, el)
   private[domains] def copyConstructor(pplobject: PPLNativeProperty) = copyConstructorHandle.newInstance(pplobject)
@@ -209,7 +238,13 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain  
   private[domains] def minimized_constraints(me: PPLNativeProperty) = minimizedConstraintsHandle.invoke(me).asInstanceOf[Constraint_System]
   private[domains] def unconstrain_space_dimension(me: PPLNativeProperty, v: Variable) = unconstrainSpaceDimensionHandle.invoke(me, v)
   private[domains] def add_space_dimensions_and_project(me: PPLNativeProperty, l: Long) = addSpaceDimensionsAndProjectHandle.invoke(me, l: java.lang.Long)
-  private[domains] def remove_space_dimensions (me: PPLNativeProperty, vars: Variables_Set) = removeSpaceDimensions.invoke(me, vars) 
+  private[domains] def remove_space_dimensions(me: PPLNativeProperty, vars: Variables_Set) = removeSpaceDimensionsHandle.invoke(me, vars)
+  private[domains] def narrowing_assign(me: PPLNativeProperty, that: PPLNativeProperty) = narrowingAssignHandle.invoke(me, that)
+
+  /**
+   * It is true if `PPLNativeProperty` has the `CC76_narrowing_assign` method.
+   */
+  val supportsNarrowing = narrowingAssignHandle != None
 
   def full(n: Int): PPLProperty[PPLNativeProperty] = {
     val pplobject = constructor(n, Degenerate_Element.UNIVERSE)

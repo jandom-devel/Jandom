@@ -29,7 +29,7 @@ import parma_polyhedra_library.Octagonal_Shape_double
 /**
  * The ParameterEnumeration for numerical domains.
  */
-object NumericalDomains extends ParameterEnumeration[NumericalDomain] {  
+object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
   val name = "Domain"
   val description = "The numerical domain to use for the analysis."
   val values: Seq[ParameterValue[NumericalDomain]] = Seq(
@@ -39,6 +39,6 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
       "not safe and should not be used."),
     ParameterValue(new PPLDomain[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double."),
     ParameterValue(new PPLDomain[Octagonal_Shape_double], "PPL Octagon_Shape_double", "PPL based implementation of Octagon over double."),
-    ParameterValue(PPLCPolyhedron, "PPL C_Polyhedron", "PPL based implementation of closed polyhedra."))
+    ParameterValue(new PPLDomain[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra."))
   val default = values.last.value
 }
