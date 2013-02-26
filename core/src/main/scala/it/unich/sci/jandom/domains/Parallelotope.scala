@@ -16,11 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package domains
+package it.unich.sci.jandom.domains
 
 import breeze.linalg._
-import it.unich.sci.jandom.ui.ParameterValue
 
 /**
  * This is the abstract domain of parallelotopes.
@@ -386,7 +384,7 @@ class Parallelotope (
   }
 }
 
-object Parallelotope extends NumericalDomain with ParameterValue {
+object Parallelotope extends NumericalDomain  {
     
   type Property = Parallelotope
   

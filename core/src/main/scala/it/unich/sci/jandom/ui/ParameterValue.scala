@@ -19,17 +19,10 @@
 package it.unich.sci.jandom.ui
 
 /**
- * Every possible value of an enumeration parameter should implement
- * the trai ParameterValue 
+ * A parameter value is a possible instance of a given enumerative parameter.
+ * @tparam V the type of the instance
+ * @param name name of the value
+ * @param description description of the value
  */
-trait ParameterValue {
-  /**
-   * The name of the parameter value, to appear in UI
-   */
-  val name: String
-  
-  /**
-   * A description of the parameter to be used, for example, in tooltips
-   */
-  val description: String
-}
+case class ParameterValue[+V] (val value: V, val name: String, val description: String)
+   

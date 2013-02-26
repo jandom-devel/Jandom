@@ -16,12 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package domains
+package it.unich.sci.jandom.domains
 
 import language.experimental.macros
 import scala.reflect.macros.Context
-import it.unich.sci.jandom.ui.ParameterValue
 
 /**
  * This class containts macros for compile-time creation of PPL backed
@@ -29,9 +27,9 @@ import it.unich.sci.jandom.ui.ParameterValue
  */
 object PPLPropertyMacros {
 
-  def PPLDomain[PPLType]: NumericalDomain with ParameterValue = macro PPLDomainImpl[PPLType]
+  def PPLDomain[PPLType]: NumericalDomain  = macro PPLDomainImpl[PPLType]
 
-  def PPLDomainImpl[PPLType: c.WeakTypeTag](c: Context): c.Expr[NumericalDomain with ParameterValue] = {
+  def PPLDomainImpl[PPLType: c.WeakTypeTag](c: Context): c.Expr[NumericalDomain] = {
     import c.universe._
     import parma_polyhedra_library.Double_Box
         
@@ -39,16 +37,8 @@ object PPLPropertyMacros {
     val PPLTypeName = c.literal(PPLTypeSymbol.name.toString)
 
     val classes = reify {
-      import utils.PPLUtils
-      import parma_polyhedra_library.Linear_Expression
-      import parma_polyhedra_library.Linear_Expression_Coefficient
-      import parma_polyhedra_library.Linear_Expression_Variable
-      import parma_polyhedra_library.Variable
-      import parma_polyhedra_library.Coefficient
-      import parma_polyhedra_library.Relation_Symbol
-      import parma_polyhedra_library.Constraint
-      import parma_polyhedra_library.Degenerate_Element
-      import parma_polyhedra_library.Variables_Set
+      import parma_polyhedra_library._
+      import it.unich.sci.jandom.utils.PPLUtils
 
       /**
        * The domain for possibly opened box over doubles implemented within $PPL. This is essentially
@@ -67,9 +57,7 @@ object PPLPropertyMacros {
         }
 
         def narrowing(that: PPLProperty): PPLProperty = {
-          val newpplbox = new Double_Box(that.pplbox)
-          newpplbox.CC76_narrowing_assign(pplbox)
-          new PPLProperty(newpplbox)
+          this
         }
 
         def union(that: PPLProperty): PPLProperty = {
@@ -153,7 +141,7 @@ object PPLPropertyMacros {
       /**
        * This is the factory for ``PPLProperty`` properties.
        */
-      object PPLProperty extends NumericalDomain with ParameterValue {
+      object PPLProperty extends NumericalDomain {
         PPLInitializer
 
         type Property = PPLProperty
@@ -187,6 +175,6 @@ object PPLPropertyMacros {
       case Block(stats, expr) => Block(stats, Ident(newTermName("PPLProperty")))
     }
 
-    c.Expr[NumericalDomain with ParameterValue](outputTree)
+    c.Expr[NumericalDomain](outputTree)
   }
 }

@@ -16,14 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package domains
-
-import it.unich.sci.jandom.ui.Parameter
-import it.unich.sci.jandom.ui.ParameterValue
-import scala.collection.SortedSet
-import parma_polyhedra_library.Parma_Polyhedra_Library
-import parma_polyhedra_library.Octagonal_Shape_double
+package it.unich.sci.jandom.domains
 
 /**
  * Base trait for numerical domains. A numerical domain is a factory for numerical properties. It
@@ -54,4 +47,3 @@ trait NumericalDomain {
    */
   def empty(n: Int): Property
 }
-

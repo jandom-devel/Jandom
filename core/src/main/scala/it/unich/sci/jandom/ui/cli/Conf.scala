@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +20,18 @@ package it.unich.sci.jandom.ui.cli
 
 import org.rogach.scallop._
 import scala.reflect.runtime.universe
-import it.unich.sci.jandom.ui.NarrowingStrategy
-import it.unich.sci.jandom.ui.WideningScope
+import it.unich.sci.jandom.targets.WideningScope
+import it.unich.sci.jandom.targets.NarrowingStrategy
+import it.unich.sci.jandom.ui.WideningScopes
+import it.unich.sci.jandom.ui.NarrowingStrategies
 
 /**
  * The class for command line parameters.
  */
 class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
-  def enumConverter(e: Enumeration) = singleArgConverter ( e.withName(_) )
+  def enumConverter(e: Enumeration) = singleArgConverter(e.withName(_))
   // we need to factour out common code here
-  val wideningScope = opt[WideningScope.Value]("widening", default = Some(WideningScope.default ) )( enumConverter( WideningScope ) )
-  val narrowingStrategy = opt[NarrowingStrategy.Value]("narrowing", default = Some(NarrowingStrategy.default) ) ( enumConverter( NarrowingStrategy) )
-  val file = opt[String]("input", required=true) 
+  val wideningScope = opt[WideningScope.Value]("widening", default = Some(WideningScopes.default))(enumConverter(WideningScope))
+  val narrowingStrategy = opt[NarrowingStrategy.Value]("narrowing", default = Some(NarrowingStrategies.default))(enumConverter(NarrowingStrategy))
+  val file = opt[String]("input", required = true)
 }

@@ -16,8 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package domains
+package it.unich.sci.jandom.domains
 
 /**
  * The base trait for all the abstract properties.

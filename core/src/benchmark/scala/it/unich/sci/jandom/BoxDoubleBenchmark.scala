@@ -129,7 +129,7 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
       }
     }
   }
-  
+  /*
   def timeJandomPPLMacro(reps: Int) {
     for (iter <- 1 to reps) {
       val domain = PPLPropertyMacros.PPLDomain[Double_Box]
@@ -141,5 +141,5 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
         db = db union point
       }
     }
-  }
+  }*/
 }

@@ -16,15 +16,20 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parameters
+package it.unich.sci.jandom.ui
 
-import parma_polyhedra_library.Octagonal_Shape_double
-import domains._
+import it.unich.sci.jandom.targets.WideningScope._
 
-object NumericalDomains extends Parameter[NumericalDomain] {
-  val name = "Domain"
-  val description = "The numerical domain to use for the analysis."
-  val enabledValues = Seq[NumericalDomain  with ParameterValue] (
-      BoxDouble, Parallelotope, PPLBoxDouble, PPLCPolyhedron, PPLPropertyMacros.PPLDomain[Octagonal_Shape_double])
+/**
+ * The ParameterEnumeration for WideningScope.
+ */
+object WideningScopes extends ParameterEnumeration[Value] {  
+  val name = "Widening Scope"
+  val description = "The Widening scope"
+  val values = Seq(
+      ParameterValue(Output, "Output", "The standard widening, which is applied to the output edge"),
+      ParameterValue(BackEdges, "Back Edges", "The widening is applied at the input back edges"),
+      ParameterValue(Random, "Localized", "The widening is applied like in Random (a variant of Back Edge)")
+      )
+  val default = Random
 }

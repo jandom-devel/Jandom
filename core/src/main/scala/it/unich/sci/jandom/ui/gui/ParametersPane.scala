@@ -30,8 +30,8 @@ import it.unich.sci.jandom.narrowings.NoNarrowing
 import it.unich.sci.jandom.widenings.DelayedWideningFactory
 import it.unich.sci.jandom.narrowings.DelayedNarrowingFactory
 import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
-import it.unich.sci.jandom.ui.WideningScope
-import it.unich.sci.jandom.ui.NarrowingStrategy
+import it.unich.sci.jandom.ui.WideningScopes
+import it.unich.sci.jandom.ui.NarrowingStrategies
 import it.unich.sci.jandom.ui.NumericalDomains
 import it.unich.sci.jandom.ui.Parameter
 import it.unich.sci.jandom.ui.ParameterValue
@@ -39,8 +39,8 @@ import it.unich.sci.jandom.ui.ParameterValue
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)
   val domainComboBox = addParameterEnumeration(0, NumericalDomains)
-  val wideningComboBox = addParameterEnumeration(1, WideningScope)
-  val narrowingComboBox = addParameterEnumeration(2, NarrowingStrategy)
+  val wideningComboBox = addParameterEnumeration(1, WideningScopes)
+  val narrowingComboBox = addParameterEnumeration(2, NarrowingStrategies)
   val delayModel = new SpinnerNumberModel(0, 0, Double.PositiveInfinity, 1)
   val delay = Component.wrap(new JSpinner(delayModel))
   val debug = new CheckBox("Debug")
@@ -54,10 +54,10 @@ class ParametersPane extends GridBagPanel {
   layout(Swing.VGlue) = new Constraints(0, 5, 2, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
       GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0)
   
-   object ParameterRenderer extends Renderer[ParameterValue] {
+   object ParameterRenderer extends Renderer[ParameterValue[_]] {
     val r = implicitly[Renderer[String]]
     def componentFor(list: ListView[_], isSelected: Boolean,
-      focused: Boolean, a: ParameterValue, index: Int): Component =
+      focused: Boolean, a: ParameterValue[_], index: Int): Component =
       {
         val c = r.componentFor(list, isSelected, focused, a.name, index)
         c.tooltip = a.description
@@ -65,11 +65,11 @@ class ParametersPane extends GridBagPanel {
       }
   }
   
-  private def addParameterEnumeration(row: Int, pe: Parameter[_]): ComboBox[_] = {
+  private def addParameterEnumeration(row: Int, pe: ParameterEnumeration[_]): ComboBox[_] = {
     val label = new Label(pe.name + ":") {
       tooltip = pe.description
     }
-    val comboBox = new ComboBox(pe.enabledValues) {
+    val comboBox = new ComboBox(pe.values: Seq[ParameterValue[_]]) {
       renderer = ParameterRenderer
     }
     layout(label) = new Constraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
@@ -79,12 +79,12 @@ class ParametersPane extends GridBagPanel {
     comboBox
   }
 
-  def selectedDomain = NumericalDomains.enabledValues(domainComboBox.selection.index)
+  def selectedDomain = NumericalDomains.values(domainComboBox.selection.index)
   
   def getParameters[T <: Target](tgt: T) = {
-    val parameters = new Parameters(selectedDomain, tgt)
-    parameters.wideningScope = WideningScope(wideningComboBox.selection.index)
-    parameters.narrowingStrategy = NarrowingStrategy(narrowingComboBox.selection.index)
+    val parameters = new Parameters(selectedDomain.value, tgt)
+    parameters.wideningScope = WideningScopes.values(wideningComboBox.selection.index).value
+    parameters.narrowingStrategy = NarrowingStrategies.values(narrowingComboBox.selection.index).value
     val delay = delayModel.getValue().asInstanceOf[Double].toInt
     if (delay != 0) {
       parameters.wideningFactory = DelayedWideningFactory(DefaultWidening,delay)

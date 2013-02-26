@@ -34,7 +34,7 @@ import annotations._
  */
 case class SLILProgram(private val env: Environment, private val inputVars: Seq[Int], private val stmt: SLILStmt) extends SLILStmt {
   import AnalysisPhase._
-  import it.unich.sci.jandom.ui.NarrowingStrategy._
+  import it.unich.sci.jandom.targets.NarrowingStrategy._
   
   program = this
 

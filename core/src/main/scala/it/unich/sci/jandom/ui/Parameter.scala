@@ -21,8 +21,10 @@ package it.unich.sci.jandom.ui
 /** 
  * Every parameter which may be used in the analyzer should mix the
  * trait Parameter.
+ * @tparam V the type of the parameter
  */
-trait Parameter[V] {
+
+trait Parameter[V] { 
   /**
    * The name of the parameter, to appear in the UI
    */
@@ -34,7 +36,7 @@ trait Parameter[V] {
   val description: String  
   
   /**
-   * A list of enabled values for this parameter
+   * The default value for this parameter
    */
-  def enabledValues: Seq[V with ParameterValue]
+  val default: V
 }

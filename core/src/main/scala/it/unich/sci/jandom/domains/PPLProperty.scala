@@ -16,12 +16,21 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package domains
+package it.unich.sci.jandom.domains
 
-import utils.PPLUtils
-import parma_polyhedra_library._
-import it.unich.sci.jandom.ui.ParameterValue
+import it.unich.sci.jandom.utils.PPLUtils
+import parma_polyhedra_library.By_Reference
+import parma_polyhedra_library.Coefficient
+import parma_polyhedra_library.Constraint
+import parma_polyhedra_library.Constraint_System
+import parma_polyhedra_library.Degenerate_Element
+import parma_polyhedra_library.Linear_Expression
+import parma_polyhedra_library.Linear_Expression_Coefficient
+import parma_polyhedra_library.Relation_Symbol
+import parma_polyhedra_library.Variable
+import parma_polyhedra_library.Variable_Stringifier
+import parma_polyhedra_library.Variables_Set
+import parma_polyhedra_library.Polyhedron
 
 /**
  * This is the universal PPL numerical property. It is able to represent (almost) any property
@@ -158,7 +167,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
  * @tparam PPLNativeProperty is the PPL class implementing the abstract property, such as Double_Box,
  * Octagonal_Shape_double, etc...
  */
-class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain with ParameterValue {
+class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain  {
   
   type Property = PPLProperty[PPLNativeProperty]
   
@@ -166,8 +175,8 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain w
  
   private val PPLClass: java.lang.Class[PPLNativeProperty] = implicitly[Manifest[PPLNativeProperty]].runtimeClass.asInstanceOf[java.lang.Class[PPLNativeProperty]]
   private val constructorHandle = PPLClass.getConstructor(classOf[Long], classOf[Degenerate_Element])
-  private val copyConstructorHandle = PPLClass.getConstructor(PPLClass)
-  private val upperBoundAssignHandle = PPLClass.getMethod("upper_bound_assign", PPLClass)
+  private val copyConstructorHandle = PPLClass.getConstructor(PPLClass)  
+  private val upperBoundAssignHandle =  PPLClass.getMethod("upper_bound_assign", PPLClass)   
   private val intersectionAssignHandle = PPLClass.getMethod("intersection_assign", PPLClass)
   private val wideningAssignHandle = PPLClass.getMethod("widening_assign", PPLClass, classOf[By_Reference[Int]])
   private val affineImageHandle = PPLClass.getMethod("affine_image", classOf[Variable], classOf[Linear_Expression], classOf[Coefficient])

@@ -42,8 +42,8 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
   var lastBodyResult: NumericalProperty[_] = null
 
   override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
-    import it.unich.sci.jandom.ui.WideningScope._
-    import it.unich.sci.jandom.ui.NarrowingStrategy._
+    import it.unich.sci.jandom.targets.WideningScope._
+    import it.unich.sci.jandom.targets.NarrowingStrategy._
 
     // Increase nesting level since we are entering a loop
     params.nestingLevel += 1

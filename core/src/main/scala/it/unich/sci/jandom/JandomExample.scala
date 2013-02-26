@@ -25,6 +25,8 @@ import parma_polyhedra_library.Parma_Polyhedra_Library
 import ppfactories.MemoizingFactory
 import targets.slil.SLILStmt
 import widenings.{DefaultWidening, DelayedWideningFactory}
+import it.unich.sci.jandom.targets.NarrowingStrategy
+import it.unich.sci.jandom.targets.WideningScope
 
 /**
  * Example program using ''Jandom''.
@@ -39,8 +41,8 @@ object JandomExample extends App {
       val program = parsed.get
       val domain =  domains.BoxDouble
       val params = new targets.Parameters(domain, program: SLILStmt)
-      params.narrowingStrategy = it.unich.sci.jandom.ui.NarrowingStrategy.Restart
-      params.wideningScope = it.unich.sci.jandom.ui.WideningScope.BackEdges
+      params.narrowingStrategy = NarrowingStrategy.Restart
+      params.wideningScope = WideningScope.BackEdges
       val ann = program.analyze(params)
       println(program.mkString(ann))
     } else {

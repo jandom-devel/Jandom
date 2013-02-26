@@ -18,12 +18,13 @@
 
 package it.unich.sci.jandom.ui
 
-abstract class ParameterEnumeration extends Enumeration with Parameter[ParameterValue] { 
-  val default: Value
-  val name: String
-  val shortName: String
-  val description: String  
-  class Val(val name: String, val description: String) extends super.Val(name) with ParameterValue
-  protected final def Value(name: String = "", description : String = ""): Value = new Val(name, description)
-  def enabledValues =  values.toSeq.asInstanceOf[Seq[Val]] 
+/**
+ * This is the trait for enumerative parameters, which only admits a
+ * value in a given finite list.
+ */
+trait ParameterEnumeration[V] extends Parameter[V] {      
+  /**
+   * The list of commented values
+   */  
+  val values: Seq[ParameterValue[V]]
 }

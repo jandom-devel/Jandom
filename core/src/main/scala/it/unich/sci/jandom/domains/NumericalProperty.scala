@@ -16,10 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package domains
-
-import annotations.AnnotationType
+package it.unich.sci.jandom.domains
 
 /**
  * Base trait for numerical property operations. A concrete class `C` implementing a numerical
@@ -35,6 +32,7 @@ import annotations.AnnotationType
  * @define NOTEN `n` should be within `0` and `dimension-1`.
  * @define TODOGEN it should be generalized to linear forms over arbitrary types.
  */
+
 trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered[Property] {
     
   /**

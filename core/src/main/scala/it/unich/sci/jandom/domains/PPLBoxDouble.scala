@@ -16,20 +16,16 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package domains
+package it.unich.sci.jandom.domains
 
-import utils.PPLUtils
-import parma_polyhedra_library.Double_Box
-import parma_polyhedra_library.Linear_Expression
-import parma_polyhedra_library.Linear_Expression_Coefficient
-import parma_polyhedra_library.Linear_Expression_Variable
-import parma_polyhedra_library.Variable
+import it.unich.sci.jandom.utils.PPLUtils
 import parma_polyhedra_library.Coefficient
-import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
-import it.unich.sci.jandom.ui.ParameterValue
+import parma_polyhedra_library.Double_Box
+import parma_polyhedra_library.Linear_Expression_Coefficient
+import parma_polyhedra_library.Relation_Symbol
+import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variables_Set
 
 /**
@@ -137,7 +133,7 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
 /**
  * This is the factory for ``PPLBoxDouble`` properties.
  */
-object PPLBoxDouble extends NumericalDomain with ParameterValue {  
+object PPLBoxDouble extends NumericalDomain {  
   PPLInitializer
   
   type Property = PPLBoxDouble

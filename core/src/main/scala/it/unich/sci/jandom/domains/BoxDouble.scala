@@ -16,10 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package domains
-
-import it.unich.sci.jandom.ui.ParameterValue
+package it.unich.sci.jandom.domains
 
 /**
  * This is the box abstract domain over doubles.
@@ -341,7 +338,7 @@ final class BoxDouble(private val low: Array[Double], private val high: Array[Do
  * The caching should be probably implemented in [[it.unich.sci.jandom.domains.NumericalDomain]], and
  * should be extended to both full and empty values.
  */
-object BoxDouble extends NumericalDomain with ParameterValue {
+object BoxDouble extends NumericalDomain {
 
   type Property = BoxDouble
   
