@@ -18,6 +18,7 @@
 
 package it.unich.sci.jandom.domains
 
+import it.unich.sci.jandom.utils.PPLUtils
 import parma_polyhedra_library.C_Polyhedron
 import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Constraint
@@ -26,7 +27,6 @@ import parma_polyhedra_library.Linear_Expression_Coefficient
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variables_Set
-import it.unich.sci.jandom.utils.PPLUtils
 
 /**
  * The domain for not necessarily closed polyhedra implemented within $PPL. This is essentially
@@ -45,8 +45,10 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
   }
   
   /**
-   * Since there is no standard narrowing for polyehdra, this is a fake narrowing which
+   * @inheritdoc
+   * Since there is no narrowing for polyehdra in the PPL library, this is a fake narrowing which
    * always return `this`.
+   * @note @inheritdoc
    */
   def narrowing(that: PPLCPolyhedron): PPLCPolyhedron = {
     this
@@ -82,7 +84,12 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
 	 newpplpolyhedron.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
 	 new PPLCPolyhedron(newpplpolyhedron)
   }
-
+  
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @note Not yet implemented.
+   */
   def linearDisequality(coeff: Array[Double], known: Double): PPLCPolyhedron = {
      throw new IllegalAccessException("Unimplemented feature");
   }

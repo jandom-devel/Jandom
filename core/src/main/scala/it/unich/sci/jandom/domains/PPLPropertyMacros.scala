@@ -22,20 +22,25 @@ import language.experimental.macros
 import scala.reflect.macros.Context
 
 /**
- * This class containts macros for compile-time creation of PPL backed
- * numerical properties.
+ * This class containts macros for compile-time creation of PPL backed numerical properties.
+ * The aim si similar to the clas [[it.unich.sci.jandom.domains.PPLProperty]], but while
+ * that uses reflection, here we use macros to generate much faster code.
  */
 object PPLPropertyMacros {
 
-  def PPLDomain[PPLType]: NumericalDomain  = macro PPLDomainImpl[PPLType]
+  /**
+   * This method returns a NumericalDomain for the PPL class specified as
+   * type parameter.
+   */
+  def apply[PPLType]: NumericalDomain  = macro PPLDomainImpl[PPLType]
 
+  /**
+   * This is the implementation of the `apply` method.
+   */
   def PPLDomainImpl[PPLType: c.WeakTypeTag](c: Context): c.Expr[NumericalDomain] = {
     import c.universe._
     import parma_polyhedra_library.Double_Box
         
-    val PPLTypeSymbol = implicitly[c.WeakTypeTag[PPLType]].tpe.typeSymbol
-    val PPLTypeName = c.literal(PPLTypeSymbol.name.toString)
-
     val classes = reify {
       import parma_polyhedra_library._
       import it.unich.sci.jandom.utils.PPLUtils
@@ -146,9 +151,6 @@ object PPLPropertyMacros {
 
         type Property = PPLProperty
 
-        val name = s"PPL ${PPLTypeName.splice}"
-        val description = s"A domain which uses the class ${PPLTypeName.splice} of the PPL library."
-
         def full(n: Int): PPLProperty = {
           val pplbox = new Double_Box(n, Degenerate_Element.UNIVERSE)
           new PPLProperty(pplbox)
@@ -161,9 +163,7 @@ object PPLPropertyMacros {
       }
     }
 
-    // This was used in a previous version of the macro, when domains where based on 
-    // existential types. We have left the AST here in case it is needed again.
-    // val typetree = Typed(Ident(newTermName("PPLProperty")), ExistentialTypeTree(CompoundTypeTree(Template(List(AppliedTypeTree(Ident(newTypeName("NumericalDomain")), List(Ident(newTypeName("X")))), Ident(newTypeName("ParameterValue"))), emptyValDef, List())), List(TypeDef(Modifiers(Flag.DEFERRED), newTypeName("X"), List(), TypeBoundsTree(Select(Select(Ident(nme.ROOTPKG), newTermName("scala")), newTypeName("Nothing")), AppliedTypeTree(Ident(newTypeName("NumericalProperty")), List(Ident(newTypeName("X")))))))))
+    val PPLTypeSymbol = implicitly[c.WeakTypeTag[PPLType]].tpe.typeSymbol
 
     // Here we substitute the placeholder Double_Box symbol with the real type
     val classesWithSubstitution = classes.tree.substituteSymbols(

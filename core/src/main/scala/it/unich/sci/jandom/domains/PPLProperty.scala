@@ -18,7 +18,6 @@
 
 package it.unich.sci.jandom.domains
 
-import it.unich.sci.jandom.utils.PPLUtils
 import parma_polyhedra_library.By_Reference
 import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Constraint
@@ -30,7 +29,7 @@ import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variable_Stringifier
 import parma_polyhedra_library.Variables_Set
-import parma_polyhedra_library.Polyhedron
+import it.unich.sci.jandom.utils.PPLUtils
 
 /**
  * This is the universal PPL numerical property. It is able to represent (almost) any property
@@ -38,13 +37,12 @@ import parma_polyhedra_library.Polyhedron
  * PPL class, and access them using reflection. It does not currently works with polyhedra due
  * to the fact both C_Polyhedron and NCC_Polyhedron inherit from a base class Polyhedron.
  *
- * Since it uses reflexivity, this should be slower than a direct implementation such as
- * PPLBoxDouble, but probably the overhead of native code execution is bigger than the overhead
- * of reflextion.
+ * Since it uses reflexivity, this is slower than a direct implementation.
  *
+ * @constructor creates a new PPLProperty object
  * @tparam PPLNativeProperty is the PPL class implementing the abstract property, such as Double_Box,
  * Octagonal_Shape_double, etc...
- * @param domain refers to the [[it.unich.sci.jandom.domain.PPLDomain] object which is the proxy for
+ * @param domain refers to the [[it.unich.sci.jandom.domains.PPLDomain]] object which is the proxy for
  * the interesting methods in PPLNativeProperty.
  * @param pplobject is the PPL property we are encapsulating.
  * @author Gianluca Amato <amato@sci.unich.it>
@@ -60,8 +58,10 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
   }
 
   /**
+   * @inheritdoc
    * Since there is no standard narrowing in the PPL library, this is a fake narrowing which
    * always return `this`.
+   * @note @inheritdoc
    */
   def narrowing(that: PPLProperty[PPLNativeProperty]): PPLProperty[PPLNativeProperty] = {
     this
@@ -98,6 +98,11 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
     new PPLProperty(domain, newpplobject)
   }
 
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @note Not yet implemented.
+   */
   def linearDisequality(coeff: Array[Double], known: Double): PPLProperty[PPLNativeProperty] = {
     throw new IllegalAccessException("Unimplemented feature");
   }
@@ -189,10 +194,6 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain  
   private val unconstrainSpaceDimensionHandle = PPLClass.getMethod("unconstrain_space_dimension",classOf[Variable])  
   private val addSpaceDimensionsAndProjectHandle = PPLClass.getMethod("add_space_dimensions_and_project",classOf[Long])
   private val removeSpaceDimensions = PPLClass.getMethod("remove_space_dimensions",classOf[Variables_Set])
-
-  val name = PPLClass.getSimpleName()
-  val description = "A domain which uses the class "+name+" of the PPL library. It works using reflection, hence it is slower" +
-  		"than other non-reflective domains."
 
   private[domains] def constructor(n: Int, el: Degenerate_Element) = constructorHandle.newInstance(n: java.lang.Integer, el)
   private[domains] def copyConstructor(pplobject: PPLNativeProperty) = copyConstructorHandle.newInstance(pplobject)

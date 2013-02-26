@@ -28,22 +28,27 @@ package object jandom {
    * This is the major version of Jandom. The API is considered to be stable within the same major version, but only
    * from major_version 1 onwards. 
    */
-  val major_version = 0
+  val majorVersion = 0
   
   /**
    * This is the minor version of Jandom.
    */
-  val minor_version = 1
+  val minorVersion = 1
   
   /**
    * This is the patchlevel of Jandom.
    */
-  val patchlevel_version = 1
+  val patchlevelVersion = 2
+  
+  /**
+   * Suffix version
+   */
+  val suffixVersion = "svn"
   
   /**
    * This is a string representation of Jandom's version
    */
-  val version = major_version + "." + minor_version + "." + patchlevel_version
+  val version = majorVersion + "." + minorVersion + "." + patchlevelVersion + "-" + suffixVersion
   
   /**
    * This is the name of the software

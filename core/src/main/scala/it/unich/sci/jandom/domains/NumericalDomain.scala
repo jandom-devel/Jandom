@@ -23,6 +23,7 @@ package it.unich.sci.jandom.domains
  * should be used as a base class for companion objects of the descendants of
  * [[it.unich.sci.jandom.domains.NumericalProperty]].
  * @author Gianluca Amato <gamato@unich.it>
+ * @define ILLEGAL IllegalArgumentException if parameters are not correct.
  */
 trait NumericalDomain {
 
@@ -36,6 +37,7 @@ trait NumericalDomain {
   /**
    * Create an abstract property representing the full n-dimensional space.
    * @param n the dimension of the environment space.
+   * @note `n` should be positive.
    * @return the full n-dimensional space.
    */
   def full(n: Int): Property
@@ -43,6 +45,7 @@ trait NumericalDomain {
   /**
    * Create an abstract property representing the empty n-dimensional space.
    * @param n the dimension of the environment space.
+   * @note `n` should be positive.
    * @return the empty n-dimensional space.
    */
   def empty(n: Int): Property

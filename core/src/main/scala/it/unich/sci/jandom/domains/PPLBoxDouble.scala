@@ -82,6 +82,11 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
 	 new PPLBoxDouble(newpplbox)
   }
 
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @note Not yet implemented.
+   */
   def linearDisequality(coeff: Array[Double], known: Double): PPLBoxDouble = {
      throw new IllegalAccessException("Unimplemented feature");
   }
@@ -137,11 +142,6 @@ object PPLBoxDouble extends NumericalDomain {
   PPLInitializer
   
   type Property = PPLBoxDouble
-  
-  val name = "PPL Box Double"
-
-  val description = 
-    "This is a PPL-based implementation of boxes."
 
   def full(n: Int): PPLBoxDouble = {
     val pplbox = new Double_Box(n, Degenerate_Element.UNIVERSE)

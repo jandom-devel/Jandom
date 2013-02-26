@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,18 +21,36 @@ package it.unich.sci.jandom.domains
 import breeze.linalg._
 
 /**
- * This is the abstract domain of parallelotopes.
+ * This is the abstract domain of parallelotopes as appears in the NSAD 2012 paper. It is written
+ * using the Breeze Math library. It is not safe to use, since it does not implement rounding correctly.
+ * Real domains should be implemented within $PPL or $APRON.
  * @author Gianluca Amato <g.amato@unich.it>
+ *
+ * @constructor Builds a `Parallelotope`.
+ * @param isEmpty is true if the parallelotope is empty. In this case, the other parameters are not relevant.
+ * @param A is the constraint matrix. It should be invertible.
+ * @param low lower bounds.
+ * @param high higher bounds.
+ * @note `low` and `high` should have the same length. The  matrix `A` should be invertiible
+ * of the same size of the two vectors.
+ * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
+ * square or if `A` has not the same size of `low`.
  */
-class Parallelotope (
+
+class Parallelotope(
   val isEmpty: Boolean,
   private val low: DenseVector[Double],
   private val A: DenseMatrix[Double],
   private val high: DenseVector[Double])
   extends NumericalProperty[Parallelotope] {
 
-  require((low.length == A.rows) && (low.length == A.cols) && (low.length == high.length) )
+  require((low.length == A.rows) && (low.length == A.cols) && (low.length == high.length))
 
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @throws $ILLEGAL
+   */
   def widening(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
     if (isEmpty) return that
@@ -46,6 +64,11 @@ class Parallelotope (
     new Parallelotope(false, newlow, A, newhigh)
   }
 
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @throws $ILLEGAL
+   */
   def narrowing(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
     if (isEmpty) this
@@ -59,19 +82,38 @@ class Parallelotope (
     new Parallelotope(false, newlow, A, newhigh)
   }
 
+  /**
+   * @inheritdoc
+   * It is equivalent to `intersectionWeak`.
+   * @note @inheritdoc
+   * @throws $ILLEGAL
+   */
   def intersection(that: Parallelotope): Parallelotope = intersectionWeak(that)
 
+  /**
+   * @inheritdoc
+   * The union of two parallelotopes is not a parallelotope. Moreover, there is no least
+   * parallelotopes containing the union of two parallelotopes. Hence, this methods uses
+   * heuristics to find a good result.
+   * @note @inheritdoc
+   * @throws $ILLEGAL
+   */
   def union(that: Parallelotope): Parallelotope = {
 
+    /**
+     * A PrioritizedConstraint is a tuple `(a, m, M, p)` where `a` is a vector, `m` and `M` are
+     * reals and `p` is an integer, whose intended meaning is the constraint `m <= ax <= M`
+     * with a given priority `p`.
+     */
     type PrioritizedConstraint = (DenseVector[Double], Double, Double, Int)
 
     /**
-     * Compute the priority of a new constraint. The parameter ownedBy tells whether the linear
-     * form under consideration is one of the "native" forms of this (1) or that (2). This is used
-     * to refine properties, but can be improved.
+     * Given a linear form `v`, compute a prioritized constraint `(v,m,M,p)`. The parameter `ownedBy`
+     * tells whether the line form under consideration is one of the "native" forms of this (1) or
+     * that (2). This is used to refine priorities.
      */
     def priority(v: DenseVector[Double], ownedBy: Int = 0): PrioritizedConstraint = {
-      
+
       val y1 = A.t \ v
       val (l1, u1) = Parallelotope.extremalsInBox(y1, low, high)
       val y2 = that.A.t \ v
@@ -103,6 +145,11 @@ class Parallelotope (
       return (v, l1 min l2, u1 max u2, p)
     }
 
+    /**
+     * Determines whether `v1` and `v2` are linearly dependent.
+     * @return `None` if `v1` and `v2` are not linearly dependent, otherwise it is
+     * `Some(k)` such that `v1 = k * v2`.
+     */
     def linearDep(v1: DenseVector[Double], v2: DenseVector[Double]): Option[Double] = {
       var i: Int = 0
       while (i < dimension && (v1(i) == 0 || v2(i) == 0)) i += 1
@@ -114,6 +161,17 @@ class Parallelotope (
         None
     }
 
+    /**
+     * The inversion join procedure.
+     * @param vi first vector
+     * @param vj second vector
+     * @param min1i least value of v1 in this
+     * @param min2i least value of v1 in that
+     * @param min1j least value of v2 in that
+     * @param min2j least value of v2 in that
+     * @return None if `v1` and `v2` do not form an inversion, otherwise it is `Some(v)` where `v` is the
+     * new linear form computed by the inversion procedure.
+     */
     def newConstraint(vi: DenseVector[Double], vj: DenseVector[Double], min1i: Double, min2i: Double, min1j: Double, min2j: Double): Option[DenseVector[Double]] = {
       if (min1i.isInfinity || min2i.isInfinity || min1j.isInfinity || min2j.isInfinity) return None
       if (linearDep(vi, vj).isEmpty) return None
@@ -137,8 +195,8 @@ class Parallelotope (
     for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i), 1)
     for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i), 2)
     for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
-      val v1 = bulk.t(::,i)
-      val v2 = bulk.t(::,j)
+      val v1 = bulk.t(::, i)
+      val v2 = bulk.t(::, j)
       val nc1 = newConstraint(v1, v2, min1(i), min2(i), min1(j), min2(j))
       if (nc1.isDefined) Q += priority(nc1.get)
       val nc2 = newConstraint(v1, -v2, min1(i), min2(i), -max1(j), -max2(j))
@@ -150,14 +208,21 @@ class Parallelotope (
     }
     val Qsorted = Q.sortBy[Int](_._4)
     val pvt = Parallelotope.pivoting(Qsorted map (_._1))
-    
+
     val newA = DenseMatrix(pvt map (Qsorted(_)._1.toArray): _*)
     val newlow = DenseVector(pvt map (Qsorted(_)._2): _*)
     val newhigh = DenseVector(pvt map (Qsorted(_)._3): _*)
-    
+
     new Parallelotope(false, newlow, newA, newhigh)
   }
-    
+
+  /**
+   * This is a variant of `union` using weak join. The shape of the resulting
+   * parallelotope is the same shap of `this`.
+   * @param that the abstract object to be joined with `this`.
+   * @note $NOTEDIMENSION
+   * @return the weak union of the two abstract objects.
+   */
   def unionWeak(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
     val result = that.rotate(A)
@@ -168,6 +233,13 @@ class Parallelotope (
     return result
   }
 
+  /**
+   * This is the weak intersection of two abstract objects. The shape of the resulting
+   * parallelotope is the same shap of `this`.
+   * @param that the abstract object to be intersected with `this`.
+   * @note $NOTEDIMENSION
+   * @return the intersection of the two abstract objects.
+   */
   def intersectionWeak(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
     val result = that.rotate(A)
@@ -178,6 +250,12 @@ class Parallelotope (
     return result
   }
 
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @todo @inheritdoc
+   * @throws $ILLEGAL
+   */
   def linearAssignment(n: Int, tcoeff: Array[Double], known: Double): Parallelotope = {
     require(n <= dimension && tcoeff.length <= dimension)
     if (isEmpty) return this
@@ -193,7 +271,7 @@ class Parallelotope (
     } else {
       val newP = nonDeterministicAssignment(n)
       val Aprime = newP.A
-      val j = (( 0 to Aprime.rows - 1 ) find { Aprime(_,n) != 0 }).get 
+      val j = ((0 to Aprime.rows - 1) find { Aprime(_, n) != 0 }).get
       for (s <- 0 to dimension - 1 if Aprime(s, n) != 0 && s != j)
         Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
       val ei = DenseVector.zeros[Double](dimension)
@@ -205,6 +283,12 @@ class Parallelotope (
     }
   }
 
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @todo @inheritdoc
+   * @throws ILLEGAL
+   */
   def linearInequality(tcoeff: Array[Double], known: Double): Parallelotope = {
     require(tcoeff.length <= dimension)
     val coeff = tcoeff.padTo(dimension, 0.0).toArray
@@ -235,14 +319,20 @@ class Parallelotope (
     }
   }
 
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @note Not implemented yet
+   * @throws $ILLEGAL
+   */
   def linearDisequality(coeff: Array[Double], known: Double): Parallelotope = {
     throw new IllegalAccessException("Unimplemented feature")
   }
 
   /**
-   * It computes the parallelotope which results after a non-deterministic assignment
-   * to a variable.
-   * @param n the variable we are applying a non-deterministic assignment.
+   * @inheritdoc
+   * @note @inheritdoc
+   * @throws $ILLEGAL
    */
   def nonDeterministicAssignment(n: Int): Parallelotope = {
     require(n <= dimension)
@@ -272,20 +362,26 @@ class Parallelotope (
   }
 
   def addDimension: Parallelotope = {
-    val e = DenseMatrix.zeros[Double](dimension+1,1)
-    e(dimension,0) = 1.0
-    val newA = DenseMatrix.horzcat(DenseMatrix.vertcat(A, DenseMatrix.zeros[Double](1,dimension)),e)
-    val newlow = DenseVector.vertcat(low,DenseVector(Double.NegativeInfinity))
-    val newhigh = DenseVector.vertcat(high,DenseVector(Double.PositiveInfinity))
+    val e = DenseMatrix.zeros[Double](dimension + 1, 1)
+    e(dimension, 0) = 1.0
+    val newA = DenseMatrix.horzcat(DenseMatrix.vertcat(A, DenseMatrix.zeros[Double](1, dimension)), e)
+    val newlow = DenseVector.vertcat(low, DenseVector(Double.NegativeInfinity))
+    val newhigh = DenseVector.vertcat(high, DenseVector(Double.PositiveInfinity))
     new Parallelotope(false, newlow, newA, newhigh)
-  } 
-  
-  def delDimension(n: Int): Parallelotope = {
-    throw new IllegalAccessException("Unimplemented feature")    
   }
-  
+
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @note Not yet implemented.
+   * @throws $ILLEGAL
+   */
+  def delDimension(n: Int): Parallelotope = {
+    throw new IllegalAccessException("Unimplemented feature")
+  }
+
   def dimension = A.rows
-  
+
   val isFull = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
 
   def empty = Parallelotope.empty(dimension)
@@ -308,9 +404,11 @@ class Parallelotope (
   }
 
   /**
-   * It computes the smallest parallelotope which containts this and is definable
-   * over a new shape matrix.
+   * It computes the smallest parallelotope which containts `this` and is definable
+   * over a new shape matrix `Aprime`.
    * @param Aprime the new shape matrix.
+   * @note `Aprime` should be an invertible matrix of the same dimension as `this`.
+   * @throws IllegalArgumentException if `Aprime` is not square or has not the correct dimension.
    */
   def rotate(Aprime: DenseMatrix[Double]): Parallelotope = {
     require(dimension == Aprime.rows && dimension == Aprime.cols)
@@ -335,7 +433,7 @@ class Parallelotope (
     if (isEmpty) return (true)
     if (that.isEmpty) return (false)
     val ptemp = this.rotate(that.A)
-    ( 0 to ptemp.low.length-1 ) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) } 
+    (0 to ptemp.low.length - 1) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) }
   }
 
   def >=[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Boolean =
@@ -354,6 +452,9 @@ class Parallelotope (
 
   def mkString(vars: IndexedSeq[String]): Seq[String] = {
 
+    /**
+     * Returns a string representation of the linear form `lf`.
+     */
     def lfToString(lf: DenseVector[Double]): String = {
       var first = true
       var s = ""
@@ -362,8 +463,8 @@ class Parallelotope (
         val coeff = lf(index)
         val term = coeff match {
           case 0 => ""
-          case 1 =>  vars(index)
-          case -1 =>  "-" + vars(index)
+          case 1 => vars(index)
+          case -1 => "-" + vars(index)
           case c => c.toString + "*" + vars(index)
         }
         if (coeff != 0) {
@@ -384,25 +485,46 @@ class Parallelotope (
   }
 }
 
-object Parallelotope extends NumericalDomain  {
-    
+/**
+ * The companion object for the Parallelotope abstract domain.
+ */
+object Parallelotope extends NumericalDomain {
+
   type Property = Parallelotope
-  
-  val name = "Parallelotope"
-    
-  val description = "The abstract domain of parallelotopes, in a native Scala implementation. It is not" +
-  		"safe, hence it is better not to use it."
-  
+
+  /**
+   * Build a non-empty parallelotope. If the parallelotope is not empty, the
+   * result is undetermined.
+   * @param A is the constraint matrix. It should be invertible.
+   * @param low lower bounds.
+   * @param high higher bounds.
+   * @note `low` and `high` should have the same length. The  matrix `A` should be invertiible
+   * of the same size of the two vectors.
+   * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
+   * square or if `A` has not the same size of `low`.
+   */
+
   def apply(low: DenseVector[Double], A: DenseMatrix[Double], high: DenseVector[Double]) =
     new Parallelotope(false, low, A, high)
-
+  
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @throws $ILLEGAL
+   */
+  
   def full(n: Int) = {
     val low = DenseVector.fill(n)(Double.NegativeInfinity)
     val high = DenseVector.fill(n)(Double.PositiveInfinity)
     val A = DenseMatrix.eye[Double](n)
     new Parallelotope(false, low, A, high)
   }
-
+  
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @throws $ILLEGAL
+   */  
   def empty(n: Int) = {
     val low = DenseVector.fill(n)(1.0)
     val high = DenseVector.fill(n)(0.0)
@@ -410,6 +532,15 @@ object Parallelotope extends NumericalDomain  {
     new Parallelotope(true, low, A, high)
   }
 
+  /**
+   * Given the box specified by `low` and `high` and the linear form `lf`, determines the pair
+   * of the least and greatest value of the linear form in the box.
+   * @param lf  a linear form.
+   * @param low lower bound of the box.
+   * @param high higher bound of the box.
+   * @note `low`, `high` and `lf` should be of the same length.
+   * @return the least and greatest value of `lf` in the box determine by `low` and `high`.
+   */
   private def extremalsInBox(lf: DenseVector[Double], low: DenseVector[Double], high: DenseVector[Double]): (Double, Double) = {
     var minc = 0.0
     var maxc = 0.0
@@ -424,7 +555,13 @@ object Parallelotope extends NumericalDomain  {
     return (minc, maxc)
   }
 
-  def pivoting(m: IndexedSeq[DenseVector[Double]]): Seq[Int] = {
+  /**
+   * Given a sequence of vectors of the same length `n`, returns a sequence of `n` indexes
+   * of vectors which are linearly independent. It is based on Gaussian elimination.
+   * @param m a sequence of vectors, all of the same length.
+   * @return a sequence of positions in m.
+   */
+  private def pivoting(m: IndexedSeq[DenseVector[Double]]): Seq[Int] = {
     val dimension = m(0).length
     var indexes = Seq[Int]()
     var pivots = Seq[(DenseVector[Double], Int)]()
@@ -432,7 +569,7 @@ object Parallelotope extends NumericalDomain  {
     while (indexes.length < dimension) {
       val row = m(i).copy
       for (p <- pivots) row -= p._1 * row(p._2)
-      val col = (0 to row.length -1) find ( row(_) != 0)
+      val col = (0 to row.length - 1) find (row(_) != 0)
       col match {
         case Some(col) =>
           row /= row(col)

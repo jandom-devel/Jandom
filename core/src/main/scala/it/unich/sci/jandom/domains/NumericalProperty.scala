@@ -31,6 +31,7 @@ package it.unich.sci.jandom.domains
  * @define NOTEDIMENSION `this` and `that` should be of the same `dimension`. 
  * @define NOTEN `n` should be within `0` and `dimension-1`.
  * @define TODOGEN it should be generalized to linear forms over arbitrary types.
+ * @define ILLEGAL IllegalArgumentException if parameters are not correct.
  */
 
 trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered[Property] {
@@ -69,7 +70,7 @@ trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered
   def intersection(that: Property): Property
   
   /**
-   * Non deterministic assignment (also called `forget` operator)
+   * Non deterministic assignment (also called `forget` operator).
    * @note $NOTEN
    * @param n the variable to which non-deterministic assignment should be applied.  
    */
