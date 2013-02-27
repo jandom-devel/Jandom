@@ -6,17 +6,21 @@ object JandomBuild extends Build {
 
   lazy val root =
     Project(id="root", base = file("."))
-    .aggregate(core,macros)
+    .aggregate(core,extended)
+    .configs(Benchmark)   // only needed so that we may refer the Benchmark config globally
 
   lazy val core =
     Project(id = "Jandom", base = file("core"))
-      .configs(Benchmark)
-      .settings(
-        inConfig(Benchmark)(Defaults.testSettings) ++
-        CaliperPlugin.benchmarkTasks :_*
-      )
+    .configs(Benchmark)  // only needed so that we may refer the Benchmark config globally
 
-  lazy val macros =
+  lazy val extended =
     Project(id = "JandomExtended", base = file("extended"))
     .dependsOn(core)
+    .configs(Benchmark)
+    .settings(
+      Project.defaultSettings ++
+      inConfig(Benchmark)(Defaults.testSettings) ++
+      CaliperPlugin.benchmarkTasks :_*
+     ) 
 }
+

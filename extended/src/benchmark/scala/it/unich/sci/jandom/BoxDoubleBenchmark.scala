@@ -15,13 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package it.unich.sci.jandom
 
 import com.google.caliper.SimpleBenchmark
 import parma_polyhedra_library._
 import it.unich.sci.jandom.domains.BoxDouble
 import it.unich.sci.jandom.domains.PPLBoxDouble
-import it.unich.sci.jandom.domains.PPLProperty
 import it.unich.sci.jandom.domains.PPLDomain
 import it.unich.sci.jandom.domains.PPLPropertyMacros
 
@@ -129,10 +129,10 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
       }
     }
   }
-  /*
+  
   def timeJandomPPLMacro(reps: Int) {
     for (iter <- 1 to reps) {
-      val domain = PPLPropertyMacros.PPLDomain[Double_Box]
+      val domain = PPLPropertyMacros[Double_Box]
       var db = domain.empty(numvars)
       val zero = Array.fill(numvars)(0.0)
       val full = domain.full(numvars)
@@ -141,5 +141,5 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
         db = db union point
       }
     }
-  }*/
+  }
 }

@@ -38,8 +38,8 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
       "and should not be used."),
     ParameterValue(Parallelotope, "Parallelotope", "This is a native Scala implementation of parallelotopes. It is " +
       "not safe and should not be used."),
-    ParameterValue(PPLPropertyMacros[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double."),
-    ParameterValue(PPLPropertyMacros[Octagonal_Shape_double], "PPL Octagonal_Shape_double", "PPL based implementation of Octagon over double."),
-    ParameterValue(PPLPropertyMacros[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra."))
+    ParameterValue(PPLPropertyMacros[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double (using macros)."),
+    ParameterValue(PPLPropertyMacros[Octagonal_Shape_double], "PPL Octagonal_Shape_double", "PPL based implementation of Octagon over double (using macros)."),
+    ParameterValue(PPLPropertyMacros[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using macros)."))
   val default = values.last.value
 }
