@@ -24,6 +24,7 @@ import it.unich.sci.jandom.domains.BoxDouble
 import it.unich.sci.jandom.domains.PPLBoxDouble
 import it.unich.sci.jandom.domains.PPLDomain
 import it.unich.sci.jandom.domains.PPLPropertyMacros
+import it.unich.sci.jandom.domains.NumericalDomain
 
 
 /**
@@ -132,7 +133,9 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
   
   def timeJandomPPLMacro(reps: Int) {
     for (iter <- 1 to reps) {
-      val domain = PPLPropertyMacros[Double_Box]
+      // we explicityl type domain in order to avoid generation
+      // of existential types.
+      val domain: NumericalDomain = PPLPropertyMacros[Double_Box]
       var db = domain.empty(numvars)
       val zero = Array.fill(numvars)(0.0)
       val full = domain.full(numvars)
