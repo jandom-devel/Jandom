@@ -2,7 +2,7 @@
 
 version in ThisBuild := "0.1.2"
 
-scalaVersion in ThisBuild := "2.10.0"
+scalaVersion in ThisBuild := "2.10.1"
 
 // task which refers to tasks in the subprojects 
 
@@ -10,7 +10,7 @@ run <<= run in ("Jandom", Compile)
 
 // depedendency management
 
-resolvers  ++= Seq(
+resolvers in ThisBuild ++= Seq(
    // this resolver is needed for the breeze snapshot
    "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
 )
