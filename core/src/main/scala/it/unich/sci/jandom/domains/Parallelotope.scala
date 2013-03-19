@@ -183,6 +183,8 @@ class Parallelotope(
     }
 
     require(dimension == that.dimension)
+    if (isEmpty) return that
+    if (that.isEmpty) return this   
     val thisRotated = this.rotate(that.A)
     val thatRotated = that.rotate(this.A)
     val Q = scala.collection.mutable.ArrayBuffer[PrioritizedConstraint]()
