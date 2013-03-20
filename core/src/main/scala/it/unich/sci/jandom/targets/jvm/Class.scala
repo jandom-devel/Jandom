@@ -19,32 +19,22 @@
 package it.unich.sci.jandom.targets.jvm
 
 import scala.collection.mutable.HashMap
-
-import org.objectweb.asm.{ ClassReader, ClassVisitor, Opcodes }
-
 import it.unich.sci.jandom.targets.Target
+import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.MethodNode
 
 /**
- * This analyzes a class file.
+ * This analyzes a class file. It is just a stub.
  * @author Gianluca Amato
  *
  */
-class ClassAnalyzer(val cr: ClassReader) extends Target {
-  type ProgramPoint = Int
-  type Annotation[Property] = HashMap[ProgramPoint, Property]
-  type Tgt = ClassAnalyzer
-
-  var namex: String = null
-  cr.accept(new Extractor(),0)
-
-  class Extractor extends ClassVisitor(Opcodes.ASM4) {
-    override def visit(version: Int, access: Int, name: String, signature: String, superName: String, interfaces: Array[String]) {
-      namex = name
-    }
-  }
+class Class(val cn: ClassNode) extends Target {  
+  type ProgramPoint = (MethodNode,Int)
+  type Annotation[Property] = HashMap[ProgramPoint,Property]
+  type Tgt = Class
 
   def getAnnotation[Property]: Annotation[Property] = new Annotation[Property]
   def size = 0
   def analyze(params: Parameters): Annotation[params.Property] = getAnnotation[params.Property]
-  override def toString = namex
+  override def toString = cn.name
 }
