@@ -16,6 +16,7 @@ resolvers in ThisBuild ++= Seq(
 )
 
 libraryDependencies in ThisBuild  ++= Seq(
+  "org.ow2.asm" % "asm" % "4.1",
   "org.scalatest" %% "scalatest" % "1.9.1" % "test,benchmark",
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
   "org.scalanlp" %% "breeze-math" % "0.2-SNAPSHOT",
