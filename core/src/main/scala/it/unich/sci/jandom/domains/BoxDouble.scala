@@ -35,7 +35,7 @@ package it.unich.sci.jandom.domains
  * 
  */
 
-final class BoxDouble(private val low: Array[Double], private val high: Array[Double]) extends NumericalProperty[BoxDouble] {
+final class BoxDouble(private[domains] val low: Array[Double], private[domains] val high: Array[Double]) extends NumericalProperty[BoxDouble] {
   require(normalized, "The parameters low:" + low.mkString(",") + " and high: " + high.mkString(",") + " are not normalized")
 
   /**

@@ -39,9 +39,9 @@ import breeze.linalg._
 
 class Parallelotope(
   val isEmpty: Boolean,
-  private val low: DenseVector[Double],
-  private val A: DenseMatrix[Double],
-  private val high: DenseVector[Double])
+  private[domains] val low: DenseVector[Double],
+  private[domains] val A: DenseMatrix[Double],
+  private[domains] val high: DenseVector[Double])
   extends NumericalProperty[Parallelotope] {
 
   require((low.length == A.rows) && (low.length == A.cols) && (low.length == high.length))
