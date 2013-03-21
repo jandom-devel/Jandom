@@ -19,6 +19,7 @@
 package it.unich.sci.jandom.domains
 
 /**
+ * This is the abstract domain which implemente the product of two basic domains.
  * @author amato
  *
  */
@@ -45,10 +46,10 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
   }
 
   def widening(that: Property): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def narrowing(that: Property): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def intersection(that: Property): Property = {
    	val q1 = p1 intersection that.p1
@@ -57,41 +58,50 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
   }
    
   def nonDeterministicAssignment(n: Int): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def linearInequality(coeff: Array[Double], known: Double): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def linearDisequality(coeff: Array[Double], known: Double): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def addDimension: Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def delDimension(n: Int): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def dimension: Int =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def isEmpty: Boolean =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def isFull: Boolean =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def empty: Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def full: Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
   def mkString(vars: IndexedSeq[String]): Seq[String] =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
   
   def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = 
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+    throw new IllegalAccessException("Unimplemented feature on Product")
+}
+
+class ProductDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends NumericalDomain {
+
+  type Property = Product[dom1.Property, dom2.Property]
+  
+  def full(n: Int) =    throw new IllegalAccessException("Unimplemented feature on Product")
+  
+  def empty(n: Int) =    throw new IllegalAccessException("Unimplemented feature on Product")
 }
