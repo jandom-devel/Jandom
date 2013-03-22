@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ package it.unich.sci.jandom.domains
  * @note `low` and `high` should be normalized according to the method `normalized`
  * @throws IllegalArgumentException if parameters are not correct.
  * @define ROUNDING this is not implemented correctly since it does not control rounding errors.
- * 
+ *
  */
 
 final class BoxDouble(private[domains] val low: Array[Double], private[domains] val high: Array[Double]) extends NumericalProperty[BoxDouble] {
@@ -75,7 +75,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    */
   private def mul_hi(x: Double, y: Double): Double = if (x == 0) 0 else x * y
 
- /**
+  /**
    * Returns the product of `x` and `y`, rounded towards -Inf. Moreover,
    * if `x` is `0`, the product is `0` independently from the value of `y`.
    * @todo §ROUNDING
@@ -175,7 +175,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
     }
     (newlow, newhigh)
   }
-  
+
   /**
    * Compute the corner of the box which minimizes a linear form. We do not need the in-homogenous coefficients since it is not
    * relevant for the computation.
@@ -205,11 +205,11 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  def nonDeterministicAssignment(n: Int): BoxDouble =  {
-    require(n < low.length && n>=0)    
-    new BoxDouble(low.updated(n,Double.NegativeInfinity), high.updated(n,Double.PositiveInfinity))
+  def nonDeterministicAssignment(n: Int): BoxDouble = {
+    require(n < low.length && n >= 0)
+    new BoxDouble(low.updated(n, Double.NegativeInfinity), high.updated(n, Double.PositiveInfinity))
   }
-  
+
   /**
    * @inheritdoc
    * @note @inheritdoc
@@ -217,7 +217,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @throws $ILLEGAL
    */
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): BoxDouble = {
-    require(n < low.length && n>=0 && coeff.length <= dimension)
+    require(n < low.length && n >= 0 && coeff.length <= dimension)
     if (isEmpty) return this
     val interval = linearEvaluation(coeff, known)
     new BoxDouble(low.updated(n, interval._1), high.updated(n, interval._2))
@@ -270,10 +270,13 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    */
   def linearDisequality(coeff: Array[Double], known: Double): BoxDouble =
     throw new IllegalAccessException("Unimplemented feature")
-  
-  def addDimension: BoxDouble = 
-    new BoxDouble(low :+ Double.NegativeInfinity, high :+ Double.PositiveInfinity)
-  
+
+  def addDimension: BoxDouble =
+    if (isEmpty)
+      BoxDouble.empty(dimension + 1)
+    else
+      new BoxDouble(low :+ Double.NegativeInfinity, high :+ Double.PositiveInfinity)
+
   /**
    * @inheritdoc
    * This is a complete operator for boxes.
@@ -286,9 +289,9 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
     val newhigh = new Array[Double](dimension - 1)
     Array.copy(low, 0, newlow, 0, n)
     Array.copy(high, 0, newhigh, 0, n)
-    Array.copy(low, n+1, newlow, n, dimension-n-1)
-    Array.copy(high, n+1, newhigh, n, dimension-n-1)    
-    new BoxDouble(newlow, newhigh)  
+    Array.copy(low, n + 1, newlow, n, dimension - n - 1)
+    Array.copy(high, n + 1, newhigh, n, dimension - n - 1)
+    new BoxDouble(newlow, newhigh)
   }
 
   /**
@@ -296,7 +299,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @throws $ILLEGAL
    */
   def mkString(vars: IndexedSeq[String]): Seq[String] = {
-    require (vars.length >= dimension)
+    require(vars.length >= dimension)
     if (isEmpty)
       Seq("[void]")
     else
@@ -345,7 +348,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
 object BoxDouble extends NumericalDomain {
 
   type Property = BoxDouble
-  
+
   /**
    * This is the cache for empty boxes.
    */
