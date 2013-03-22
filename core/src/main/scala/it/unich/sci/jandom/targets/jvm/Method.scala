@@ -25,18 +25,21 @@ import org.objectweb.asm.tree._
 import org.objectweb.asm.util._
 import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.domains.NumericalProperty
+import scala.collection.mutable.Queue
+import scala.collection.mutable.BitSet
 
 /**
  * This class analyzes a single method of a class.
  * @author Gianluca Amato
  */
 
-class Method(val node: MethodNode) extends Target {
+class Method(val methodNode: MethodNode) extends Target {
   type ProgramPoint = BasicBlock
   type Annotation[Property] = HashMap[ProgramPoint, Property]
   type Tgt = Method
 
   val startBlock = createControlFlowGraph()
+  determineWidening(startBlock)
 
   /**
    * This class represents a basic block in the control-flow graph of the method. Each basic
@@ -54,16 +57,15 @@ class Method(val node: MethodNode) extends Target {
     var nextBlock: Option[BasicBlock] = None
     var visited = false
     var widening = false
-
     /**
      * Returns the index of the starting instruction in the method
      */
-    def startIndex = node.instructions.indexOf(startNode)
+    def startIndex = methodNode.instructions.indexOf(startNode)
 
     /**
      * Returns the index of the ending instruction in the method
      */
-    def endIndex = node.instructions.indexOf(endNode)
+    def endIndex = methodNode.instructions.indexOf(endNode)
 
     override def toString = {
       val next = if (nextBlock.isEmpty) " --- " else nextBlock.get.hashCode.toString
@@ -71,32 +73,56 @@ class Method(val node: MethodNode) extends Target {
       hashCode + ": from " + startIndex + " to " + endIndex + " next " + next + " jump " + jump + (if (widening) "(widening)" else "")
     }
 
-    def analyze[Property <: NumericalProperty[Property]](s: AbstractJVM[Property]) {
+    def analyze[Property <: NumericalProperty[Property]](state: AbstractJVM[Property]): Seq[(BasicBlock, AbstractJVM[Property])] = {
       import Opcodes._
+      val s = state.copy
       var node = startNode
       var lastNode = endNode.getNext()
+      var exits = Seq[(BasicBlock, AbstractJVM[Property])]()
       while (node != lastNode) {
-        println(s)
+        println(methodNode.instructions.indexOf(node) + " : " + s)
         val op = node.getOpcode
         node match {
           case node: InsnNode =>
             op match {
-              case ICONST_0 | ICONST_1 | ICONST_2 | ICONST_3 | ICONST_4 =>
-                s.iconst(op - ICONST_0)
+              case ICONST_0 | ICONST_1 | ICONST_2 | ICONST_3 | ICONST_4 | ICONST_5 => s.ipush(op - ICONST_0)
+              case IADD => s.iadd
+              case RETURN =>
+              case _ => throw UnsupportedByteCodeException(node)
+            }
+          case node: IntInsnNode =>
+            op match {
+              case BIPUSH =>
+                s.ipush(node.operand)
               case _ => throw UnsupportedByteCodeException(node)
             }
           case node: VarInsnNode =>
             op match {
-              case ISTORE =>
-                s.istore(node.`var`)
+              case ISTORE => s.istore(node.`var`)
+              case ILOAD => s.iload(node.`var`)
               case _ => throw UnsupportedByteCodeException(node)
             }
-          case node: LabelNode => 
-          case node: LineNumberNode => 
-          case _ => throw UnsupportedByteCodeException(node)         
+          case node: JumpInsnNode =>
+            op match {
+              case IF_ICMPGT => {
+                val scopy = s.copy
+                scopy.if_icmpgt
+                exits :+= (jumpBlock.get, scopy)
+                s.if_icmple
+              }
+              case GOTO => exits :+= (jumpBlock.get, s)
+              case _ => throw UnsupportedByteCodeException(node)
+            }
+          case node: LabelNode =>
+          case node: LineNumberNode =>
+          case node: FrameNode =>
+          case _ => throw UnsupportedByteCodeException(node)
         }
         node = node.getNext()
       }
+      if (nextBlock.isDefined)
+        exits :+= ((nextBlock.get, s))
+      exits
     }
   }
 
@@ -116,16 +142,16 @@ class Method(val node: MethodNode) extends Target {
     }
   }
 
-  def determineWidening(start: BasicBlock) {
-    start.visited = true
-    start.nextBlock match {
-      case Some(b) => if (!b.visited) determineWidening(b)
+  def determineWidening(block: BasicBlock = startBlock, visited: BitSet = BitSet()) {
+    visited.add(block.startIndex)
+    block.nextBlock match {
+      case Some(b) => if (!visited.contains(b.startIndex)) determineWidening(b, visited)
       case _ =>
     }
-    start.jumpBlock match {
-      case Some(b) => if (!b.visited) determineWidening(b) else b.widening = true
+    block.jumpBlock match {
+      case Some(b) => if (!visited.contains(b.startIndex)) determineWidening(b, visited) else b.widening = true
       case _ =>
-    }  
+    }
   }
 
   /**
@@ -136,7 +162,7 @@ class Method(val node: MethodNode) extends Target {
     import scala.collection.JavaConversions._
     import AbstractInsnNode._
 
-    val iter = node.instructions.iterator.asInstanceOf[java.util.Iterator[AbstractInsnNode]]
+    val iter = methodNode.instructions.iterator.asInstanceOf[java.util.Iterator[AbstractInsnNode]]
 
     val labelBlocks = HashMap[LabelNode, BasicBlock]()
     val startBlock = new BasicBlock
@@ -153,6 +179,7 @@ class Method(val node: MethodNode) extends Target {
 
       // check type of instructions
       i match {
+
         case i: LabelNode =>
           if (!beginningOfBlock) {
             // since real instructions have been produced, we need to create a new block
@@ -163,14 +190,15 @@ class Method(val node: MethodNode) extends Target {
             currentBlock = nextBlock
             currentBlock.startNode = i
             beginningOfBlock = true
-          } else {
-            labelBlocks.getOrElseUpdate(i, currentBlock)
           }
         case i: JumpInsnNode =>
           currentBlock.endNode = i
           currentBlock.jumpBlock = Some(labelBlocks getOrElseUpdate (i.label, new BasicBlock()))
           if (i.getNext != null) {
-            val nextBlock = new BasicBlock()
+            val nextBlock = i.getNext match {
+              case ln: LabelNode => labelBlocks.getOrElseUpdate(ln, new BasicBlock())
+              case _ => new BasicBlock
+            }
             currentBlock.nextBlock = Some(nextBlock)
             currentBlock = nextBlock
             currentBlock.startNode = i.getNext
@@ -183,7 +211,7 @@ class Method(val node: MethodNode) extends Target {
       }
     }
     if (!beginningOfBlock) {
-      currentBlock.endNode = node.instructions.getLast
+      currentBlock.endNode = methodNode.instructions.getLast
       currentBlock.nextBlock = None
     }
     startBlock
@@ -193,24 +221,35 @@ class Method(val node: MethodNode) extends Target {
 
   def analyze(params: Parameters): Annotation[params.Property] = {
     val ann = new Annotation[params.Property]()
-    val state = analyze2(params)       
+    val state = analyze2(params)
     ann(startBlock) = state.property
     return ann
   }
-  
+
   def analyze2(params: Parameters): AbstractJVM[params.Property] = {
-    val ann = new Annotation[params.Property]()
-    val state = AbstractJVM(params.domain, node.maxLocals)
-    try {
-      startBlock.analyze(state)  
-    } catch {
-      case e: UnsupportedByteCodeException  =>
-        println(e.node)
-    }    
-    return state    
+    val ann = new Annotation[AbstractJVM[params.Property]]()
+    ann(startBlock) = AbstractJVM(params.domain, methodNode.maxLocals)
+    val taskList = Queue[BasicBlock](startBlock)
+    while (!taskList.isEmpty) {
+      val b = taskList.dequeue()
+      val result = b.analyze(ann(b))
+      for ((block, state) <- result) {
+        if (ann contains block) {
+          val modified = if (block.widening)
+            ann(block) widening state
+          else
+            ann(block) union state
+          if (modified) taskList.enqueue(block)
+        } else {
+          ann(block) = state
+          taskList.enqueue(block)
+        }
+      }
+    }
+    ann(startBlock)
   }
 
-  def size = node.maxStack + node.maxLocals
+  def size = methodNode.maxStack + methodNode.maxLocals
 
   override def toString = {
     val sw = new StringWriter
@@ -221,7 +260,7 @@ class Method(val node: MethodNode) extends Target {
       }
     }
     val tracer = new TraceMethodVisitor(p)
-    node.accept(tracer)
+    methodNode.accept(tracer)
     pw.flush
     pw.close
     sw.getBuffer.toString

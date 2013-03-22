@@ -28,18 +28,82 @@ import it.unich.sci.jandom.domains.{ NumericalDomain, NumericalProperty }
 class AbstractJVM[Property <: NumericalProperty[Property]](
   val frame: Array[Int], val stack: ArrayStack[Int], var property: Property) {
 
-  def iconst(v: Int) {   
+  def copy: AbstractJVM[Property] =
+    new AbstractJVM(frame.clone, stack.clone, property)
+
+  def empty = {
+    val s = copy
+	s.property = s.property.empty
+	s
+  }
+  
+  def ipush(v: Int) {
     property = property.addDimension
-    property = property.constantAssignment(property.dimension - 1, v)  
+    property = property.constantAssignment(property.dimension - 1, v)
     stack.push(property.dimension - 1)
   }
-  
+
   def istore(i: Int) {
-    frame(i) = stack.pop
+    val oldn = frame(i)
+    val newn = stack.pop
+    if (oldn != -1) property=property.delDimension(oldn)
+    frame(i) =  if (oldn >= 0 && oldn < newn) newn-1 else newn
+  }
+
+  def iload(i: Int) {
+    property = property.addDimension
+    property = property.variableAssignment(property.dimension - 1, i)
+    stack.push(property.dimension - 1)
+  }
+
+  def iadd() {
+    val vm = stack.pop
+    val vn = stack.top
+    property = property.addAssignment(vn, vm).delDimension(vm)    
   }
   
-  override def toString = 
-    "Frame: "+frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property    
+  def if_icmpgt {
+    val vm = stack.pop
+    val vn = stack.pop
+    property = property.if_icmpgt(vn, vm)
+    property = property.delDimension(vm max vn)
+    property = property.delDimension(vm min vn)
+  }
+  
+  def if_icmple {
+    val vm = stack.pop
+    val vn = stack.pop
+    property = property.if_icmple(vn, vm)
+    property = property.delDimension(vm max vn)
+    property = property.delDimension(vm min vn)
+  }
+  
+  def union(that: AbstractJVM[Property]): Boolean = {
+    // this should always hold!!
+    //require(frame == that.frame)
+    //require(stack == that.stack)
+    val oldproperty = property
+    property = property union that.property
+    if (property > oldproperty)
+      true
+    else 
+      false
+  }
+
+  def widening(that: AbstractJVM[Property]): Boolean = {
+    // this should always hold!!
+    //require(frame == that.frame)
+    //require(stack == that.stack)
+    val oldproperty = property
+    property = property widening that.property
+    if (property > oldproperty)
+      true
+    else 
+      false
+  }
+
+  override def toString =
+    "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
 }
 
 object AbstractJVM {

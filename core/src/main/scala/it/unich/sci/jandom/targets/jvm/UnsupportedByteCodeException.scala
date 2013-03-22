@@ -27,4 +27,4 @@ import org.objectweb.asm.tree._
  * @author Gianluca Amato
  *
  */
-case class UnsupportedByteCodeException(node: AbstractInsnNode) extends Exception
+case class UnsupportedByteCodeException(val node: AbstractInsnNode) extends Exception
