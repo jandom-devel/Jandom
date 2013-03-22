@@ -1,5 +1,3 @@
-unmanagedSourceDirectories in Compile <+= baseDirectory (_ / "examples" / "Java")
-
 // PPL options which cannot be specified at the build level (why?)
 
 unmanagedJars in Compile += file("/usr/local/lib/ppl/ppl_java.jar")

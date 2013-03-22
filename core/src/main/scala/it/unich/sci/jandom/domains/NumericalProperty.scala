@@ -144,7 +144,13 @@ trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered
    * Returns a full object with the same `dimension` as `this`.
    */
   def full: Property
-
+    
+  /**
+   * Constant assignment to a variable. The standard implementation calls 
+   * linearAssignment, but it may be overriden in subclasses to optimize speed.
+   */
+  def constantAssignment(n: Int, d: Double) = linearAssignment(n, Array.fill(0)(dimension), d)
+  
   /** 
    * Returns the string representation of the property. It calls `mkString` with the standard
    * variables names `v1` ... `vn`. 

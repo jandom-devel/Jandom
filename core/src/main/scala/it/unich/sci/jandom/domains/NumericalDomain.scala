@@ -18,6 +18,8 @@
 
 package it.unich.sci.jandom.domains
 
+import it.unich.sci.jandom.targets.LinearAssignment
+
 /**
  * Base trait for numerical domains. A numerical domain is a factory for numerical properties. It
  * should be used as a base class for companion objects of the descendants of
