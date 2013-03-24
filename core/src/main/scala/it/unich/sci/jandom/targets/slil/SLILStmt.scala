@@ -19,10 +19,10 @@
 package it.unich.sci.jandom
 package targets.slil
 
+import it.unich.sci.jandom.domains.{NumericalDomain, NumericalProperty}
+
+import AnalysisPhase.{AnalysisPhase, AscendingRestart}
 import targets.Target
-import domains.NumericalProperty
-import annotations._
-import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * The abstract class for program statements. Each object in SLILStmt represents a statement
@@ -32,6 +32,8 @@ abstract class SLILStmt extends Target {
   type ProgramPoint = (SLILStmt, Int)
   type Tgt = SLILStmt
   type Annotation[Property] = scala.collection.mutable.HashMap[ProgramPoint,Property]  
+  type DomainBase = NumericalDomain
+  
   import AnalysisPhase._
   
   def getAnnotation[Property] = new Annotation[Property]
@@ -49,7 +51,7 @@ abstract class SLILStmt extends Target {
    * standard pretty printer specification
    * @return the string representation of the program
    */
-  def mkString[T <: AbstractProperty](ann: Annotation[T], level: Int = 0, ppspec: PrettyPrinterSpec): String
+  def mkString[T <: NumericalProperty[_]](ann: Annotation[T], level: Int = 0, ppspec: PrettyPrinterSpec): String
   
   /**
    * The analyzer for a SLIL statement. This methods is different from the one declared in Target since it takes

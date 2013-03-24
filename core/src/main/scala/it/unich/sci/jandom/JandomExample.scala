@@ -29,6 +29,7 @@ import it.unich.sci.jandom.targets.slil.SLILStmt
 import it.unich.sci.jandom.widenings.DefaultWidening
 import it.unich.sci.jandom.widenings.DelayedWideningFactory
 import parma_polyhedra_library.Parma_Polyhedra_Library
+import it.unich.sci.jandom.domains.NumericalDomain
 
 /**
  * Example program using ''Jandom''.
@@ -41,8 +42,7 @@ object JandomExample extends App {
     val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
-      val domain =  domains.BoxDouble
-      val params = new targets.Parameters(domain, program: SLILStmt)
+      val params = new targets.Parameters(program: SLILStmt) { val domain = domains.BoxDouble }
       params.narrowingStrategy = NarrowingStrategy.Restart
       params.wideningScope = WideningScope.BackEdges
       val ann = program.analyze(params)
@@ -57,7 +57,7 @@ object JandomExample extends App {
     val parsed = parsers.LPInvParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
-      val params = new targets.Parameters(PPLCPolyhedron, program)
+      val params = new targets.Parameters(program) { val domain = PPLCPolyhedron }
       params.wideningFactory = MemoizingFactory(DelayedWideningFactory(DefaultWidening, 2), program)
       params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing, 2), program)
       println(program)

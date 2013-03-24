@@ -21,7 +21,7 @@ package it.unich.sci.jandom.targets
 /**
  * This is the Scala package for the analysis of Java bytecode. It uses the
  * library ASM to read class files and visit them. 
- * @author Gianluca Amato
+ * @author Gianluca Amato <gamato@unich.it>
  */
 package object jvm {
 

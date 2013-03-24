@@ -19,7 +19,7 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.{ AbstractProperty, NumericalProperty }
+import domains.NumericalProperty
 import targets._
 import annotations._
 
@@ -43,7 +43,7 @@ case class SLILProgram(private val env: Environment, private val inputVars: Seq[
    */
   def environment = env
 
-  override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, 
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, 
       ppspec: PrettyPrinterSpec = new PrettyPrinterSpec(env)) = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level + 1)

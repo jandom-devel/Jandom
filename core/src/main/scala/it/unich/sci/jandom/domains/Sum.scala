@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato, Francesca Scozzari
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,8 +19,10 @@
 package it.unich.sci.jandom.domains
 
 /**
- * @author amato
- *
+ * This is the class which implements the sum of two abstract properties.
+ * @todo This is only a stub.
+ * @author Gianluca Amato
+ * @author Francesca Scozzari
  */
 class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](val p1: Prop1, val p2: Prop2)
   extends NumericalProperty[Sum[Prop1, Prop2]] {
@@ -82,4 +84,19 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
   
   def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = 
     throw new IllegalAccessException("Unimplemented feature on Sum")
+}
+
+/**
+ * This is the class for the sum of abstract domains.
+ * @todo This is only a stub.
+ * @author Gianluca Amato
+ * @author Francesca Scozzari
+ */
+class SumDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends NumericalDomain {
+  
+  type Property = Sum[dom1.Property, dom2.Property]
+  
+  def full(n: Int) = throw new IllegalAccessException("Unimplemented feature on Sum")
+  
+  def empty(n: Int) = throw new IllegalAccessException("Unimplemented feature on Sum")
 }

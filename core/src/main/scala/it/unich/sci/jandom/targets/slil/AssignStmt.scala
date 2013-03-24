@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,11 @@
 package it.unich.sci.jandom
 package targets.slil
 
-import domains.NumericalProperty
-import targets.{ LinearForm, Parameters, Environment }
-import annotations.{ BlackBoard, PerProgramPointAnnotation }
-import it.unich.sci.jandom.domains.AbstractProperty
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.LinearForm
+
+import AnalysisPhase.AnalysisPhase
+import targets.LinearForm
 
 /**
  * The class for the assignment statement "variable := linearForm".
@@ -40,6 +41,6 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T])(implicit nume
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
   }
 
-  override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + linearForm.env(variable) + " = " + linearForm.toString
 }

@@ -35,6 +35,7 @@ import it.unich.sci.jandom.ui.NarrowingStrategies
 import it.unich.sci.jandom.ui.NumericalDomains
 import it.unich.sci.jandom.ui.Parameter
 import it.unich.sci.jandom.ui.ParameterValue
+import it.unich.sci.jandom.targets.slil.SLILStmt
 
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)
@@ -81,8 +82,8 @@ class ParametersPane extends GridBagPanel {
 
   def selectedDomain = NumericalDomains.values(domainComboBox.selection.index)
   
-  def getParameters[T <: Target](tgt: T) = {
-    val parameters = new Parameters(selectedDomain.value, tgt)
+  def getParameters[T <: SLILStmt](tgt: T) = {
+    val parameters = new Parameters(tgt) { val domain = selectedDomain.value }
     parameters.wideningScope = WideningScopes.values(wideningComboBox.selection.index).value
     parameters.narrowingStrategy = NarrowingStrategies.values(narrowingComboBox.selection.index).value
     val delay = delayModel.getValue().asInstanceOf[Double].toInt

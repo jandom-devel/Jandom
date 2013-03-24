@@ -31,7 +31,8 @@ package object jandom {
   val majorVersion = 0
   
   /**
-   * This is the minor version of Jandom.
+   * This is the minor version of Jandom. An increase in minor version suggests the introduction of new backward 
+   * compatible features.
    */
   val minorVersion = 1
   

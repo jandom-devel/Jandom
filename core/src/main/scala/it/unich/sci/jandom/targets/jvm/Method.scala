@@ -27,6 +27,7 @@ import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.domains.NumericalProperty
 import scala.collection.mutable.Queue
 import scala.collection.mutable.BitSet
+import it.unich.sci.jandom.targets.Parameters
 
 /**
  * This class analyzes a single method of a class.
@@ -37,7 +38,8 @@ class Method(val methodNode: MethodNode) extends Target {
   type ProgramPoint = BasicBlock
   type Annotation[Property] = HashMap[ProgramPoint, Property]
   type Tgt = Method
-
+  type DomainBase = JVMEnvDomain
+  
   val startBlock = createControlFlowGraph()
   determineWidening(startBlock)
 
@@ -73,12 +75,12 @@ class Method(val methodNode: MethodNode) extends Target {
       hashCode + ": from " + startIndex + " to " + endIndex + " next " + next + " jump " + jump + (if (widening) "(widening)" else "")
     }
 
-    def analyze[Property <: NumericalProperty[Property]](state: AbstractJVM[Property]): Seq[(BasicBlock, AbstractJVM[Property])] = {
+    def analyze[Property <: NumericalProperty[Property]](state: JVMEnv[Property]): Seq[(BasicBlock, JVMEnv[Property])] = {
       import Opcodes._
-      val s = state.copy
+      val s = state.clone
       var node = startNode
       var lastNode = endNode.getNext()
-      var exits = Seq[(BasicBlock, AbstractJVM[Property])]()
+      var exits = Seq[(BasicBlock, JVMEnv[Property])]()
       while (node != lastNode) {
         println(methodNode.instructions.indexOf(node) + " : " + s)
         val op = node.getOpcode
@@ -105,7 +107,7 @@ class Method(val methodNode: MethodNode) extends Target {
           case node: JumpInsnNode =>
             op match {
               case IF_ICMPGT => {
-                val scopy = s.copy
+                val scopy = s.clone
                 scopy.if_icmpgt
                 exits :+= (jumpBlock.get, scopy)
                 s.if_icmple
@@ -221,14 +223,7 @@ class Method(val methodNode: MethodNode) extends Target {
 
   def analyze(params: Parameters): Annotation[params.Property] = {
     val ann = new Annotation[params.Property]()
-    val state = analyze2(params)
-    ann(startBlock) = state.property
-    return ann
-  }
-
-  def analyze2(params: Parameters): AbstractJVM[params.Property] = {
-    val ann = new Annotation[AbstractJVM[params.Property]]()
-    ann(startBlock) = AbstractJVM(params.domain, methodNode.maxLocals)
+    ann(startBlock) = params.domain(methodNode.maxLocals)
     val taskList = Queue[BasicBlock](startBlock)
     while (!taskList.isEmpty) {
       val b = taskList.dequeue()
@@ -246,7 +241,7 @@ class Method(val methodNode: MethodNode) extends Target {
         }
       }
     }
-    ann(startBlock)
+    ann
   }
 
   def size = methodNode.maxStack + methodNode.maxLocals

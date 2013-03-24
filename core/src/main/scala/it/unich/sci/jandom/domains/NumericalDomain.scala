@@ -18,21 +18,17 @@
 
 package it.unich.sci.jandom.domains
 
-import it.unich.sci.jandom.targets.LinearAssignment
-
 /**
- * Base trait for numerical domains. A numerical domain is a factory for numerical properties. It
- * should be used as a base class for companion objects of the descendants of
- * [[it.unich.sci.jandom.domains.NumericalProperty]].
+ * Base class for numerical domains. It is the factory class for numerical
+ * properties, i.e., instances of [[it.unich.sci.jandom.domains.NumericalProperty]].
  * @author Gianluca Amato <gamato@unich.it>
- * @define ILLEGAL IllegalArgumentException if parameters are not correct.
  */
-trait NumericalDomain {
+abstract class NumericalDomain extends AbstractDomain {
 
   /**
-   * The type of the properties created by the domain. It used to be
-   * a parameter, but we moved into into a type fields since it works
-   * better in practice.
+   * @inheritdoc
+   * For numerical domains, these properties needs to be instances of 
+   * 
    */
   type Property <: NumericalProperty[Property]
   

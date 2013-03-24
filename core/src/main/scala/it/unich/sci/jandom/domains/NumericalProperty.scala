@@ -19,8 +19,8 @@
 package it.unich.sci.jandom.domains
 
 /**
- * Base trait for numerical property operations. A concrete class `C` implementing a numerical
- * property should mix-in `NumericalProperty[C]`. Note that binary operations only works between
+ * Base class for numerical properties and their operations. A concrete class `C` implementing a numerical
+ * property should inherit from `NumericalProperty[C]`. Note that binary operations only works between
  * compatible properties, i.e. properties over vector spaces of the same dimension. Numerical
  * properties are immutable.
  * 
@@ -34,7 +34,7 @@ package it.unich.sci.jandom.domains
  * @define ILLEGAL IllegalArgumentException if parameters are not correct.
  */
 
-trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered[Property] {
+abstract class NumericalProperty[Property] extends PartiallyOrdered[Property] {
     
   /**
    * The standard widening for two abstract objects. 
@@ -144,7 +144,21 @@ trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered
    * Returns a full object with the same `dimension` as `this`.
    */
   def full: Property
-    
+  
+  /**
+   * Returns a string representation of the property.
+   * @param vars an array with the name of the variables 
+   * @return a sequence of strings. The idea is that each string is an atomic piece of information
+   * which should be printed out together, while different strings may be also printed out
+   * separately.
+   */
+  def mkString(vars: IndexedSeq[String]): Seq[String]
+ 
+  /*
+   * Now some concrete methods follow, which may be overriden in subclasses for
+   * optimization purpose.
+   */
+  
   /**
    * Constant assignment to a variable. The standard implementation calls 
    * linearAssignment, but it may be overriden in subclasses to optimize speed.
@@ -194,10 +208,10 @@ trait NumericalProperty[Property] extends AbstractProperty with PartiallyOrdered
     v(m) = -1
     linearInequality(v,0)
   }
- 
+  
   /** 
    * Returns the string representation of the property. It calls `mkString` with the standard
-   * variables names `v1` ... `vn`. 
+   * variable names `v1` ... `vn`. 
    */
-  override def toString: String = "[ " + (mkString( for (i<- 0 until dimension) yield "v"+i )).mkString(" , ") + " ]"
+  override def toString: String = "[ " + (mkString( for (i <- 0 until dimension) yield "v"+i )).mkString(" , ") + " ]"
 }

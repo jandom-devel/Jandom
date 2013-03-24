@@ -35,8 +35,7 @@ object JandomCLI extends App {
   val parsed = parsers.RandomParser().parseProgram(source)
   if (parsed.successful) {
     val program = parsed.get
-    val domain = domains.PPLCPolyhedron
-    val params = new targets.Parameters(domain, program: SLILStmt)
+    val params = new targets.Parameters(program: SLILStmt) { val domain = domains.PPLCPolyhedron }
     params.narrowingStrategy = conf.narrowingStrategy()
     params.wideningScope = conf.wideningScope()        
     params.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)

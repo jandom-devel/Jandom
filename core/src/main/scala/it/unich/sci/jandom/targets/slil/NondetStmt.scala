@@ -20,7 +20,6 @@ package it.unich.sci.jandom
 package targets.slil
 
 import domains.NumericalProperty
-import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * The class for the non deterministic assignment  "variable := ?".
@@ -40,6 +39,6 @@ case class NondetStmt[T](variable: Int) extends SLILStmt {
     input.nonDeterministicAssignment(variable)
   }
 
-  override def mkString[U <: AbstractProperty](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + "x" + variable + " = ?"
 }

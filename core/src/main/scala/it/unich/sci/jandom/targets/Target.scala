@@ -16,56 +16,57 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
-import domains.NumericalProperty
+import it.unich.sci.jandom.domains.AbstractDomain
 
 /**
- * The abstract class for targets.
+ * The abstract class for targets, which are the static analyzers for the
+ * differente target languages. 
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-trait Target {
+abstract class Target {
   /**
-   * Abstract type for program points
+   * Abstract type for program points.
    */
   type ProgramPoint
 
   /**
-   * Abstract type for widening program points
+   * Abstract type for widening points.
    */
   type WideningPoint = ProgramPoint
 
   /**
-   * The type of the given target
+   * The type of the given target.
    */
   type Tgt <: Target
+  
+  /**
+   * Target cannot work for all static analyzers, hence we specify here the base domain in the hierarchy
+   * which is supported by the target.
+   */
+  type DomainBase <: AbstractDomain
 
   /**
-   * The class for program annotations
+   * The class for program annotations.
    */
   type Annotation[Property] <: scala.collection.mutable.Map[ProgramPoint, Property] 
+ 
+  /**
+   * An alias for parameters in input by the analyzer.
+   */
+  protected type Parameters = it.unich.sci.jandom.targets.Parameters[Tgt]
   
   /**
-   * Returns an empty annotation
+   * Returns an empty annotation.
    */
   def getAnnotation[Property]: Annotation[Property]
-  
-  /**
-   * An alias for parameters in input by the analyzer
-   */
-  protected type Parameters = targets.Parameters[Tgt]
-  
-  /** 
-   * Returns the size of the target in terms of the number of program points
-   */  
-  def size: Int
   
   /**
    * Perform a static analysis over the target.
    * @param param the parameters which drive the analyzer
    * @return an annotation for the program
    */
-  def analyze(params: Parameters): Annotation[params.Property]  
+  def analyze(params: Parameters): Annotation[params.Property]
 }

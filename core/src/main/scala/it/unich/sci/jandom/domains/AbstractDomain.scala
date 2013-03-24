@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,21 +19,15 @@
 package it.unich.sci.jandom.domains
 
 /**
- * The base trait for all the abstract properties.
+ * The base class for all abstract domains. At the moment, the only thing that all abstract
+ * domains have in common is a type `Property`, which determines the properties which are part
+ * of the domain.
+ * @author Gianluca Amato <gamato@unich.it>
  *
- * At the moment, this is useless, since we have real implementations only for
- * numerical properties.
- * @author Gianluca Amato <amato@sci.unich.it>
  */
-trait AbstractProperty { 
-  
+class AbstractDomain {
   /**
-   * Returns a string representation of the property.
-   * @param vars an array with the name of the variables 
-   * @return an sequence of string. The idea is that each string is an atomic piece of information
-   * which should be printed out together, while different strings may be also printed out
-   * separately.
+   * The type of the properties created by this abstract domain.
    */
-  def mkString(vars: IndexedSeq[String]): Seq[String]
-  
+  type Property
 }

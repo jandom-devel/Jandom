@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,9 @@ import targets.{ Environment, Parameters, Target }
 import annotations._
 import widenings.Widening
 import narrowings.Narrowing
-import scala.collection.mutable.{Map, ArrayBuffer}
+import scala.collection.mutable.{ Map, ArrayBuffer }
+import it.unich.sci.jandom.domains.NumericalDomain
+import it.unich.sci.jandom.domains.BoxDouble
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -46,26 +48,27 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
 
   type ProgramPoint = Location
   type Tgt = LTS
+  type DomainBase = NumericalDomain
 
   def size = s
-  
-  class Annotation[Property] extends Map[ProgramPoint, Property]  {
-	private val buffer = Array.fill[Option[Property]](s)(None)
-	def get(key: ProgramPoint) = buffer(key.id)
-	def iterator = buffer.indices.filter( buffer(_) != None).map { i => (locations(i),buffer(i).get ) }.toIterator
-	def +=(kv: (ProgramPoint, Property)): this.type = {	  
-	  buffer(kv._1.id) = Some(kv._2)
-	  return this
-	}
-	def -=(key: ProgramPoint): this.type = {
-	  buffer(key.id) = None
-	  return this
-	}
-	override def empty = new Annotation[Property]
-  } 
-  
+
+  class Annotation[Property] extends Map[ProgramPoint, Property] {
+    private val buffer = Array.fill[Option[Property]](s)(None)
+    def get(key: ProgramPoint) = buffer(key.id)
+    def iterator = buffer.indices.filter(buffer(_) != None).map { i => (locations(i), buffer(i).get) }.toIterator
+    def +=(kv: (ProgramPoint, Property)): this.type = {
+      buffer(kv._1.id) = Some(kv._2)
+      return this
+    }
+    def -=(key: ProgramPoint): this.type = {
+      buffer(key.id) = None
+      return this
+    }
+    override def empty = new Annotation[Property]
+  }
+
   def getAnnotation[Property] = new Annotation[Property]
-  
+
   def analyze(params: Parameters): Annotation[params.Property] = {
     // build widening and narrowing for each program point    
     val widenings = locations map params.wideningFactory
@@ -99,7 +102,7 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
         narrowings(loc.id)(current(loc.id), unionednew)
       }
     }
-    val ann = new Annotation[params.Property]	    	    
+    val ann = new Annotation[params.Property]
     locations.foreach { loc => ann(loc) = current(loc.id) }
     return ann
   }

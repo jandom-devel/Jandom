@@ -18,21 +18,28 @@
 
 package it.unich.sci.jandom.targets.jvm
 
-import scala.collection.mutable.{ ArrayBuffer, ArrayStack, Buffer }
-
-import it.unich.sci.jandom.domains.{ NumericalDomain, NumericalProperty }
+import scala.collection.mutable.ArrayStack
+import it.unich.sci.jandom.domains.{NumericalDomain, NumericalProperty}
+import it.unich.sci.jandom.domains.AbstractDomain
 
 /**
- * This is an abstract JVM.
+ * This is the abstract state of a Java Virtual Machine.
+ * @tparam Property the numerical property used to describe numerical variables
+ * @param frame associates each element on the JVM frame to a dimension of `property`. The value `-1`
+ * corresponds to a non-numerical local variable.
+ * @param stack associates each element on the JVM stack to a dimension of `property`.  The value `-1`
+ * corresponds to a non-numerical stack position.
+ * @param property the numerical property describing the state of numerical variables.
+ * @author Gianluca Amato <gamato@unich.it>
  */
-class AbstractJVM[Property <: NumericalProperty[Property]](
-  val frame: Array[Int], val stack: ArrayStack[Int], var property: Property) {
+class JVMEnv[Property <: NumericalProperty[Property]] (
+  val frame: Array[Int], val stack: ArrayStack[Int], var property: Property) extends Cloneable {
 
-  def copy: AbstractJVM[Property] =
-    new AbstractJVM(frame.clone, stack.clone, property)
+  override def clone: JVMEnv[Property] =
+    new JVMEnv(frame.clone, stack.clone, property)
 
-  def empty = {
-    val s = copy
+  def empty: JVMEnv[Property]  = {
+    val s = clone
 	s.property = s.property.empty
 	s
   }
@@ -78,7 +85,7 @@ class AbstractJVM[Property <: NumericalProperty[Property]](
     property = property.delDimension(vm min vn)
   }
   
-  def union(that: AbstractJVM[Property]): Boolean = {
+  def union(that: JVMEnv[Property]): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)
@@ -90,7 +97,7 @@ class AbstractJVM[Property <: NumericalProperty[Property]](
       false
   }
 
-  def widening(that: AbstractJVM[Property]): Boolean = {
+  def widening(that: JVMEnv[Property]): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)
@@ -106,6 +113,7 @@ class AbstractJVM[Property <: NumericalProperty[Property]](
     "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
 }
 
-object AbstractJVM {
-  def apply(dom: NumericalDomain, maxFrame: Int) = new AbstractJVM[dom.Property](Array.fill(maxFrame)(-1), ArrayStack[Int](), dom.full(0))
+ class JVMEnvDomain(val dom: NumericalDomain) extends AbstractDomain {
+   type Property = JVMEnv[dom.Property]
+   def apply(maxFrame: Int) = new JVMEnv[dom.Property](Array.fill(maxFrame)(-1), ArrayStack[Int](), dom.full(0))
 }

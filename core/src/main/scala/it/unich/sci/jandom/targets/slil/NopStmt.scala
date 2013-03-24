@@ -21,12 +21,11 @@ package targets.slil
 
 import annotations.PerProgramPointAnnotation
 import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * The class for the empty statement.
  */
 case object NopStmt extends SLILStmt {
-  override def mkString[U <: AbstractProperty] (ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String =
+  override def mkString[U <: NumericalProperty[_]] (ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String =
     ppspec.indent(level) + "<no-op>"
 }

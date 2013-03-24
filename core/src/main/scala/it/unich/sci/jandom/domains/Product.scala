@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato, Francesca Scozzari
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,8 +19,12 @@
 package it.unich.sci.jandom.domains
 
 /**
- * This is the abstract domain which implemente the product of two basic domains.
- * @author amato
+ * This is the class which implements the product of two basic numerical properties. It is not a
+ * real reduced product, but a cartesian product with some reduction given by transformation
+ * funtions. 
+ * @todo This is only a stub.
+ * @author Gianluca Amato
+ * @author Francesca Scozzari
  *
  */
 class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](val p1: Prop1, val p2: Prop2)
@@ -97,8 +101,14 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
     throw new IllegalAccessException("Unimplemented feature on Product")
 }
 
+/**
+ * This is the class for the product of abstract domains.
+ * @todo This is only a stub.
+ * @author Gianluca Amato
+ * @author Francesca Scozzari
+ */
 class ProductDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends NumericalDomain {
-
+  
   type Property = Product[dom1.Property, dom2.Property]
   
   def full(n: Int) =    throw new IllegalAccessException("Unimplemented feature on Product")

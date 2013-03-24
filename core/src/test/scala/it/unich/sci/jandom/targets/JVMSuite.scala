@@ -25,6 +25,7 @@ import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import org.scalatest.FunSuite
 import it.unich.sci.jandom.targets.jvm.Method
+import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
 import it.unich.sci.jandom.domains.BoxDouble
 import it.unich.sci.jandom.targets.jvm.UnsupportedByteCodeException
 import it.unich.sci.jandom.domains.PPLCPolyhedron
@@ -40,9 +41,11 @@ class JVMSuite extends FunSuite {
      val method = new Method(methodList.find( _.name == "loop" ).get)
      println(method.toString)
      method.visit(method.startBlock)( println(_) )   
-     val params = new it.unich.sci.jandom.targets.Parameters(PPLCPolyhedron,method)     
+     val params = new Parameters(method) {
+       val domain = new JVMEnvDomain(PPLCPolyhedron) 
+     }
      try {
-       method.analyze2(params)  
+       method.analyze(params)  
      } catch {
        case e: UnsupportedByteCodeException =>
          println(e.node)

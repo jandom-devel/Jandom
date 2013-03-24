@@ -40,7 +40,7 @@ class LTSSuite extends FunSuite {
 	    guard = List(AtomicCond(LinearForm(List(-10,1),env), AtomicCond.ComparisonOperators.LTE)),
 	    assignments = List(LinearAssignment(0,LinearForm(List(1,1),env))))
 	val lts = LTS(IndexedSeq(l1,l2), Seq(t1,t2), env)
-	val params = new targets.Parameters(BoxDouble,lts)    
+	val params = new Parameters(lts) { val domain = BoxDouble }    
     val ann = lts.analyze(params)
     expectResult ( BoxDouble(Array(0), Array(11)) ) { ann(l2) }
   }   
