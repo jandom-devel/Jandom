@@ -36,16 +36,15 @@ class JVMSuite extends FunSuite {
      val is = new FileInputStream("examples/Java/SimpleTest.class")
      val cr = new ClassReader(is)
      val node = new ClassNode()     
-     cr.accept(node,ClassReader.SKIP_DEBUG)
+     cr.accept(node,0)
      val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
      val method = new Method(methodList.find( _.name == "loop" ).get)
-     println(method.toString)
-     method.visit(method.startBlock)( println(_) )   
      val params = new Parameters(method) {
        val domain = new JVMEnvDomain(PPLCPolyhedron) 
      }
      try {
-       method.analyze(params)  
+       val ann = method.analyze(params)  
+       println(method.mkString(ann))
      } catch {
        case e: UnsupportedByteCodeException =>
          println(e.node)

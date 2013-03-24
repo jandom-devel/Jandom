@@ -19,11 +19,13 @@
 package it.unich.sci.jandom.targets.jvm
 
 import scala.collection.mutable.ArrayStack
-import it.unich.sci.jandom.domains.{NumericalDomain, NumericalProperty}
-import it.unich.sci.jandom.domains.AbstractDomain
+
+import it.unich.sci.jandom.domains.{AbstractDomain, NumericalDomain, NumericalProperty}
 
 /**
- * This is the abstract state of a Java Virtual Machine.
+ * This is the abstract property abstracting the environment (stack and frame) of a Java Virtual Machine. 
+ * At the moment it only handles numerical variables. The class JVMEnv is mutable. Most operations are
+ * the counterpart of bytecode operations.
  * @tparam Property the numerical property used to describe numerical variables
  * @param frame associates each element on the JVM frame to a dimension of `property`. The value `-1`
  * corresponds to a non-numerical local variable.
@@ -35,13 +37,18 @@ import it.unich.sci.jandom.domains.AbstractDomain
 class JVMEnv[Property <: NumericalProperty[Property]] (
   val frame: Array[Int], val stack: ArrayStack[Int], var property: Property) extends Cloneable {
 
+  /**
+   * Returns a deep copy of JVMEnv.
+   */
   override def clone: JVMEnv[Property] =
     new JVMEnv(frame.clone, stack.clone, property)
-
-  def empty: JVMEnv[Property]  = {
-    val s = clone
-	s.property = s.property.empty
-	s
+  
+  /**
+   * Empties the abstract environment (i.e., it returns an abstract environment
+   * representing no concrete environments).
+   */
+  def empty  {
+    property = property.empty
   }
   
   def ipush(v: Int) {
@@ -85,6 +92,11 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
     property = property.delDimension(vm min vn)
   }
   
+  /**
+   * Union of two abstract environments.
+   * @param that the abstract environment to join with `this`
+   * @return true if the result is bigger than `this`
+   */
   def union(that: JVMEnv[Property]): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
@@ -97,6 +109,11 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
       false
   }
 
+  /**
+   * Widening of two abstract environments.
+   * @param that the abstract environment to widen with `this`
+   * @return true if the result is bigger than `this`
+   */
   def widening(that: JVMEnv[Property]): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
@@ -113,7 +130,18 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
     "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
 }
 
+/**
+ * This is the abstract domain of JVM environments. At the moment, it only deals with numerical
+ * variables.
+ * @param dom the numerical domain to use for the numerical variables.
+ * @author Gianluca Amato <gamato@unich.it>
+ */
  class JVMEnvDomain(val dom: NumericalDomain) extends AbstractDomain {
    type Property = JVMEnv[dom.Property]
-   def apply(maxFrame: Int) = new JVMEnv[dom.Property](Array.fill(maxFrame)(-1), ArrayStack[Int](), dom.full(0))
+   
+   /**
+    * Creates an empty JVM environment with a maximal frame length of `maxFrame` and maximal stack length of
+    * `maxStack`.
+    */
+   def apply(maxLocals: Int, maxStack: Int) = new JVMEnv[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.full(0))
 }

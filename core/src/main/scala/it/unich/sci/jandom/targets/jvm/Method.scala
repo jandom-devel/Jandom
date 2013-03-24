@@ -40,7 +40,8 @@ class Method(val methodNode: MethodNode) extends Target {
   type Tgt = Method
   type DomainBase = JVMEnvDomain
   
-  val startBlock = createControlFlowGraph()
+  private val labelBlocks = HashMap[Label, BasicBlock]()
+  private val startBlock = createControlFlowGraph()
   determineWidening(startBlock)
 
   /**
@@ -82,7 +83,7 @@ class Method(val methodNode: MethodNode) extends Target {
       var lastNode = endNode.getNext()
       var exits = Seq[(BasicBlock, JVMEnv[Property])]()
       while (node != lastNode) {
-        println(methodNode.instructions.indexOf(node) + " : " + s)
+        //println(methodNode.instructions.indexOf(node) + " : " + s)
         val op = node.getOpcode
         node match {
           case node: InsnNode =>
@@ -165,8 +166,7 @@ class Method(val methodNode: MethodNode) extends Target {
     import AbstractInsnNode._
 
     val iter = methodNode.instructions.iterator.asInstanceOf[java.util.Iterator[AbstractInsnNode]]
-
-    val labelBlocks = HashMap[LabelNode, BasicBlock]()
+    
     val startBlock = new BasicBlock
     startBlock.startNode = iter.next
     var currentBlock = startBlock
@@ -186,7 +186,7 @@ class Method(val methodNode: MethodNode) extends Target {
           if (!beginningOfBlock) {
             // since real instructions have been produced, we need to create a new block
             currentBlock.endNode = i.getPrevious
-            val nextBlock = labelBlocks getOrElseUpdate (i, new BasicBlock())
+            val nextBlock = labelBlocks getOrElseUpdate (i.getLabel, new BasicBlock())
             currentBlock.nextBlock = Some(nextBlock)
             currentBlock.jumpBlock = None
             currentBlock = nextBlock
@@ -195,10 +195,10 @@ class Method(val methodNode: MethodNode) extends Target {
           }
         case i: JumpInsnNode =>
           currentBlock.endNode = i
-          currentBlock.jumpBlock = Some(labelBlocks getOrElseUpdate (i.label, new BasicBlock()))
+          currentBlock.jumpBlock = Some(labelBlocks getOrElseUpdate (i.label.getLabel, new BasicBlock()))
           if (i.getNext != null) {
             val nextBlock = i.getNext match {
-              case ln: LabelNode => labelBlocks.getOrElseUpdate(ln, new BasicBlock())
+              case ln: LabelNode => labelBlocks.getOrElseUpdate(ln.getLabel, new BasicBlock())
               case _ => new BasicBlock
             }
             currentBlock.nextBlock = Some(nextBlock)
@@ -223,7 +223,7 @@ class Method(val methodNode: MethodNode) extends Target {
 
   def analyze(params: Parameters): Annotation[params.Property] = {
     val ann = new Annotation[params.Property]()
-    ann(startBlock) = params.domain(methodNode.maxLocals)
+    ann(startBlock) = params.domain(methodNode.maxLocals, methodNode.maxStack)
     val taskList = Queue[BasicBlock](startBlock)
     while (!taskList.isEmpty) {
       val b = taskList.dequeue()
@@ -246,6 +246,26 @@ class Method(val methodNode: MethodNode) extends Target {
 
   def size = methodNode.maxStack + methodNode.maxLocals
 
+  def mkString[D <: JVMEnv[_]](ann: Annotation[D]): String = {
+    val sw = new StringWriter
+    val pw = new PrintWriter(sw)
+    val p = new Textifier(Opcodes.ASM4) {
+      override def visitLabel(l: Label) {
+        super.visitLabel(l)
+        if (labelBlocks.contains(l))
+          text.asInstanceOf[java.util.List[String]].add("<"+ann(labelBlocks(l)).toString+">")
+      }
+      override def visitMethodEnd {
+        print(pw)
+      }
+    }
+    val tracer = new TraceMethodVisitor(p)
+    methodNode.accept(tracer)
+    pw.flush
+    pw.close
+    sw.getBuffer.toString
+  }
+  
   override def toString = {
     val sw = new StringWriter
     val pw = new PrintWriter(sw)
