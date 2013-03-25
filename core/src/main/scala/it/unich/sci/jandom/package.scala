@@ -44,7 +44,7 @@ package object jandom {
   /**
    * Suffix version
    */
-  val suffixVersion = "svn"
+  val suffixVersion = "git"
   
   /**
    * This is a string representation of Jandom's version
