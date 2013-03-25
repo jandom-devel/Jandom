@@ -36,12 +36,13 @@ class JVMSuite extends FunSuite {
      val is = new FileInputStream("examples/Java/SimpleTest.class")
      val cr = new ClassReader(is)
      val node = new ClassNode()     
-     cr.accept(node,0)
+     cr.accept(node,ClassReader.SKIP_DEBUG)
      val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
      val method = new Method(methodList.find( _.name == "loop" ).get)
      val params = new Parameters(method) {
        val domain = new JVMEnvDomain(PPLCPolyhedron) 
      }
+     println(method.toString)
      try {
        val ann = method.analyze(params)  
        println(method.mkString(ann))

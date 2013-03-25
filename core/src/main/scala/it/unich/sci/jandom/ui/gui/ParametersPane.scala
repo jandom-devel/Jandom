@@ -55,7 +55,7 @@ class ParametersPane extends GridBagPanel {
   layout(Swing.VGlue) = new Constraints(0, 5, 2, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
       GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0)
   
-   object ParameterRenderer extends Renderer[ParameterValue[_]] {
+  object ParameterRenderer extends Renderer[ParameterValue[_]] {
     val r = implicitly[Renderer[String]]
     def componentFor(list: ListView[_], isSelected: Boolean,
       focused: Boolean, a: ParameterValue[_], index: Int): Component =
@@ -80,10 +80,9 @@ class ParametersPane extends GridBagPanel {
     comboBox
   }
 
-  def selectedDomain = NumericalDomains.values(domainComboBox.selection.index)
+  def selectedNumericalDomain = NumericalDomains.values(domainComboBox.selection.index).value
   
-  def getParameters[T <: SLILStmt](tgt: T) = {
-    val parameters = new Parameters(tgt) { val domain = selectedDomain.value }
+  def setParameters[T <: Target](parameters: Parameters[T]) {
     parameters.wideningScope = WideningScopes.values(wideningComboBox.selection.index).value
     parameters.narrowingStrategy = NarrowingStrategies.values(narrowingComboBox.selection.index).value
     val delay = delayModel.getValue().asInstanceOf[Double].toInt
@@ -92,6 +91,6 @@ class ParametersPane extends GridBagPanel {
     }
     parameters.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)
     if (debug.selected) parameters.debugWriter = new java.io.StringWriter
-    parameters
   }
+ 
 }

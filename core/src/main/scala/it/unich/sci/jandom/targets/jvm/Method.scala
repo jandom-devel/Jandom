@@ -19,15 +19,16 @@
 package it.unich.sci.jandom.targets.jvm
 
 import java.io.{ PrintWriter, StringWriter }
-import scala.collection.mutable.HashMap
+import java.util.NoSuchElementException
+
+import scala.collection.mutable.{ BitSet, HashMap, Queue }
+
 import org.objectweb.asm._
 import org.objectweb.asm.tree._
 import org.objectweb.asm.util._
-import it.unich.sci.jandom.targets.Target
+
 import it.unich.sci.jandom.domains.NumericalProperty
-import scala.collection.mutable.Queue
-import scala.collection.mutable.BitSet
-import it.unich.sci.jandom.targets.Parameters
+import it.unich.sci.jandom.targets.Target
 
 /**
  * This class analyzes a single method of a class.
@@ -39,8 +40,8 @@ class Method(val methodNode: MethodNode) extends Target {
   type Annotation[Property] = HashMap[ProgramPoint, Property]
   type Tgt = Method
   type DomainBase = JVMEnvDomain
-  
-  private val labelBlocks = HashMap[Label, BasicBlock]()
+
+  private val labelBlocks = HashMap[AbstractInsnNode, BasicBlock]()
   private val startBlock = createControlFlowGraph()
   determineWidening(startBlock)
 
@@ -83,7 +84,6 @@ class Method(val methodNode: MethodNode) extends Target {
       var lastNode = endNode.getNext()
       var exits = Seq[(BasicBlock, JVMEnv[Property])]()
       while (node != lastNode) {
-        //println(methodNode.instructions.indexOf(node) + " : " + s)
         val op = node.getOpcode
         node match {
           case node: InsnNode =>
@@ -165,45 +165,51 @@ class Method(val methodNode: MethodNode) extends Target {
     import scala.collection.JavaConversions._
     import AbstractInsnNode._
 
-    val iter = methodNode.instructions.iterator.asInstanceOf[java.util.Iterator[AbstractInsnNode]]
-    
+    // the use of asInstanceOf is needed because the standard
+    // asm library in the maven repositories is compiled without
+    // support for generics
+    val iterator = methodNode.instructions.iterator.asInstanceOf[java.util.Iterator[AbstractInsnNode]]
+
+    // the starting basic block of the method
     val startBlock = new BasicBlock
-    startBlock.startNode = iter.next
+    startBlock.startNode = iterator.next()
+    labelBlocks(startBlock.startNode) = startBlock
+
+    // the current basic block
     var currentBlock = startBlock
 
-    // is true if no real instructions has been assigned yet to the 
-    // current block
+    // is true if no real instructions has been assigned yet to the current block
     var beginningOfBlock = true
 
-    while (iter.hasNext) {
-      // get instruction
-      val i = iter.next
+    while (iterator.hasNext) {
+
+      val i = iterator.next()
 
       // check type of instructions
       i match {
-
-        case i: LabelNode =>
-          if (!beginningOfBlock) {
-            // since real instructions have been produced, we need to create a new block
-            currentBlock.endNode = i.getPrevious
-            val nextBlock = labelBlocks getOrElseUpdate (i.getLabel, new BasicBlock())
-            currentBlock.nextBlock = Some(nextBlock)
-            currentBlock.jumpBlock = None
-            currentBlock = nextBlock
-            currentBlock.startNode = i
-            beginningOfBlock = true
-          }
         case i: JumpInsnNode =>
           currentBlock.endNode = i
-          currentBlock.jumpBlock = Some(labelBlocks getOrElseUpdate (i.label.getLabel, new BasicBlock()))
+          currentBlock.jumpBlock = Some(labelBlocks getOrElseUpdate (i.label, new BasicBlock()))
           if (i.getNext != null) {
             val nextBlock = i.getNext match {
-              case ln: LabelNode => labelBlocks.getOrElseUpdate(ln.getLabel, new BasicBlock())
+              case ln: LabelNode => labelBlocks.getOrElseUpdate(ln, new BasicBlock())
               case _ => new BasicBlock
             }
             currentBlock.nextBlock = Some(nextBlock)
             currentBlock = nextBlock
             currentBlock.startNode = i.getNext
+            labelBlocks(currentBlock.startNode) = currentBlock
+            beginningOfBlock = true
+          }
+        case i: LabelNode =>
+          if (!beginningOfBlock) {
+            // since real instructions have been produced, we need to create a new block
+            currentBlock.endNode = i.getPrevious
+            val nextBlock = labelBlocks getOrElseUpdate (i, new BasicBlock())
+            currentBlock.nextBlock = Some(nextBlock)
+            currentBlock.jumpBlock = None
+            currentBlock = nextBlock
+            currentBlock.startNode = i
             beginningOfBlock = true
           }
         case i: LineNumberNode =>
@@ -249,35 +255,30 @@ class Method(val methodNode: MethodNode) extends Target {
   def mkString[D <: JVMEnv[_]](ann: Annotation[D]): String = {
     val sw = new StringWriter
     val pw = new PrintWriter(sw)
-    val p = new Textifier(Opcodes.ASM4) {
-      override def visitLabel(l: Label) {
-        super.visitLabel(l)
-        if (labelBlocks.contains(l))
-          text.asInstanceOf[java.util.List[String]].add("<"+ann(labelBlocks(l)).toString+">")
+    val textifier = new Textifier
+    val tracer = new TraceMethodVisitor(textifier)
+    tracer.visitCode()
+    val instructions = methodNode.instructions
+    var i: AbstractInsnNode = instructions.getFirst
+    while (i != null) {
+      val annotation = try {
+        "[ " + ann(labelBlocks(i)) + " ]\n"
+      } catch {
+        case _: NoSuchElementException => ""
       }
-      override def visitMethodEnd {
-        print(pw)
-      }
+      // the use of asInstanceOf is needed because the standard
+      // asm library in the maven repositories is compiled without
+      // support for generics
+      textifier.text.asInstanceOf[java.util.List[String]].add(annotation)
+      i.accept(tracer)
+      i = i.getNext
     }
-    val tracer = new TraceMethodVisitor(p)
-    methodNode.accept(tracer)
-    pw.flush
-    pw.close
+    tracer.visitMaxs(methodNode.maxStack, methodNode.maxLocals)
+    tracer.visitEnd()
+    textifier.print(pw)
+    pw.close()
     sw.getBuffer.toString
   }
-  
-  override def toString = {
-    val sw = new StringWriter
-    val pw = new PrintWriter(sw)
-    val p = new Textifier(Opcodes.ASM4) {
-      override def visitMethodEnd {
-        print(pw)
-      }
-    }
-    val tracer = new TraceMethodVisitor(p)
-    methodNode.accept(tracer)
-    pw.flush
-    pw.close
-    sw.getBuffer.toString
-  }
+
+  override def toString = mkString(getAnnotation)
 }

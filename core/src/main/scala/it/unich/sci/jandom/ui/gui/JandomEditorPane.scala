@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,22 +19,26 @@
 package it.unich.sci.jandom
 package ui.gui
 
-import scala.swing._
-import java.io._
-import javax.swing.event.DocumentListener
-import javax.swing.event.DocumentEvent
+import java.awt.event.{ InputEvent, KeyEvent }
+import java.io.{ File, FileWriter, IOException }
+import scala.Array.canBuildFrom
+import scala.swing.{ Action, Dialog, EditorPane, FileChooser, MenuItem, Separator }
+import it.unich.sci.jandom.targets.slil.SLILStmt
 import javax.swing.KeyStroke
-import java.awt.event.KeyEvent
-import java.awt.event.InputEvent
+import javax.swing.event.{ DocumentEvent, DocumentListener, UndoableEditEvent, UndoableEditListener }
 import javax.swing.undo.UndoManager
-import javax.swing.event.UndoableEditListener
-import javax.swing.event.UndoableEditEvent
+import it.unich.sci.jandom.targets.Parameters
+import scala.swing.ScrollPane
+import scala.swing.Component
 
-class JandomEditorPane(val frame: Frame) extends EditorPane {
+class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane {
+  val editorPane = new EditorPane
+  contents = editorPane
+
   val fileChooser = new FileChooser(new File("."))
-  val actionMap = Map(peer.getActions() map
+  val actionMap = Map(editorPane.peer.getActions() map
     { action => action.getValue(javax.swing.Action.NAME) -> action }: _*)
-  var undo = new UndoManager  
+  var undo = new UndoManager
   var _currentFile: Option[File] = None
   var _modified = false
 
@@ -43,14 +47,14 @@ class JandomEditorPane(val frame: Frame) extends EditorPane {
     _modified = v
     updateFrameTitle()
   }
-  
+
   def currentFile = _currentFile
-  def currentFile_= (f: Option[File]) {
+  def currentFile_=(f: Option[File]) {
     _currentFile = f
     updateFrameTitle()
   }
 
-  peer.getDocument().addDocumentListener(new DocumentListener {
+  editorPane.peer.getDocument().addDocumentListener(new DocumentListener {
     def changedUpdate(e: DocumentEvent) { listen(e) };
     def insertUpdate(e: DocumentEvent) { listen(e) };
     def removeUpdate(e: DocumentEvent) { listen(e) };
@@ -59,7 +63,7 @@ class JandomEditorPane(val frame: Frame) extends EditorPane {
     }
   })
 
-  peer.getDocument().addUndoableEditListener(new UndoableEditListener {
+  editorPane.peer.getDocument().addUndoableEditListener(new UndoableEditListener {
     def undoableEditHappened(e: UndoableEditEvent) {
       undo.addEdit(e.getEdit())
       undoAction.updateUndoState()
@@ -67,7 +71,7 @@ class JandomEditorPane(val frame: Frame) extends EditorPane {
     }
   })
 
-  private def updateFrameTitle() {
+  def updateFrameTitle() {
     val newTitle = softwareName +
       (currentFile match {
         case None => ""
@@ -95,7 +99,7 @@ class JandomEditorPane(val frame: Frame) extends EditorPane {
           return false
     }
     try {
-      peer.write(new FileWriter(file))
+      editorPane.peer.write(new FileWriter(file))
       modified = false
       currentFile = Some(file)
     } catch {
@@ -134,7 +138,6 @@ class JandomEditorPane(val frame: Frame) extends EditorPane {
    */
   def clear() {
     if (!ensureSaved()) return ;
-    text = ""
     currentFile = None
     modified = false
   }
@@ -148,7 +151,7 @@ class JandomEditorPane(val frame: Frame) extends EditorPane {
     if (returnVal != FileChooser.Result.Approve) return ;
     val file = fileChooser.selectedFile
     try {
-      text = scala.io.Source.fromFile(file).mkString
+      editorPane.text = scala.io.Source.fromFile(file).mkString
     } catch {
       case e: IOException =>
     }
@@ -230,4 +233,24 @@ class JandomEditorPane(val frame: Frame) extends EditorPane {
     }
   }
 
+  def analyze = {
+    val parser = parsers.RandomParser()
+    parser.parseProgram(editorPane.text) match {
+      case parser.Success(program, _) =>
+        val numericalDomain = frame.parametersPane.selectedNumericalDomain
+        val params = new Parameters(program.asInstanceOf[SLILStmt]) { val domain = numericalDomain }        
+        frame.parametersPane.setParameters(params)
+        val ann = program.analyze(params)
+        Some(params.debugWriter.toString + program.mkString(ann))
+      case parser.NoSuccess(msg, next) =>
+        Dialog.showMessage(JandomEditorPane.this, msg + " in line " + next.pos.line + " column " + next.pos.column,
+          "Error in parsing source code", Dialog.Message.Error)
+        None
+    }
+  }
+
+  val fileMenuItems = Seq(new MenuItem(newAction), new MenuItem(openAction), new Separator, new MenuItem(saveAction),
+    new MenuItem(saveAsAction))
+  val editMenuItems = Seq(new MenuItem(undoAction), new MenuItem(redoAction), new Separator,
+    new MenuItem(cutAction), new MenuItem(copyAction), new MenuItem(pasteAction))
 }

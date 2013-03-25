@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,26 +19,26 @@
 package it.unich.sci.jandom
 package ui.gui
 
-import domains._
-import targets.slil.SLILStmt
+import java.awt.event.{InputEvent, KeyEvent}
+
 import scala.swing._
-import scala.swing.event._
+
 import javax.swing.KeyStroke
-import java.awt.event.KeyEvent
-import java.awt.event.InputEvent
-import scala.swing.TabbedPane
 import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 
 class MainFrame extends Frame {
 
-  val editorPane = new JandomEditorPane(this)
+  val jandomEditorPane = new JandomEditorPane(this)
+  val jvmEditorPane = new JVMEditorPane(this)
   val outputPane = new OutputPane
   val parametersPane = new ParametersPane
+  var currentEditorPane: TargetPane = jvmEditorPane
   val tabbedPane = new TabbedPane {
-    pages += new TabbedPane.Page("Editor", new ScrollPane(editorPane))
+    pages += new TabbedPane.Page("Editor", currentEditorPane)
     pages += new TabbedPane.Page("Output", new ScrollPane(outputPane))
     pages += new TabbedPane.Page("Parameters", parametersPane)
   }
+  var buttonGroups: ButtonGroup = null
 
   /**
    * This is the Action to invoke when user wants to quit the application
@@ -46,7 +46,7 @@ class MainFrame extends Frame {
   val quitAction = new Action("Quit") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_MASK))
     def apply() {
-      if (editorPane.ensureSaved) sys.exit(0)
+      if (currentEditorPane.ensureSaved) sys.exit(0)
     }
   }
 
@@ -59,31 +59,32 @@ class MainFrame extends Frame {
     }
   }
 
+  /**
+   * This is the action to invoke when the user press the Analyze button
+   */
   val analyzeAction = new Action("ANALYZE!") {
     def apply() {
-      val source = editorPane.text
-      val parser = parsers.RandomParser()
-      parser.parseProgram(source) match {
-        case parser.Success(program, _) =>
-          val domain = parametersPane.selectedDomain
-          val params = parametersPane.getParameters(program.asInstanceOf[SLILStmt])
-          val ann = program.analyze(params)
-          outputPane.text = outputPane.text + params.debugWriter.toString
-          outputPane.text = outputPane.text + program.mkString(ann)
+      currentEditorPane.analyze match {
+        case Some(output) =>
+          outputPane.text = outputPane.text + output
           tabbedPane.selection.index = 1
-        case parser.NoSuccess(msg, next) =>
-          Dialog.showMessage(editorPane, msg + " in line " + next.pos.line + " column " + next.pos.column,
-            "Error in parsing source code", Dialog.Message.Error)
+        case None =>
       }
     }
   }
 
-  /**
-   * Closing the frame causes the program to exit
-   */
-  override def closeOperation() {
-    quitAction()
+  val randomAction: Action = new Action("Random") {
+    def apply() {
+      setMode(this)
+    }
   }
+
+  val jvmAction: Action = new Action("JVM") {
+    def apply() {
+      setMode(this)
+    }
+  }
+
   init()
 
   def init() {
@@ -94,37 +95,69 @@ class MainFrame extends Frame {
       layout(tabbedPane) = BorderPanel.Position.Center
       layout(analyzeButton) = BorderPanel.Position.South
     }
+    setMenuBar()
+    bounds = new Rectangle(100, 100, 800, 600)
+    peer.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE)
 
+  }
+
+  def setFileMenu() {
+    val fileMenu = menuBar.menus(0)
+    fileMenu.contents.clear()
+    fileMenu.contents ++= currentEditorPane.fileMenuItems
+    if (!currentEditorPane.fileMenuItems.isEmpty)
+      fileMenu.contents += new Separator
+    fileMenu.contents += new MenuItem(quitAction)
+  }
+
+  def setEditMenu() {
+    val editMenu = menuBar.menus(1)
+    editMenu.contents.clear()
+    if (currentEditorPane.editMenuItems.isEmpty)
+      editMenu.enabled = false
+    else
+      editMenu.enabled = true
+    editMenu.contents ++= currentEditorPane.editMenuItems
+  }
+
+  def setMenuBar() {
+    val randomMode = new RadioMenuItem("")
+    randomMode.action = randomAction
+    val jvmMode = new RadioMenuItem("")
+    jvmMode.action = jvmAction
+    buttonGroups = new ButtonGroup(randomMode, jvmMode)
     menuBar = new MenuBar {
-      contents += new Menu("File") {
-        contents += new MenuItem(editorPane.newAction)
-        contents += new MenuItem(editorPane.openAction)
-        contents += new Separator
-        contents += new MenuItem(editorPane.saveAction)
-        contents += new MenuItem(editorPane.saveAsAction)
-        contents += new Separator
-        contents += new MenuItem(quitAction)
-      }
-      contents += new Menu("Edit") {
-        contents += new MenuItem(editorPane.undoAction)
-        contents += new MenuItem(editorPane.redoAction)
-        contents += new Separator
-        contents += new MenuItem(editorPane.cutAction)
-        contents += new MenuItem(editorPane.copyAction)
-        contents += new MenuItem(editorPane.pasteAction)
-      }
+      contents += new Menu("File")
+      contents += new Menu("Edit")
       contents += new Menu("Tool") {
         contents += new MenuItem(outputPane.clear)
+        contents += new Separator
+        contents ++= buttonGroups.buttons
       }
       contents += new Menu("Help") {
         contents += new MenuItem(aboutAction)
       }
     }
+    jvmMode.peer.doClick
+  }
 
-    bounds = new Rectangle(100, 100, 800, 600)
+  /**
+   * Closing the frame causes the program to exit
+   */
+  override def closeOperation() {
+    quitAction()
+  }
 
-    import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
-    peer.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE)
-
+  def setMode(action: Action) {
+    currentEditorPane = action match {
+      case `jvmAction` => jvmEditorPane
+      case `randomAction` => jandomEditorPane
+    }
+    tabbedPane.pages(0).content = currentEditorPane
+    // repaint is needed to avoid corruption in display
+    tabbedPane.repaint
+    setFileMenu()
+    setEditMenu()
+    currentEditorPane.updateFrameTitle()
   }
 }
