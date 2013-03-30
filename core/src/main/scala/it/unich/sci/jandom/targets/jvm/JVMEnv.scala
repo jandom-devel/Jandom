@@ -140,8 +140,16 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
    type Property = JVMEnv[dom.Property]
    
    /**
-    * Creates an empty JVM environment with a maximal frame length of `maxFrame` and maximal stack length of
-    * `maxStack`.
+    * Creates a full JVM environment of dimension 0.
+    * @param maxLocal maximum number of locals in the frame.
     */
-   def apply(maxLocals: Int, maxStack: Int) = new JVMEnv[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.full(0))
+   def full(maxLocals: Int) = new JVMEnv[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.full(0))
+
+   /**
+    * Creates an empty JVM environment of dimension 0.
+    * @param maxLocal maximum number of locals in the frame.
+    */
+   
+   def empty(maxLocals: Int) = new JVMEnv[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.empty(0))
+   
 }

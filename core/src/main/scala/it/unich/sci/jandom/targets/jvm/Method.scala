@@ -229,7 +229,7 @@ class Method(val methodNode: MethodNode) extends Target {
 
   def analyze(params: Parameters): Annotation[params.Property] = {
     val ann = new Annotation[params.Property]()
-    ann(startBlock) = params.domain(methodNode.maxLocals, methodNode.maxStack)
+    ann(startBlock) = params.domain.full(methodNode.maxLocals)
     val taskList = Queue[BasicBlock](startBlock)
     while (!taskList.isEmpty) {
       val b = taskList.dequeue()
