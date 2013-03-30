@@ -25,6 +25,7 @@ import java.io.StringWriter
 import java.io.PrintWriter
 import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
 import it.unich.sci.jandom.domains.PPLCPolyhedron
+import soot.options.Options
 
 /**
  * Simple test suite for the Baf analyzer
@@ -35,12 +36,13 @@ class BafSootSuite extends FunSuite {
   test("simple method analysis") {
     val scene = Scene.v()
     scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
-    val c = scene.loadClassAndSupport("SimpleTest")
+    val c = scene.loadClass("SimpleTest",1)
     c.setApplicationClass()
-    val method = new BafMethod(c.getMethodByName("sequential"))
+    val method = new BafMethod(c.getMethodByName("conditional"))
     val params = new Parameters(method) {
       val domain = new JVMEnvDomain(PPLCPolyhedron)
     }
+    println(method)
     val ann = method.analyze(params)
     println(method.mkString(ann))
   }

@@ -18,23 +18,23 @@
 
 package it.unich.sci.jandom.targets.jvmsoot
 
+import java.io.PrintWriter
+import java.io.StringWriter
+
+import scala.collection.mutable.HashMap
+import scala.collection.mutable.Queue
+
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Target
+import it.unich.sci.jandom.targets.jvm.JVMEnv
+import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
+
+import soot._
 import soot.baf._
 import soot.jimple._
-import soot._
-import it.unich.sci.jandom.targets.Target
-import scala.collection.mutable.HashMap
-import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
-import java.io.StringWriter
-import java.io.PrintWriter
-import soot.toolkits.graph.ExceptionalUnitGraph
-import soot.toolkits.graph.ExceptionalBlockGraph
-import soot.toolkits.graph.PseudoTopologicalOrderer
-import soot.toolkits.graph.Block
-import scala.collection.mutable.Queue
-import it.unich.sci.jandom.targets.jvm.JVMEnv
-import it.unich.sci.jandom.domains.NumericalProperty
-import soot.tagkit.StringTag
 import soot.options.Options
+import soot.tagkit.StringTag
+import soot.toolkits.graph._
 
 /**
  * Analysis of a method using the Baf intermediate representation.
@@ -49,12 +49,13 @@ class BafMethod(method: SootMethod) extends Target {
 
   val jimple = method.retrieveActiveBody()
   val body = Baf.v().newBody(jimple)
-  val cfg = new ExceptionalUnitGraph(body)
-  val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
+  val chain = body.getUnits()
+  //val cfg = new ExceptionalUnitGraph(body)
+  //val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
 
   def getAnnotation[Property]: Annotation[Property] = new Annotation[Property]
 
-  def analyzePP[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[JVMEnv[Property]]): Seq[(ProgramPoint, JVMEnv[Property])] = {
+  def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[JVMEnv[Property]]): Seq[(ProgramPoint, JVMEnv[Property])] = {
     import scala.collection.JavaConversions._
 
     var exits = Seq[(ProgramPoint, JVMEnv[Property])]()
@@ -72,14 +73,24 @@ class BafMethod(method: SootMethod) extends Target {
           state.iadd
         case unit: StoreInst =>
           state.istore(unit.getLocal.getNumber)
+        case unit: LoadInst =>
+          state.iload(unit.getLocal.getNumber)
+        case unit: IfCmpGtInst =>
+          val scopy = state.clone
+          scopy.if_icmpgt
+          exits :+= (unit.getTarget, scopy)
+          state.if_icmple
+        case unit: GotoInst =>
+          exits :+= (unit.getTarget, state)
         case unit: ReturnVoidInst =>
           ann(unit) = state
       }
-      if (!unit.branches && unit.fallsThrough())
-        nextunit = cfg.getSuccsOf(unit).get(0)
-    } while (!unit.branches() && unit.fallsThrough())
-    if (unit.fallsThrough)
-      exits :+= ((cfg.getSuccsOf(pp).get(0), state))
+      // We use the chain to get the fall through node. We used the first successor
+      // in the CFG, but it is not clear from the documentation if we can rely on
+      // this assumption.
+      nextunit = chain.getSuccOf(unit)      
+    } while (unit.fallsThrough() && nextunit.getBoxesPointingToThis().isEmpty())
+    if (unit.fallsThrough) exits :+= (nextunit, state)
     exits
   }
 
@@ -87,12 +98,11 @@ class BafMethod(method: SootMethod) extends Target {
     import scala.collection.JavaConversions._
 
     val ann = new Annotation[params.Property]()
-    val taskList = Queue[ProgramPoint](cfg.getHeads(): _*)
-    for (pp <- cfg.getHeads())
-      ann(pp) = params.domain.full(body.getLocalCount())
+    val taskList = Queue[ProgramPoint](chain.getFirst())
+    ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
     while (!taskList.isEmpty) {
       val pp = taskList.dequeue()
-      val result = analyzePP(pp, ann)
+      val result = analyzeBlock(pp, ann)
       for ((destpp, state) <- result) {
         if (ann contains destpp) {
           val modified = if (false)
@@ -129,7 +139,7 @@ class BafMethod(method: SootMethod) extends Target {
         lines(i - 1) = temp
       }
     }
-    for ((unit, prop) <- ann) 
+    for ((unit, prop) <- ann)
       unit.removeAllTags()
     lines.mkString("\n")
   }
