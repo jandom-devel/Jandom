@@ -62,7 +62,7 @@ class BafMethod(method: SootMethod) extends Target {
     var unit = pp
     var nextunit = pp
     do {
-      unit = nextunit      
+      unit = nextunit
       unit match {
         case unit: PushInst =>
           unit.getConstant() match {
@@ -73,8 +73,8 @@ class BafMethod(method: SootMethod) extends Target {
         case unit: StoreInst =>
           state.istore(unit.getLocal.getNumber)
         case unit: ReturnVoidInst =>
-          ann(unit) = state          
-      }      
+          ann(unit) = state
+      }
       if (!unit.branches && unit.fallsThrough())
         nextunit = cfg.getSuccsOf(unit).get(0)
     } while (!unit.branches() && unit.fallsThrough())
@@ -119,8 +119,20 @@ class BafMethod(method: SootMethod) extends Target {
     val ps = new PrintWriter(ss)
     printer.printTo(body, ps)
     ps.close()
-    ss.getBuffer.toString
+    val out = ss.getBuffer.toString
+
+    val lines = out.split("\n")
+    for (i <- 0 until lines.length) {
+      if (lines(i).startsWith("/*") && i > 0 && !lines(i - 1).startsWith("/*")) {
+        val temp = lines(i)
+        lines(i) = lines(i - 1)
+        lines(i - 1) = temp
+      }
+    }
+    for ((unit, prop) <- ann) 
+      unit.removeAllTags()
+    lines.mkString("\n")
   }
-  
+
   override def toString = mkString(getAnnotation)
 }
