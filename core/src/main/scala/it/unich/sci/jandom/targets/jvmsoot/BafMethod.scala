@@ -71,6 +71,11 @@ class BafMethod(method: SootMethod) extends Target {
           }
         case unit: AddInst =>
           state.iadd
+        case unit: IncInst =>
+          unit.getConstant() match {
+            case i: IntConstant  => state.iinc(unit.getLocal().getNumber(), i.value)       
+          }
+          
         case unit: StoreInst =>
           state.istore(unit.getLocal.getNumber)
         case unit: LoadInst =>
@@ -107,7 +112,7 @@ class BafMethod(method: SootMethod) extends Target {
         if (ann contains destpp) {
           val modified = if (false)
             ann(destpp).widening(state)
-          else
+          else 
             ann(destpp).union(state)
           if (modified) taskList.enqueue(destpp)
         } else {

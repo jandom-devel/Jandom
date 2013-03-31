@@ -38,7 +38,7 @@ class BafSootSuite extends FunSuite {
     scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
     val c = scene.loadClass("SimpleTest",1)
     c.setApplicationClass()
-    val method = new BafMethod(c.getMethodByName("conditional"))
+    val method = new BafMethod(c.getMethodByName("loop"))
     val params = new Parameters(method) {
       val domain = new JVMEnvDomain(PPLCPolyhedron)
     }
