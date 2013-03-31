@@ -192,6 +192,18 @@ abstract class NumericalProperty[Property] extends PartiallyOrdered[Property] {
     v(m) = 1
     linearAssignment(n,v,0)
   }
+  
+   /**
+   * Assignments of the kind vn = vn + c.  The standard implementation calls
+   * linearAssignment, but it may be overriden in subclasses to optimize speed.
+   * @note $NOTEN
+   */
+  def addConstant (n: Int, c: Double) = {
+    require (n < dimension)
+    val v = Array.fill(dimension)(0.0)
+    v(n) = 1
+    linearAssignment(n,v,c)
+  }
  
   def if_icmpgt(n: Int, m: Int) = {
     require (n < dimension && m < dimension) 

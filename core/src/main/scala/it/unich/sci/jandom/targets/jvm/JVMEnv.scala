@@ -51,22 +51,22 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
     property = property.empty
   }
   
-  def ipush(v: Int) {
+  def ipush(c: Int) {
     property = property.addDimension
-    property = property.constantAssignment(property.dimension - 1, v)
+    property = property.constantAssignment(property.dimension - 1, c)
     stack.push(property.dimension - 1)
   }
 
-  def istore(i: Int) {
-    val oldn = frame(i)
+  def istore(v: Int) {
+    val oldn = frame(v)
     val newn = stack.pop
-    if (oldn != -1) property=property.delDimension(oldn)
-    frame(i) =  if (oldn >= 0 && oldn < newn) newn-1 else newn
+    if (oldn != -1) property = property.delDimension(oldn)
+    frame(v) =  if (oldn >= 0 && oldn < newn) newn-1 else newn
   }
 
-  def iload(i: Int) {
+  def iload(v: Int) {
     property = property.addDimension
-    property = property.variableAssignment(property.dimension - 1, i)
+    property = property.variableAssignment(property.dimension - 1, v)
     stack.push(property.dimension - 1)
   }
 
@@ -74,6 +74,11 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
     val vm = stack.pop
     val vn = stack.top
     property = property.addAssignment(vn, vm).delDimension(vm)    
+  }
+  
+  def iinc(v: Int, c: Int) {
+    val vn = frame(v)
+    property = property.addConstant(vn,1)
   }
   
   def if_icmpgt {
