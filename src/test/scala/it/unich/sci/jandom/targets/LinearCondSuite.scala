@@ -41,7 +41,7 @@ class LinearCondSuite extends FunSuite {
   }	
   
   test("and/or/not conditions") {      
-    expectResult ( BoxDouble(Array(3,Double.NegativeInfinity),Array(6,Double.PositiveInfinity)) ) { OrCond(cond1,cond2).opposite.analyze(full) }
-    expectResult ( BoxDouble(Array(3,Double.NegativeInfinity),Array(6,Double.PositiveInfinity)) ) { NotCond(OrCond(cond1,cond2)).analyze(full) }
+    expectResult ( BoxDouble(Array(4,Double.NegativeInfinity),Array(5,Double.PositiveInfinity)) ) { OrCond(cond1,cond2).opposite.analyze(full) }
+    expectResult ( BoxDouble(Array(4,Double.NegativeInfinity),Array(5,Double.PositiveInfinity)) ) { NotCond(OrCond(cond1,cond2)).analyze(full) }
   }
 }

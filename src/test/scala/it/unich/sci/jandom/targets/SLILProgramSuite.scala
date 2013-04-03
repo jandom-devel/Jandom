@@ -41,7 +41,7 @@ class SLILProgramSuite extends FunSuite {
        )))      
     val params = new targets.Parameters[BoxDouble,SLILStmt](BoxDouble,program)
     val ann = program.analyze(params)
-    expectResult ( BoxDouble(Array(10), Array(11)) ) { ann(program,2) }
+    expectResult ( BoxDouble(Array(10), Array(10)) ) { ann(program,2) }
   } 
   
   test("input vs output widening") {
