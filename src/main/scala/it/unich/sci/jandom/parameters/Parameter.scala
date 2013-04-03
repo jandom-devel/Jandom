@@ -37,4 +37,9 @@ trait Parameter[V] {
    * A list of enabled values for this parameter
    */
   def enabledValues: Seq[V with ParameterValue]
+  
+  /**
+   * Default value of the parameter
+   */
+  val default: V with ParameterValue
 }

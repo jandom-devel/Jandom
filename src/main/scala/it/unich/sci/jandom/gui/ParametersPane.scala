@@ -67,13 +67,14 @@ class ParametersPane extends GridBagPanel {
       }
   }
   
-  private def addParameterEnumeration(row: Int, pe: Parameter[_]): ComboBox[_] = {
+  private def addParameterEnumeration[V](row: Int, pe: Parameter[V]): ComboBox[_] = {
     val label = new Label(pe.name + ":") {
       tooltip = pe.description
     }
     val comboBox = new ComboBox(pe.enabledValues) {
       renderer = ParameterRenderer
     }
+    comboBox.selection.item = pe.default
     layout(label) = new Constraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
       GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0)
     layout(comboBox) = new Constraints(1, row, 1, 1, 1.0, 0.0, GridBagConstraints.WEST,

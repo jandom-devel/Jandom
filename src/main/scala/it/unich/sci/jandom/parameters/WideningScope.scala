@@ -35,5 +35,5 @@ object WideningScope extends ParameterEnumeration {
   val Output = Value("Output", "The standard widening, which is applied to the output edge")
   val BackEdges = Value("Back Edges", "The widening is applied at the input back edges")
   val Random = Value("Random", "The widening is applied like in Random (a variant of Back Edge)")
-  val default = Random
+  val default = Output.asInstanceOf[Val]
 }

@@ -36,5 +36,5 @@ object NarrowingStrategy extends ParameterEnumeration {
 	val Separate = Value("Separate","Narrowing is performed at the end, after the ascending phase is concluded")
 	val Restart = Value("Restart", "Narrowing in intertwined with ascending phase")
 	val Continue = Value("Continue", "Similar to Restart, but after a node is descending, it never ascends again")
-	val default = Separate 
+	val default = Separate.asInstanceOf[Val]
 }
