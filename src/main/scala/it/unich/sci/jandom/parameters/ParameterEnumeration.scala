@@ -19,7 +19,6 @@
 package it.unich.sci.jandom.parameters
 
 abstract class ParameterEnumeration extends Enumeration with Parameter[ParameterValue] { 
-  val default: Value
   val name: String
   val shortName: String
   val description: String  
