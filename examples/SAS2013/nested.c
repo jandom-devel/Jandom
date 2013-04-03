@@ -1,5 +1,5 @@
 # Nested in C for use with PAGAI. PAGAI is able to prove that i <= 10 
-# using standard AI technique with new narrowing.
+# using standard AI techniques with H&H narrowing.
 
 int main() {
    int i = 0;

@@ -1,7 +1,7 @@
 # This example is a simple nested loop. It has been devised to show
-# benefits of the strategy of narrowing with restart.
+# benefits of localized narrowing.
 
-nested = function() {
+function() {
    i = 0
    while (i < 10) {
      j = 0

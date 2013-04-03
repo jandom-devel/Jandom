@@ -1,8 +1,8 @@
 # This example is a simple nested loop. It has been devised to show
-# benefits of the strategy of narrowing with restart. It is the only one that
-# can prove that 1 <= i <= 10 inside the inner loop.
+# benefits of localized narrowing with restart/hybrid strategies.  
+# They are the only ones which may prove 1 <= i <= 10 inside the inner loop.
 
-nested3 = function() {
+function() {
   i = 0
   while (TRUE) {
      i = i + 1
