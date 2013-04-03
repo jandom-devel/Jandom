@@ -46,9 +46,9 @@ case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.V
   
   override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = op match {    
     case AtomicCond.ComparisonOperators.LTE => input.linearInequality( homcoeff(lf), known(lf) )
-    case AtomicCond.ComparisonOperators.LT => input.linearInequality( homcoeff(lf), known(lf) )
+    case AtomicCond.ComparisonOperators.LT => input.linearInequality( homcoeff(lf), known(lf) + 1)
     case AtomicCond.ComparisonOperators.GTE => input.linearInequality( homcoeff(-lf), known(-lf) )
-    case AtomicCond.ComparisonOperators.GT => input.linearInequality( homcoeff(-lf), known(-lf) )
+    case AtomicCond.ComparisonOperators.GT => input.linearInequality( homcoeff(-lf), known(-lf) +1)
     case AtomicCond.ComparisonOperators.NEQ => input.linearDisequality( homcoeff(lf), known(lf) )
     case AtomicCond.ComparisonOperators.EQ => input.linearInequality( homcoeff(lf), known(lf) ) intersection 
     	input.linearInequality( homcoeff(-lf), known(-lf) )    
