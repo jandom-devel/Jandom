@@ -67,7 +67,7 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpr
       }
 
   private val assignment: Parser[LinearAssignment[Int]] =
-    (ident <~ ":=") ~ expr ^^ {
+    (ident <~ ":=") ~ linexpr ^^ {
       case v ~ lf => LinearAssignment(env.getBindingOrAdd(v), lf)
     }
 

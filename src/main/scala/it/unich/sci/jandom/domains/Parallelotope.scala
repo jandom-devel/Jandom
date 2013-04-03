@@ -66,19 +66,14 @@ class Parallelotope (
   def union(that: Parallelotope): Parallelotope = {
 
     type PrioritizedConstraint = (DenseVector[Double], Double, Double, Int)
-    		
-    def toDenseVector(v: Vector[Double]): DenseVector[Double] =
-      DenseVector(v.valuesIterator.toArray[Double])
-    
-    def toDenseMatrix(v: Matrix[Double]): DenseMatrix[Double] =
-      new DenseMatrix(v.rows, v.cols, v.valuesIterator.toArray[Double])
-    
+
     /**
      * Compute the priority of a new constraint. The parameter ownedBy tells whether the linear
      * form under consideration is one of the "native" forms of this (1) or that (2). This is used
      * to refine properties, but can be improved.
      */
     def priority(v: DenseVector[Double], ownedBy: Int = 0): PrioritizedConstraint = {
+      
       val y1 = A.t \ v
       val (l1, u1) = Parallelotope.extremalsInBox(y1, low, high)
       val y2 = that.A.t \ v
@@ -141,12 +136,11 @@ class Parallelotope (
     val min2 = DenseVector.vertcat(thatRotated.low, that.low)
     val max1 = DenseVector.vertcat(this.high, thisRotated.high)
     val max2 = DenseVector.vertcat(thatRotated.high, that.high)
-    // the copy method in the following lines is due to a bug in breeze
-    for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i).copy, 1)  // bug
-    for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i).copy, 2)  // bug
+    for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i), 1)
+    for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i), 2)
     for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
-      val v1 = bulk.t(::,i).copy	// bug
-      val v2 = bulk.t(::,j).copy	// bug
+      val v1 = bulk.t(::,i)
+      val v2 = bulk.t(::,j)
       val nc1 = newConstraint(v1, v2, min1(i), min2(i), min1(j), min2(j))
       if (nc1.isDefined) Q += priority(nc1.get)
       val nc2 = newConstraint(v1, -v2, min1(i), min2(i), -max1(j), -max2(j))
@@ -157,15 +151,15 @@ class Parallelotope (
       if (nc4.isDefined) Q += priority(nc4.get)
     }
     val Qsorted = Q.sortBy[Int](_._4)
-
-    val newA = DenseMatrix(Qsorted map (_._1.toArray): _*)
-    val newlow = DenseVector(Qsorted map (_._2): _*)
-    val newhigh = DenseVector(Qsorted map (_._3): _*)
     val pvt = Parallelotope.pivoting(Qsorted map (_._1))
-    return new Parallelotope(false, toDenseVector(newlow(pvt)),
-        toDenseMatrix(newA(pvt, ::)), toDenseVector(newhigh(pvt)))
+    
+    val newA = DenseMatrix(pvt map (Qsorted(_)._1.toArray): _*)
+    val newlow = DenseVector(pvt map (Qsorted(_)._2): _*)
+    val newhigh = DenseVector(pvt map (Qsorted(_)._3): _*)
+    
+    new Parallelotope(false, newlow, newA, newhigh)
   }
-
+    
   def unionWeak(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
     val result = that.rotate(A)
@@ -199,7 +193,7 @@ class Parallelotope (
       val newA = A :- (A(::, n) * (DenseVector(coeff) - ei).t) / coeff(n)
       new Parallelotope(false, newlow, newA, newhigh)
     } else {
-      val newP = nondeterministicAssignment(n)
+      val newP = nonDeterministicAssignment(n)
       val Aprime = newP.A
       val j = (( 0 to Aprime.rows - 1 ) find { Aprime(_,n) != 0 }).get 
       for (s <- 0 to dimension - 1 if Aprime(s, n) != 0 && s != j)
@@ -252,7 +246,7 @@ class Parallelotope (
    * to a variable.
    * @param n the variable we are applying a non-deterministic assignment.
    */
-  def nondeterministicAssignment(n: Int): Parallelotope = {
+  def nonDeterministicAssignment(n: Int): Parallelotope = {
     require(n <= dimension)
     if (isEmpty) return this;
     val j = (0 to dimension - 1).filter { i => A(i, n) != 0 && (!low(i).isNegInfinity || !high(i).isPosInfinity) }
@@ -279,8 +273,21 @@ class Parallelotope (
     new Parallelotope(false, newlow, newA, newhigh)
   }
 
-  val dimension = A.cols
-
+  def addDimension: Parallelotope = {
+    val e = DenseMatrix.zeros[Double](dimension+1,1)
+    e(dimension,0) = 1.0
+    val newA = DenseMatrix.horzcat(DenseMatrix.vertcat(A, DenseMatrix.zeros[Double](1,dimension)),e)
+    val newlow = DenseVector.vertcat(low,DenseVector(Double.NegativeInfinity))
+    val newhigh = DenseVector.vertcat(high,DenseVector(Double.PositiveInfinity))
+    new Parallelotope(false, newlow, newA, newhigh)
+  } 
+  
+  def delDimension(n: Int): Parallelotope = {
+    throw new IllegalAccessException("Unimplemented feature")    
+  }
+  
+  def dimension = A.rows
+  
   val isFull = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
 
   def empty = Parallelotope.empty(dimension)

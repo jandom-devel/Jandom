@@ -36,7 +36,7 @@ trait LinearConditionParser extends JavaTokenParsers {
   /**
    * A parser for linear expressions. Should be provided in a real implementation
    */
-  protected val expr: Parser[LinearForm[Int]]
+  protected val linexpr: Parser[LinearForm[Int]]
 
   /**
    * Parser for comparison operators
@@ -52,7 +52,7 @@ trait LinearConditionParser extends JavaTokenParsers {
     "FALSE" ^^ { s => FalseCond } |
     "TRUE" ^^ { s => TrueCond } |
     "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
-    expr ~ comparison ~ expr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1 - lf2, op) }
+    linexpr ~ comparison ~ linexpr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1 - lf2, op) }
 
   /**
    * Parser for linear conditions

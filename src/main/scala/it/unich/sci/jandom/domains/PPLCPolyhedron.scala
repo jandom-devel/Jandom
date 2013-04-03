@@ -30,6 +30,7 @@ import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
 import it.unich.sci.jandom.parameters.ParameterValue
+import parma_polyhedra_library.Variables_Set
 
 /**
  * The domain for not necessarily closed polyhedra implemented within $PPL. This is essentially
@@ -67,6 +68,12 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
     new PPLCPolyhedron(newpplpolyhedron)
   }
 
+  def nonDeterministicAssignment(n:Int): PPLCPolyhedron = {
+    val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)    
+    newpplpolyhedron.unconstrain_space_dimension(new Variable(n))
+    new PPLCPolyhedron(newpplpolyhedron)
+  }
+    
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLCPolyhedron = { 
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     newpplpolyhedron.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(coeff,known), new Coefficient(1))
@@ -83,6 +90,20 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
   def linearDisequality(coeff: Array[Double], known: Double): PPLCPolyhedron = {
      throw new IllegalAccessException("Unimplemented feature");
   }
+  
+  def addDimension: PPLCPolyhedron = {
+    val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
+    newpplpolyhedron.add_space_dimensions_and_project(1)
+    new PPLCPolyhedron(newpplpolyhedron)
+  }
+  
+  def delDimension(n: Int): PPLCPolyhedron = {
+    val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
+    val dims = new Variables_Set
+    dims.add(new Variable(n))
+    newpplpolyhedron.remove_space_dimensions(dims)
+    new PPLCPolyhedron(newpplpolyhedron)
+  }  
 
   def dimension(): Int = pplpolyhedron.space_dimension.toInt
 

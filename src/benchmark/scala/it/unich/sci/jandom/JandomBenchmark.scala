@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,33 +17,17 @@
  */
 
 package it.unich.sci.jandom
-package parsers
 
-import targets.{ Environment, LinearForm }
-import org.scalatest.FunSuite
+import com.google.caliper.SimpleBenchmark
 
 /**
- * Test suite for LinearExpressionParser
+ * The benchmark suite for Jandom. This is currently only a dummy test.
  * @author Gianluca Amato <amato@sci.unich.it>
+ *
  */
-class LinearExpressionParserSuite extends FunSuite {
-  class TempParser extends LinearExpressionParser {
-    val env = Environment()
-    val variable = ident ^^ { env.getBindingOrAdd(_) }
-    def parseExpr(s: String) = parseAll(linexpr, s)
-  }
 
-  test("linear expression parser") {
-    val parser = new TempParser
-    val expParsed = parser.parseExpr("3*x+y-z").get
-    val expBuild = LinearForm(Seq(0, 3, 1, -1), Environment("x", "y", "z"))
-    expectResult(expBuild) { expParsed }
-  }
-  
-  test("unary minus") {
-    val parser = new TempParser
-    val expParsed = parser.parseExpr("- 2").get
-    val expBuild = LinearForm(Seq(-2), Environment())
-    expectResult(expBuild) { expParsed } 
+class JandomBenchmark extends SimpleBenchmark { 
+  def timeDummy(reps: Int) {
+     for (i <- 0 until reps) System.nanoTime()
   }
 }

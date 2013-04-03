@@ -22,9 +22,9 @@ end
 
 
 test.try = function() {
-  assume(x,0,1)
-  assume(y,0,1)
-  assume(z,0,5)
+  assume(0 <=x && x <= 1)
+  assume(0 <=y && y <= 1)
+  assume(0 <= z && z <= 5)
   if ( -x - y +  z + 1<=0)
     res=1
   else

@@ -44,7 +44,7 @@ trait LinearExpressionParser extends JavaTokenParsers {
   /**
    * Parser for terms
    */
-  protected val term: Parser[LinearForm[Int]] =
+  private val term: Parser[LinearForm[Int]] =
     (opt(wholeNumber <~ "*") ~ variable) ^^ {
       case Some(coeff) ~ v => LinearForm.fromCoefficientVar[Int](coeff.toInt, v + 1, env)
       case None ~ v => LinearForm.fromVar[Int](v + 1, env)
@@ -53,13 +53,13 @@ trait LinearExpressionParser extends JavaTokenParsers {
 
   private val term_with_operator: Parser[LinearForm[Int]] =
     "+" ~> term |
-    "-" ~> term ^^ { lf => -lf }
-
+    "-" ~> term ^^ { lf => -lf } 
+    
   /**
    * Parser for integer linear expressions
    */
-  protected val expr: Parser[LinearForm[Int]] =
-    term ~ rep(term_with_operator) ^^ {
+  protected val linexpr: Parser[LinearForm[Int]] =
+    (term_with_operator | term) ~ rep(term_with_operator) ^^ {
       case lf1 ~ lfarr => (lf1 /: lfarr) { (lfa, lfb) => lfa + lfb }
-    }
+    } 
 }
