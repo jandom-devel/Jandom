@@ -38,12 +38,17 @@ package object jandom {
   /**
    * This is the patchlevel of Jandom.
    */
-  val patchlevel_version = 1
+  val patchlevel_version = 2
+  
+  /**
+   * This is the suffix version of Jandomn
+   */
+  val suffix_version = "sas2013"
   
   /**
    * This is a string representation of Jandom's version
    */
-  val version = major_version + "." + minor_version + "." + patchlevel_version
+  val version = major_version + "." + minor_version + "." + patchlevel_version + "-" + suffix_version
   
   /**
    * This is the name of the software
