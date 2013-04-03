@@ -81,6 +81,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
         case Output => newinvariant = invariant widening (input union bodyResult)
         case BackEdges => newinvariant = bodyResult union input
       }
+      params.wideningCount += 1
 
       // Debug
       params.log(s"Entering Invariant: $newinvariant\n")
@@ -98,6 +99,8 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
             bodyResult = body.analyze(condition.analyze(newinvariant), params, currentPhase, ann)
             newinvariant = widening(invariant, input union bodyResult)
         }
+        params.wideningCount += 1
+
         // If we were in AscendingRestart phase, move to Ascending phase
         currentPhase = Ascending
 
@@ -126,7 +129,8 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
       
       // For narrowing, we only consider output scope
       newinvariant = narrowing(invariant, input union bodyResult)
-            
+      params.narrowingCount += 1      
+      
       // Debug
       params.log(s"Entering Invariant: $newinvariant\n")
       
@@ -137,6 +141,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
         
         bodyResult = body.analyze(condition.analyze(invariant), params, newphase, ann)
         newinvariant = invariant narrowing (input union bodyResult)
+        params.narrowingCount += 1      
 
         // Debug
         params.log(s"Body Result: $bodyResult\n")

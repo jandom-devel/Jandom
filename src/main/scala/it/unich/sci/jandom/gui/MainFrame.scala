@@ -68,8 +68,10 @@ class MainFrame extends Frame {
           val domain = parametersPane.selectedDomain
           val params = parametersPane.getParameters(program.asInstanceOf[SLILStmt])
           val ann = program.analyze(params)
-          outputPane.text = outputPane.text + params.debugWriter.toString
-          outputPane.text = outputPane.text + program.mkString(ann)
+          outputPane.text += params.debugWriter.toString
+          outputPane.text += program.mkString(ann)
+          outputPane.text += "Num. widenings: " + params.wideningCount + "\n"
+          outputPane.text += "Num. narrowings: " + params.narrowingCount + "\n"          
           tabbedPane.selection.index = 1
         case parser.NoSuccess(msg, next) =>
           Dialog.showMessage(editorPane, msg + " in line " + next.pos.line + " column " + next.pos.column,

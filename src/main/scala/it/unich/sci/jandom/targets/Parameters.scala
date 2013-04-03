@@ -85,4 +85,14 @@ class Parameters[Property <: NumericalProperty[Property], Tgt <: Target] (val do
     debugWriter.write(" "*nestingLevel*3) 
     debugWriter.write(msg)
   }
+  
+  /**
+   * Used to count the number of times widening is applied
+   */
+  var wideningCount = 0
+  
+  /**
+   * Used to count the number of times narrowing is applied
+   */
+  var narrowingCount = 0
 }
