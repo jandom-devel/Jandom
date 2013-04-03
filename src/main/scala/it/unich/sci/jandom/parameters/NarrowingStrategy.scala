@@ -33,8 +33,8 @@ object NarrowingStrategy extends ParameterEnumeration {
 	val shortName = "narrowing"
 	val description = "This parameter specifies when and whether to build descending sequences during the analysis."
 	val None = Value("None","No narrowing is performed")
-	val Separate = Value("Separate","Narrowing is performed at the end, after the ascending phase is concluded")
-	val Restart = Value("Restart", "Narrowing in intertwined with ascending phase")
-	val Continue = Value("Continue", "Similar to Restart, but after a node is descending, it never ascends again")
+	val Separate = Value("Standard","Narrowing is performed at the end, after the ascending phase is concluded")
+	val Restart = Value("Localized Hybrid", "Localized narrowing with Hybrid strategy (see SAS 2013 paper)")
+	val Continue = Value("Localized Continue", "Localized narrowing with Continue strategy (see SAS 2013 paper)")
 	val default = Separate.asInstanceOf[Val]
 }

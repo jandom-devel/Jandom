@@ -32,8 +32,8 @@ object WideningScope extends ParameterEnumeration {
   val name = "Widening Scope"
   val shortName = "widening"
   val description = "The Widening scope"
-  val Output = Value("Output", "The standard widening, which is applied to the output edge")
+  val Output = Value("Standard", "The standard widening")
   val BackEdges = Value("Back Edges", "The widening is applied at the input back edges")
-  val Random = Value("Random", "The widening is applied like in Random (a variant of Back Edge)")
+  val Random = Value("Localized Widening", "The localized widening, as described in the SAS 2013 paper")
   val default = Output.asInstanceOf[Val]
 }
