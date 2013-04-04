@@ -19,21 +19,20 @@
 package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
-import soot._
-import it.unich.sci.jandom.targets.jvmsoot.BafMethod
-import java.io.StringWriter
-import java.io.PrintWriter
-import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
+
 import it.unich.sci.jandom.domains.PPLCPolyhedron
-import soot.options.Options
+import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
+import it.unich.sci.jandom.targets.jvmsoot._
+
+import soot._
 
 /**
- * Simple test suite for the Baf analyzer
+ * Simple test suite for the JVMSoot target.
  * @author Gianluca Amato
  *
  */
-class BafSootSuite extends FunSuite {
-  test("simple method analysis") {
+class  JVMSootSuite extends FunSuite {
+  test("simple baf analysis") {
     val scene = Scene.v()
     scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
     val c = scene.loadClass("SimpleTest",1)
@@ -46,4 +45,19 @@ class BafSootSuite extends FunSuite {
     val ann = method.analyze(params)
     println(method.mkString(ann))
   }
+ 
+  test("simple soot analysis") {
+    val scene = Scene.v()
+    scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
+    val c = scene.loadClass("SimpleTest",1)
+    c.setApplicationClass()
+    val method = new JimpleMethod(c.getMethodByName("loop"))
+    val params = new Parameters(method) {
+      val domain = PPLCPolyhedron
+    }
+    println(method)
+    val ann = method.analyze(params)
+    println(method.mkString(ann))
+  }
+  
 }
