@@ -33,7 +33,7 @@ import domains.NumericalProperty
 case class LinearAssignment[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T])  {
   import numeric._
   
-  override def toString = linearForm.env(variable) + " := " + linearForm.toString  
+  override def toString = "v"+ variable + " := " + linearForm.toString  
   
   def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
     val coefficients = linearForm.coefficients

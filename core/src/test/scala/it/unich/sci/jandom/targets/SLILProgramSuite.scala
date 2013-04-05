@@ -34,9 +34,9 @@ class SLILProgramSuite extends FunSuite {
     val env = targets.Environment("x")
     val program = SLILProgram(env, Seq(1),
         CompoundStmt(Seq(
-            AssignStmt(0,LinearForm.fromCoefficient(0,env)),
-            WhileStmt(AtomicCond(LinearForm(List(-10,1),env), AtomicCond.ComparisonOperators.LT), 
-                AssignStmt(0,LinearForm(List(1,1),env))
+            AssignStmt(0,LinearForm.fromCoefficient(0)),
+            WhileStmt(AtomicCond(LinearForm(List(-10,1)), AtomicCond.ComparisonOperators.LT), 
+                AssignStmt(0,LinearForm(List(1,1)))
             )
        )))      
     val params = new Parameters(program: SLILStmt) { val domain = BoxDouble }
