@@ -1,14 +1,10 @@
 This is Jandom, an abstract interpretation based static analyzer 
-written in Scala. To try it, you need:
+written in Scala. To compile it, you need:
 
 * sbt (Scala Build Tools) 0.11.3 or later [http://www.scala-sbt.org/]
 * PPL 1.1.pre2 or later [http://bugseng.com/products/ppl/download/ftp/snapshots/]
-* Soot 2.5.0 or later [http://www.sable.mcgill.ca/soot/] 
 
-The configuration assume you have installed PPL in the directory /usr/local/lib/ppl
-and you have the file soot.jar in /usr/local/lib. If this is not the case, please 
-change the relevant lines in core/build.sbt.
+The configuration assumes you have PPL installed in the directory /usr/local/lib/ppl. If this is not the case, please change the relevant lines in build.sbt, core/build.sbt and extended/build.sbt.
 
-In the main directoy of Jandom, execute "sbt run" compile and execute Jandom. If
-asked about the program to run, choose "JandomGUI". It is possible to generate
-an Eclipse project with the command "sbt eclipse".
+In the main directoy of Jandom, execute "sbt run" compile and execute Jandom. If asked about the program to run, choose "JandomGUI". It is possible to generate an Eclipse project with the command "sbt eclipse".
+
