@@ -1,6 +1,6 @@
 // PPL options which cannot be specified at the build level (why?)
 
-unmanagedJars in Compile ++= Seq(file("/usr/local/lib/ppl/ppl_java.jar"),file("/usr/local/lib/soot.jar"))
+unmanagedJars in Compile += file("/usr/local/lib/ppl/ppl_java.jar")
 
 EclipseKeys.classpathTransformerFactories += NativeLibTransformerFactory("/usr/local/lib/ppl/ppl_java.jar")
 

@@ -10,10 +10,9 @@ run <<= run in ("Jandom", Compile)
 
 // depedendency management
 
-resolvers in ThisBuild ++= Seq(
-   // this resolver is needed for the breeze snapshot
-   "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
-)
+//resolvers in ThisBuild ++= Seq(
+//   "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
+//)
 
 libraryDependencies in ThisBuild  ++= Seq(
   "org.ow2.asm" % "asm-tree" % "4.1",
@@ -22,12 +21,11 @@ libraryDependencies in ThisBuild  ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
   "org.scalanlp" %% "breeze-math" % "0.2.1",
   "org.rogach" %% "scallop" % "0.8.0",
-  "com.google.caliper" % "caliper" % "0.5-rc1" % "benchmark"
+  "com.google.caliper" % "caliper" % "0.5-rc1" % "benchmark",
+  "soot" % "soot" % "2.5.0" from "http://www.sable.mcgill.ca/software/soot-2.5.0.jar"
 )
 
 libraryDependencies in ThisBuild <+= scalaVersion { "org.scala-lang" % "scala-swing" % _ }
-
-libraryDependencies in ThisBuild += "soot" % "soot" % "2.5.0" from "http://www.sable.mcgill.ca/software/soot-2.5.0.jar"
 
 // PPL setup for the entire build
 
