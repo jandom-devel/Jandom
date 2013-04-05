@@ -20,30 +20,21 @@ package it.unich.sci.jandom.targets.jvmsoot
 
 import java.io.PrintWriter
 import java.io.StringWriter
+
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
+
+import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.targets.Target
-import it.unich.sci.jandom.targets.jvm.JVMEnv
-import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
+import it.unich.sci.jandom.targets._
+import it.unich.sci.jandom.targets.linearcondition._
+
 import soot._
 import soot.baf._
 import soot.jimple._
 import soot.options.Options
-import soot.tagkit.StringTag
+import soot.tagkit.LoopInvariantTag
 import soot.toolkits.graph._
-import soot.jimple.internal.JAssignStmt
-import it.unich.sci.jandom.domains.NumericalDomain
-import com.sun.org.apache.xalan.internal.xsltc.compiler.BinOpExpr
-import com.sun.org.apache.xalan.internal.xsltc.compiler.BinOpExpr
-import it.unich.sci.jandom.targets.linearcondition.LinearCond
-import it.unich.sci.jandom.targets.linearcondition.AndCond
-import breeze.collection.immutable.BinomialHeap
-import it.unich.sci.jandom.targets.linearcondition.OrCond
-import it.unich.sci.jandom.targets.linearcondition.AtomicCond
-import it.unich.sci.jandom.targets.LinearForm
-import it.unich.sci.jandom.targets.Environment
-import scala.collection.BitSet
 
 /**
  * Analysis of a method using the Jimple intermediate representation.
@@ -61,18 +52,26 @@ class JimpleMethod(method: SootMethod) extends Target {
   val body = method.retrieveActiveBody()
   val chain = body.getUnits()
   val locals = body.getLocals()
-  val localsList = locals.iterator.toArray map { _.getName() } 
+  val localsList = locals.iterator.toArray map { _.getName() }
   val envMap = new HashMap[Local, Int]
 
   val i = locals.iterator
   for (n <- 0 until locals.size) {
     envMap(i.next()) = n
   }
-  //val cfg = new ExceptionalUnitGraph(body)
-  //val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
+  val order = weakTopologicalOrder
 
   def getAnnotation[Property]: Annotation[Property] = new Annotation[Property]
-  
+
+  def weakTopologicalOrder: Annotation[Integer] = {
+    val cfg = new ExceptionalUnitGraph(body)
+    val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
+    val ann = getAnnotation[Integer]
+    var index = 0
+    order.iterator.foreach { u => ann(u) = index; index += 1 }
+    ann
+  }
+
   private def jimpleExprToLinearCond(v: Value): Option[LinearCond] = {
     import AtomicCond.ComparisonOperators
     val newcond = v match {
@@ -133,7 +132,6 @@ class JimpleMethod(method: SootMethod) extends Target {
   }
 
   def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[Property]): Seq[(ProgramPoint, Property)] = {
-    import scala.collection.JavaConversions._
 
     var exits = Seq[(ProgramPoint, Property)]()
     var state = ann(pp)
@@ -157,7 +155,7 @@ class JimpleMethod(method: SootMethod) extends Target {
           lc match {
             case None =>
               exits :+= (unit.getTarget, state)
-            case Some(c) =>              
+            case Some(c) =>
               exits :+= (unit.getTarget, c.analyze(state))
               state = c.opposite.analyze(state)
           }
@@ -177,8 +175,6 @@ class JimpleMethod(method: SootMethod) extends Target {
   }
 
   def analyze(params: Parameters): Annotation[params.Property] = {
-    import scala.collection.JavaConversions._
-
     val ann = new Annotation[params.Property]()
     val taskList = Queue[ProgramPoint](chain.getFirst())
     ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
@@ -187,12 +183,15 @@ class JimpleMethod(method: SootMethod) extends Target {
       val result = analyzeBlock(pp, ann)
       for ((destpp, state) <- result) {
         if (ann contains destpp) {
-          var old = ann(destpp)
-          if (false)
-            ann(destpp) = old widening state
+          val oldstate = ann(destpp)
+          val newstate = if (order(destpp) <= order(pp))
+            ann(destpp) widening state
           else
-            ann(destpp) = old union state
-          if (ann(destpp) > old) taskList.enqueue(destpp)
+            ann(destpp) union state
+          if (newstate > oldstate) {
+            ann(destpp) = newstate
+            taskList.enqueue(destpp)
+          }
         } else {
           ann(destpp) = state
           taskList.enqueue(destpp)
@@ -204,7 +203,7 @@ class JimpleMethod(method: SootMethod) extends Target {
 
   def mkString[D <: NumericalProperty[D]](ann: Annotation[D]): String = {
     for ((unit, prop) <- ann) {
-      unit.addTag(new StringTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
+      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
     }
     Options.v().set_print_tags_in_output(true)
     val printer = Printer.v()

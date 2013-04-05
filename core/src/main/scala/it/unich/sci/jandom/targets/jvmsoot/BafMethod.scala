@@ -42,6 +42,8 @@ import soot.toolkits.graph._
  *
  */
 class BafMethod(method: SootMethod) extends Target {
+  import scala.collection.JavaConversions._
+
   type ProgramPoint = Unit
   type Annotation[Property] = HashMap[ProgramPoint, Property]
   type Tgt = BafMethod
@@ -50,14 +52,20 @@ class BafMethod(method: SootMethod) extends Target {
   val jimple = method.retrieveActiveBody()
   val body = Baf.v().newBody(jimple)
   val chain = body.getUnits()
-  //val cfg = new ExceptionalUnitGraph(body)
-  //val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
+  val order = weakTopologicalOrder
 
   def getAnnotation[Property]: Annotation[Property] = new Annotation[Property]
 
-  def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[JVMEnv[Property]]): Seq[(ProgramPoint, JVMEnv[Property])] = {
-    import scala.collection.JavaConversions._
+  lazy val weakTopologicalOrder: Annotation[Integer] = {
+    val cfg = new ExceptionalUnitGraph(body)
+    val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
+    val ann = getAnnotation[Integer]
+    var index = 0
+    order.iterator.foreach { u => ann(u) = index; index += 1 }
+    ann
+  }
 
+  private def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[JVMEnv[Property]]): Seq[(ProgramPoint, JVMEnv[Property])] = {
     var exits = Seq[(ProgramPoint, JVMEnv[Property])]()
     val state = ann(pp).clone
     var unit = pp
@@ -73,9 +81,9 @@ class BafMethod(method: SootMethod) extends Target {
           state.iadd
         case unit: IncInst =>
           unit.getConstant() match {
-            case i: IntConstant  => state.iinc(unit.getLocal().getNumber(), i.value)       
+            case i: IntConstant => state.iinc(unit.getLocal().getNumber(), i.value)
           }
-          
+
         case unit: StoreInst =>
           state.istore(unit.getLocal.getNumber)
         case unit: LoadInst =>
@@ -93,15 +101,13 @@ class BafMethod(method: SootMethod) extends Target {
       // We use the chain to get the fall through node. We used the first successor
       // in the CFG, but it is not clear from the documentation if we can rely on
       // this assumption.
-      nextunit = chain.getSuccOf(unit)      
+      nextunit = chain.getSuccOf(unit)
     } while (unit.fallsThrough() && nextunit.getBoxesPointingToThis().isEmpty())
     if (unit.fallsThrough) exits :+= (nextunit, state)
     exits
   }
 
   def analyze(params: Parameters): Annotation[params.Property] = {
-    import scala.collection.JavaConversions._
-
     val ann = new Annotation[params.Property]()
     val taskList = Queue[ProgramPoint](chain.getFirst())
     ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
@@ -110,9 +116,9 @@ class BafMethod(method: SootMethod) extends Target {
       val result = analyzeBlock(pp, ann)
       for ((destpp, state) <- result) {
         if (ann contains destpp) {
-          val modified = if (false)
+          val modified = if (order(destpp)<= order(pp))
             ann(destpp).widening(state)
-          else 
+          else
             ann(destpp).union(state)
           if (modified) taskList.enqueue(destpp)
         } else {
