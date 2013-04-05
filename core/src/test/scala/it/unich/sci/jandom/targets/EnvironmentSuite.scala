@@ -36,7 +36,7 @@ class EnvironmentSuite  extends FunSuite {
     expectResult(Some(v1)) { env.getBinding("prova")}
     expectResult(v1) { env("prova")}
     expectResult("micio") { env(v2) }
-    expectResult(Seq("prova", "micio")) { env.getNames }
+    expectResult(Seq("prova", "micio")) { env.names }
   }
   
   test ("Environment companion object constructors") {

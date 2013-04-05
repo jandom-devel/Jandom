@@ -52,7 +52,7 @@ case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLI
   override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level+1)
-    val s = spaces + "if (" + condition.toString + ") {\n" +
+    val s = spaces + "if (" + condition.mkString(ppspec.env.names) + ") {\n" +
       (if (ann.get(this, 1) != None) innerspaces + ppspec.decorator(ann(this, 1)) + "\n" else "") +
       then_branch.mkString(ann,level+1,ppspec) + "\n" +
       (if (ann.get(this, 3) != None) innerspaces + ppspec.decorator(ann(this, 3)) + "\n" else "") +

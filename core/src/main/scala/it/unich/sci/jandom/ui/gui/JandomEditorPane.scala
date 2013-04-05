@@ -238,7 +238,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     parser.parseProgram(editorPane.text) match {
       case parser.Success(program, _) =>
         val numericalDomain = frame.parametersPane.selectedNumericalDomain
-        val params = new Parameters(program.asInstanceOf[SLILStmt]) { val domain = numericalDomain }        
+        val params = new Parameters(program) { val domain = numericalDomain }        
         frame.parametersPane.setParameters(params)
         val ann = program.analyze(params)
         Some(params.debugWriter.toString + program.mkString(ann))

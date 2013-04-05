@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,22 +30,20 @@ import org.scalatest.FunSuite
  *
  */
 class SLILProgramSuite extends FunSuite {
-  test ("simple program 1") {
+  test("simple program 1") {
     val env = targets.Environment("x")
     val program = SLILProgram(env, Seq(1),
-        CompoundStmt(Seq(
-            AssignStmt(0,LinearForm.fromCoefficient(0)),
-            WhileStmt(AtomicCond(LinearForm(List(-10,1)), AtomicCond.ComparisonOperators.LT), 
-                AssignStmt(0,LinearForm(List(1,1)))
-            )
-       )))      
-    val params = new Parameters(program: SLILStmt) { val domain = BoxDouble }
+      SingleStmt(CompoundStmt(Seq(
+        AssignStmt(0, LinearForm.fromCoefficient(0)),
+        WhileStmt(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LT),
+          AssignStmt(0, LinearForm(List(1, 1))))))))
+    val params = new Parameters(program) { val domain = BoxDouble }
     val ann = program.analyze(params)
-    expectResult ( BoxDouble(Array(10), Array(11)) ) { ann(program,2) }
-  } 
-  
+    expectResult(BoxDouble(Array(10), Array(11))) { ann((program.stmt, 2)) }
+  }
+
   test("input vs output widening") {
-    val source="""
+    val source = """
       localwidening = function() {
     		i = 0
     		while (TRUE) {
@@ -59,21 +57,21 @@ class SLILProgramSuite extends FunSuite {
     """
     val parsed = parsers.RandomParser().parseProgram(source)
     val program = parsed.get
-    
-    val params = new Parameters(program: SLILStmt) { val domain = domains.BoxDouble }
+
+    val params = new Parameters(program) { val domain = domains.BoxDouble }
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Output
     program.analyze(params)
-    expectResult ( BoxDouble.full(1) ) { params.tag(0) }
-    
+    expectResult(BoxDouble.full(1)) { params.tag(0) }
+
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Random
     program.analyze(params)
-    expectResult ( BoxDouble.full(1) ) { params.tag(0) }
-    
+    expectResult(BoxDouble.full(1)) { params.tag(0) }
+
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.BackEdges
     program.analyze(params)
-    expectResult ( BoxDouble(Array(-1), Array(1)) ) { params.tag(0) }
+    expectResult(BoxDouble(Array(-1), Array(1))) { params.tag(0) }
   }
 }

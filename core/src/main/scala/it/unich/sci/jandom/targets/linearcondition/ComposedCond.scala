@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,9 +30,9 @@ import domains.NumericalProperty
  *
  */
 case class AndCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
-  def opposite = new OrCond(cond1.opposite, cond2.opposite)  
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = cond2.analyze(cond1.analyze(input))
-  override def toString = "(" + cond1 + " && " + cond2 + ")"
+  def opposite = new OrCond(cond1.opposite, cond2.opposite)
+  override def analyze[Property <: NumericalProperty[Property]](input: Property): Property = cond2.analyze(cond1.analyze(input))
+  override def mkString(vars: Seq[String]) = "(" + cond1.mkString(vars) + " && " + cond2.mkString(vars) + ")"
 }
 
 /**
@@ -45,10 +45,10 @@ case class AndCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
  */
 case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
   def opposite = new AndCond(cond1.opposite, cond2.opposite)
-  
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = 
-    cond1.analyze(input) union cond2.analyze(input)  
-  override def toString = "(" + cond1 + " || " + cond2 + ")"
+
+  override def analyze[Property <: NumericalProperty[Property]](input: Property): Property =
+    cond1.analyze(input) union cond2.analyze(input)
+  override def mkString(vars: Seq[String]) = "(" + cond1.mkString(vars) + "||" + cond2.mkString(vars) + ")"
 }
 
 /**
@@ -60,6 +60,6 @@ case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
  */
 case class NotCond(cond: LinearCond) extends LinearCond {
   def opposite = cond
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = cond.opposite.analyze(input)
-  override def toString = "!("+cond+")"
+  override def analyze[Property <: NumericalProperty[Property]](input: Property): Property = cond.opposite.analyze(input)
+  override def mkString(vars: Seq[String]) = "!(" + cond.mkString(vars) + ")"
 }

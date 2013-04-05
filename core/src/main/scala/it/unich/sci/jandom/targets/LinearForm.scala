@@ -106,7 +106,7 @@ class LinearForm[T](val coefficients: Seq[T])(implicit numeric: Numeric[T]) {
    * @inheritdoc
    * It is equivalent to `mkString` with variable names `v0`...`vn` 
    */
-  override def toString = mkString (for (i <- 0 until (coefficients.length-1)) yield "v"+i )
+  override def toString = mkString(Stream.from(0).map { "v"+_ } )
 
   /**
    * Return the constant (inhomogeneous) term of the linear form

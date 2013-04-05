@@ -159,7 +159,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
 
   override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
-    spaces + "while (" + condition + ")" + "" +
+    spaces + "while (" + condition.mkString(ppspec.env.names) + ")" + "" +
       (if (ann contains (this, 1)) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +
       (if (ann contains (this, 2)) ppspec.indent(level + 1) + ppspec.decorator(ann(this, 2)) + "\n" else "") +
       body.mkString(ann, level + 1, ppspec) + '\n' +

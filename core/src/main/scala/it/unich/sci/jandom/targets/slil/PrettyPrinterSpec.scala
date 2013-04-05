@@ -35,8 +35,7 @@ class PrettyPrinterSpec(val env: Environment) {
   /**
    * Decorator is a function which takes annotation (of any kind), and returns its string representation.
    * The default simply prints the annotation between brackets.   
-   */
-  
+   */  
   private[slil] def decorator (p: NumericalProperty[_]): String = ('[' + p.mkString(env.variables).mkString(" , ") + ']')
 }
 

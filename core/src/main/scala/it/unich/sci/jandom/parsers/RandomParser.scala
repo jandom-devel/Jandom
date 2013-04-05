@@ -94,7 +94,7 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
 
   private val prog: Parser[SLILProgram] =
     (opt(ident ~> ("=" | "<-")) ~> "function" ~> "(" ~> repsep(variable, ",") <~ ")") ~ stmt ^^ {
-      case vars ~ stmt => SLILProgram(env, vars, stmt)
+      case vars ~ stmt => SLILProgram(env, vars, SingleStmt(stmt))
     }
 
   private val skip: Parser[String] = """(.|[\r\n])*""".r // skip until the end of the file

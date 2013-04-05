@@ -33,9 +33,22 @@ abstract class LinearCond {
    * @return the property given by the logical and of input and the condition itself
    */
   def analyze[Property <: NumericalProperty[Property]] (input: Property): Property
+  
   /**
    * Returns the opposite linear condition (the one obtained by reversing the order of inequalities)
    * @return the opposite linear condition
    */
   def opposite : LinearCond
+  
+  /**
+   * Returns the textual representation of a linear form.
+   * @param vars symbolic names of variables in the linear form. 
+   */
+  def mkString (vars: Seq[String]): String
+  
+  /**
+   * @inheritdoc
+   * It is equivalent to `mkString` with variable names `v0`...`vn` 
+   */
+  override def toString = mkString(Stream.from(0).map { "v"+_ } )
 }

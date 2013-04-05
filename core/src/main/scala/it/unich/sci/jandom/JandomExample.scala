@@ -42,7 +42,7 @@ object JandomExample extends App {
     val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
-      val params = new targets.Parameters(program: SLILStmt) { val domain = domains.BoxDouble }
+      val params = new targets.Parameters(program) { val domain = domains.BoxDouble }
       params.narrowingStrategy = NarrowingStrategy.Restart
       params.wideningScope = WideningScope.BackEdges
       val ann = program.analyze(params)

@@ -16,13 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
 import it.unich.sci.jandom.domains.{NumericalDomain, NumericalProperty}
-
-import AnalysisPhase.{AnalysisPhase, AscendingRestart}
-import targets.Target
+import it.unich.sci.jandom.targets.Target
 
 /**
  * The abstract class for program statements. Each object in SLILStmt represents a statement
@@ -38,11 +35,6 @@ abstract class SLILStmt extends Target {
   
   def getAnnotation[Property] = new Annotation[Property]
 
-  /**
-   * Program associated with this statement.
-   */
-  protected var program: SLILProgram = null
-  
   /**
    * A method to pretty print a SLILStmt with corresponding annotations
    * @param ann the annotation to print together with the program
@@ -67,14 +59,15 @@ abstract class SLILStmt extends Target {
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, 
       ann: Annotation[params.Property]): params.Property = input
 
+  /**
+   * @inheritdoc
+   * A statement is analyzed under the assumption that initially variables
+   * may assume all possible values.
+   */
   def analyze(params: Parameters): Annotation[params.Property] = {
     val ann = new Annotation[params.Property]()
-    val input = params.domain.full(program.environment.size)
+    val input = params.domain.full(0)
     analyzeStmt(params)(input, AscendingRestart, ann)
     return ann
   }
-  
-  def size = 1
-
-  //override def toString = mkString(new Annotation[Nothing])
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,12 +16,14 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
-import domains.NumericalProperty
-import targets._
-import annotations._
+import it.unich.sci.jandom.domains.NumericalDomain
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.NarrowingStrategy._
+import it.unich.sci.jandom.targets.Target
+import it.unich.sci.jandom.targets.slil.AnalysisPhase._
 
 /**
  * The target for a simple imperative language, similar to the one analyzed
@@ -32,40 +34,34 @@ import annotations._
  * @param stmt the body of the program
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-case class SLILProgram(private val env: Environment, private val inputVars: Seq[Int], private val stmt: SLILStmt) extends SLILStmt {
-  import AnalysisPhase._
-  import it.unich.sci.jandom.targets.NarrowingStrategy._
-  
-  program = this
+case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SingleStmt) extends Target {
 
-  /**
-   * Returns the environment associated with the program.
-   */
-  def environment = env
+  type ProgramPoint = (SLILStmt, Int)
+  type Tgt = SLILProgram
+  type Annotation[Property] = scala.collection.mutable.HashMap[ProgramPoint, Property]
+  type DomainBase = NumericalDomain
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, 
-      ppspec: PrettyPrinterSpec = new PrettyPrinterSpec(env)) = {
-    val spaces = ppspec.indent(level)
-    val innerspaces = ppspec.indent(level + 1)
+  def getAnnotation[Property] = new Annotation[Property]
+
+  def mkString[U <: NumericalProperty[_]](ann: Annotation[U], ppspec: PrettyPrinterSpec = new PrettyPrinterSpec(env)) = {
+    val spaces = ppspec.indent(0)
+    val innerspaces = ppspec.indent(1)
     spaces + "function (" + (inputVars map { v: Int => env(v) }).mkString(",") + ") {\n" +
-      (if (ann.get(this, 1) != None) innerspaces + ppspec.decorator(ann(this, 1)) + "\n" else "") +
-      stmt.mkString(ann, level + 1, ppspec) + "\n" +
-      (if (ann.get(this, 2) != None) innerspaces + ppspec.decorator(ann(this, 2)) + "\n" else "") +
-      spaces + "}\n"    
+      stmt.mkString(ann, 1, ppspec) + "\n" +
+      spaces + "}\n"
   }
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, 
-      phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
-    if (params.allPPResult) ann((this, 1)) = input
+  override def analyze(params: Parameters): Annotation[params.Property] = {
+    val stmtParams = params.asInstanceOf[it.unich.sci.jandom.targets.Parameters[SLILStmt]]
+    val input = stmtParams.domain.full(env.size)
+    val ann = new Annotation[stmtParams.Property]()
     val output = params.narrowingStrategy match {
-      case Separate => 
-        stmt.analyzeStmt(params)(input, Ascending, ann)
-     	stmt.analyzeStmt(params)(input, Descending, ann) 
+      case Separate =>
+        stmt.analyzeStmt(stmtParams)(input, Ascending, ann)
+        stmt.analyzeStmt(stmtParams)(input, Descending, ann)
       case _ =>
-    	stmt.analyzeStmt(params)(input, Ascending, ann)
+        stmt.analyzeStmt(stmtParams)(input, Ascending, ann)
     }
-    if (params.allPPResult) ann((this, 2)) = output
-    return output
+    return ann.asInstanceOf[Annotation[params.Property]]
   }
 }
-

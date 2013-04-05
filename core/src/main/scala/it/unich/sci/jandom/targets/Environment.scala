@@ -88,7 +88,7 @@ class Environment {
    * Returns the name of variables in the environment
    * @return the variable with the given index in the environment
    */
-  def getNames: IndexedSeq[String] = _variables.toIndexedSeq
+  def names: IndexedSeq[String] = _variables.toIndexedSeq
 
   /**
    * Returns the size of the environment, i.e. the number of bindings
