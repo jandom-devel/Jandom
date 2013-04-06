@@ -67,7 +67,7 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
     override def empty = new LTSAnnotation[Property]
   }
 
-  def getAnnotation[Property] = new LTSAnnotation[Property]
+  override def getAnnotation[Property] = new LTSAnnotation[Property]
 
   def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
     // build widening and narrowing for each program point    

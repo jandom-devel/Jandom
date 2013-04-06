@@ -30,10 +30,7 @@ import scala.collection.mutable.HashMap
 private[jandom] class MockTarget extends Target {
   type Tgt = MockTarget
   type ProgramPoint = Int  
-  def getAnnotation[Property] = new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]
-  
-  def size = 10
-  
+    
   def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = getAnnotation[params.Property]
 }
 

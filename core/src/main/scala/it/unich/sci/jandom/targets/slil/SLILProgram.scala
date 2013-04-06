@@ -36,7 +36,6 @@ import it.unich.sci.jandom.targets.Annotation
  * @param stmt the body of the program
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-  def getAnnotation[Property] = new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]
 case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SingleStmt) extends SLILTarget {
   def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: PrettyPrinterSpec = new PrettyPrinterSpec(env)) = {
     val spaces = ppspec.indent(0)

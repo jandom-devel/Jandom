@@ -30,8 +30,6 @@ import it.unich.sci.jandom.targets.Annotation
 abstract class SLILStmt extends SLILTarget {
   import AnalysisPhase._
   
-  def getAnnotation[Property] = new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]
-
   /**
    * A method to pretty print a SLILStmt with corresponding annotations
    * @param ann the annotation to print together with the program

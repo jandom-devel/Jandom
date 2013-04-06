@@ -222,8 +222,6 @@ class Method(val methodNode: MethodNode) extends Target {
     startBlock
   }
 
-  def getAnnotation[Property]: Annotation[ProgramPoint,Property] = new HashMap[ProgramPoint,Property ]with Annotation[ProgramPoint,Property]
-
   def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
     val ann = getAnnotation[params.Property]
     ann(startBlock) = params.domain.full(methodNode.maxLocals)

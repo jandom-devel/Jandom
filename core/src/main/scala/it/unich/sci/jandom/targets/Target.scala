@@ -19,6 +19,7 @@
 package it.unich.sci.jandom.targets
 
 import it.unich.sci.jandom.domains.AbstractDomain
+import scala.collection.mutable.HashMap
 
 /**
  * The abstract class for targets, which are the static analyzers for the
@@ -54,9 +55,11 @@ abstract class Target {
   protected type Parameters = it.unich.sci.jandom.targets.Parameters[Tgt]
   
   /**
-   * Returns an empty annotation.
+   * Returns an empty annotation which is well suited for this target. The 
+   * default implementation just returns an HashMap.
    */
-  def getAnnotation[Property]: Annotation[ProgramPoint,Property]
+  def getAnnotation[Property]: Annotation[ProgramPoint,Property] =
+    new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]
   
   /**
    * Perform a static analysis over the target.
