@@ -27,11 +27,7 @@ import it.unich.sci.jandom.targets.Annotation
  * The abstract class for program statements. Each object in SLILStmt represents a statement
  * of a simple imperative language.
  */
-abstract class SLILStmt extends Target {
-  type ProgramPoint = (SLILStmt, Int)
-  type Tgt = SLILStmt
-  type DomainBase = NumericalDomain
-  
+abstract class SLILStmt extends SLILTarget {
   import AnalysisPhase._
   
   def getAnnotation[Property] = new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]

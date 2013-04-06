@@ -36,14 +36,8 @@ import it.unich.sci.jandom.targets.Annotation
  * @param stmt the body of the program
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SingleStmt) extends Target {
-
-  type ProgramPoint = (SLILStmt, Int)
-  type Tgt = SLILProgram
-  type DomainBase = NumericalDomain
-
   def getAnnotation[Property] = new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]
-
+case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SingleStmt) extends SLILTarget {
   def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: PrettyPrinterSpec = new PrettyPrinterSpec(env)) = {
     val spaces = ppspec.indent(0)
     val innerspaces = ppspec.indent(1)
@@ -53,15 +47,14 @@ case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: 
   }
 
   override def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
-    val stmtParams = params.asInstanceOf[it.unich.sci.jandom.targets.Parameters[SLILStmt]]
-    val input = stmtParams.domain.full(env.size)
-    val ann = getAnnotation[stmtParams.Property]
+    val input = params.domain.full(env.size)
+    val ann = getAnnotation[params.Property]
     val output = params.narrowingStrategy match {
       case Separate =>
-        stmt.analyzeStmt(stmtParams)(input, Ascending, ann)
-        stmt.analyzeStmt(stmtParams)(input, Descending, ann)
+        stmt.analyzeStmt(params)(input, Ascending, ann)
+        stmt.analyzeStmt(params)(input, Descending, ann)
       case _ =>
-        stmt.analyzeStmt(stmtParams)(input, Ascending, ann)
+        stmt.analyzeStmt(params)(input, Ascending, ann)
     }
     return ann.asInstanceOf[Annotation[ProgramPoint,params.Property]]
   }

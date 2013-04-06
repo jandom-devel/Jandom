@@ -33,6 +33,7 @@ import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.targets.lts.LTS
 import it.unich.sci.jandom.widenings.Widening
 import it.unich.sci.jandom.narrowings.Narrowing
+import it.unich.sci.jandom.targets.slil.SLILTarget
 
 /**
  * Example program using ''Jandom''.
@@ -45,7 +46,7 @@ object JandomExample extends App {
     val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
-      val params = new targets.Parameters(program) { val domain = domains.BoxDouble }
+      val params = new targets.Parameters[SLILTarget](program) { val domain = domains.BoxDouble }
       params.narrowingStrategy = NarrowingStrategy.Restart
       params.wideningScope = WideningScope.BackEdges
       val ann = program.analyze(params)

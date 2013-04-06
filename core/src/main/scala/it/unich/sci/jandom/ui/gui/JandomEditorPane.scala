@@ -30,6 +30,7 @@ import javax.swing.undo.UndoManager
 import it.unich.sci.jandom.targets.Parameters
 import scala.swing.ScrollPane
 import scala.swing.Component
+import it.unich.sci.jandom.targets.slil.SLILTarget
 
 class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane {
   val editorPane = new EditorPane
@@ -238,7 +239,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     parser.parseProgram(editorPane.text) match {
       case parser.Success(program, _) =>
         val numericalDomain = frame.parametersPane.selectedNumericalDomain
-        val params = new Parameters(program) { val domain = numericalDomain }        
+        val params = new Parameters[SLILTarget](program) { val domain = numericalDomain }        
         frame.parametersPane.setParameters(params)
         val ann = program.analyze(params)
         Some(params.debugWriter.toString + program.mkString(ann))

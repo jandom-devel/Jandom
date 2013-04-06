@@ -37,7 +37,7 @@ class SLILProgramSuite extends FunSuite {
         AssignStmt(0, LinearForm.fromCoefficient(0)),
         WhileStmt(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LT),
           AssignStmt(0, LinearForm(List(1, 1))))))))
-    val params = new Parameters(program) { val domain = BoxDouble }
+    val params = new Parameters[SLILTarget](program) { val domain = BoxDouble }
     val ann = program.analyze(params)
     expectResult(BoxDouble(Array(10), Array(11))) { ann((program.stmt, 2)) }
   }
@@ -58,7 +58,7 @@ class SLILProgramSuite extends FunSuite {
     val parsed = parsers.RandomParser().parseProgram(source)
     val program = parsed.get
 
-    val params = new Parameters(program) { val domain = domains.BoxDouble }
+    val params = new Parameters[SLILTarget](program) { val domain = domains.BoxDouble }
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Output
     program.analyze(params)
