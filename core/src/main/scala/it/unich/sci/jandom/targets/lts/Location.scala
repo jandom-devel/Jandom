@@ -16,11 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.lts
+package it.unich.sci.jandom.targets.lts
 
-import targets.linearcondition.LinearCond
-import targets.ProgramPoint
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
 /**
  * A class for locations (i.e. nodes in a linear transition system)
@@ -29,7 +27,7 @@ import targets.ProgramPoint
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-case class Location (val name: String, val conditions: Seq[LinearCond]) extends ProgramPoint {
+case class Location (val name: String, val conditions: Seq[LinearCond])  {
   /**
    * The set of incoming transitions.  Used internally by the analyzer
    */

@@ -27,6 +27,6 @@ import org.scalatest.FunSuite
  *
  */
 class TargetsSuite extends FunSuite {
-  override def nestedSuites = List(new EnvironmentSuite, new VariableSuite, new LinearFormSuite, new LinearAssignmentSuite,
+  override def nestedSuites = List(new EnvironmentSuite, new LinearFormSuite, new LinearAssignmentSuite,
       new LinearCondSuite, new SLILProgramSuite, new LTSSuite)
 }
