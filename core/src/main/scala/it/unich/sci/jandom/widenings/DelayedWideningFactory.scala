@@ -16,27 +16,26 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package widenings
+package it.unich.sci.jandom.widenings
 
-import targets.Target
-import ppfactories.PPFactory
+import it.unich.sci.jandom.targets.Target
+import it.unich.sci.jandom.ppfactories.PPFactory
 
 /**
  * The factory for a delayed widening. It creates a number of delayed widenings with the same parameters.
- * @tparam Tgt the target for the widening factory
+ * @tparam ProgramPoint the type of program point
  * @param wideningFactory the original widening factory
  * @param delay the delay of the widening
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class DelayedWideningFactory[Tgt <: Target] (private val wideningFactory: PPFactory[Tgt,Widening], private val delay: Int) extends PPFactory[Tgt,Widening] {
+class DelayedWideningFactory[ProgramPoint] (private val wideningFactory: PPFactory[ProgramPoint,Widening], private val delay: Int) extends PPFactory[ProgramPoint,Widening] {
   require(delay>=0)
-  def apply(pp: Tgt#WideningPoint) = new DelayedWidening(wideningFactory(pp), delay)  
+  def apply(pp: ProgramPoint) = new DelayedWidening(wideningFactory(pp), delay)  
 }
 
 /**
  * The companion object for delayed widening factories
  **/
 object DelayedWideningFactory {
-  def apply[Tgt <:Target](wideningFactory: PPFactory[Tgt,Widening], delay: Int) = new DelayedWideningFactory(wideningFactory,delay)
+  def apply[ProgramPoint](wideningFactory: PPFactory[ProgramPoint,Widening], delay: Int) = new DelayedWideningFactory(wideningFactory,delay)
 }

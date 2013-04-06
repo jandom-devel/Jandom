@@ -50,12 +50,12 @@ abstract class Parameters[Tgt <: Target](val tgt: Tgt)  {
   /**
    * The widening factory used in the analysis. Defaults to the factory for the standard domain widening.
    */
-  var wideningFactory: PPFactory[Tgt, Widening] = DefaultWidening
+  var wideningFactory: PPFactory[Tgt#ProgramPoint, Widening] = DefaultWidening
 
   /**
    * The narrowing factory used in the analysis. Defaults to the standard domain narrowing.
    */
-  var narrowingFactory: PPFactory[Tgt, Narrowing] = DefaultNarrowing
+  var narrowingFactory: PPFactory[Tgt#ProgramPoint, Narrowing] = DefaultNarrowing
 
   /**
    * This parameter determines whether results are saved for each program point or only for widening points.

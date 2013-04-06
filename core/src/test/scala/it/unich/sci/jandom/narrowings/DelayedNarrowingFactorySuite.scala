@@ -31,7 +31,7 @@ class DelayedNarrowingFactorySuite extends FunSpec {
   
   describe("Delayed Narrowing Factory") {
     it ("should create a difference instance of a delayed narrowing each time it is called")  {      
-      val dwf = DelayedNarrowingFactory[MockTarget](DefaultNarrowing,1)
+      val dwf = DelayedNarrowingFactory[MockTarget#ProgramPoint](DefaultNarrowing,1)
       val wd = dwf(0)       
       val d1 = BoxDouble(Array(0),Array(3))
       val d2 = BoxDouble(Array(1),Array(3))

@@ -42,7 +42,7 @@ import it.unich.sci.jandom.targets.slil.SLILTarget
 object JandomExample extends App {
 
   {
-    val source = scala.io.Source.fromFile("examples/nested.R").getLines.mkString("\n")
+    val source = scala.io.Source.fromFile("examples/WideningPaper/nested.R").getLines.mkString("\n")
     val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
@@ -63,8 +63,8 @@ object JandomExample extends App {
       val program = parsed.get
       val params = new targets.Parameters(program) { val domain = PPLCPolyhedron }
       val x= DelayedWideningFactory[LTS](DefaultWidening, 2)
-      params.wideningFactory = MemoizingFactory.apply[LTS,Widening](DelayedWideningFactory[LTS](DefaultWidening, 2), program.getAnnotation[Widening])
-      params.narrowingFactory = MemoizingFactory.apply[LTS,Narrowing](DelayedNarrowingFactory[LTS](DefaultNarrowing, 2), program.getAnnotation[Narrowing])
+      params.wideningFactory = MemoizingFactory(program)(DelayedWideningFactory(DefaultWidening, 2))
+      params.narrowingFactory = MemoizingFactory(program)(DelayedNarrowingFactory(DefaultNarrowing, 2))
       println(program)
       val ann = program.analyze(params)
       println(ann)
