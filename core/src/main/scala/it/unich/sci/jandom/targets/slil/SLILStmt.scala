@@ -20,6 +20,8 @@ package it.unich.sci.jandom.targets.slil
 
 import it.unich.sci.jandom.domains.{NumericalDomain, NumericalProperty}
 import it.unich.sci.jandom.targets.Target
+import scala.collection.mutable.HashMap
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * The abstract class for program statements. Each object in SLILStmt represents a statement
@@ -28,12 +30,11 @@ import it.unich.sci.jandom.targets.Target
 abstract class SLILStmt extends Target {
   type ProgramPoint = (SLILStmt, Int)
   type Tgt = SLILStmt
-  type Annotation[Property] = scala.collection.mutable.HashMap[ProgramPoint,Property]  
   type DomainBase = NumericalDomain
   
   import AnalysisPhase._
   
-  def getAnnotation[Property] = new Annotation[Property]
+  def getAnnotation[Property] = new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]
 
   /**
    * A method to pretty print a SLILStmt with corresponding annotations
@@ -43,7 +44,7 @@ abstract class SLILStmt extends Target {
    * standard pretty printer specification
    * @return the string representation of the program
    */
-  def mkString[T <: NumericalProperty[_]](ann: Annotation[T], level: Int = 0, ppspec: PrettyPrinterSpec): String
+  def mkString[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint,T], level: Int = 0, ppspec: PrettyPrinterSpec): String
   
   /**
    * The analyzer for a SLIL statement. This methods is different from the one declared in Target since it takes
@@ -57,15 +58,15 @@ abstract class SLILStmt extends Target {
    * @return the property at the end of the statement
    */
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, 
-      ann: Annotation[params.Property]): params.Property = input
+      ann: Annotation[ProgramPoint,params.Property]): params.Property = input
 
   /**
    * @inheritdoc
    * A statement is analyzed under the assumption that initially variables
    * may assume all possible values.
    */
-  def analyze(params: Parameters): Annotation[params.Property] = {
-    val ann = new Annotation[params.Property]()
+  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
+    val ann = getAnnotation[params.Property]
     val input = params.domain.full(0)
     analyzeStmt(params)(input, AscendingRestart, ann)
     return ann

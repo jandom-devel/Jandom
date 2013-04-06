@@ -16,12 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package ppfactories
+package it.unich.sci.jandom.ppfactories
 
-import targets.Target
-import annotations._
 import scala.collection.mutable.Map
+import it.unich.sci.jandom.targets.Target
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * A "per program point factory" which reuses objects for the same program point.
@@ -32,12 +31,12 @@ import scala.collection.mutable.Map
  */
 
 class MemoizingFactory[Tgt <: Target,T] (private val factory: PPFactory[Tgt,T], 
-                                          private val ann: Tgt#Annotation[T]) extends PPFactory[Tgt,T] {
+                                          private val ann: Annotation[Tgt#ProgramPoint,T]) extends PPFactory[Tgt,T] {
   
   def apply(pp: Tgt#WideningPoint) = {
     // this is not typesafe: I am converting a dependent type into an independent type. But,
     // otherwise, each factory should contain a target
-    val ann2 = ann.asInstanceOf[scala.collection.mutable.Map[Tgt#WideningPoint, T]]
+    val ann2 = ann.asInstanceOf[scala.collection.mutable.Map[Tgt#ProgramPoint, T]]
     ann2.get(pp) match {
       case Some(v) => v
       case None => { val v= factory(pp); ann2(pp)=v; v }
@@ -57,7 +56,7 @@ object MemoizingFactory {
    * @param ann a per-pp annotation used to stored the generated widenings
    * @return the factory
    */
-  def apply[Tgt <: Target, T](factory: PPFactory[Tgt,T], ann: Tgt#Annotation[T]) = 
+  def apply[Tgt <: Target, T](factory: PPFactory[Tgt,T], ann: Annotation[Tgt#ProgramPoint,T]) = 
     new MemoizingFactory(factory, ann)
   
   /**

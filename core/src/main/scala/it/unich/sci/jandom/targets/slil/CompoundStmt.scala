@@ -16,13 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
-import domains.NumericalProperty
-import targets.Parameters
-import annotations.{ BlackBoard, PerProgramPointAnnotation }
-import scala.collection.mutable.ListBuffer
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * A class for the compound statement (sequential composition)
@@ -31,7 +28,7 @@ import scala.collection.mutable.ListBuffer
 case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
   import AnalysisPhase._
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
     var current = input
     var index = 0
     for (stmt <- stmts) {
@@ -42,7 +39,7 @@ case class CompoundStmt(stmts: Seq[SLILStmt]) extends SLILStmt {
     current
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {    
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String = {    
     val spaces = ppspec.indent(level)
     val result = new StringBuilder()
     var index = 1

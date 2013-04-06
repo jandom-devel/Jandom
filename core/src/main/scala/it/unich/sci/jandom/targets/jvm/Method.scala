@@ -20,15 +20,13 @@ package it.unich.sci.jandom.targets.jvm
 
 import java.io.{ PrintWriter, StringWriter }
 import java.util.NoSuchElementException
-
 import scala.collection.mutable.{ BitSet, HashMap, Queue }
-
 import org.objectweb.asm._
 import org.objectweb.asm.tree._
 import org.objectweb.asm.util._
-
 import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets.Target
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * This class analyzes a single method of a class.
@@ -37,7 +35,6 @@ import it.unich.sci.jandom.targets.Target
 
 class Method(val methodNode: MethodNode) extends Target {
   type ProgramPoint = BasicBlock
-  type Annotation[Property] = HashMap[ProgramPoint, Property]
   type Tgt = Method
   type DomainBase = JVMEnvDomain
 
@@ -225,10 +222,10 @@ class Method(val methodNode: MethodNode) extends Target {
     startBlock
   }
 
-  def getAnnotation[Property]: Annotation[Property] = new Annotation[Property]
+  def getAnnotation[Property]: Annotation[ProgramPoint,Property] = new HashMap[ProgramPoint,Property ]with Annotation[ProgramPoint,Property]
 
-  def analyze(params: Parameters): Annotation[params.Property] = {
-    val ann = new Annotation[params.Property]()
+  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
+    val ann = getAnnotation[params.Property]
     ann(startBlock) = params.domain.full(methodNode.maxLocals)
     val taskList = Queue[BasicBlock](startBlock)
     while (!taskList.isEmpty) {
@@ -252,7 +249,7 @@ class Method(val methodNode: MethodNode) extends Target {
 
   def size = methodNode.maxStack + methodNode.maxLocals
 
-  def mkString[D <: JVMEnv[_]](ann: Annotation[D]): String = {
+  def mkString[D <: JVMEnv[_]](ann: Annotation[ProgramPoint,D]): String = {
     val sw = new StringWriter
     val pw = new PrintWriter(sw)
     val textifier = new Textifier

@@ -16,13 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
-import domains.NumericalProperty
-
-import annotations._
+import it.unich.sci.jandom.domains.NumericalProperty
 import scala.collection.mutable.ArrayBuffer
+import scala.collection.mutable.HashMap
 
 /**
  * A mock target only used for test suites. It is private for the jandom package.
@@ -32,13 +30,11 @@ import scala.collection.mutable.ArrayBuffer
 private[jandom] class MockTarget extends Target {
   type Tgt = MockTarget
   type ProgramPoint = Int  
-  type Annotation[Property] = scala.collection.mutable.HashMap[ProgramPoint, Property]
-  def getAnnotation[Property] = new Annotation[Property]
+  def getAnnotation[Property] = new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]
   
   def size = 10
   
-  def analyze(params: Parameters): Annotation[params.Property] = 
-    new Annotation[params.Property]
+  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = getAnnotation[params.Property]
 }
 
 /** 

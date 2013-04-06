@@ -19,6 +19,7 @@
 package it.unich.sci.jandom.targets.slil
 
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * The class for tags, i.e. fake statements only used to mark program points. The 
@@ -29,11 +30,11 @@ import it.unich.sci.jandom.domains.NumericalProperty
 case class TagStmt(tag: Int) extends SLILStmt {
   import AnalysisPhase._
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
     params.tag(tag) = input
     input
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + "tag(" + tag + ")"
 }

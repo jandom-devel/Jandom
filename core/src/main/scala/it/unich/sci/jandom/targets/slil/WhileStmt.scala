@@ -16,11 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
-import domains.NumericalProperty
-import targets.linearcondition.LinearCond
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * The class for a while statement.
@@ -40,7 +40,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
    */
   var lastBodyResult: NumericalProperty[_] = null
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
     import it.unich.sci.jandom.targets.WideningScope._
     import it.unich.sci.jandom.targets.NarrowingStrategy._
 
@@ -157,7 +157,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     return condition.opposite.analyze(invariant)
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
     spaces + "while (" + condition.mkString(ppspec.env.names) + ")" + "" +
       (if (ann contains (this, 1)) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +

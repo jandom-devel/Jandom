@@ -16,13 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
-import domains.NumericalProperty
-import targets.Parameters
-import targets.linearcondition.LinearCond
-import annotations.{ BlackBoard, PerProgramPointAnnotation }
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
 /**
  * The class for an if/then/else statement
@@ -34,7 +32,7 @@ import annotations.{ BlackBoard, PerProgramPointAnnotation }
 case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
   import AnalysisPhase._
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
     
     val thenStart = condition.analyze(input)
     val elseStart = condition.opposite.analyze(input)
@@ -49,7 +47,7 @@ case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLI
     return thenEnd union elseEnd
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level+1)
     val s = spaces + "if (" + condition.mkString(ppspec.env.names) + ") {\n" +

@@ -24,6 +24,8 @@ import it.unich.sci.jandom.targets.Environment
 import it.unich.sci.jandom.targets.NarrowingStrategy._
 import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.slil.AnalysisPhase._
+import scala.collection.mutable.HashMap
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * The target for a simple imperative language, similar to the one analyzed
@@ -38,12 +40,11 @@ case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: 
 
   type ProgramPoint = (SLILStmt, Int)
   type Tgt = SLILProgram
-  type Annotation[Property] = scala.collection.mutable.HashMap[ProgramPoint, Property]
   type DomainBase = NumericalDomain
 
-  def getAnnotation[Property] = new Annotation[Property]
+  def getAnnotation[Property] = new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]
 
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[U], ppspec: PrettyPrinterSpec = new PrettyPrinterSpec(env)) = {
+  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: PrettyPrinterSpec = new PrettyPrinterSpec(env)) = {
     val spaces = ppspec.indent(0)
     val innerspaces = ppspec.indent(1)
     spaces + "function (" + (inputVars map { v: Int => env(v) }).mkString(",") + ") {\n" +
@@ -51,10 +52,10 @@ case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: 
       spaces + "}\n"
   }
 
-  override def analyze(params: Parameters): Annotation[params.Property] = {
+  override def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
     val stmtParams = params.asInstanceOf[it.unich.sci.jandom.targets.Parameters[SLILStmt]]
     val input = stmtParams.domain.full(env.size)
-    val ann = new Annotation[stmtParams.Property]()
+    val ann = getAnnotation[stmtParams.Property]
     val output = params.narrowingStrategy match {
       case Separate =>
         stmt.analyzeStmt(stmtParams)(input, Ascending, ann)
@@ -62,6 +63,6 @@ case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: 
       case _ =>
         stmt.analyzeStmt(stmtParams)(input, Ascending, ann)
     }
-    return ann.asInstanceOf[Annotation[params.Property]]
+    return ann.asInstanceOf[Annotation[ProgramPoint,params.Property]]
   }
 }

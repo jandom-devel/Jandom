@@ -49,11 +49,6 @@ abstract class Target {
   type DomainBase <: AbstractDomain
 
   /**
-   * The class for program annotations.
-   */
-  type Annotation[Property] <: scala.collection.mutable.Map[ProgramPoint, Property] 
- 
-  /**
    * An alias for parameters in input by the analyzer.
    */
   protected type Parameters = it.unich.sci.jandom.targets.Parameters[Tgt]
@@ -61,12 +56,12 @@ abstract class Target {
   /**
    * Returns an empty annotation.
    */
-  def getAnnotation[Property]: Annotation[Property]
+  def getAnnotation[Property]: Annotation[ProgramPoint,Property]
   
   /**
    * Perform a static analysis over the target.
    * @param param the parameters which drive the analyzer
    * @return an annotation for the program
    */
-  def analyze(params: Parameters): Annotation[params.Property]
+  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property]
 }

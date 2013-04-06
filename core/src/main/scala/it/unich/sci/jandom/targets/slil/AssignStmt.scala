@@ -16,14 +16,13 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.LinearForm
 
 import AnalysisPhase.AnalysisPhase
-import targets.LinearForm
 
 /**
  * The class for the assignment statement "variable := linearForm".
@@ -36,11 +35,11 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T])(implicit nume
   import numeric._
   import AnalysisPhase._
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
     val coefficients = linearForm.coefficients
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + ppspec.env(variable) + " = " + linearForm.mkString(ppspec.env.names)
 }

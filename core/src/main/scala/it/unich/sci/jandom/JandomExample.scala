@@ -30,6 +30,9 @@ import it.unich.sci.jandom.widenings.DefaultWidening
 import it.unich.sci.jandom.widenings.DelayedWideningFactory
 import parma_polyhedra_library.Parma_Polyhedra_Library
 import it.unich.sci.jandom.domains.NumericalDomain
+import it.unich.sci.jandom.targets.lts.LTS
+import it.unich.sci.jandom.widenings.Widening
+import it.unich.sci.jandom.narrowings.Narrowing
 
 /**
  * Example program using ''Jandom''.
@@ -58,8 +61,9 @@ object JandomExample extends App {
     if (parsed.successful) {
       val program = parsed.get
       val params = new targets.Parameters(program) { val domain = PPLCPolyhedron }
-      params.wideningFactory = MemoizingFactory(DelayedWideningFactory(DefaultWidening, 2), program)
-      params.narrowingFactory = MemoizingFactory(DelayedNarrowingFactory(DefaultNarrowing, 2), program)
+      val x= DelayedWideningFactory[LTS](DefaultWidening, 2)
+      params.wideningFactory = MemoizingFactory.apply[LTS,Widening](DelayedWideningFactory[LTS](DefaultWidening, 2), program.getAnnotation[Widening])
+      params.narrowingFactory = MemoizingFactory.apply[LTS,Narrowing](DelayedNarrowingFactory[LTS](DefaultNarrowing, 2), program.getAnnotation[Narrowing])
       println(program)
       val ann = program.analyze(params)
       println(ann)

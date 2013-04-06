@@ -1,6 +1,6 @@
 /**
- * Copyright 2013 Gianluca Amato
- * 
+ * Copyright 2013 amato
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,12 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.slil
+package it.unich.sci.jandom.targets
 
-import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.targets.Annotation
+import scala.collection.mutable.Map
 
 /**
- * The class for the empty statement.
+ * @author Gianluca Amato <gamato@unich.it>
+ *
  */
-case object NopStmt extends SLILStmt {
-  override def mkString[U <: NumericalProperty[_]] (ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String =
-    ppspec.indent(level) + "<no-op>"
-}
+trait Annotation[ProgramPoint,T] extends Map[ProgramPoint,T]
