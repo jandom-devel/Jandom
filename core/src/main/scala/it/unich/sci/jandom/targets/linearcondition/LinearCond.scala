@@ -41,6 +41,11 @@ abstract class LinearCond {
   def opposite : LinearCond
   
   /**
+   * Return the dimension of the linear condition
+   */
+  val dimension: Int
+
+  /**
    * Returns the textual representation of a linear form.
    * @param vars symbolic names of variables in the linear form. 
    */

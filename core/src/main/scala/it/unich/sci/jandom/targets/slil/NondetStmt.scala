@@ -41,4 +41,6 @@ case class NondetStmt[T](variable: Int) extends SLILStmt {
 
   override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + "x" + variable + " = ?\n"
+    
+  val numvars = variable
 }

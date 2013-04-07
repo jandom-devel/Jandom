@@ -51,4 +51,6 @@ case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLI
       spaces + "}\n"
     return s
   }
+  
+  val numvars = condition.dimension max then_branch.numvars max else_branch.numvars
 }

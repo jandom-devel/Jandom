@@ -117,6 +117,11 @@ class LinearForm[T](val coefficients: Seq[T])(implicit numeric: Numeric[T]) {
    * Return the homonogeneous terms in the linear form
    */
   def homcoeff: Seq[T] = coefficients.tail
+
+  /**
+   * Return the number of dimension of the linear form
+   */
+  val dimension = coefficients.length - 1
 }
 
 /**

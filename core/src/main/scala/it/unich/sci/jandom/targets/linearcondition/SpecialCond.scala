@@ -29,6 +29,7 @@ object BRandomCond extends LinearCond {
   def opposite = BRandomCond
   override def analyze[Property <: NumericalProperty[Property]] (input: Property) = input
   override def mkString(vars: Seq[String]) = "brandom()"
+  val dimension = 0
 }
 
 /**
@@ -39,6 +40,7 @@ object TrueCond extends LinearCond {
   def opposite = FalseCond
   override def analyze[Property <: NumericalProperty[Property]] (input: Property) = input  
   override def mkString(vars: Seq[String]) = "TRUE"
+  val dimension = 0
 }
 
 /**
@@ -49,4 +51,5 @@ object FalseCond extends LinearCond {
   def opposite = TrueCond
   override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input.empty
   override def mkString(vars: Seq[String]) = "FALSE"
+  val dimension = 0
 }

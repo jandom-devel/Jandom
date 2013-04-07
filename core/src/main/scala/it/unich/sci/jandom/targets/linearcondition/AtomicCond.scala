@@ -55,6 +55,8 @@ case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.V
   }
   
   def opposite = new AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op))
+
+  val dimension = lf.dimension
   
   override def mkString(vars: Seq[String]) = lf.mkString(vars) + op + "0"
 }

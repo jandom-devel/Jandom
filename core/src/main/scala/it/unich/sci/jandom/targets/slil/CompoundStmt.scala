@@ -56,4 +56,6 @@ case class CompoundStmt(stmts: SLILStmt*) extends SLILStmt {
       result ++= spaces + ppspec.decorator(ann(this, index)) + '\n'
     result.toString
   }
+  
+  val numvars = (stmts map { _.numvars}).max
 }

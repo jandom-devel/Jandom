@@ -65,4 +65,10 @@ abstract class SLILStmt extends SLILTarget {
     analyzeStmt(params)(input, AscendingRestart, ann)
     return ann
   }
+          
+  /**
+   * Returns the number of variables in the statement. The standard implementation 
+   * return zero.
+   */
+  val numvars: Int
 }

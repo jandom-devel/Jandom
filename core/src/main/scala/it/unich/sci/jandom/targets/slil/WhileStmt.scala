@@ -164,4 +164,6 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
       body.mkString(ann, level + 1, ppspec) +
       spaces + "}\n"
   }
+  
+  val numvars = condition.dimension max body.numvars
 }

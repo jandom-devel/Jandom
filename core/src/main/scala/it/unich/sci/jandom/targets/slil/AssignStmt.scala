@@ -42,4 +42,6 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T])(implicit nume
 
   override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + ppspec.env(variable) + " = " + linearForm.mkString(ppspec.env.names) + '\n'
+    
+  val numvars = linearForm.dimension
 }

@@ -37,4 +37,6 @@ case class AssumeStmt(cond: LinearCond) extends SLILStmt {
     
   override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level:Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + "assume(" + cond + ")\n"
+    
+  val numvars = cond.dimension
 }
