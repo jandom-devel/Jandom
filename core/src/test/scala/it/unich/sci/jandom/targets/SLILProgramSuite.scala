@@ -33,10 +33,10 @@ class SLILProgramSuite extends FunSuite {
   test("simple program 1") {
     val env = targets.Environment("x")
     val program = SLILProgram(env, Seq(1),
-      SingleStmt(CompoundStmt(Seq(
+      CompoundStmt(
         AssignStmt(0, LinearForm.fromCoefficient(0)),
         WhileStmt(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LT),
-          AssignStmt(0, LinearForm(List(1, 1))))))))
+          AssignStmt(0, LinearForm(List(1, 1))))))
     val params = new Parameters[SLILTarget](program) { val domain = BoxDouble }
     val ann = program.analyze(params)
     expectResult(BoxDouble(Array(10), Array(11))) { ann((program.stmt, 2)) }

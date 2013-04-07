@@ -26,5 +26,5 @@ import it.unich.sci.jandom.targets.Annotation
  */
 case object NopStmt extends SLILStmt {
   override def mkString[U <: NumericalProperty[_]] (ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String =
-    ppspec.indent(level) + "<no-op>"
+    ppspec.indent(level) + "<no-op>\n"
 }

@@ -79,22 +79,32 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
     "tag" ~> "(" ~> wholeNumber <~ ")" <~ opt(";") ^^ { case s => TagStmt(s.toInt) } |
       ".tracetag" ~ "(" ~ wholeNumber ~ ")" <~ opt(";") ^^ { _ => NopStmt } |
       "assume" ~> "(" ~> condition <~ ")" <~ opt(";") ^^ { AssumeStmt(_) } |
-      ("if" ~> "(" ~> general_condition <~ ")") ~ stmt ~ opt("else" ~> stmt)  ^^ {
+      ("if" ~> "(" ~> general_condition <~ ")") ~ compoundStmt ~ opt("else" ~> compoundStmt)  ^^ {
         case c ~ s1 ~ Some(s2) => IfStmt(c, s1, s2)
         case c ~ s1 ~ None => IfStmt(c, s1, NopStmt)
       } |
-      ("while" ~> "(" ~> general_condition <~ ")") ~ stmt ^^ {
+      ("while" ~> "(" ~> general_condition <~ ")") ~ compoundStmt ^^ {
         case c ~ s => WhileStmt(c, s)
       } |
       ("return" ~ "(" ~ expr ~ ")") ^^ { _ => NopStmt } |
-      "{" ~> rep(stmt) <~ "}" ^^ { CompoundStmt(_) } |
+      "{" ~> rep(stmt) <~ "}" ^^ { CompoundStmt(_: _*) } |
       ident ~ ("=" | "<-") ~ linexpr <~ opt(";") ^^ { case v ~ _ ~ lf => AssignStmt(env.getBindingOrAdd(v), lf) } | 
       ident <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { case v => NondetStmt(env.getBindingOrAdd(v)) }  |   
        expr <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { _ => NopStmt }      
-
+  
+  /**
+   * This is used to parse a statement but force it to be returned as a
+   * compound statement. 
+   */
+  private val compoundStmt: Parser[CompoundStmt] = 
+    stmt ^^ {
+      case s: CompoundStmt => s
+      case s => CompoundStmt( s )
+    }
+    
   private val prog: Parser[SLILProgram] =
-    (opt(ident ~> ("=" | "<-")) ~> "function" ~> "(" ~> repsep(variable, ",") <~ ")") ~ stmt ^^ {
-      case vars ~ stmt => SLILProgram(env, vars, SingleStmt(stmt))
+    (opt(ident ~> ("=" | "<-")) ~> "function" ~> "(" ~> repsep(variable, ",") <~ ")") ~ compoundStmt ^^ {
+      case vars ~ stmt => SLILProgram(env, vars, stmt)
     }
 
   private val skip: Parser[String] = """(.|[\r\n])*""".r // skip until the end of the file

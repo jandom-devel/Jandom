@@ -36,5 +36,5 @@ case class TagStmt(tag: Int) extends SLILStmt {
   }
 
   override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec) =
-    ppspec.indent(level) + "tag(" + tag + ")"
+    ppspec.indent(level) + "tag(" + tag + ")\n"
 }

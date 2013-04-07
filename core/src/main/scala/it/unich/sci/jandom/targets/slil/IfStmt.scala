@@ -38,12 +38,6 @@ case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLI
     val elseStart = condition.opposite.analyze(input)
     val thenEnd = then_branch.analyzeStmt(params)(thenStart, phase, ann)
     val elseEnd = else_branch.analyzeStmt(params)(elseStart, phase, ann)
-    if (params.allPPResult) {
-      ann((this, 1)) = thenStart
-      ann((this, 2)) = elseStart
-      ann((this, 3)) = thenEnd
-      ann((this, 4)) = elseEnd
-    }
     return thenEnd union elseEnd
   }
 
@@ -51,14 +45,10 @@ case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLI
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level+1)
     val s = spaces + "if (" + condition.mkString(ppspec.env.names) + ") {\n" +
-      (if (ann.get(this, 1) != None) innerspaces + ppspec.decorator(ann(this, 1)) + "\n" else "") +
-      then_branch.mkString(ann,level+1,ppspec) + "\n" +
-      (if (ann.get(this, 3) != None) innerspaces + ppspec.decorator(ann(this, 3)) + "\n" else "") +
+      then_branch.mkString(ann,level+1,ppspec) +
       spaces + "} else {\n" +
-      (if (ann.get(this, 2) != None) innerspaces + ppspec.decorator(ann(this, 2)) + '\n' else "") +
-      else_branch.mkString(ann,level+1,ppspec) + "\n" +
-      (if (ann.get(this, 4) != None) innerspaces + ppspec.decorator(ann(this, 4)) + '\n' else "") +
-      spaces + '}'
+      else_branch.mkString(ann,level+1,ppspec) +
+      spaces + "}\n"
     return s
   }
 }

@@ -23,7 +23,8 @@ import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import it.unich.sci.jandom.targets.Annotation
 
 /**
- * The class for a while statement.
+ * The class for a while statement. Each while statement has a corresponding program
+ * point which corresponds to head of the loop, before the condition is tested.
  * @param condition the guard of the statement
  * @param body the body of the statement
  */
@@ -149,7 +150,6 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
     
     // Annotate results
     ann((this, 1)) = invariant
-    if (params.allPPResult) ann((this, 2)) = condition.analyze(invariant)
 
     // Exit from this loop, hence decrement nesting level
     params.nestingLevel -= 1
@@ -159,10 +159,9 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
 
   override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
-    spaces + "while (" + condition.mkString(ppspec.env.names) + ")" + "" +
+    spaces + "while (" + condition.mkString(ppspec.env.names) + ")" +
       (if (ann contains (this, 1)) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +
-      (if (ann contains (this, 2)) ppspec.indent(level + 1) + ppspec.decorator(ann(this, 2)) + "\n" else "") +
-      body.mkString(ann, level + 1, ppspec) + '\n' +
-      spaces + '}'
+      body.mkString(ann, level + 1, ppspec) +
+      spaces + "}\n"
   }
 }
