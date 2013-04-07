@@ -22,6 +22,7 @@ package widenings
 import targets.MockTarget
 import domains.BoxDouble
 import org.scalatest.FunSpec
+import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
 
 /**
  * Test suite for delayed widening factories.

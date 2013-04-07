@@ -16,10 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.widenings
+package it.unich.sci.jandom.ppfactories
 
-import it.unich.sci.jandom.targets.Target
-import it.unich.sci.jandom.ppfactories.PPFactory
+import it.unich.sci.jandom.widenings.DelayedWidening
+import it.unich.sci.jandom.widenings.Widening
 
 /**
  * The factory for a delayed widening. It creates a number of delayed widenings with the same parameters.

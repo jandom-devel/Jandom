@@ -22,6 +22,7 @@ package narrowings
 import targets.MockTarget
 import domains.BoxDouble
 import org.scalatest.FunSpec
+import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 
 /**
  * Test suite for delayed narrowing factories.

@@ -19,7 +19,7 @@
 package it.unich.sci.jandom
 package ui.cli
 import it.unich.sci.jandom.targets.slil.SLILStmt
-import it.unich.sci.jandom.narrowings.DelayedNarrowingFactory
+import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 import it.unich.sci.jandom.narrowings.NoNarrowing
 import it.unich.sci.jandom.targets.slil.SLILStmt
 import it.unich.sci.jandom.targets.slil.SLILStmt

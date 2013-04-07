@@ -16,11 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package narrowings
+package it.unich.sci.jandom.ppfactories
 
-import targets.Target
-import ppfactories.PPFactory
+import it.unich.sci.jandom.narrowings.DelayedNarrowing
+import it.unich.sci.jandom.narrowings.Narrowing
 
 /**
  * The factory for a delayed narrowing. It creates a number of delayed narrowings with the same parameters.
