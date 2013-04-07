@@ -21,6 +21,8 @@ package it.unich.sci.jandom.targets
 import scala.collection.mutable.Map
 
 /**
+ * This is the base trait for all annotations, which are mutable maps
+ * from program points to values.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
