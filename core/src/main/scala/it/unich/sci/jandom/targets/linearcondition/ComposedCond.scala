@@ -30,7 +30,7 @@ import domains.NumericalProperty
  *
  */
 case class AndCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
-  def opposite = new OrCond(cond1.opposite, cond2.opposite)
+  lazy val opposite = new OrCond(cond1.opposite, cond2.opposite)
   override def analyze[Property <: NumericalProperty[Property]](input: Property): Property = cond2.analyze(cond1.analyze(input))
   override def mkString(vars: Seq[String]) = "(" + cond1.mkString(vars) + " && " + cond2.mkString(vars) + ")"
   val dimension = cond1.dimension max cond2.dimension
@@ -45,8 +45,7 @@ case class AndCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
  *
  */
 case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
-  def opposite = new AndCond(cond1.opposite, cond2.opposite)
-
+  lazy val opposite = new AndCond(cond1.opposite, cond2.opposite)
   override def analyze[Property <: NumericalProperty[Property]](input: Property): Property =
     cond1.analyze(input) union cond2.analyze(input)
   override def mkString(vars: Seq[String]) = "(" + cond1.mkString(vars) + "||" + cond2.mkString(vars) + ")"
@@ -61,7 +60,7 @@ case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
  *
  */
 case class NotCond(cond: LinearCond) extends LinearCond {
-  def opposite = cond
+  val opposite = cond
   override def analyze[Property <: NumericalProperty[Property]](input: Property): Property = cond.opposite.analyze(input)
   override def mkString(vars: Seq[String]) = "!(" + cond.mkString(vars) + ")"
   val dimension = cond.dimension

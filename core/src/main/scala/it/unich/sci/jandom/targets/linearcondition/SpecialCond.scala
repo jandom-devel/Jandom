@@ -26,7 +26,7 @@ import domains.NumericalProperty
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 object BRandomCond extends LinearCond {
-  def opposite = BRandomCond
+  val opposite = BRandomCond
   override def analyze[Property <: NumericalProperty[Property]] (input: Property) = input
   override def mkString(vars: Seq[String]) = "brandom()"
   val dimension = 0
@@ -37,7 +37,7 @@ object BRandomCond extends LinearCond {
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 object TrueCond extends LinearCond {
-  def opposite = FalseCond
+  val opposite = FalseCond
   override def analyze[Property <: NumericalProperty[Property]] (input: Property) = input  
   override def mkString(vars: Seq[String]) = "TRUE"
   val dimension = 0
@@ -48,7 +48,7 @@ object TrueCond extends LinearCond {
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 object FalseCond extends LinearCond {
-  def opposite = TrueCond
+  val opposite = TrueCond
   override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input.empty
   override def mkString(vars: Seq[String]) = "FALSE"
   val dimension = 0

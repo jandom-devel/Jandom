@@ -54,7 +54,7 @@ case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.V
     	input.linearInequality( homcoeff(-lf), known(-lf) )    
   }
   
-  def opposite = new AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op))
+  lazy val opposite = new AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op))
 
   val dimension = lf.dimension
   

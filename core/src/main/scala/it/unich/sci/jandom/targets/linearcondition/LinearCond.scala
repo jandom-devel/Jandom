@@ -38,8 +38,8 @@ abstract class LinearCond {
    * Returns the opposite linear condition (the one obtained by reversing the order of inequalities)
    * @return the opposite linear condition
    */
-  def opposite : LinearCond
-  
+  val opposite : LinearCond
+
   /**
    * Return the dimension of the linear condition
    */
