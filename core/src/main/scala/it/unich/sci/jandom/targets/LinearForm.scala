@@ -111,12 +111,12 @@ class LinearForm[T](val coefficients: Seq[T])(implicit numeric: Numeric[T]) {
   /**
    * Return the constant (inhomogeneous) term of the linear form
    */
-  def known: T = coefficients.head
+  val known: T = coefficients.head
 
   /**
    * Return the homonogeneous terms in the linear form
    */
-  def homcoeff: Seq[T] = coefficients.tail
+  val homcoeff: Seq[T] = coefficients.tail
 
   /**
    * Return the number of dimension of the linear form
