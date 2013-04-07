@@ -74,4 +74,15 @@ class SLILProgramSuite extends FunSuite {
     program.analyze(params)
     expectResult(BoxDouble(Array(-1), Array(1))) { params.tag(0) }
   }
+  
+  test("statement without program") {
+     val stmt: SLILTarget = 
+      CompoundStmt(
+        AssignStmt(0, LinearForm.fromCoefficient(0)),
+        WhileStmt(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LT),
+          AssignStmt(0, LinearForm(List(1, 1)))))
+     val params = new Parameters(stmt) { val domain = domains.BoxDouble }
+     val ann = stmt.analyze(params)
+     expectResult(BoxDouble(Array(10), Array(11))) { ann((stmt, 2)) }
+  }
 }

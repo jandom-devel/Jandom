@@ -18,9 +18,7 @@
 
 package it.unich.sci.jandom.targets.slil
 
-import it.unich.sci.jandom.domains.{NumericalDomain, NumericalProperty}
-import it.unich.sci.jandom.targets.Target
-import scala.collection.mutable.HashMap
+import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets.Annotation
 
 /**
@@ -34,8 +32,7 @@ abstract class SLILStmt extends SLILTarget {
    * A method to pretty print a SLILStmt with corresponding annotations
    * @param ann the annotation to print together with the program
    * @param level the current indentation level
-   * @param ppspec the specification object for pretty printing. It defaults to the
-   * standard pretty printer specification
+   * @param ppspec the specification object for pretty printing
    * @return the string representation of the program
    */
   def mkString[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint,T], level: Int = 0, ppspec: PrettyPrinterSpec): String
@@ -61,7 +58,7 @@ abstract class SLILStmt extends SLILTarget {
    */
   def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
     val ann = getAnnotation[params.Property]
-    val input = params.domain.full(0)
+    val input = params.domain.full(numvars)
     analyzeStmt(params)(input, AscendingRestart, ann)
     return ann
   }
