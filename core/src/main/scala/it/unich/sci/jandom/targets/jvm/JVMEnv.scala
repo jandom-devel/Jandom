@@ -17,7 +17,6 @@
  */
 
 package it.unich.sci.jandom.targets.jvm
-
 import scala.collection.mutable.ArrayStack
 
 import it.unich.sci.jandom.domains.{AbstractDomain, NumericalDomain, NumericalProperty}

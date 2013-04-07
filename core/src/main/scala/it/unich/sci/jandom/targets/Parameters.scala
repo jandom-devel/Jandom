@@ -16,15 +16,15 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
-import domains.{ NumericalProperty, NumericalDomain }
-import widenings.{ Widening, DefaultWidening }
-import narrowings.{ Narrowing, DefaultNarrowing }
-import ppfactories.PPFactory
 import it.unich.sci.jandom.domains.AbstractDomain
 import it.unich.sci.jandom.domains.AbstractDomain
+import it.unich.sci.jandom.widenings.DefaultWidening
+import it.unich.sci.jandom.narrowings.DefaultNarrowing
+import it.unich.sci.jandom.ppfactories.PPFactory
+import it.unich.sci.jandom.narrowings.Narrowing
+import it.unich.sci.jandom.widenings.Widening
 
 /**
  * This class is used to provide parameters for analyzers. Each instance of `Parameters` is

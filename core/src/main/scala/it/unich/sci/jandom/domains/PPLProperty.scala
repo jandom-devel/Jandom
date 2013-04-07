@@ -18,6 +18,8 @@
 
 package it.unich.sci.jandom.domains
 
+import it.unich.sci.jandom.utils.PPLUtils
+
 import parma_polyhedra_library.By_Reference
 import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Constraint
@@ -30,7 +32,6 @@ import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variable_Stringifier
 import parma_polyhedra_library.Variables_Set
-import it.unich.sci.jandom.utils.PPLUtils
 
 /**
  * This is the universal PPL numerical property. It is able to represent (almost) any property

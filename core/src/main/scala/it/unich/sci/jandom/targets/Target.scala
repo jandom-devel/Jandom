@@ -18,8 +18,9 @@
 
 package it.unich.sci.jandom.targets
 
-import it.unich.sci.jandom.domains.AbstractDomain
 import scala.collection.mutable.HashMap
+
+import it.unich.sci.jandom.domains.AbstractDomain
 
 /**
  * The abstract class for targets, which are the static analyzers for the

@@ -18,10 +18,6 @@
 
 package it.unich.sci.jandom.targets
 
-import it.unich.sci.jandom.domains.NumericalProperty
-import scala.collection.mutable.ArrayBuffer
-import scala.collection.mutable.HashMap
-
 /**
  * A mock target only used for test suites. It is private for the jandom package.
  * @author Gianluca Amato <amato@sci.unich.it>

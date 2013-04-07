@@ -16,11 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package ppfactories
+package it.unich.sci.jandom.ppfactories
 
-import targets.MockTarget
 import org.scalatest.FunSpec
+
+import it.unich.sci.jandom.targets.MockTarget
 
 /**
  * A test suite for memoizing factories.

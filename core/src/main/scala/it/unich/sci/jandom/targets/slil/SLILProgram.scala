@@ -18,14 +18,11 @@
 
 package it.unich.sci.jandom.targets.slil
 
-import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Environment
 import it.unich.sci.jandom.targets.NarrowingStrategy._
-import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.slil.AnalysisPhase._
-import scala.collection.mutable.HashMap
-import it.unich.sci.jandom.targets.Annotation
 
 /**
  * The target for a simple imperative language, similar to the one analyzed

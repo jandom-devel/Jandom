@@ -16,10 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
-import scala.collection.mutable.{ ArrayBuffer, LinkedHashMap }
+import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
 
 /**
  * The class Environment represents an environment at a certain point in a program. At the moment

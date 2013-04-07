@@ -16,11 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
-import it.unich.sci.jandom.targets.Environment
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Environment
+
 /**
  * This is a class containing parameters for pretty printing a SLILProgram with annotations.
  * @author Gianluca Amato <amato@sci.unich.it>

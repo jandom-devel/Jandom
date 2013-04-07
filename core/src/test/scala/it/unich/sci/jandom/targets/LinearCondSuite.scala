@@ -16,12 +16,13 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
+
+import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.domains.BoxDouble
 
 import linearcondition._
-import domains.BoxDouble
-import org.scalatest.FunSuite
 
 /**
  * Test suite for linear conditions.

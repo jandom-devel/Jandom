@@ -17,7 +17,9 @@
  */
 
 package it.unich.sci.jandom.domains
+
 import org.scalatest.FunSuite
+
 import breeze.linalg._
 
 /**

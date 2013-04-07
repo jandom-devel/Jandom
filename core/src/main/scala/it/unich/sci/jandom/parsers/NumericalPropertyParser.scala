@@ -16,12 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
-
-import targets.Environment
-import domains.{ NumericalDomain, NumericalProperty }
+package it.unich.sci.jandom.parsers
 import scala.util.parsing.combinator.JavaTokenParsers
+
+import it.unich.sci.jandom.domains.NumericalDomain
+import it.unich.sci.jandom.targets.Environment
 
 /**
  * A parser for numerical properties.

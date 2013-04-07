@@ -16,17 +16,18 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
+package it.unich.sci.jandom.parsers
 
-import targets.{ Environment, LinearForm }
-import targets.linearcondition._
-import targets.slil._
-import org.scalatest.FunSuite
-import org.scalatest.prop.Checkers
 import java.io.File
 import java.io.FilenameFilter
-import scala.util.Success
+
+import org.scalatest.FunSuite
+import org.scalatest.prop.Checkers
+
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
+import it.unich.sci.jandom.targets.slil._
 
 /**
  * Test suite for RandomParser.
@@ -69,7 +70,7 @@ class RandomParserSuite extends FunSuite with Checkers {
   for (f <- files) {  
     test("SLIL Target analyze "+f.getName()) {
       val source = scala.io.Source.fromFile(f).getLines.mkString("\n")
-      val parser = parsers.RandomParser()
+      val parser = RandomParser()
       parser.parseProgram(source) match {
         case parser.Success(_,_) => 
         case parser.NoSuccess(msg, next) => fail(msg + " in line " + next.pos.line + " column " + next.pos.column)     

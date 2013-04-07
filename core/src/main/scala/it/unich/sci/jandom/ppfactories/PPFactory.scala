@@ -16,10 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package ppfactories
-
-import targets.Target
+package it.unich.sci.jandom.ppfactories
 
 /**
  * This is the trait for "per program point" factories, i.e. functions

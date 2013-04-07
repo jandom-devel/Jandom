@@ -16,13 +16,15 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
-import domains.BoxDouble
+import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.domains.BoxDouble
+import it.unich.sci.jandom.parsers.RandomParser
+
 import linearcondition.AtomicCond
 import slil._
-import org.scalatest.FunSuite
 
 /**
  * Test suite for SLIL programs.
@@ -31,7 +33,7 @@ import org.scalatest.FunSuite
  */
 class SLILProgramSuite extends FunSuite {
   test("simple program 1") {
-    val env = targets.Environment("x")
+    val env = Environment("x")
     val program = SLILProgram(env, Seq(1),
       CompoundStmt(
         AssignStmt(0, LinearForm.fromCoefficient(0)),
@@ -55,10 +57,10 @@ class SLILProgramSuite extends FunSuite {
             }
       }     
     """
-    val parsed = parsers.RandomParser().parseProgram(source)
+    val parsed = RandomParser().parseProgram(source)
     val program = parsed.get
 
-    val params = new Parameters[SLILTarget](program) { val domain = domains.BoxDouble }
+    val params = new Parameters[SLILTarget](program) { val domain = BoxDouble }
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Output
     program.analyze(params)
@@ -81,7 +83,7 @@ class SLILProgramSuite extends FunSuite {
         AssignStmt(0, LinearForm.fromCoefficient(0)),
         WhileStmt(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LT),
           AssignStmt(0, LinearForm(List(1, 1)))))
-     val params = new Parameters(stmt) { val domain = domains.BoxDouble }
+     val params = new Parameters(stmt) { val domain = BoxDouble }
      val ann = stmt.analyze(params)
      expectResult(BoxDouble(Array(10), Array(11))) { ann((stmt, 2)) }
   }

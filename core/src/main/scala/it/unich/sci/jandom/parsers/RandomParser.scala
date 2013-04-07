@@ -16,13 +16,14 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
-
-import targets.{ Environment, LinearForm }
-import targets.slil._
-import targets.linearcondition._
+package it.unich.sci.jandom.parsers
 import scala.util.parsing.combinator.JavaTokenParsers
+
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.linearcondition.BRandomCond
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
+import it.unich.sci.jandom.targets.slil._
+
 
 /**
  * Parser for Random programs.

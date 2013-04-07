@@ -16,12 +16,12 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
+package it.unich.sci.jandom.parsers
 
-import targets.LinearForm
-import targets.linearcondition._
 import scala.util.parsing.combinator.JavaTokenParsers
+
+import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.targets.linearcondition._
 
 /**
  * A trait for parsing integer linear conditions. To be inherited by real parsers. An implementation

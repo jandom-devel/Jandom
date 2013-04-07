@@ -18,14 +18,8 @@
 
 package it.unich.sci.jandom.targets.lts 
 
-import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.targets.{ Environment, Parameters, Target }
-import it.unich.sci.jandom.widenings.Widening
-import it.unich.sci.jandom.narrowings.Narrowing
-import scala.collection.mutable.{ Map, ArrayBuffer }
 import it.unich.sci.jandom.domains.NumericalDomain
-import it.unich.sci.jandom.domains.BoxDouble
-import scala.collection.mutable.HashMap
+import it.unich.sci.jandom.targets.{Environment, Target}
 import it.unich.sci.jandom.targets.Annotation
 
 /**

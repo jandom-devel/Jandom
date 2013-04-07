@@ -21,15 +21,14 @@ package it.unich.sci.jandom.ui.gui
 import java.awt.event.{InputEvent, KeyEvent}
 import java.io.{File, FileInputStream}
 
-import scala.collection.JavaConversions.asScalaBuffer
 import scala.swing.{Action, BorderPanel, BoxPanel, ComboBox, EditorPane, FileChooser, Label, MenuItem, Orientation, ScrollPane}
 
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.{ClassNode, MethodNode}
 
-import it.unich.sci.jandom.softwareName
+import it.unich.sci.jandom._
+import it.unich.sci.jandom.targets.jvm._
 import it.unich.sci.jandom.targets.Parameters
-import it.unich.sci.jandom.targets.jvm.{JVMEnvDomain, Method, UnsupportedByteCodeException}
 
 import javax.swing.KeyStroke
 

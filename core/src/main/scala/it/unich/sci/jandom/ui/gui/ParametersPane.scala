@@ -16,26 +16,23 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package ui.gui
-import scala.swing._
+package it.unich.sci.jandom.ui.gui
+
 import java.awt.GridBagConstraints
+
+import scala.swing._
 import scala.swing.ListView.Renderer
-import javax.swing.SpinnerNumberModel
-import javax.swing.JSpinner
+
+import it.unich.sci.jandom.narrowings.NoNarrowing
+import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
+import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
+import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
 import it.unich.sci.jandom.targets.{Parameters,Target}
 import it.unich.sci.jandom.ui._
 import it.unich.sci.jandom.widenings.DefaultWidening
-import it.unich.sci.jandom.narrowings.NoNarrowing
-import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
-import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
-import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
-import it.unich.sci.jandom.ui.WideningScopes
-import it.unich.sci.jandom.ui.NarrowingStrategies
-import it.unich.sci.jandom.ui.NumericalDomains
-import it.unich.sci.jandom.ui.Parameter
-import it.unich.sci.jandom.ui.ParameterValue
-import it.unich.sci.jandom.targets.slil.SLILStmt
+
+import javax.swing.JSpinner
+import javax.swing.SpinnerNumberModel
 
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)

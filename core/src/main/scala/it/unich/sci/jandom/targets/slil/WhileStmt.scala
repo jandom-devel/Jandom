@@ -19,8 +19,8 @@
 package it.unich.sci.jandom.targets.slil
 
 import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import it.unich.sci.jandom.targets.Annotation
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
 /**
  * The class for a while statement. Each while statement has a corresponding program

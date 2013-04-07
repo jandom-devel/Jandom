@@ -16,11 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.linearcondition
+package it.unich.sci.jandom.targets.linearcondition
 
-import targets.LinearForm
-import domains.NumericalProperty
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.LinearForm
 
 /**
  * The class for atomic conditions of the kind \vec c * \vec x <=> 0.

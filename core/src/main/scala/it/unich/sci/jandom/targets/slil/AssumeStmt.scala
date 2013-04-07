@@ -19,10 +19,10 @@
 package it.unich.sci.jandom.targets.slil
 
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
 import AnalysisPhase.AnalysisPhase
-import it.unich.sci.jandom.targets.linearcondition.LinearCond
-import it.unich.sci.jandom.targets.Annotation
 
 /**
  * The class for the statement assume. It takes a linear condition as a parameter, and forces this condition to hold. It is

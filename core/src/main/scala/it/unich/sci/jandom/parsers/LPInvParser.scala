@@ -16,15 +16,17 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
+package it.unich.sci.jandom.parsers
 
-import targets.{ Environment, LinearAssignment }
-import targets.linearcondition._
-import targets.lts._
-
-import scala.util.parsing.combinator.JavaTokenParsers
 import scala.collection.mutable.HashMap
+import scala.util.parsing.combinator.JavaTokenParsers
+
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.LinearAssignment
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
+import it.unich.sci.jandom.targets.lts.LTS
+import it.unich.sci.jandom.targets.lts.Location
+import it.unich.sci.jandom.targets.lts.Transition
 
 /**
   * Parser for transition systems as they appear in the [[http://www.cs.colorado.edu/~srirams/Software/lpinv.html LPInv]]

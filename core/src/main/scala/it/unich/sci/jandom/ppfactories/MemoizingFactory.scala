@@ -18,9 +18,8 @@
 
 package it.unich.sci.jandom.ppfactories
 
-import scala.collection.mutable.Map
-import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.Annotation
+import it.unich.sci.jandom.targets.Target
 
 /**
  * A "per program point factory" which reuses objects for the same program point.

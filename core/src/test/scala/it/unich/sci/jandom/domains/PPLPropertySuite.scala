@@ -16,11 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package domains
+package it.unich.sci.jandom.domains
+
+import org.scalatest.FunSuite
 
 import parma_polyhedra_library.Octagonal_Shape_double
-import org.scalatest.FunSuite
 
 /**
  * Test suite for the PPLProperty numerical domain.

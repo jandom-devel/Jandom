@@ -16,11 +16,12 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
+package it.unich.sci.jandom.parsers
 
-import targets.{ Environment, LinearForm }
 import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.LinearForm
 
 /**
  * Test suite for LinearExpressionParser

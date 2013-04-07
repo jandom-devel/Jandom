@@ -16,8 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package utils.numberext
+package it.unich.sci.jandom.utils.numberext
 
 import scala.math.ScalaNumber
 import scala.math.ScalaNumericConversions

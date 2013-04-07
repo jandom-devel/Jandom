@@ -21,19 +21,16 @@ package it.unich.sci.jandom
 import it.unich.sci.jandom.domains.PPLCPolyhedron
 import it.unich.sci.jandom.narrowings.DefaultNarrowing
 import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
+import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
 import it.unich.sci.jandom.ppfactories.MemoizingFactory
 import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
 import it.unich.sci.jandom.targets.NarrowingStrategy
 import it.unich.sci.jandom.targets.WideningScope
-import it.unich.sci.jandom.targets.slil.SLILStmt
-import it.unich.sci.jandom.widenings.DefaultWidening
-import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
-import parma_polyhedra_library.Parma_Polyhedra_Library
-import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.targets.lts.LTS
-import it.unich.sci.jandom.widenings.Widening
-import it.unich.sci.jandom.narrowings.Narrowing
 import it.unich.sci.jandom.targets.slil.SLILTarget
+import it.unich.sci.jandom.widenings.DefaultWidening
+
+import parma_polyhedra_library.Parma_Polyhedra_Library
 
 /**
  * Example program using ''Jandom''.

@@ -19,6 +19,7 @@
 package it.unich.sci.jandom.domains
 
 import it.unich.sci.jandom.utils.PPLUtils
+
 import parma_polyhedra_library.C_Polyhedron
 import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Constraint

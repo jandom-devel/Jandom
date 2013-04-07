@@ -16,11 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
+package it.unich.sci.jandom.parsers
 
-import targets.{ Environment, LinearForm }
 import scala.util.parsing.combinator.JavaTokenParsers
+
+import it.unich.sci.jandom.targets.LinearForm
 
 /**
  * A trait for parsing integer linear expressions. To be inherited by real parsers. An implementation
@@ -31,11 +31,6 @@ import scala.util.parsing.combinator.JavaTokenParsers
  *
  */
 trait LinearExpressionParser extends JavaTokenParsers {
-  /**
-   * Environment for variables
-   */
-  protected val env: Environment
-
   /**
    * Parser for variables
    */

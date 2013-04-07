@@ -20,13 +20,16 @@ package it.unich.sci.jandom.targets.jvm
 
 import java.io.{ PrintWriter, StringWriter }
 import java.util.NoSuchElementException
-import scala.collection.mutable.{ BitSet, HashMap, Queue }
+
+import scala.collection.mutable.{BitSet, HashMap, Queue}
+
 import org.objectweb.asm._
 import org.objectweb.asm.tree._
 import org.objectweb.asm.util._
+
 import it.unich.sci.jandom.domains.NumericalProperty
-import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.Annotation
+import it.unich.sci.jandom.targets.Target
 
 /**
  * This class analyzes a single method of a class.

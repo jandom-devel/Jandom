@@ -16,14 +16,14 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package ui.cli
-import it.unich.sci.jandom.targets.slil.SLILStmt
-import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
+package it.unich.sci.jandom.ui.cli
+
+import it.unich.sci.jandom.domains.PPLCPolyhedron
 import it.unich.sci.jandom.narrowings.NoNarrowing
-import it.unich.sci.jandom.targets.slil.SLILStmt
-import it.unich.sci.jandom.targets.slil.SLILStmt
+import it.unich.sci.jandom.parsers.RandomParser
+import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
+import it.unich.sci.jandom.targets.Parameters
 import it.unich.sci.jandom.targets.slil.SLILTarget
 
 /**
@@ -33,10 +33,10 @@ object JandomCLI extends App {
   val conf = new Conf(args)
 
   val source = scala.io.Source.fromFile(conf.file()).getLines.mkString("\n")
-  val parsed = parsers.RandomParser().parseProgram(source)
+  val parsed = RandomParser().parseProgram(source)
   if (parsed.successful) {
     val program = parsed.get
-    val params = new targets.Parameters[SLILTarget](program) { val domain = domains.PPLCPolyhedron }
+    val params = new Parameters[SLILTarget](program) { val domain = PPLCPolyhedron }
     params.narrowingStrategy = conf.narrowingStrategy()
     params.wideningScope = conf.wideningScope()        
     params.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)

@@ -16,13 +16,14 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
-import domains.BoxDouble
+import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.domains.BoxDouble
+
 import linearcondition.{FalseCond,AtomicCond}
 import lts._
-import org.scalatest.FunSuite
 
 /**
  * Test suite for LTS.
@@ -30,7 +31,7 @@ import org.scalatest.FunSuite
  */
 class LTSSuite extends FunSuite {
   test("simple LTS analysis") {
-    val env = targets.Environment("x")
+    val env = Environment("x")
 	val l1 = Location("start", Nil)
 	val l2 = Location("ciclo", List(FalseCond))
 	val t1 = Transition("init", l1, l2, 

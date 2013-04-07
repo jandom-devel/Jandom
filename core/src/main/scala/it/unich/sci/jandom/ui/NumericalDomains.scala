@@ -21,9 +21,9 @@ import it.unich.sci.jandom.domains.BoxDouble
 import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.domains.PPLDomain
 import it.unich.sci.jandom.domains.Parallelotope
+
 import parma_polyhedra_library.C_Polyhedron
 import parma_polyhedra_library.Double_Box
-import it.unich.sci.jandom.domains.PPLCPolyhedron
 import parma_polyhedra_library.Octagonal_Shape_double
 
 /**

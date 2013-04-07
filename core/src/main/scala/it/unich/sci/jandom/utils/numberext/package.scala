@@ -16,8 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package utils
+package it.unich.sci.jandom.utils
 
 /**
  * This is the package for numeric extensions. It is an implementation of
