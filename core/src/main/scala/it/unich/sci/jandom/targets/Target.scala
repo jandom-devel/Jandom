@@ -34,11 +34,6 @@ abstract class Target {
   type ProgramPoint
 
   /**
-   * Abstract type for widening points.
-   */
-  type WideningPoint = ProgramPoint
-
-  /**
    * The type of the given target.
    */
   type Tgt <: Target
