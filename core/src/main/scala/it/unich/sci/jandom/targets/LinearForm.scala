@@ -145,5 +145,5 @@ object LinearForm {
   /**
    * Builds the linear form "v(i)"
    */
-  def fromVar[T](i: Int)(implicit numeric: Numeric[T]) = fromCoefficientVar(1, i)
+  def fromVar[T](i: Int)(implicit numeric: Numeric[T]) = fromCoefficientVar(numeric.one, i)
 }

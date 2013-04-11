@@ -18,8 +18,9 @@
 
 package it.unich.sci.jandom.targets.jvm
 import scala.collection.mutable.ArrayStack
-
 import it.unich.sci.jandom.domains.{AbstractDomain, NumericalDomain, NumericalProperty}
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
+import it.unich.sci.jandom.targets.LinearForm
 
 /**
  * This is the abstract property abstracting the environment (stack and frame) of a Java Virtual Machine. 
@@ -72,26 +73,27 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
   def iadd() {
     val vm = stack.pop
     val vn = stack.top
-    property = property.addAssignment(vn, vm).delDimension(vm)    
+    property = property.variableAdd(vn, vm).delDimension(vm)    
   }
   
   def iinc(v: Int, c: Int) {
     val vn = frame(v)
-    property = property.addConstant(vn,1)
+    property = property.constantAdd(vn,1)
   }
   
-  def if_icmpgt {
+  def if_icmp(op: AtomicCond.ComparisonOperators.Value) {
+    import AtomicCond.ComparisonOperators._
     val vm = stack.pop
     val vn = stack.pop
-    property = property.if_icmpgt(vn, vm)
-    property = property.delDimension(vm max vn)
-    property = property.delDimension(vm min vn)
-  }
-  
-  def if_icmple {
-    val vm = stack.pop
-    val vn = stack.pop
-    property = property.if_icmple(vn, vm)
+    val lfm = LinearForm.fromVar[Int](vm+1)
+    val lfn = LinearForm.fromVar[Int](vn+1)
+    val condition = op match {
+      case LT => AtomicCond(lfn - lfm + LinearForm.fromCoefficient(1), LTE)
+      case GT => AtomicCond(lfn - lfm - LinearForm.fromCoefficient(1), GTE)
+      // we should optmized NEQ
+      case _ => AtomicCond(lfn - lfm, op)      
+    }    
+    property = condition.analyze(property)
     property = property.delDimension(vm max vn)
     property = property.delDimension(vm min vn)
   }

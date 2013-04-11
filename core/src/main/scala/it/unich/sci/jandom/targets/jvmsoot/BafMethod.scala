@@ -33,6 +33,7 @@ import soot.options.Options
 import soot.tagkit.StringTag
 import soot.toolkits.graph._
 import it.unich.sci.jandom.targets.Annotation
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 
 /**
  * Analysis of a method using the Baf intermediate representation.
@@ -51,7 +52,7 @@ class BafMethod(method: SootMethod) extends Target {
   val chain = body.getUnits()
   val order = weakTopologicalOrder
 
-  lazy val weakTopologicalOrder: Annotation[ProgramPoint,Integer] = {
+  lazy val weakTopologicalOrder: Annotation[ProgramPoint, Integer] = {
     val cfg = new ExceptionalUnitGraph(body)
     val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
     val ann = getAnnotation[Integer]
@@ -60,11 +61,20 @@ class BafMethod(method: SootMethod) extends Target {
     ann
   }
 
-  private def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[ProgramPoint,JVMEnv[Property]]): Seq[(ProgramPoint, JVMEnv[Property])] = {
+  private def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[ProgramPoint, JVMEnv[Property]]): Seq[(ProgramPoint, JVMEnv[Property])] = {
+
     var exits = Seq[(ProgramPoint, JVMEnv[Property])]()
     val state = ann(pp).clone
     var unit = pp
     var nextunit = pp
+    
+    def analyzeIf(op: AtomicCond.ComparisonOperators.Value) = {
+      val scopy = state.clone
+      scopy.if_icmp(op)
+      exits :+= ((unit.asInstanceOf[TargetArgInst].getTarget, scopy))
+      state.if_icmp(AtomicCond.ComparisonOperators.opposite(op))
+    }
+    
     do {
       unit = nextunit
       unit match {
@@ -78,16 +88,22 @@ class BafMethod(method: SootMethod) extends Target {
           unit.getConstant() match {
             case i: IntConstant => state.iinc(unit.getLocal().getNumber(), i.value)
           }
-
         case unit: StoreInst =>
           state.istore(unit.getLocal.getNumber)
         case unit: LoadInst =>
           state.iload(unit.getLocal.getNumber)
+        case unit: IfCmpLeInst =>
+          analyzeIf(AtomicCond.ComparisonOperators.LTE)
+        case unit: IfCmpLtInst =>
+           analyzeIf(AtomicCond.ComparisonOperators.LT)
+        case unit: IfCmpGeInst =>
+          analyzeIf(AtomicCond.ComparisonOperators.GTE)
         case unit: IfCmpGtInst =>
-          val scopy = state.clone
-          scopy.if_icmpgt
-          exits :+= (unit.getTarget, scopy)
-          state.if_icmple
+          analyzeIf(AtomicCond.ComparisonOperators.GT)
+        case unit: IfCmpEqInst =>
+          analyzeIf(AtomicCond.ComparisonOperators.EQ)
+        case unit: IfCmpNeInst =>
+          analyzeIf(AtomicCond.ComparisonOperators.NEQ)        
         case unit: GotoInst =>
           exits :+= (unit.getTarget, state)
         case unit: ReturnVoidInst =>
@@ -102,7 +118,7 @@ class BafMethod(method: SootMethod) extends Target {
     exits
   }
 
-  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
+  def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     val ann = getAnnotation[params.Property]
     val taskList = Queue[ProgramPoint](chain.getFirst())
     ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
@@ -111,7 +127,7 @@ class BafMethod(method: SootMethod) extends Target {
       val result = analyzeBlock(pp, ann)
       for ((destpp, state) <- result) {
         if (ann contains destpp) {
-          val modified = if (order(destpp)<= order(pp))
+          val modified = if (order(destpp) <= order(pp))
             ann(destpp).widening(state)
           else
             ann(destpp).union(state)
@@ -125,7 +141,7 @@ class BafMethod(method: SootMethod) extends Target {
     ann
   }
 
-  def mkString[D <: JVMEnv[_]](ann: Annotation[ProgramPoint,D]): String = {
+  def mkString[D <: JVMEnv[_]](ann: Annotation[ProgramPoint, D]): String = {
     for ((unit, prop) <- ann) {
       unit.addTag(new StringTag(prop.toString))
     }

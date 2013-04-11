@@ -20,16 +20,14 @@ package it.unich.sci.jandom.targets.jvm
 
 import java.io.{ PrintWriter, StringWriter }
 import java.util.NoSuchElementException
-
 import scala.collection.mutable.{BitSet, HashMap, Queue}
-
 import org.objectweb.asm._
 import org.objectweb.asm.tree._
 import org.objectweb.asm.util._
-
 import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Target
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 
 /**
  * This class analyzes a single method of a class.
@@ -109,9 +107,9 @@ class Method(val methodNode: MethodNode) extends Target {
             op match {
               case IF_ICMPGT => {
                 val scopy = s.clone
-                scopy.if_icmpgt
+                scopy.if_icmp(AtomicCond.ComparisonOperators.GT)
                 exits :+= (jumpBlock.get, scopy)
-                s.if_icmple
+                s.if_icmp(AtomicCond.ComparisonOperators.LTE)
               }
               case GOTO => exits :+= (jumpBlock.get, s)
               case _ => throw UnsupportedByteCodeException(node)

@@ -82,6 +82,10 @@ class JimpleMethod(method: SootMethod) extends Target {
             val lf = LinearForm(for (i <- 0 to locals.size) yield res1(i) - res2(i))              
             v match {
               case _: GtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GT))
+              case _: GeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GTE))
+              case _: LtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.LT))
+              case _: LeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.LTE))
+              case _: EqExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.EQ))
               case _ => None
             }
           }
