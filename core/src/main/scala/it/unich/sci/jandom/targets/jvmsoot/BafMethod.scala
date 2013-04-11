@@ -127,15 +127,15 @@ class BafMethod(method: SootMethod) extends Target {
     val annEdge = HashMap[ProgramPoint,HashMap[ProgramPoint,params.Property]]()
     ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
     while (!taskList.isEmpty) {
-      val pp = taskList.dequeue()
+      val pp = taskList.dequeue()    		  
       val result = analyzeBlock(pp, ann)
       for ((destpp, state) <- result) {
         val x = annEdge.getOrElseUpdate(destpp, HashMap[ProgramPoint,params.Property]())
         x(pp) = state.clone
         if (ann contains destpp) {
-          val modified = if (order(destpp) <= order(pp)) {            
-            ann(destpp).widening(state)
-          } else
+          val modified = if (order(destpp) <= order(pp))             
+            ann(destpp).widening(state, params.wideningFactory(destpp))
+          else
             ann(destpp).union(state)
           if (modified) taskList.enqueue(destpp)
         } else {
@@ -150,11 +150,14 @@ class BafMethod(method: SootMethod) extends Target {
       val result = analyzeBlock(pp, ann)
       for ((destpp, state) <- result) {        
         annEdge(destpp)(pp) = state.clone
-        var v = state.clone
+        var v = state.clone        
         v.empty
-        for (edgeval <- annEdge(destpp))
-          v.union(edgeval._2)        
-        val modified = ann(destpp).intersection(v)
+        for (edgeval <- annEdge(destpp)) 
+          v.union(edgeval._2)       
+        val modified = if (order(destpp) <= order(pp))      
+          ann(destpp).narrowing(v, params.narrowingFactory(destpp))
+        else          
+          ann(destpp).intersection(v)
         if (modified) taskList.enqueue(destpp)
       }
     }

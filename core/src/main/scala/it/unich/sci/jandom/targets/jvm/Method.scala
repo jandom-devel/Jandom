@@ -20,10 +20,13 @@ package it.unich.sci.jandom.targets.jvm
 
 import java.io.{ PrintWriter, StringWriter }
 import java.util.NoSuchElementException
+
 import scala.collection.mutable.{BitSet, HashMap, Queue}
+
 import org.objectweb.asm._
 import org.objectweb.asm.tree._
 import org.objectweb.asm.util._
+
 import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Target
@@ -233,7 +236,7 @@ class Method(val methodNode: MethodNode) extends Target {
       for ((block, state) <- result) {
         if (ann contains block) {
           val modified = if (block.widening)
-            ann(block) widening state
+            ann(block).widening(state,params.wideningFactory(block))
           else
             ann(block) union state
           if (modified) taskList.enqueue(block)

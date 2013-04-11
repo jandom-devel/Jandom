@@ -21,8 +21,13 @@ package it.unich.sci.jandom.targets
 import org.scalatest.FunSuite
 
 import it.unich.sci.jandom.domains.PPLCPolyhedron
+import it.unich.sci.jandom.narrowings.DefaultNarrowing
+import it.unich.sci.jandom.narrowings.NoNarrowing
+import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
+import it.unich.sci.jandom.ppfactories.MemoizingFactory
 import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
 import it.unich.sci.jandom.targets.jvmsoot._
+import it.unich.sci.jandom.widenings.DefaultWidening
 
 import soot._
 
@@ -39,9 +44,10 @@ class  JVMSootSuite extends FunSuite {
     c.setApplicationClass()
     val method = new BafMethod(c.getMethodByName("loop"))
     val params = new Parameters(method) {
-      val domain = new JVMEnvDomain(PPLCPolyhedron)
+      val domain = new JVMEnvDomain(PPLCPolyhedron)      
+      wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
+      narrowingFactory = NoNarrowing
     }
-    println(method)
     val ann = method.analyze(params)
     println(method.mkString(ann))
   }
@@ -54,8 +60,10 @@ class  JVMSootSuite extends FunSuite {
     val method = new JimpleMethod(c.getMethodByName("loop"))
     val params = new Parameters(method) {
       val domain = PPLCPolyhedron
+      wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
+      narrowingFactory = DefaultNarrowing
+
     }
-    println(method)
     val ann = method.analyze(params)
     println(method.mkString(ann))
   }

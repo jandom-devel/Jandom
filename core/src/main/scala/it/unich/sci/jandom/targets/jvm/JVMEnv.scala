@@ -21,6 +21,8 @@ import scala.collection.mutable.ArrayStack
 import it.unich.sci.jandom.domains.{AbstractDomain, NumericalDomain, NumericalProperty}
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.widenings.Widening
+import it.unich.sci.jandom.narrowings.Narrowing
 
 /**
  * This is the abstract property abstracting the environment (stack and frame) of a Java Virtual Machine. 
@@ -131,18 +133,37 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
     else 
       false
   }
+  
+  /**
+   * Narrowing of two abstract environments.
+   * @param that the abstract environment to widen with `this`
+   * @param n the narrowing to apply to the numerical component
+   * @return true if the result is bigger than `this`
+   */
+  def narrowing(that: JVMEnv[Property], n: Narrowing): Boolean = {
+    // this should always hold!!
+    //require(frame == that.frame)
+    //require(stack == that.stack)    
+    val oldproperty = property
+    property = n(property, that.property)    
+    if (property < oldproperty)
+      true
+    else 
+      false
+  }
 
   /**
    * Widening of two abstract environments.
    * @param that the abstract environment to widen with `this`
+   * @prarm w the widening to apply to the numerical component
    * @return true if the result is bigger than `this`
    */
-  def widening(that: JVMEnv[Property]): Boolean = {
+  def widening(that: JVMEnv[Property], w: Widening): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)
     val oldproperty = property
-    property = property widening that.property
+    property = w(property,that.property)
     if (property > oldproperty)
       true
     else 

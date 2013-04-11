@@ -185,9 +185,10 @@ class JimpleMethod(method: SootMethod) extends Target {
         annEdge.getOrElseUpdate(destpp, HashMap[ProgramPoint, params.Property]()).update(pp, state)
         if (ann contains destpp) {
           val oldstate = ann(destpp)
-          val newstate = if (order(destpp) <= order(pp))
-            ann(destpp) widening state
-          else
+          val newstate = if (order(destpp) <= order(pp)) {
+            val w = params.wideningFactory(destpp)
+            w(ann(destpp), state)
+          } else
             ann(destpp) union state
           if (newstate > oldstate) {
             ann(destpp) = newstate
@@ -199,7 +200,7 @@ class JimpleMethod(method: SootMethod) extends Target {
         }
       }
     }
-    taskList.enqueue(chain.getFirst())    
+    taskList.enqueue(chain.getFirst())
     while (!taskList.isEmpty) {
       val pp = taskList.dequeue()
       val result = analyzeBlock(pp, ann)
@@ -207,7 +208,11 @@ class JimpleMethod(method: SootMethod) extends Target {
         annEdge(destpp)(pp) = state
         val base = annEdge(destpp).foldRight(state.empty)(_._2 union _)
         val oldstate = ann(destpp)
-        val newstate = ann(destpp) intersection base
+        val newstate = if (order(destpp) <= order(pp)) {
+          val n = params.narrowingFactory(destpp)
+          n(ann(destpp), state)
+        } else
+          ann(destpp) intersection base
         if (newstate < oldstate) {
           ann(destpp) = newstate
           taskList.enqueue(destpp)
