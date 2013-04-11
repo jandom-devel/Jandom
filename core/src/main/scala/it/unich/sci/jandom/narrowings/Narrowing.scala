@@ -16,11 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package narrowings
+package it.unich.sci.jandom.narrowings
 
-import domains.NumericalProperty
-import targets.Target
+import it.unich.sci.jandom.domains.NumericalProperty
 
 /**
  * This is the trait for narrowings, operators used to accelerate fixpoint computations.

@@ -16,12 +16,13 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package widenings
+package it.unich.sci.jandom. widenings
 
-import targets.MockTarget
-import domains.BoxDouble
 import org.scalatest.FunSpec
+
+import it.unich.sci.jandom.domains.BoxDouble
+import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
+import it.unich.sci.jandom.targets.MockTarget
 
 /**
  * Test suite for delayed widening factories.
@@ -31,7 +32,7 @@ class DelayedWideningFactorySuite extends FunSpec {
   
   describe("Delayed Widening Factory") {
     it ("should create a difference instance of a delayed widening each time it is called")  {      
-      val dwf = DelayedWideningFactory[MockTarget](DefaultWidening,1)
+      val dwf = DelayedWideningFactory[MockTarget#ProgramPoint](DefaultWidening,1)
       val wd = dwf(0)       
       val d1 = BoxDouble(Array(0),Array(1))
       val d2 = BoxDouble(Array(1),Array(2))

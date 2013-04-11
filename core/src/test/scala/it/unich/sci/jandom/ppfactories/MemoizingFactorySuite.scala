@@ -16,11 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package ppfactories
+package it.unich.sci.jandom.ppfactories
 
-import targets.MockTarget
 import org.scalatest.FunSpec
+
+import it.unich.sci.jandom.targets.MockTarget
 
 /**
  * A test suite for memoizing factories.
@@ -29,9 +29,9 @@ import org.scalatest.FunSpec
  */
 class MemoizingFactorySuite extends FunSpec {
   
-  private class NumberFactory extends PPFactory[MockTarget,Int] {
+  private class NumberFactory extends PPFactory[MockTarget#ProgramPoint,Int] {
     var i: Int = 0
-    def apply(pp: MockTarget#WideningPoint) = {
+    def apply(pp: MockTarget#ProgramPoint) = {
       i+=1
       i
     } 
@@ -40,7 +40,7 @@ class MemoizingFactorySuite extends FunSpec {
   describe("PerPP Widening Factory") {
     it ("should create differente instances of a widening for each program point")  {
       val tgt = new MockTarget()
-      val dwf = MemoizingFactory(new NumberFactory,tgt)
+      val dwf = MemoizingFactory(tgt)(new NumberFactory)
       val i0 = dwf(0)      
       val i1 = dwf(0)
       val i2 = dwf(1)

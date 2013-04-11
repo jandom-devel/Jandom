@@ -16,15 +16,15 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
-import domains.{ NumericalProperty, NumericalDomain }
-import widenings.{ Widening, DefaultWidening }
-import narrowings.{ Narrowing, DefaultNarrowing }
-import ppfactories.PPFactory
 import it.unich.sci.jandom.domains.AbstractDomain
 import it.unich.sci.jandom.domains.AbstractDomain
+import it.unich.sci.jandom.widenings.DefaultWidening
+import it.unich.sci.jandom.narrowings.DefaultNarrowing
+import it.unich.sci.jandom.ppfactories.PPFactory
+import it.unich.sci.jandom.narrowings.Narrowing
+import it.unich.sci.jandom.widenings.Widening
 
 /**
  * This class is used to provide parameters for analyzers. Each instance of `Parameters` is
@@ -50,12 +50,12 @@ abstract class Parameters[Tgt <: Target](val tgt: Tgt)  {
   /**
    * The widening factory used in the analysis. Defaults to the factory for the standard domain widening.
    */
-  var wideningFactory: PPFactory[Tgt, Widening] = DefaultWidening
+  var wideningFactory: PPFactory[Tgt#ProgramPoint, Widening] = DefaultWidening
 
   /**
    * The narrowing factory used in the analysis. Defaults to the standard domain narrowing.
    */
-  var narrowingFactory: PPFactory[Tgt, Narrowing] = DefaultNarrowing
+  var narrowingFactory: PPFactory[Tgt#ProgramPoint, Narrowing] = DefaultNarrowing
 
   /**
    * This parameter determines whether results are saved for each program point or only for widening points.

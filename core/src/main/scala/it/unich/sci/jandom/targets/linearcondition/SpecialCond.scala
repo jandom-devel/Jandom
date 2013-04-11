@@ -16,19 +16,19 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.linearcondition
+package it.unich.sci.jandom.targets.linearcondition
 
-import domains.NumericalProperty
+import it.unich.sci.jandom.domains.NumericalProperty
 
 /**
  * An atomic condition for a non-deterministic choice.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 object BRandomCond extends LinearCond {
-  def opposite = BRandomCond
-  override def toString = "brandom()"
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property) = input    
+  val opposite = BRandomCond
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property) = input
+  override def mkString(vars: Seq[String]) = "brandom()"
+  val dimension = 0
 }
 
 /**
@@ -36,9 +36,10 @@ object BRandomCond extends LinearCond {
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 object TrueCond extends LinearCond {
-  def opposite = FalseCond
-  override def toString = "TRUE"
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property) = input    
+  val opposite = FalseCond
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property) = input  
+  override def mkString(vars: Seq[String]) = "TRUE"
+  val dimension = 0
 }
 
 /**
@@ -46,7 +47,8 @@ object TrueCond extends LinearCond {
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 object FalseCond extends LinearCond {
-  def opposite = TrueCond
-  override def toString = "FALSE"
+  val opposite = TrueCond
   override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input.empty
+  override def mkString(vars: Seq[String]) = "FALSE"
+  val dimension = 0
 }

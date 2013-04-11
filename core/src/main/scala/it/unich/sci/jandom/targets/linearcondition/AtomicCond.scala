@@ -16,11 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.linearcondition
+package it.unich.sci.jandom.targets.linearcondition
 
-import targets.LinearForm
-import domains.NumericalProperty
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.LinearForm
 
 /**
  * The class for atomic conditions of the kind \vec c * \vec x <=> 0.
@@ -54,9 +53,11 @@ case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.V
     	input.linearInequality( homcoeff(-lf), known(-lf) )    
   }
   
-  def opposite = new AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op))
+  lazy val opposite = new AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op))
+
+  val dimension = lf.dimension
   
-  override def toString = lf.toString + op + "0"
+  override def mkString(vars: Seq[String]) = lf.mkString(vars) + op + "0"
 }
 
 /**

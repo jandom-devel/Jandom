@@ -16,10 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
-import domains.NumericalProperty
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * The class for the non deterministic assignment  "variable := ?".
@@ -35,10 +35,12 @@ case class NondetStmt[T](variable: Int) extends SLILStmt {
   /**
    * At the moment this is highly unprecise, since we forget everything for every variable.
    */
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
     input.nonDeterministicAssignment(variable)
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =
-    ppspec.indent(level) + "x" + variable + " = ?"
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec) =
+    ppspec.indent(level) + "x" + variable + " = ?\n"
+    
+  val numvars = variable
 }

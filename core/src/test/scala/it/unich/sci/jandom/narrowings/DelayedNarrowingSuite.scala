@@ -16,11 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package narrowings
+package it.unich.sci.jandom.narrowings
 
-import domains.BoxDouble
 import org.scalatest.FunSpec
+
+import it.unich.sci.jandom.domains.BoxDouble
 
 /**
  * Test suite for delayed narrowing.

@@ -16,13 +16,13 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
 import AnalysisPhase.AnalysisPhase
-import targets.linearcondition.LinearCond
 
 /**
  * The class for the statement assume. It takes a linear condition as a parameter, and forces this condition to hold. It is
@@ -32,9 +32,11 @@ import targets.linearcondition.LinearCond
 case class AssumeStmt(cond: LinearCond) extends SLILStmt {
   import AnalysisPhase._
   
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property =
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property =
     cond.analyze(input)
     
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level:Int, ppspec: PrettyPrinterSpec) =
-    ppspec.indent(level) + "assume(" + cond + ")"
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level:Int, ppspec: PrettyPrinterSpec) =
+    ppspec.indent(level) + "assume(" + cond + ")\n"
+    
+  val numvars = cond.dimension
 }

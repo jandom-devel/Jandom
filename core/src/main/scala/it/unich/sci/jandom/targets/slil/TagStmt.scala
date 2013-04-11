@@ -16,28 +16,27 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
-import domains.NumericalProperty
-import targets.{ LinearForm, Parameters, Environment }
-import annotations.{ BlackBoard, PerProgramPointAnnotation }
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
 
 /**
- * The class for the assignment statement "variable := linearForm".
- * @tparam T the type of the numerical expression involved in the assignment. It should be endowed with an implicit Numeric[T] object.
- * @param variable the variable we are assign a value to
- * @param linearForm the linear form of the assignment
- * @param numeric the implicit Numeric[T] object
+ * The class for tags, i.e. fake statements only used to mark program points. The 
+ * analysis at this point is reported trough the `tag` array in the `Parameters`
+ * object.
+ * @param tag an integer which is the index of this tag in the `tag` array
  */
-case class TagStmt[T](tag: Int) extends SLILStmt {
+case class TagStmt(tag: Int) extends SLILStmt {
   import AnalysisPhase._
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
     params.tag(tag) = input
     input
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec) =
-    ppspec.indent(level) + "tag(" + tag + ")"
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec) =
+    ppspec.indent(level) + "tag(" + tag + ")\n"
+    
+  val numvars = 0
 }

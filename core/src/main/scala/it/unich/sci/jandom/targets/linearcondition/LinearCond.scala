@@ -16,10 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.linearcondition
+package it.unich.sci.jandom.targets.linearcondition
 
-import domains.NumericalProperty
+import it.unich.sci.jandom.domains.NumericalProperty
 
 /**
  * This is the abstract class for all linear conditions. Each condition has an opposite method
@@ -33,9 +32,27 @@ abstract class LinearCond {
    * @return the property given by the logical and of input and the condition itself
    */
   def analyze[Property <: NumericalProperty[Property]] (input: Property): Property
+  
   /**
    * Returns the opposite linear condition (the one obtained by reversing the order of inequalities)
    * @return the opposite linear condition
    */
-  def opposite : LinearCond
+  val opposite : LinearCond
+
+  /**
+   * Return the dimension of the linear condition
+   */
+  val dimension: Int
+
+  /**
+   * Returns the textual representation of a linear form.
+   * @param vars symbolic names of variables in the linear form. 
+   */
+  def mkString (vars: Seq[String]): String
+  
+  /**
+   * @inheritdoc
+   * It is equivalent to `mkString` with variable names `v0`...`vn` 
+   */
+  override def toString = mkString(Stream.from(0).map { "v"+_ } )
 }

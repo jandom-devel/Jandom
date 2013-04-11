@@ -16,11 +16,12 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
+package it.unich.sci.jandom.parsers
 
-import targets.{ Environment, LinearForm }
 import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.LinearForm
 
 /**
  * Test suite for LinearExpressionParser
@@ -36,14 +37,14 @@ class LinearExpressionParserSuite extends FunSuite {
   test("linear expression parser") {
     val parser = new TempParser
     val expParsed = parser.parseExpr("3*x+y-z").get
-    val expBuild = LinearForm(Seq(0, 3, 1, -1), Environment("x", "y", "z"))
+    val expBuild = LinearForm(Seq(0, 3, 1, -1))
     expectResult(expBuild) { expParsed }
   }
   
   test("unary minus") {
     val parser = new TempParser
     val expParsed = parser.parseExpr("- 2").get
-    val expBuild = LinearForm(Seq(-2), Environment())
+    val expBuild = LinearForm(Seq(-2))
     expectResult(expBuild) { expParsed } 
   }
 }

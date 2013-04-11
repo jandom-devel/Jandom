@@ -16,11 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package widenings
+package it.unich.sci.jandom.widenings
 
-import domains.BoxDouble
 import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.domains.BoxDouble
 
 /**
  * A test for delayed widening.

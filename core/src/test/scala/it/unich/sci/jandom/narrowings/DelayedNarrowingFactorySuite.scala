@@ -16,12 +16,13 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package narrowings
+package it.unich.sci.jandom.narrowings
 
-import targets.MockTarget
-import domains.BoxDouble
 import org.scalatest.FunSpec
+
+import it.unich.sci.jandom.domains.BoxDouble
+import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
+import it.unich.sci.jandom.targets.MockTarget
 
 /**
  * Test suite for delayed narrowing factories.
@@ -31,7 +32,7 @@ class DelayedNarrowingFactorySuite extends FunSpec {
   
   describe("Delayed Narrowing Factory") {
     it ("should create a difference instance of a delayed narrowing each time it is called")  {      
-      val dwf = DelayedNarrowingFactory[MockTarget](DefaultNarrowing,1)
+      val dwf = DelayedNarrowingFactory[MockTarget#ProgramPoint](DefaultNarrowing,1)
       val wd = dwf(0)       
       val d1 = BoxDouble(Array(0),Array(3))
       val d2 = BoxDouble(Array(1),Array(3))

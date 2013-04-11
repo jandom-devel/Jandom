@@ -19,7 +19,6 @@
 package it.unich.sci.jandom.ui.gui
 
 import scala.swing.Component
-import scala.swing.Action
 
 /**
  * Each different target may implement a TargetPane to be supported by the UI.

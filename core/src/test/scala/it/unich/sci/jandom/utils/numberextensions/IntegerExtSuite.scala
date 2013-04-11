@@ -16,12 +16,12 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package utils.numberext
+package it.unich.sci.jandom.utils.numberext
+
+import org.scalacheck.Prop._
 
 import org.scalatest.FunSuite
-import org.scalatest.prop.Checkers 
-import org.scalacheck.Prop._
+import org.scalatest.prop.Checkers
 
 /**
  * Test suite for extended integers

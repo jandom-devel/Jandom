@@ -45,7 +45,6 @@ class JimpleMethod(method: SootMethod) extends Target {
   import scala.collection.JavaConversions._
 
   type ProgramPoint = Unit
-  type Annotation[Property] = HashMap[ProgramPoint, Property]
   type Tgt = JimpleMethod
   type DomainBase = NumericalDomain
 
@@ -61,9 +60,7 @@ class JimpleMethod(method: SootMethod) extends Target {
   }
   val order = weakTopologicalOrder
 
-  def getAnnotation[Property]: Annotation[Property] = new Annotation[Property]
-
-  def weakTopologicalOrder: Annotation[Integer] = {
+  def weakTopologicalOrder: Annotation[ProgramPoint,Integer] = {
     val cfg = new ExceptionalUnitGraph(body)
     val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
     val ann = getAnnotation[Integer]
@@ -82,9 +79,7 @@ class JimpleMethod(method: SootMethod) extends Target {
           res2 flatMap { res2 =>
             // this is terrible... we need it because the linear form / linear cond
             // API should be rewritten
-            val lf = LinearForm(
-              for (i <- 0 to locals.size) yield res1(i) - res2(i),
-              Environment(localsList: _*))
+            val lf = LinearForm(for (i <- 0 to locals.size) yield res1(i) - res2(i))              
             v match {
               case _: GtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GT))
               case _ => None
@@ -131,7 +126,7 @@ class JimpleMethod(method: SootMethod) extends Target {
     Some(a)
   }
 
-  def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[Property]): Seq[(ProgramPoint, Property)] = {
+  def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[ProgramPoint,Property]): Seq[(ProgramPoint, Property)] = {
 
     var exits = Seq[(ProgramPoint, Property)]()
     var state = ann(pp)
@@ -174,8 +169,8 @@ class JimpleMethod(method: SootMethod) extends Target {
     exits
   }
 
-  def analyze(params: Parameters): Annotation[params.Property] = {
-    val ann = new Annotation[params.Property]()
+  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
+    val ann = getAnnotation[params.Property]
     val taskList = Queue[ProgramPoint](chain.getFirst())
     ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
     while (!taskList.isEmpty) {
@@ -201,7 +196,7 @@ class JimpleMethod(method: SootMethod) extends Target {
     ann
   }
 
-  def mkString[D <: NumericalProperty[D]](ann: Annotation[D]): String = {
+  def mkString[D <: NumericalProperty[D]](ann: Annotation[ProgramPoint,D]): String = {
     for ((unit, prop) <- ann) {
       unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
     }
@@ -226,5 +221,5 @@ class JimpleMethod(method: SootMethod) extends Target {
     lines.mkString("\n")
   }
 
-  override def toString = mkString(getAnnotation)
+  override def toString = mkString(getAnnotation[Null])
 }

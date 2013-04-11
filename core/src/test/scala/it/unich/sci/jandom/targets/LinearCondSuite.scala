@@ -16,12 +16,13 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
+
+import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.domains.BoxDouble
 
 import linearcondition._
-import domains.BoxDouble
-import org.scalatest.FunSuite
 
 /**
  * Test suite for linear conditions.
@@ -30,8 +31,8 @@ import org.scalatest.FunSuite
  */
 class LinearCondSuite extends FunSuite {
   val env = Environment("x","y")
-  val lf1 = LinearForm(List(-3,1,0),env)
-  val lf2 = LinearForm(List(-6,1,0),env)
+  val lf1 = LinearForm(List(-3,1,0))
+  val lf2 = LinearForm(List(-6,1,0))
   val cond1 = AtomicCond(lf1,AtomicCond.ComparisonOperators.LTE)
   val cond2 = AtomicCond(lf2,AtomicCond.ComparisonOperators.GTE)
   val full = BoxDouble.full(env.size) 

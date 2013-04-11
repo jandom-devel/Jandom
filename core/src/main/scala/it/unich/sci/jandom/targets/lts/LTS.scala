@@ -16,17 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.lts
+package it.unich.sci.jandom.targets.lts 
 
-import domains.NumericalProperty
-import targets.{ Environment, Parameters, Target }
-import annotations._
-import widenings.Widening
-import narrowings.Narrowing
-import scala.collection.mutable.{ Map, ArrayBuffer }
 import it.unich.sci.jandom.domains.NumericalDomain
-import it.unich.sci.jandom.domains.BoxDouble
+import it.unich.sci.jandom.targets.{Environment, Target}
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -52,7 +46,7 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
 
   def size = s
 
-  class Annotation[Property] extends Map[ProgramPoint, Property] {
+  class LTSAnnotation[Property] extends Annotation[ProgramPoint, Property] {
     private val buffer = Array.fill[Option[Property]](s)(None)
     def get(key: ProgramPoint) = buffer(key.id)
     def iterator = buffer.indices.filter(buffer(_) != None).map { i => (locations(i), buffer(i).get) }.toIterator
@@ -64,12 +58,12 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
       buffer(key.id) = None
       return this
     }
-    override def empty = new Annotation[Property]
+    override def empty = new LTSAnnotation[Property]
   }
 
-  def getAnnotation[Property] = new Annotation[Property]
+  override def getAnnotation[Property] = new LTSAnnotation[Property]
 
-  def analyze(params: Parameters): Annotation[params.Property] = {
+  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
     // build widening and narrowing for each program point    
     val widenings = locations map params.wideningFactory
     val narrowings = locations map params.narrowingFactory
@@ -102,7 +96,7 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
         narrowings(loc.id)(current(loc.id), unionednew)
       }
     }
-    val ann = new Annotation[params.Property]
+    val ann = getAnnotation[params.Property]
     locations.foreach { loc => ann(loc) = current(loc.id) }
     return ann
   }

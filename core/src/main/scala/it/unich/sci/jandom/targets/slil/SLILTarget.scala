@@ -1,6 +1,6 @@
 /**
- * Copyright 2013 Gianluca Amato
- * 
+ * Copyright 2013 amato
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,19 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
+package it.unich.sci.jandom.targets.slil
+
+import it.unich.sci.jandom.domains.NumericalDomain
+import it.unich.sci.jandom.targets.Target
 
 /**
- * This package contains classes which implements a blackboard, which is
- * a collection of annotations, indexed by an [[it.unich.sci.jandom.annotations.AnnotationType]]. 
- * At the moment this is dead code.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * The abstract target class for SLIL. Each target in the slil package
+ * which is a target should extend `SLILTarget`.
+ * @author Gianluca Amato <gamato@unich.it>
  */
-package object annotations {
 
+abstract class SLILTarget extends Target {
+  type ProgramPoint = (SLILTarget, Int)
+  type Tgt = SLILTarget
+  type DomainBase = NumericalDomain
 }

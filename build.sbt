@@ -10,10 +10,6 @@ run <<= run in ("Jandom", Compile)
 
 // depedendency management
 
-//resolvers in ThisBuild ++= Seq(
-//   "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/"
-//)
-
 libraryDependencies in ThisBuild  ++= Seq(
   "org.ow2.asm" % "asm-tree" % "4.1",
   "org.ow2.asm" % "asm-util" % "4.1",

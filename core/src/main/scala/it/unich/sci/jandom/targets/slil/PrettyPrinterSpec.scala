@@ -16,11 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
-import it.unich.sci.jandom.targets.Environment
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Environment
+
 /**
  * This is a class containing parameters for pretty printing a SLILProgram with annotations.
  * @author Gianluca Amato <amato@sci.unich.it>
@@ -35,8 +35,7 @@ class PrettyPrinterSpec(val env: Environment) {
   /**
    * Decorator is a function which takes annotation (of any kind), and returns its string representation.
    * The default simply prints the annotation between brackets.   
-   */
-  
+   */  
   private[slil] def decorator (p: NumericalProperty[_]): String = ('[' + p.mkString(env.variables).mkString(" , ") + ']')
 }
 

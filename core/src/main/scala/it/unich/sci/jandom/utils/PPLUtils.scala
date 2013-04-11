@@ -16,13 +16,12 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package utils
+package it.unich.sci.jandom.utils
 
+import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Linear_Expression
 import parma_polyhedra_library.Linear_Expression_Coefficient
 import parma_polyhedra_library.Linear_Expression_Variable
-import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Variable
 
 /**

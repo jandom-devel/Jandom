@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,38 +19,39 @@
 package it.unich.sci.jandom.targets
 
 import java.io.FileInputStream
-import scala.collection.JavaConversions.asScalaBuffer
+
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import org.scalatest.FunSuite
-import it.unich.sci.jandom.targets.jvm.Method
-import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
-import it.unich.sci.jandom.domains.BoxDouble
-import it.unich.sci.jandom.targets.jvm.UnsupportedByteCodeException
+
 import it.unich.sci.jandom.domains.PPLCPolyhedron
+import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
+import it.unich.sci.jandom.targets.jvm.Method
+import it.unich.sci.jandom.targets.jvm.UnsupportedByteCodeException
 
 class JVMSuite extends FunSuite {
-    
-   test ("simple method analysis") {
-     val is = new FileInputStream("examples/Java/SimpleTest.class")
-     val cr = new ClassReader(is)
-     val node = new ClassNode()     
-     cr.accept(node,ClassReader.SKIP_DEBUG)
-     val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
-     val method = new Method(methodList.find( _.name == "loop" ).get)
-     val params = new Parameters(method) {
-       val domain = new JVMEnvDomain(PPLCPolyhedron) 
-     }
-     println(method.toString)
-     try {
-       val ann = method.analyze(params)  
-       println(method.mkString(ann))
-     } catch {
-       case e: UnsupportedByteCodeException =>
-         println(e.node)
-     }
-     
-     is.close
-   }
+  import scala.collection.JavaConversions.asScalaBuffer
+
+  test("simple method analysis") {
+    val is = new FileInputStream("examples/Java/SimpleTest.class")
+    val cr = new ClassReader(is)
+    val node = new ClassNode()
+    cr.accept(node, ClassReader.SKIP_DEBUG)
+    val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
+    val method = new Method(methodList.find(_.name == "loop").get)
+    val params = new Parameters(method) {
+      val domain = new JVMEnvDomain(PPLCPolyhedron)
+    }
+    println(method.toString)
+    try {
+      val ann = method.analyze(params)
+      println(method.mkString(ann))
+    } catch {
+      case e: UnsupportedByteCodeException =>
+        println(e.node)
+    }
+
+    is.close
+  }
 }

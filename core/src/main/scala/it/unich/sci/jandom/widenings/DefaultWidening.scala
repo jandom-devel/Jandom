@@ -16,10 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package widenings
+package it.unich.sci.jandom.widenings
 
-import domains.NumericalProperty
+import it.unich.sci.jandom.domains.NumericalProperty
 
 /**
  * The standard widening. It use the widening operator defined in the abstract domain.

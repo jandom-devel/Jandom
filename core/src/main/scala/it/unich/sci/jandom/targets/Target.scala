@@ -18,6 +18,8 @@
 
 package it.unich.sci.jandom.targets
 
+import scala.collection.mutable.HashMap
+
 import it.unich.sci.jandom.domains.AbstractDomain
 
 /**
@@ -33,11 +35,6 @@ abstract class Target {
   type ProgramPoint
 
   /**
-   * Abstract type for widening points.
-   */
-  type WideningPoint = ProgramPoint
-
-  /**
    * The type of the given target.
    */
   type Tgt <: Target
@@ -49,24 +46,21 @@ abstract class Target {
   type DomainBase <: AbstractDomain
 
   /**
-   * The class for program annotations.
-   */
-  type Annotation[Property] <: scala.collection.mutable.Map[ProgramPoint, Property] 
- 
-  /**
    * An alias for parameters in input by the analyzer.
    */
   protected type Parameters = it.unich.sci.jandom.targets.Parameters[Tgt]
   
   /**
-   * Returns an empty annotation.
+   * Returns an empty annotation which is well suited for this target. The 
+   * default implementation just returns an HashMap.
    */
-  def getAnnotation[Property]: Annotation[Property]
+  def getAnnotation[Property]: Annotation[ProgramPoint,Property] =
+    new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]
   
   /**
    * Perform a static analysis over the target.
    * @param param the parameters which drive the analyzer
    * @return an annotation for the program
    */
-  def analyze(params: Parameters): Annotation[params.Property]
+  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property]
 }

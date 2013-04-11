@@ -16,12 +16,15 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
+package it.unich.sci.jandom.parsers
 
-import targets.{ Environment, LinearForm }
-import targets.linearcondition._
+
 import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.targets.linearcondition.AndCond
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 
 /**
  * Test suite for LinearExpressionParser
@@ -36,8 +39,8 @@ class LinearConditionParserSuite extends FunSuite {
 
   test("linear condition parser") {
     val expParsed = parser.parseExpr("3*x+y-z==0 && x<=z").get
-    val exp1Build = LinearForm(Seq(0, 3, 1, -1), Environment("x", "y", "z"))
-    val exp2Build = LinearForm(Seq(0, 1, 0, -1), Environment("x", "y", "z"))
+    val exp1Build = LinearForm(Seq(0, 3, 1, -1))
+    val exp2Build = LinearForm(Seq(0, 1, 0, -1))
     val expCond = AndCond(AtomicCond(exp1Build, AtomicCond.ComparisonOperators.EQ), AtomicCond(exp2Build, AtomicCond.ComparisonOperators.LTE))
     expectResult(expCond) { expParsed }
   }

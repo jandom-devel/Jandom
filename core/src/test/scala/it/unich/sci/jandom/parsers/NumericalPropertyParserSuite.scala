@@ -16,12 +16,12 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
+package it.unich.sci.jandom.parsers
 
-import targets.{ Environment, LinearForm }
-import domains.BoxDouble
 import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.domains.BoxDouble
+import it.unich.sci.jandom.targets.Environment
 
 /**
  * Test suite for NumericalProperty

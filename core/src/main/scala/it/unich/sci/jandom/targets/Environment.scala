@@ -16,10 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
-import scala.collection.mutable.{ ArrayBuffer, LinkedHashMap }
+import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
 
 /**
  * The class Environment represents an environment at a certain point in a program. At the moment
@@ -88,7 +87,7 @@ class Environment {
    * Returns the name of variables in the environment
    * @return the variable with the given index in the environment
    */
-  def getNames: IndexedSeq[String] = _variables.toIndexedSeq
+  def names: IndexedSeq[String] = _variables.toIndexedSeq
 
   /**
    * Returns the size of the environment, i.e. the number of bindings

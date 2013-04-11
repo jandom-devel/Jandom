@@ -16,20 +16,22 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package ui.gui
+package it.unich.sci.jandom.ui.gui
 
 import java.awt.event.{ InputEvent, KeyEvent }
 import java.io.{ File, FileWriter, IOException }
+
 import scala.Array.canBuildFrom
-import scala.swing.{ Action, Dialog, EditorPane, FileChooser, MenuItem, Separator }
-import it.unich.sci.jandom.targets.slil.SLILStmt
+import scala.swing.{Action, Dialog, EditorPane, FileChooser, MenuItem, Separator}
+import scala.swing.ScrollPane
+
+import it.unich.sci.jandom._
+import it.unich.sci.jandom.targets.Parameters
+import it.unich.sci.jandom.targets.slil.SLILTarget
+
 import javax.swing.KeyStroke
 import javax.swing.event.{ DocumentEvent, DocumentListener, UndoableEditEvent, UndoableEditListener }
 import javax.swing.undo.UndoManager
-import it.unich.sci.jandom.targets.Parameters
-import scala.swing.ScrollPane
-import scala.swing.Component
 
 class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane {
   val editorPane = new EditorPane
@@ -238,7 +240,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     parser.parseProgram(editorPane.text) match {
       case parser.Success(program, _) =>
         val numericalDomain = frame.parametersPane.selectedNumericalDomain
-        val params = new Parameters(program.asInstanceOf[SLILStmt]) { val domain = numericalDomain }        
+        val params = new Parameters[SLILTarget](program) { val domain = numericalDomain }        
         frame.parametersPane.setParameters(params)
         val ann = program.analyze(params)
         Some(params.debugWriter.toString + program.mkString(ann))

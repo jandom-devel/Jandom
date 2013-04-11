@@ -16,27 +16,26 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package narrowings
+package it.unich.sci.jandom.ppfactories
 
-import targets.Target
-import ppfactories.PPFactory
+import it.unich.sci.jandom.narrowings.DelayedNarrowing
+import it.unich.sci.jandom.narrowings.Narrowing
 
 /**
  * The factory for a delayed narrowing. It creates a number of delayed narrowings with the same parameters.
- * @tparam Tgt the target for the narrowing factory
+ * @tparam ProgramPoint the type of program point
  * @param narrowingFactory the original narrowing factory
  * @param delay the delay of the narrowing
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class DelayedNarrowingFactory[Tgt<: Target] (private val narrowingFactory: PPFactory[Tgt,Narrowing], private val delay: Int) extends PPFactory[Tgt,Narrowing] {
+class DelayedNarrowingFactory[ProgramPoint] (private val narrowingFactory: PPFactory[ProgramPoint,Narrowing], private val delay: Int) extends PPFactory[ProgramPoint,Narrowing] {
   require(delay>=0)
-  def apply(pp: Tgt#WideningPoint) = new DelayedNarrowing(narrowingFactory(pp), delay)  
+  def apply(pp: ProgramPoint) = new DelayedNarrowing(narrowingFactory(pp), delay)  
 }
 
 /**
  * The companion object for delayed narrowing factories
  **/
 object DelayedNarrowingFactory {
-  def apply[Tgt <:Target](narrowingFactory: PPFactory[Tgt,Narrowing], delay: Int) = new DelayedNarrowingFactory(narrowingFactory,delay)
+  def apply[ProgramPoint](narrowingFactory: PPFactory[ProgramPoint,Narrowing], delay: Int) = new DelayedNarrowingFactory(narrowingFactory,delay)
 }

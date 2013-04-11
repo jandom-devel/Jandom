@@ -16,8 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
 
@@ -36,7 +35,7 @@ class EnvironmentSuite  extends FunSuite {
     expectResult(Some(v1)) { env.getBinding("prova")}
     expectResult(v1) { env("prova")}
     expectResult("micio") { env(v2) }
-    expectResult(Seq("prova", "micio")) { env.getNames }
+    expectResult(Seq("prova", "micio")) { env.names }
   }
   
   test ("Environment companion object constructors") {

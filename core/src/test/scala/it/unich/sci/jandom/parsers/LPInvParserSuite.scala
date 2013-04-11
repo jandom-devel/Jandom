@@ -16,13 +16,18 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package parsers
+package it.unich.sci.jandom.parsers
 
-import targets.{ Environment, LinearForm, LinearAssignment }
-import targets.linearcondition._
-import targets.lts._
 import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.LinearAssignment
+import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
+import it.unich.sci.jandom.targets.linearcondition.FalseCond
+import it.unich.sci.jandom.targets.lts.LTS
+import it.unich.sci.jandom.targets.lts.Location
+import it.unich.sci.jandom.targets.lts.Transition
 
 /**
   * Test suite for RandomParser.
@@ -31,15 +36,15 @@ import org.scalatest.FunSuite
   */
 class LPInvParserSuite extends FunSuite {
   test("simple LTS") {
-    val env = targets.Environment("x")
+    val env = Environment("x")
     val l1 = Location("start", Nil)
     val l2 = Location("ciclo", List(FalseCond))
     val t1 = Transition("init", l1, l2,
       guard = Nil,
-      assignments = List(LinearAssignment(0, LinearForm.fromCoefficient(0, env))))
+      assignments = List(LinearAssignment(0, LinearForm.fromCoefficient(0))))
     val t2 = Transition("loop", l2, l2,
-      guard = List(AtomicCond(LinearForm(List(-10, 1), env), AtomicCond.ComparisonOperators.LTE)),
-      assignments = List(LinearAssignment(0, LinearForm(List(1, 1), env))))
+      guard = List(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LTE)),
+      assignments = List(LinearAssignment(0, LinearForm(List(1, 1)))))
     val lts = LTS(IndexedSeq(l1, l2), Seq(t1, t2), env)
 
     val ltsString = """

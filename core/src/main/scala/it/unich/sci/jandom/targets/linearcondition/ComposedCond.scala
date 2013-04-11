@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,10 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.linearcondition
+package it.unich.sci.jandom.targets.linearcondition
 
-import domains.NumericalProperty
+import it.unich.sci.jandom.domains.NumericalProperty
 
 /**
  * This is the class for the logical and of two conditions.
@@ -30,9 +29,10 @@ import domains.NumericalProperty
  *
  */
 case class AndCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
-  def opposite = new OrCond(cond1.opposite, cond2.opposite)  
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = cond2.analyze(cond1.analyze(input))
-  override def toString = "(" + cond1 + " && " + cond2 + ")"
+  lazy val opposite = new OrCond(cond1.opposite, cond2.opposite)
+  override def analyze[Property <: NumericalProperty[Property]](input: Property): Property = cond2.analyze(cond1.analyze(input))
+  override def mkString(vars: Seq[String]) = "(" + cond1.mkString(vars) + " && " + cond2.mkString(vars) + ")"
+  val dimension = cond1.dimension max cond2.dimension
 }
 
 /**
@@ -44,11 +44,11 @@ case class AndCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
  *
  */
 case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
-  def opposite = new AndCond(cond1.opposite, cond2.opposite)
-  
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = 
-    cond1.analyze(input) union cond2.analyze(input)  
-  override def toString = "(" + cond1 + " || " + cond2 + ")"
+  lazy val opposite = new AndCond(cond1.opposite, cond2.opposite)
+  override def analyze[Property <: NumericalProperty[Property]](input: Property): Property =
+    cond1.analyze(input) union cond2.analyze(input)
+  override def mkString(vars: Seq[String]) = "(" + cond1.mkString(vars) + "||" + cond2.mkString(vars) + ")"
+  val dimension = cond1.dimension max cond2.dimension
 }
 
 /**
@@ -59,7 +59,8 @@ case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
  *
  */
 case class NotCond(cond: LinearCond) extends LinearCond {
-  def opposite = cond
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = cond.opposite.analyze(input)
-  override def toString = "!("+cond+")"
+  val opposite = cond
+  override def analyze[Property <: NumericalProperty[Property]](input: Property): Property = cond.opposite.analyze(input)
+  override def mkString(vars: Seq[String]) = "!(" + cond.mkString(vars) + ")"
+  val dimension = cond.dimension
 }

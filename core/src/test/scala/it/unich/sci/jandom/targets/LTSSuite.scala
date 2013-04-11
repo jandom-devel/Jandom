@@ -16,13 +16,14 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
-import domains.BoxDouble
+import org.scalatest.FunSuite
+
+import it.unich.sci.jandom.domains.BoxDouble
+
 import linearcondition.{FalseCond,AtomicCond}
 import lts._
-import org.scalatest.FunSuite
 
 /**
  * Test suite for LTS.
@@ -30,15 +31,15 @@ import org.scalatest.FunSuite
  */
 class LTSSuite extends FunSuite {
   test("simple LTS analysis") {
-    val env = targets.Environment("x")
+    val env = Environment("x")
 	val l1 = Location("start", Nil)
 	val l2 = Location("ciclo", List(FalseCond))
 	val t1 = Transition("init", l1, l2, 
 	    guard = Nil, 
-	    assignments = List(LinearAssignment(0,LinearForm.fromCoefficient(0,env))))
+	    assignments = List(LinearAssignment(0,LinearForm.fromCoefficient(0))))
 	val t2 = Transition("loop", l2, l2, 
-	    guard = List(AtomicCond(LinearForm(List(-10,1),env), AtomicCond.ComparisonOperators.LTE)),
-	    assignments = List(LinearAssignment(0,LinearForm(List(1,1),env))))
+	    guard = List(AtomicCond(LinearForm(List(-10,1)), AtomicCond.ComparisonOperators.LTE)),
+	    assignments = List(LinearAssignment(0,LinearForm(List(1,1)))))
 	val lts = LTS(IndexedSeq(l1,l2), Seq(t1,t2), env)
 	val params = new Parameters(lts) { val domain = BoxDouble }    
     val ann = lts.analyze(params)

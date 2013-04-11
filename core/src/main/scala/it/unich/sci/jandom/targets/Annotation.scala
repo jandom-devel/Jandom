@@ -1,6 +1,6 @@
 /**
- * Copyright 2013 Gianluca Amato
- * 
+ * Copyright 2013 amato
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,12 @@
 
 package it.unich.sci.jandom.targets
 
-/**
- * This is the trait for a class which represents a program point.
- * @author Gianluca Amato <amato@sci.unich.it>
- */
+import scala.collection.mutable.Map
 
-trait ProgramPoint {
-  /**
-   * The name of the program point
-   * @return the name of the program point.
-   */
-  def name: String
-}
+/**
+ * This is the base trait for all annotations, which are mutable maps
+ * from program points to values.
+ * @author Gianluca Amato <gamato@unich.it>
+ *
+ */
+trait Annotation[ProgramPoint,T] extends Map[ProgramPoint,T]

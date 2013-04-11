@@ -16,8 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package ppfactories
+package it.unich.sci.jandom.ppfactories
 
 import org.scalatest.Suite
 

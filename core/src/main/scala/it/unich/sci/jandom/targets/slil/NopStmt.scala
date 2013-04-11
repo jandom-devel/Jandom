@@ -16,16 +16,17 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
-import annotations.PerProgramPointAnnotation
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * The class for the empty statement.
  */
 case object NopStmt extends SLILStmt {
-  override def mkString[U <: NumericalProperty[_]] (ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String =
-    ppspec.indent(level) + "<no-op>"
+  override def mkString[U <: NumericalProperty[_]] (ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String =
+    ppspec.indent(level) + "<no-op>\n"
+    
+  val numvars = 0
 }

@@ -16,26 +16,26 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package ppfactories
-
-import targets.Target
+package it.unich.sci.jandom.ppfactories
 
 /**
  * This is the trait for "per program point" factories, i.e. functions
- * which build objects parameterized by widening points.
+ * which build objects parameterized by program points.
+ * @tparam ProgramPoint the type of program point
+ * @tapram T the type of values returned by the factory
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-trait PPFactory[-Tgt <: Target, +Val] extends Function1[Tgt#WideningPoint, Val]
+trait PPFactory[-ProgramPoint, +T] extends Function1[ProgramPoint, T]
+
 
 object PPFactory {
   /**
-   * A "per program point" implicit factory which always returns the same value
+   * A "per program point" implicit factory which always returns the same value.
    * @tparam T the type of the object built by the factory
    * @param obj the object returned by the factory
    * @author Gianluca Amato <amato@sci.unich.it>
    */
-  implicit class ConstantFactory[T](private val obj: T) extends PPFactory[Target, T] {
-    def apply(pp: Target#WideningPoint) = obj
+  implicit class ConstantFactory[T](private val obj: T) extends PPFactory[Any, T] {
+    def apply(pp: Any) = obj
   }
 }

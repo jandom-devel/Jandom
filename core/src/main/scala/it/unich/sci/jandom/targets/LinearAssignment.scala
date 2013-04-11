@@ -16,10 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets
+package it.unich.sci.jandom.targets
 
-import domains.NumericalProperty
+import it.unich.sci.jandom.domains.NumericalProperty
 
 /**
  * This class represent an assignment of linear forms.
@@ -33,7 +32,7 @@ import domains.NumericalProperty
 case class LinearAssignment[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T])  {
   import numeric._
   
-  override def toString = linearForm.env(variable) + " := " + linearForm.toString  
+  override def toString = "v"+ variable + " := " + linearForm.toString  
   
   def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
     val coefficients = linearForm.coefficients

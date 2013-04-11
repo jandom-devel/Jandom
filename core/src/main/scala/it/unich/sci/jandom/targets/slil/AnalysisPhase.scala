@@ -19,7 +19,11 @@
 package it.unich.sci.jandom.targets.slil
  
 /**
- * The enumeration for analysis phase. 
+ * Enumeration for analysis phases. These are:
+ * - Ascending: we are computing an ascending chain
+ * - Descending: we are computing a descending chain
+ * - AscendingRestart: we are computing an ascending chain, resetting all
+ *   widening points when we encounter them
  */ 
 object AnalysisPhase extends Enumeration {
   type AnalysisPhase = Value

@@ -16,13 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.slil
+package it.unich.sci.jandom.targets.slil
 
-import domains.NumericalProperty
-import targets.Parameters
-import targets.linearcondition.LinearCond
-import annotations.{ BlackBoard, PerProgramPointAnnotation }
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
 /**
  * The class for an if/then/else statement
@@ -34,33 +32,25 @@ import annotations.{ BlackBoard, PerProgramPointAnnotation }
 case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
   import AnalysisPhase._
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[params.Property]): params.Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
     
     val thenStart = condition.analyze(input)
     val elseStart = condition.opposite.analyze(input)
     val thenEnd = then_branch.analyzeStmt(params)(thenStart, phase, ann)
     val elseEnd = else_branch.analyzeStmt(params)(elseStart, phase, ann)
-    if (params.allPPResult) {
-      ann((this, 1)) = thenStart
-      ann((this, 2)) = elseStart
-      ann((this, 3)) = thenEnd
-      ann((this, 4)) = elseEnd
-    }
     return thenEnd union elseEnd
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[U], level: Int, ppspec: PrettyPrinterSpec): String = {
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level+1)
-    val s = spaces + "if (" + condition.toString + ") {\n" +
-      (if (ann.get(this, 1) != None) innerspaces + ppspec.decorator(ann(this, 1)) + "\n" else "") +
-      then_branch.mkString(ann,level+1,ppspec) + "\n" +
-      (if (ann.get(this, 3) != None) innerspaces + ppspec.decorator(ann(this, 3)) + "\n" else "") +
+    val s = spaces + "if (" + condition.mkString(ppspec.env.names) + ") {\n" +
+      then_branch.mkString(ann,level+1,ppspec) +
       spaces + "} else {\n" +
-      (if (ann.get(this, 2) != None) innerspaces + ppspec.decorator(ann(this, 2)) + '\n' else "") +
-      else_branch.mkString(ann,level+1,ppspec) + "\n" +
-      (if (ann.get(this, 4) != None) innerspaces + ppspec.decorator(ann(this, 4)) + '\n' else "") +
-      spaces + '}'
+      else_branch.mkString(ann,level+1,ppspec) +
+      spaces + "}\n"
     return s
   }
+  
+  val numvars = condition.dimension max then_branch.numvars max else_branch.numvars
 }

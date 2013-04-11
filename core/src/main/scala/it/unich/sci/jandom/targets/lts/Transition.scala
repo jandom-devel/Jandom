@@ -16,13 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package targets.lts
+package it.unich.sci.jandom.targets.lts
 
-import targets.LinearAssignment
-import targets.linearcondition.LinearCond
-import domains.NumericalProperty
-
+import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.LinearAssignment
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
 /**
  * The class for transitions.

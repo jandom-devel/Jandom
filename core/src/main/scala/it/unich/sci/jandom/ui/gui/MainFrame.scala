@@ -16,8 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom
-package ui.gui
+package it.unich.sci.jandom.ui.gui
 
 import java.awt.event.{InputEvent, KeyEvent}
 

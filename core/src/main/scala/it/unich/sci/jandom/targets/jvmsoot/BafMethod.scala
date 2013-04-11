@@ -20,21 +20,19 @@ package it.unich.sci.jandom.targets.jvmsoot
 
 import java.io.PrintWriter
 import java.io.StringWriter
-
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
-
 import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.jvm.JVMEnv
 import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
-
 import soot._
 import soot.baf._
 import soot.jimple._
 import soot.options.Options
 import soot.tagkit.StringTag
 import soot.toolkits.graph._
+import it.unich.sci.jandom.targets.Annotation
 
 /**
  * Analysis of a method using the Baf intermediate representation.
@@ -45,7 +43,6 @@ class BafMethod(method: SootMethod) extends Target {
   import scala.collection.JavaConversions._
 
   type ProgramPoint = Unit
-  type Annotation[Property] = HashMap[ProgramPoint, Property]
   type Tgt = BafMethod
   type DomainBase = JVMEnvDomain
 
@@ -54,9 +51,7 @@ class BafMethod(method: SootMethod) extends Target {
   val chain = body.getUnits()
   val order = weakTopologicalOrder
 
-  def getAnnotation[Property]: Annotation[Property] = new Annotation[Property]
-
-  lazy val weakTopologicalOrder: Annotation[Integer] = {
+  lazy val weakTopologicalOrder: Annotation[ProgramPoint,Integer] = {
     val cfg = new ExceptionalUnitGraph(body)
     val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
     val ann = getAnnotation[Integer]
@@ -65,7 +60,7 @@ class BafMethod(method: SootMethod) extends Target {
     ann
   }
 
-  private def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[JVMEnv[Property]]): Seq[(ProgramPoint, JVMEnv[Property])] = {
+  private def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[ProgramPoint,JVMEnv[Property]]): Seq[(ProgramPoint, JVMEnv[Property])] = {
     var exits = Seq[(ProgramPoint, JVMEnv[Property])]()
     val state = ann(pp).clone
     var unit = pp
@@ -107,8 +102,8 @@ class BafMethod(method: SootMethod) extends Target {
     exits
   }
 
-  def analyze(params: Parameters): Annotation[params.Property] = {
-    val ann = new Annotation[params.Property]()
+  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
+    val ann = getAnnotation[params.Property]
     val taskList = Queue[ProgramPoint](chain.getFirst())
     ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
     while (!taskList.isEmpty) {
@@ -130,7 +125,7 @@ class BafMethod(method: SootMethod) extends Target {
     ann
   }
 
-  def mkString[D <: JVMEnv[_]](ann: Annotation[D]): String = {
+  def mkString[D <: JVMEnv[_]](ann: Annotation[ProgramPoint,D]): String = {
     for ((unit, prop) <- ann) {
       unit.addTag(new StringTag(prop.toString))
     }
@@ -155,5 +150,5 @@ class BafMethod(method: SootMethod) extends Target {
     lines.mkString("\n")
   }
 
-  override def toString = mkString(getAnnotation)
+  override def toString = mkString(getAnnotation[Null])
 }
