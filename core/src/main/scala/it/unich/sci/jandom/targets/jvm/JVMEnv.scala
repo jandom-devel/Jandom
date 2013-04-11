@@ -47,7 +47,7 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
    * Empties the abstract environment (i.e., it returns an abstract environment
    * representing no concrete environments).
    */
-  def empty  {
+  def empty {
     property = property.empty
   }
   
@@ -110,6 +110,23 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
     val oldproperty = property
     property = property union that.property
     if (property > oldproperty)
+      true
+    else 
+      false
+  }
+  
+  /**
+   * Intersection of two abstract environments.
+   * @param that the abstract environment to intersect with `this`
+   * @return true if the result is slower than `this`
+   */
+  def intersection(that: JVMEnv[Property]): Boolean = {
+    // this should always hold!!
+    //require(frame == that.frame)
+    //require(stack == that.stack)
+    val oldproperty = property
+    property = property intersection that.property
+    if (property < oldproperty)
       true
     else 
       false

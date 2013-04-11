@@ -60,7 +60,7 @@ class JimpleMethod(method: SootMethod) extends Target {
   }
   val order = weakTopologicalOrder
 
-  def weakTopologicalOrder: Annotation[ProgramPoint,Integer] = {
+  def weakTopologicalOrder: Annotation[ProgramPoint, Integer] = {
     val cfg = new ExceptionalUnitGraph(body)
     val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
     val ann = getAnnotation[Integer]
@@ -79,7 +79,7 @@ class JimpleMethod(method: SootMethod) extends Target {
           res2 flatMap { res2 =>
             // this is terrible... we need it because the linear form / linear cond
             // API should be rewritten
-            val lf = LinearForm(for (i <- 0 to locals.size) yield res1(i) - res2(i))              
+            val lf = LinearForm(for (i <- 0 to locals.size) yield res1(i) - res2(i))
             v match {
               case _: GtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GT))
               case _: GeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GTE))
@@ -130,7 +130,7 @@ class JimpleMethod(method: SootMethod) extends Target {
     Some(a)
   }
 
-  def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[ProgramPoint,Property]): Seq[(ProgramPoint, Property)] = {
+  def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[ProgramPoint, Property]): Seq[(ProgramPoint, Property)] = {
 
     var exits = Seq[(ProgramPoint, Property)]()
     var state = ann(pp)
@@ -173,14 +173,16 @@ class JimpleMethod(method: SootMethod) extends Target {
     exits
   }
 
-  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
+  def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     val ann = getAnnotation[params.Property]
     val taskList = Queue[ProgramPoint](chain.getFirst())
     ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
+    val annEdge = HashMap[ProgramPoint, HashMap[ProgramPoint, params.Property]]()
     while (!taskList.isEmpty) {
       val pp = taskList.dequeue()
       val result = analyzeBlock(pp, ann)
       for ((destpp, state) <- result) {
+        annEdge.getOrElseUpdate(destpp, HashMap[ProgramPoint, params.Property]()).update(pp, state)
         if (ann contains destpp) {
           val oldstate = ann(destpp)
           val newstate = if (order(destpp) <= order(pp))
@@ -197,10 +199,25 @@ class JimpleMethod(method: SootMethod) extends Target {
         }
       }
     }
+    taskList.enqueue(chain.getFirst())    
+    while (!taskList.isEmpty) {
+      val pp = taskList.dequeue()
+      val result = analyzeBlock(pp, ann)
+      for ((destpp, state) <- result) {
+        annEdge(destpp)(pp) = state
+        val base = annEdge(destpp).foldRight(state.empty)(_._2 union _)
+        val oldstate = ann(destpp)
+        val newstate = ann(destpp) intersection base
+        if (newstate < oldstate) {
+          ann(destpp) = newstate
+          taskList.enqueue(destpp)
+        }
+      }
+    }
     ann
   }
 
-  def mkString[D <: NumericalProperty[D]](ann: Annotation[ProgramPoint,D]): String = {
+  def mkString[D <: NumericalProperty[D]](ann: Annotation[ProgramPoint, D]): String = {
     for ((unit, prop) <- ann) {
       unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
     }

@@ -20,20 +20,23 @@ package it.unich.sci.jandom.targets.jvmsoot
 
 import java.io.PrintWriter
 import java.io.StringWriter
+
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
+
 import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.jvm.JVMEnv
 import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
+
 import soot._
 import soot.baf._
 import soot.jimple._
 import soot.options.Options
 import soot.tagkit.StringTag
 import soot.toolkits.graph._
-import it.unich.sci.jandom.targets.Annotation
-import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 
 /**
  * Analysis of a method using the Baf intermediate representation.
@@ -121,15 +124,18 @@ class BafMethod(method: SootMethod) extends Target {
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     val ann = getAnnotation[params.Property]
     val taskList = Queue[ProgramPoint](chain.getFirst())
+    val annEdge = HashMap[ProgramPoint,HashMap[ProgramPoint,params.Property]]()
     ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
     while (!taskList.isEmpty) {
       val pp = taskList.dequeue()
       val result = analyzeBlock(pp, ann)
       for ((destpp, state) <- result) {
+        val x = annEdge.getOrElseUpdate(destpp, HashMap[ProgramPoint,params.Property]())
+        x(pp) = state.clone
         if (ann contains destpp) {
-          val modified = if (order(destpp) <= order(pp))
+          val modified = if (order(destpp) <= order(pp)) {            
             ann(destpp).widening(state)
-          else
+          } else
             ann(destpp).union(state)
           if (modified) taskList.enqueue(destpp)
         } else {
@@ -137,7 +143,22 @@ class BafMethod(method: SootMethod) extends Target {
           taskList.enqueue(destpp)
         }
       }
+    }    
+    taskList.enqueue(chain.getFirst())    
+    while (!taskList.isEmpty) {
+      val pp = taskList.dequeue()
+      val result = analyzeBlock(pp, ann)
+      for ((destpp, state) <- result) {        
+        annEdge(destpp)(pp) = state.clone
+        var v = state.clone
+        v.empty
+        for (edgeval <- annEdge(destpp))
+          v.union(edgeval._2)        
+        val modified = ann(destpp).intersection(v)
+        if (modified) taskList.enqueue(destpp)
+      }
     }
+
     ann
   }
 
