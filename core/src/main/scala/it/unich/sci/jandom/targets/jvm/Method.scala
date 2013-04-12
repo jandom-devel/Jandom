@@ -92,19 +92,19 @@ class Method(val methodNode: MethodNode) extends Target {
               case ICONST_0 | ICONST_1 | ICONST_2 | ICONST_3 | ICONST_4 | ICONST_5 => s.ipush(op - ICONST_0)
               case IADD => s.iadd
               case RETURN =>
-              case _ => throw UnsupportedByteCodeException(node)
+              case _ => throw UnsupportedASMByteCodeException(node)
             }
           case node: IntInsnNode =>
             op match {
               case BIPUSH =>
                 s.ipush(node.operand)
-              case _ => throw UnsupportedByteCodeException(node)
+              case _ => throw UnsupportedASMByteCodeException(node)
             }
           case node: VarInsnNode =>
             op match {
               case ISTORE => s.istore(node.`var`)
               case ILOAD => s.iload(node.`var`)
-              case _ => throw UnsupportedByteCodeException(node)
+              case _ => throw UnsupportedASMByteCodeException(node)
             }
           case node: JumpInsnNode =>
             op match {
@@ -115,12 +115,12 @@ class Method(val methodNode: MethodNode) extends Target {
                 s.if_icmp(AtomicCond.ComparisonOperators.LTE)
               }
               case GOTO => exits :+= (jumpBlock.get, s)
-              case _ => throw UnsupportedByteCodeException(node)
+              case _ => throw UnsupportedASMByteCodeException(node)
             }
           case node: LabelNode =>
           case node: LineNumberNode =>
           case node: FrameNode =>
-          case _ => throw UnsupportedByteCodeException(node)
+          case _ => throw UnsupportedASMByteCodeException(node)
         }
         node = node.getNext()
       }

@@ -31,12 +31,7 @@ trait TargetPane extends Component {
    * It returns `true` if saving succeeded (or was not necessary), `false` otherwise.
    */
   def ensureSaved(): Boolean
-
-  /**
-   * This method is call to uptoad the frame title
-   */
-  def updateFrameTitle()
-
+ 
   /**
    * This method performs the analysis of the current program and returns the result as a
    * string to be displayed in the output pane.
@@ -53,4 +48,8 @@ trait TargetPane extends Component {
    */
   val editMenuItems: Seq[Component]
 
+  /**
+   * This is called when this target pane is selected.
+   */
+  def select()
 }

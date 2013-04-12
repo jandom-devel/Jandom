@@ -19,16 +19,14 @@
 package it.unich.sci.jandom.targets
 
 import java.io.FileInputStream
-
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import org.scalatest.FunSuite
-
 import it.unich.sci.jandom.domains.PPLCPolyhedron
 import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
 import it.unich.sci.jandom.targets.jvm.Method
-import it.unich.sci.jandom.targets.jvm.UnsupportedByteCodeException
+import it.unich.sci.jandom.targets.jvm.UnsupportedASMByteCodeException
 
 class JVMSuite extends FunSuite {
   import scala.collection.JavaConversions.asScalaBuffer
@@ -48,7 +46,7 @@ class JVMSuite extends FunSuite {
       val ann = method.analyze(params)
       println(method.mkString(ann))
     } catch {
-      case e: UnsupportedByteCodeException =>
+      case e: UnsupportedASMByteCodeException =>
         println(e.node)
     }
 

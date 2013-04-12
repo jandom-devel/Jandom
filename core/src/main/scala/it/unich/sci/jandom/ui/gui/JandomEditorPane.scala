@@ -255,4 +255,6 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     new MenuItem(saveAsAction))
   val editMenuItems = Seq(new MenuItem(undoAction), new MenuItem(redoAction), new Separator,
     new MenuItem(cutAction), new MenuItem(copyAction), new MenuItem(pasteAction))
+    
+  def select() = updateFrameTitle()
 }

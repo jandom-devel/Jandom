@@ -18,13 +18,14 @@
 
 package it.unich.sci.jandom.ui.gui
 
-import java.awt.event.{InputEvent, KeyEvent}
-import java.io.{File, FileInputStream}
+import java.awt.event.{ InputEvent, KeyEvent }
+import java.io.{ File, FileInputStream }
 
 import scala.swing.{Action, BorderPanel, BoxPanel, ComboBox, EditorPane, FileChooser, Label, MenuItem, Orientation, ScrollPane}
+import scala.swing.Dialog
 
 import org.objectweb.asm.ClassReader
-import org.objectweb.asm.tree.{ClassNode, MethodNode}
+import org.objectweb.asm.tree.{ ClassNode, MethodNode }
 
 import it.unich.sci.jandom._
 import it.unich.sci.jandom.targets.jvm._
@@ -34,11 +35,11 @@ import javax.swing.KeyStroke
 
 /**
  * This is the pane used to select the class and method to analyzer for
- * the JVM targets.
+ * the ASM target.
  * @author Gianluca Amato
  *
  */
-class JVMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
+class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
 
   /*
    * The EditorPane which is part of the JVMEditorPane
@@ -81,13 +82,13 @@ class JVMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
     def apply() {
       import scala.collection.JavaConversions._
 
-      val returnVal = fileChooser.showOpenDialog(JVMEditorPane.this)
+      val returnVal = fileChooser.showOpenDialog(ASMEditorPane.this)
       if (returnVal != FileChooser.Result.Approve) return ;
       val file = fileChooser.selectedFile
       val is = new FileInputStream(file)
       val cr = new ClassReader(is)
       val node = new ClassNode()
-      cr.accept(node,ClassReader.SKIP_DEBUG)
+      cr.accept(node, ClassReader.SKIP_DEBUG)
       methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
       methodComboBox = new ComboBox(methodList map { _.name })
       methodComboBox.peer.setAction(methodSelectAction.peer)
@@ -101,12 +102,11 @@ class JVMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   }
 
   def ensureSaved = true
-  
+
   def updateFrameTitle() {
     val newTitle = softwareName + " - JVM"
     frame.title = newTitle
   }
- 
 
   def analyze = {
     method match {
@@ -118,8 +118,13 @@ class JVMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
           val ann = method.analyze(params)
           Some(method.mkString(ann))
         } catch {
-          case e: UnsupportedByteCodeException =>
-            Some(e.node.toString)
+          case e: UnsupportedASMByteCodeException =>
+            Dialog.showMessage(ASMEditorPane.this, e.getMessage + " : " + e.node, "Error in analysing bytecode", Dialog.Message.Error)
+            None
+          case e: Exception =>
+            Dialog.showMessage(ASMEditorPane.this, e.getMessage, "Error", Dialog.Message.Error)
+            e.printStackTrace()
+            None           
         }
       case None => None
     }
@@ -128,5 +133,7 @@ class JVMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   val fileMenuItems = Seq(new MenuItem(newAction), new MenuItem(openAction))
 
   val editMenuItems = Seq()
+  
+  def select() = updateFrameTitle()
 
 }

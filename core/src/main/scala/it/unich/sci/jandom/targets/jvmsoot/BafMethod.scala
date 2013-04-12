@@ -29,6 +29,7 @@ import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.jvm.JVMEnv
 import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
+import it.unich.sci.jandom.targets.jvm.UnsupportedBafByteCodeException
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 
 import soot._
@@ -111,6 +112,8 @@ class BafMethod(method: SootMethod) extends Target {
           exits :+= (unit.getTarget, state)
         case unit: ReturnVoidInst =>
           ann(unit) = state
+        case  unit: Inst =>
+          throw UnsupportedBafByteCodeException(unit) 
       }
       // We use the chain to get the fall through node. We used the first successor
       // in the CFG, but it is not clear from the documentation if we can rely on
