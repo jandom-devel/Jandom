@@ -20,10 +20,8 @@ package it.unich.sci.jandom.targets.jvmsoot
 
 import java.io.PrintWriter
 import java.io.StringWriter
-
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
-
 import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Target
@@ -31,13 +29,13 @@ import it.unich.sci.jandom.targets.jvm.JVMEnv
 import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
 import it.unich.sci.jandom.targets.jvm.UnsupportedBafByteCodeException
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
-
 import soot._
 import soot.baf._
 import soot.jimple._
 import soot.options.Options
 import soot.tagkit.StringTag
 import soot.toolkits.graph._
+import soot.tagkit.LoopInvariantTag
 
 /**
  * Analysis of a method using the Baf intermediate representation.
@@ -55,6 +53,14 @@ class BafMethod(method: SootMethod) extends Target {
   val body = Baf.v().newBody(jimple)
   val chain = body.getUnits()
   val order = weakTopologicalOrder
+
+  val envMap = new HashMap[Local, Int]
+  val locals = body.getLocals()
+  val localsList = locals.iterator.toArray map { _.getName() }
+  val i = locals.iterator
+  for (n <- 0 until locals.size) {
+    envMap(i.next()) = n
+  }
 
   lazy val weakTopologicalOrder: Annotation[ProgramPoint, Integer] = {
     val cfg = new ExceptionalUnitGraph(body)
@@ -90,12 +96,12 @@ class BafMethod(method: SootMethod) extends Target {
           state.iadd
         case unit: IncInst =>
           unit.getConstant() match {
-            case i: IntConstant => state.iinc(unit.getLocal().getNumber(), i.value)
+            case i: IntConstant => state.iinc(envMap(unit.getLocal), i.value)
           }
         case unit: StoreInst =>
-          state.istore(unit.getLocal.getNumber)
+          state.istore(envMap(unit.getLocal))
         case unit: LoadInst =>
-          state.iload(unit.getLocal.getNumber)
+          state.iload(envMap(unit.getLocal))
         case unit: IfCmpLeInst =>
           analyzeIf(AtomicCond.ComparisonOperators.LTE)
         case unit: IfCmpLtInst =>
@@ -136,7 +142,7 @@ class BafMethod(method: SootMethod) extends Target {
         val x = annEdge.getOrElseUpdate(destpp, HashMap[ProgramPoint,params.Property]())
         x(pp) = state.clone
         if (ann contains destpp) {
-          val modified = if (order(destpp) <= order(pp))             
+          val modified = if (order(destpp) <= order(pp))
             ann(destpp).widening(state, params.wideningFactory(destpp))
           else
             ann(destpp).union(state)
@@ -146,7 +152,7 @@ class BafMethod(method: SootMethod) extends Target {
           taskList.enqueue(destpp)
         }
       }
-    }    
+    }
     taskList.enqueue(chain.getFirst())    
     while (!taskList.isEmpty) {
       val pp = taskList.dequeue()
@@ -155,22 +161,21 @@ class BafMethod(method: SootMethod) extends Target {
         annEdge(destpp)(pp) = state.clone
         var v = state.clone        
         v.empty
-        for (edgeval <- annEdge(destpp)) 
-          v.union(edgeval._2)       
-        val modified = if (order(destpp) <= order(pp))      
+        for (edgeval <- annEdge(destpp))
+          v.union(edgeval._2)
+        val modified = if (order(destpp) <= order(pp))
           ann(destpp).narrowing(v, params.narrowingFactory(destpp))
         else          
           ann(destpp).intersection(v)
         if (modified) taskList.enqueue(destpp)
       }
     }
-
     ann
   }
 
   def mkString[D <: JVMEnv[_]](ann: Annotation[ProgramPoint, D]): String = {
     for ((unit, prop) <- ann) {
-      unit.addTag(new StringTag(prop.toString))
+      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList) + " ]"))
     }
     Options.v().set_print_tags_in_output(true)
     val printer = Printer.v()

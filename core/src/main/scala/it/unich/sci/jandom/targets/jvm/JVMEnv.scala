@@ -62,19 +62,21 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
   def istore(v: Int) {
     val oldn = frame(v)
     val newn = stack.pop
-    if (oldn != -1) property = property.delDimension(oldn)
-    frame(v) =  if (oldn >= 0 && oldn < newn) newn-1 else newn
+    property = property.variableAssignment(oldn, newn).delDimension(newn)
+    // do i need to correct the frame?
   }
 
   def iload(v: Int) {
+    val vn = frame(v)
     property = property.addDimension
-    property = property.variableAssignment(property.dimension - 1, v)
+    property = property.variableAssignment(property.dimension - 1, vn)
     stack.push(property.dimension - 1)
   }
 
   def iadd() {
     val vm = stack.pop
     val vn = stack.top
+    // do I need to correct the frame?
     property = property.variableAdd(vn, vm).delDimension(vm)    
   }
   
@@ -95,6 +97,7 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
       // we should optmized NEQ
       case _ => AtomicCond(lfn - lfm, op)      
     }    
+    // do I need to correct the frame?
     property = condition.analyze(property)
     property = property.delDimension(vm max vn)
     property = property.delDimension(vm min vn)
@@ -143,12 +146,12 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
   def narrowing(that: JVMEnv[Property], n: Narrowing): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
-    //require(stack == that.stack)    
+    //require(stack == that.stack)
     val oldproperty = property
-    property = n(property, that.property)    
+    property = n(property, that.property)
     if (property < oldproperty)
       true
-    else 
+    else
       false
   }
 
@@ -169,9 +172,13 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
     else 
       false
   }
+  
+  def mkString(vars: IndexedSeq[String]) =
+     " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property.mkString(vars).mkString(", ")
+
 
   override def toString =
-    "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
+     "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
 }
 
 /**
@@ -187,13 +194,13 @@ class JVMEnv[Property <: NumericalProperty[Property]] (
     * Creates a full JVM environment of dimension 0.
     * @param maxLocal maximum number of locals in the frame.
     */
-   def full(maxLocals: Int) = new JVMEnv[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.full(0))
+   def full(maxLocals: Int) = new JVMEnv[dom.Property]((0 until maxLocals).toArray, ArrayStack[Int](), dom.full(maxLocals))
 
    /**
     * Creates an empty JVM environment of dimension 0.
     * @param maxLocal maximum number of locals in the frame.
     */
    
-   def empty(maxLocals: Int) = new JVMEnv[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.empty(0))
+   def empty(maxLocals: Int) = new JVMEnv[dom.Property]((0 until maxLocals).toArray, ArrayStack[Int](), dom.empty(maxLocals))
    
 }
