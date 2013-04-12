@@ -32,7 +32,7 @@ object PPLPropertyMacros {
    * This method returns a NumericalDomain for the PPL class specified as
    * type parameter.
    */
-  def apply[PPLType]: NumericalDomain  = macro PPLDomainImpl[PPLType]
+  def apply[PPLType]: NumericalDomain = macro PPLDomainImpl[PPLType]
 
   /**
    * This is the implementation of the `apply` method.
@@ -40,7 +40,7 @@ object PPLPropertyMacros {
   def PPLDomainImpl[PPLType: c.WeakTypeTag](c: Context): c.Expr[NumericalDomain] = {
     import c.universe._
     import parma_polyhedra_library.Double_Box
-        
+
     val classes = reify {
       import parma_polyhedra_library._
       import it.unich.sci.jandom.utils.PPLUtils
@@ -112,6 +112,16 @@ object PPLPropertyMacros {
           val dims = new Variables_Set
           dims.add(new Variable(n))
           newpplbox.remove_space_dimensions(dims)
+          new PPLProperty(newpplbox)
+        }
+
+        def mapDimensions(rho: Seq[Int]): PPLProperty = {
+          val newpplbox = new Double_Box(pplbox)
+          val pf = new Partial_Function
+          for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {
+            pf.insert(i, newi)
+          }
+          newpplbox.map_space_dimensions(pf)
           new PPLProperty(newpplbox)
         }
 

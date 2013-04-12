@@ -25,11 +25,15 @@ import it.unich.sci.jandom.domains.BoxDouble
 import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.domains.PPLDomain
 import it.unich.sci.jandom.domains.Parallelotope
+import it.unich.sci.jandom.domains.PPLPropertyMacros
+
 import parma_polyhedra_library.C_Polyhedron
 import parma_polyhedra_library.Double_Box
-import it.unich.sci.jandom.domains.PPLPropertyMacros
 import parma_polyhedra_library.Octagonal_Shape_double
 
+/**
+ * The ParameterEnumeration for numerical domains.
+ */
 object NumericalDomains extends ParameterEnumeration[NumericalDomain] {  
   val name = "Domain"
   val description = "The numerical domain to use for the analysis."
@@ -40,6 +44,7 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
       "not safe and should not be used."),
     ParameterValue(PPLPropertyMacros[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double (using macros)."),
     ParameterValue(PPLPropertyMacros[Octagonal_Shape_double], "PPL Octagonal_Shape_double", "PPL based implementation of Octagon over double (using macros)."),
-    ParameterValue(PPLPropertyMacros[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using macros)."))
+    ParameterValue(PPLPropertyMacros[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using macros).")
+    )
   val default = values.last.value
 }

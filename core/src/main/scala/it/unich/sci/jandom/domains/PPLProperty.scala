@@ -19,7 +19,6 @@
 package it.unich.sci.jandom.domains
 
 import it.unich.sci.jandom.utils.PPLUtils
-
 import parma_polyhedra_library.By_Reference
 import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Constraint
@@ -32,6 +31,7 @@ import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variable_Stringifier
 import parma_polyhedra_library.Variables_Set
+import parma_polyhedra_library.Partial_Function
 
 /**
  * This is the universal PPL numerical property. It is able to represent (almost) any property
@@ -124,6 +124,16 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
     dims.add(new Variable(n))
     domain.remove_space_dimensions(newpplobject, dims)
     new PPLProperty(domain, newpplobject)
+  }
+  
+  def mapDimensions(rho: Seq[Int]) = {
+    val newpplobject = domain.copyConstructor(pplobject)
+    val pf = new Partial_Function
+    for ( (newi,i) <- rho.zipWithIndex; if newi >= 0) {
+      pf.insert(i, newi)
+    }
+    domain.map_space_dimensions(newpplobject,pf)
+    new PPLProperty(domain,newpplobject)
   }
 
   def dimension: Int = domain.space_dimension(pplobject).toInt
@@ -219,6 +229,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private val unconstrainSpaceDimensionHandle = myClass.getMethod("unconstrain_space_dimension", classOf[Variable])
   private val addSpaceDimensionsAndProjectHandle = myClass.getMethod("add_space_dimensions_and_project", classOf[Long])
   private val removeSpaceDimensionsHandle = myClass.getMethod("remove_space_dimensions", classOf[Variables_Set])
+  private val mapSpaceDimensionsHandle = myClass.getMethod("map_space_dimensions", classOf[Partial_Function])
   private val narrowingAssignHandle = try {
     myClass.getMethod("CC76_narrowing_assign", otherClass)
   } catch {
@@ -241,7 +252,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private[domains] def add_space_dimensions_and_project(me: PPLNativeProperty, l: Long) = addSpaceDimensionsAndProjectHandle.invoke(me, l: java.lang.Long)
   private[domains] def remove_space_dimensions(me: PPLNativeProperty, vars: Variables_Set) = removeSpaceDimensionsHandle.invoke(me, vars)
   private[domains] def narrowing_assign(me: PPLNativeProperty, that: PPLNativeProperty) = narrowingAssignHandle.invoke(me, that)
-
+  private[domains] def map_space_dimensions(me: PPLNativeProperty, pf: Partial_Function) = mapSpaceDimensionsHandle.invoke(me, pf) 
   /**
    * It is true if `PPLNativeProperty` has the `CC76_narrowing_assign` method.
    */

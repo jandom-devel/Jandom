@@ -64,6 +64,9 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
   def delDimension(n: Int): Property =
     throw new IllegalAccessException("Unimplemented feature on Sum")
 
+  def mapDimensions(rho: Seq[Int]): Property =
+    throw new IllegalAccessException("Unimplemented feature on Sum")
+
   def dimension: Int =
     throw new IllegalAccessException("Unimplemented feature on Sum")
 

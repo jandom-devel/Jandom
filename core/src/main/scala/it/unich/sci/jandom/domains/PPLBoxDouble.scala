@@ -19,7 +19,6 @@
 package it.unich.sci.jandom.domains
 
 import it.unich.sci.jandom.utils.PPLUtils
-
 import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Degenerate_Element
@@ -28,6 +27,7 @@ import parma_polyhedra_library.Linear_Expression_Coefficient
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variables_Set
+import parma_polyhedra_library.Partial_Function
 
 /**
  * The domain for possibly opened box over doubles implemented within $PPL. This is essentially
@@ -103,6 +103,16 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
     val dims = new Variables_Set
     dims.add(new Variable(n))
     newpplbox.remove_space_dimensions(dims)
+    new PPLBoxDouble(newpplbox)
+  }
+  
+  def mapDimensions(rho: Seq[Int]) = {
+    val newpplbox = new Double_Box(pplbox)
+    val pf = new Partial_Function
+    for ( (newi,i) <- rho.zipWithIndex; if newi >= 0) {
+      pf.insert(i, newi)
+    }
+    newpplbox.map_space_dimensions(pf)
     new PPLBoxDouble(newpplbox)
   }
 

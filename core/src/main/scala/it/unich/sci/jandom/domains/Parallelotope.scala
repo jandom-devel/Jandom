@@ -184,7 +184,7 @@ class Parallelotope(
 
     require(dimension == that.dimension)
     if (isEmpty) return that
-    if (that.isEmpty) return this   
+    if (that.isEmpty) return this
     val thisRotated = this.rotate(that.A)
     val thatRotated = that.rotate(this.A)
     val Q = scala.collection.mutable.ArrayBuffer[PrioritizedConstraint]()
@@ -382,6 +382,14 @@ class Parallelotope(
     throw new IllegalAccessException("Unimplemented feature")
   }
 
+  /**
+   * @inheritdoc
+   * @note Not yet implemented.
+   */
+  def mapDimensions(rho: Seq[Int]): Parallelotope = {
+    throw new IllegalAccessException("Unimplemented feature")
+  }
+
   def dimension = A.rows
 
   val isFull = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
@@ -508,25 +516,25 @@ object Parallelotope extends NumericalDomain {
 
   def apply(low: DenseVector[Double], A: DenseMatrix[Double], high: DenseVector[Double]) =
     new Parallelotope(false, low, A, high)
-  
+
   /**
    * @inheritdoc
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  
+
   def full(n: Int) = {
     val low = DenseVector.fill(n)(Double.NegativeInfinity)
     val high = DenseVector.fill(n)(Double.PositiveInfinity)
     val A = DenseMatrix.eye[Double](n)
     new Parallelotope(false, low, A, high)
   }
-  
+
   /**
    * @inheritdoc
    * @note @inheritdoc
    * @throws $ILLEGAL
-   */  
+   */
   def empty(n: Int) = {
     val low = DenseVector.fill(n)(1.0)
     val high = DenseVector.fill(n)(0.0)

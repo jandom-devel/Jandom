@@ -78,5 +78,15 @@ class PPLPropertySuite extends FunSuite {
     val obj3 = octDomain.full(33).linearInequality(a,0)
     expectResult ( "[ -v27 >= 0 ]" ) { obj3.toString }
   }
+  
+  test ("map dimensions") {
+    val obj = full.linearInequality(Array(1,1,0),1).linearInequality(Array(1,0,0), 2)
+    val obj2 = full.linearInequality(Array(1,1,0),1).linearInequality(Array(0,1,0), 2)
+    val obj3 = octDomain.full(2).linearInequality(Array(1,0), 2)
+
+    expectResult( obj ) ( obj.mapDimensions(Seq(0,1,2)))
+    expectResult( obj2 ) ( obj.mapDimensions(Seq(1,0,2)))
+    expectResult( obj3 ) ( obj2.mapDimensions(Seq(-1,0,1)))    
+  }
 
 }

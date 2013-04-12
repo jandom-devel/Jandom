@@ -79,6 +79,9 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
   def delDimension(n: Int): Property =
     throw new IllegalAccessException("Unimplemented feature on Product")
 
+  def mapDimensions(rho: Seq[Int]): Property =
+    throw new IllegalAccessException("Unimplemented feature on Product")
+
   def dimension: Int =
     throw new IllegalAccessException("Unimplemented feature on Product")
 

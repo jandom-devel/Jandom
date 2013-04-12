@@ -19,7 +19,6 @@
 package it.unich.sci.jandom.domains
 
 import it.unich.sci.jandom.utils.PPLUtils
-
 import parma_polyhedra_library.C_Polyhedron
 import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Constraint
@@ -28,6 +27,7 @@ import parma_polyhedra_library.Linear_Expression_Coefficient
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variables_Set
+import parma_polyhedra_library.Partial_Function
 
 /**
  * The domain for not necessarily closed polyhedra implemented within $PPL. This is essentially
@@ -108,6 +108,16 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
     newpplpolyhedron.remove_space_dimensions(dims)
     new PPLCPolyhedron(newpplpolyhedron)
   }  
+  
+  def mapDimensions(rho: Seq[Int]) = {
+    val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
+    val pf = new Partial_Function
+    for ( (newi,i) <- rho.zipWithIndex; if newi >= 0) {
+      pf.insert(i, newi)
+    }
+    newpplpolyhedron.map_space_dimensions(pf)
+    new PPLCPolyhedron(newpplpolyhedron)
+  }
 
   def dimension(): Int = pplpolyhedron.space_dimension.toInt
 

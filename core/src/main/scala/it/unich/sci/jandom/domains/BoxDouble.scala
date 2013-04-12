@@ -293,6 +293,26 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
     Array.copy(high, n + 1, newhigh, n, dimension - n - 1)
     new BoxDouble(newlow, newhigh)
   }
+  
+  /**
+   * @inheritdoc
+   * This is a complete operator for boxes.
+   * @note @inheritdoc
+   * @throws IllegalArgumentException if parameters are not correct (but we do not check injectivity of `rho`)
+   */
+  def mapDimensions(rho: Seq[Int]) = {
+    require(rho.length == dimension)
+    val newdim = rho.count(_ >= 0)
+    require(rho forall { i => i >= -1 && i < newdim })
+    // we do not check injectivity
+    val newlow = new Array[Double](newdim)
+    val newhigh = new Array[Double](newdim)
+    for ( (newi,i) <- rho.zipWithIndex ; if newi >= 0 ) {
+      newlow(newi) = low(i)
+      newhigh(newi) = high(i)
+    }
+    new BoxDouble(newlow, newhigh)
+  }
 
   /**
    * @inheritdoc

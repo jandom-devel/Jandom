@@ -118,6 +118,13 @@ abstract class NumericalProperty[Property] extends PartiallyOrdered[Property] {
   def delDimension(n: Int): Property
   
   /**
+   * Map dimensions according to a partial injective function.
+   * @param rho partial injective function. Each dimension `i` is mapped to `rho(i)`. If `rho(i)` is
+   * `-1`, then dimension i is removed.
+   */
+  def mapDimensions(rho: Seq[Int]): Property
+  
+  /**
    * Returns the dimension of the environment space.
    * @return the dimension of the environment space.
    */
