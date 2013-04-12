@@ -229,7 +229,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private[domains] def copyConstructor(pplobject: PPLNativeProperty) = copyConstructorHandle.newInstance(pplobject)
   private[domains] def upper_bound_assign(me: PPLNativeProperty, that: PPLNativeProperty) = upperBoundAssignHandle.invoke(me, that)
   private[domains] def widening_assign(me: PPLNativeProperty, that: PPLNativeProperty) = wideningAssignHandle.invoke(me, that, null)
-  private[domains] def intersection_assign(me: PPLNativeProperty, that: PPLNativeProperty) = wideningAssignHandle.invoke(me, that)
+  private[domains] def intersection_assign(me: PPLNativeProperty, that: PPLNativeProperty) = intersectionAssignHandle.invoke(me, that)
   private[domains] def affine_image(me: PPLNativeProperty, v: Variable, le: Linear_Expression, coeff: Coefficient) = affineImageHandle.invoke(me, v, le, coeff)
   private[domains] def refine_with_constraint(me: PPLNativeProperty, c: Constraint) = refineWithConstraintHandle.invoke(me, c)
   private[domains] def space_dimension(me: PPLNativeProperty) = spaceDimensionHandle.invoke(me).asInstanceOf[Long]
