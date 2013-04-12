@@ -210,9 +210,9 @@ class JimpleMethod(method: SootMethod) extends Target {
         val oldstate = ann(destpp)
         val newstate = if (order(destpp) <= order(pp)) {
           val n = params.narrowingFactory(destpp)
-          n(ann(destpp), state)
+          n(oldstate,base)
         } else
-          ann(destpp) intersection base
+          base
         if (newstate < oldstate) {
           ann(destpp) = newstate
           taskList.enqueue(destpp)
