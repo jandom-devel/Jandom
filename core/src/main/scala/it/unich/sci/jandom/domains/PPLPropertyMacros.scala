@@ -118,8 +118,12 @@ object PPLPropertyMacros {
         def mapDimensions(rho: Seq[Int]): PPLProperty = {
           val newpplbox = new Double_Box(pplbox)
           val pf = new Partial_Function
-          for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {
-            pf.insert(i, newi)
+          // The code we use in the reflexive implementation does not work in the macro implementation
+          var i: Int = 0
+          while (i < dimension) {
+            val newi = rho(i)
+            if (newi >= 0) pf.insert(i, newi)
+            i += 1
           }
           newpplbox.map_space_dimensions(pf)
           new PPLProperty(newpplbox)
@@ -148,9 +152,23 @@ object PPLPropertyMacros {
         }
 
         override def hashCode: Int = pplbox.hashCode
-
+        /*
         def mkString(vars: IndexedSeq[String]): Seq[String] =
           PPLUtils.replaceOutputWithVars(pplbox.toString, vars)
+          * 
+          */
+
+        def mkString(vars: IndexedSeq[String]): Seq[String] = {
+          import collection.JavaConversions._
+
+          val vs = new Variable_Stringifier {
+            def stringify(x: Long) = vars(x.toInt)
+          }
+          Variable.setStringifier(vs)
+          val result = for (c <- pplbox.minimized_constraints) yield c.toString
+          Variable.setStringifier(null)
+          result
+        }
       }
 
       /**
