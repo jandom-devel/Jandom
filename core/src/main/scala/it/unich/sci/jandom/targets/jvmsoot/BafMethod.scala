@@ -79,14 +79,14 @@ class BafMethod(method: SootMethod) extends Target {
     val state = ann(pp).clone
     var unit = pp
     var nextunit = pp
-    
+
     def analyzeIf(op: AtomicCond.ComparisonOperators.Value) = {
       val scopy = state.clone
       scopy.if_icmp(op)
       exits :+= ((unit.asInstanceOf[TargetArgInst].getTarget, scopy))
       state.if_icmp(AtomicCond.ComparisonOperators.opposite(op))
     }
-    
+
     do {
       unit = nextunit
       unit match {
@@ -115,13 +115,13 @@ class BafMethod(method: SootMethod) extends Target {
         case unit: IfCmpEqInst =>
           analyzeIf(AtomicCond.ComparisonOperators.EQ)
         case unit: IfCmpNeInst =>
-          analyzeIf(AtomicCond.ComparisonOperators.NEQ)        
+          analyzeIf(AtomicCond.ComparisonOperators.NEQ)
         case unit: GotoInst =>
           exits :+= (unit.getTarget, state)
         case unit: ReturnVoidInst =>
           ann(unit) = state
         case  unit: Inst =>
-          throw UnsupportedBafByteCodeException(unit) 
+          throw UnsupportedBafByteCodeException(unit)
       }
       // We use the chain to get the fall through node. We used the first successor
       // in the CFG, but it is not clear from the documentation if we can rely on
@@ -138,12 +138,16 @@ class BafMethod(method: SootMethod) extends Target {
     val annEdge = HashMap[ProgramPoint,HashMap[ProgramPoint,params.Property]]()
     ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
     while (!taskList.isEmpty) {
-      val pp = taskList.dequeue()    		  
+      val pp = taskList.dequeue()
+      params.log(ann(pp).toString+"\n")
+      params.log(pp.toString()+"\n")
       val result = analyzeBlock(pp, ann)
+      params.log(result.mkString(",")+"\n")
       for ((destpp, state) <- result) {
         val x = annEdge.getOrElseUpdate(destpp, HashMap[ProgramPoint,params.Property]())
         x(pp) = state.clone
         if (ann contains destpp) {
+          params.log(s"join node: ${ann(destpp)} with $state\n" )
           val modified = if (order(destpp) <= order(pp))
             ann(destpp).widening(state, params.wideningFactory(destpp))
           else
@@ -155,19 +159,19 @@ class BafMethod(method: SootMethod) extends Target {
         }
       }
     }
-    taskList.enqueue(chain.getFirst())    
+    taskList.enqueue(chain.getFirst())
     while (!taskList.isEmpty) {
       val pp = taskList.dequeue()
       val result = analyzeBlock(pp, ann)
-      for ((destpp, state) <- result) {        
+      for ((destpp, state) <- result) {
         annEdge(destpp)(pp) = state.clone
-        var v = state.clone        
+        var v = state.clone
         v.empty
         for (edgeval <- annEdge(destpp))
           v.union(edgeval._2)
         val modified = if (order(destpp) <= order(pp))
           ann(destpp).narrowing(v, params.narrowingFactory(destpp))
-        else          
+        else
           ann(destpp).intersection(v)
         if (modified) taskList.enqueue(destpp)
       }
