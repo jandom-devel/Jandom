@@ -20,19 +20,22 @@ package it.unich.sci.jandom.ui.gui
 
 import java.awt.event.{ InputEvent, KeyEvent }
 import java.io.File
+
 import scala.collection.JavaConversions._
 import scala.swing.{Action, BorderPanel, BoxPanel, ComboBox, EditorPane, FileChooser, Label, MenuItem, Orientation, ScrollPane}
 import scala.swing.Dialog
+
 import it.unich.sci.jandom._
+import it.unich.sci.jandom.ppfactories.MemoizingFactory
 import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.Parameters
 import it.unich.sci.jandom.targets.jvm._
 import it.unich.sci.jandom.targets.jvmsoot.BafMethod
 import it.unich.sci.jandom.targets.jvmsoot.JimpleMethod
+
 import javax.swing.KeyStroke
 import soot.Scene
 import soot.SootMethod
-import it.unich.sci.jandom.ppfactories.MemoizingFactory
 
 
 /**
@@ -133,7 +136,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
           frame.mode match {
             case Baf =>
               val bafMethod = method.asInstanceOf[BafMethod]
-              val params = new Parameters(bafMethod) { val domain = new JVMEnvDomain(numericalDomain) }              
+              val params = new Parameters(bafMethod) { val domain = new JVMEnvFixedFrameDomain(numericalDomain) }              
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(bafMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(bafMethod)(params.narrowingFactory)

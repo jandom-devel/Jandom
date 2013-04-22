@@ -19,12 +19,14 @@
 package it.unich.sci.jandom.targets
 
 import java.io.FileInputStream
+
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import org.scalatest.FunSuite
+
 import it.unich.sci.jandom.domains.PPLCPolyhedron
-import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
+import it.unich.sci.jandom.targets.jvm.JVMEnvFixedFrameDomain
 import it.unich.sci.jandom.targets.jvm.Method
 import it.unich.sci.jandom.targets.jvm.UnsupportedASMByteCodeException
 
@@ -39,7 +41,7 @@ class JVMSuite extends FunSuite {
     val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
     val method = new Method(methodList.find(_.name == "loop").get)
     val params = new Parameters(method) {
-      val domain = new JVMEnvDomain(PPLCPolyhedron)
+      val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)
     }
     println(method.toString)
     try {

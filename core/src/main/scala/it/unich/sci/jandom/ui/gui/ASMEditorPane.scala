@@ -113,7 +113,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
       case Some(method) =>
         try {
           val numericalDomain = frame.parametersPane.selectedNumericalDomain
-          val params = new Parameters(method) { val domain = new JVMEnvDomain(numericalDomain) }
+          val params = new Parameters(method) { val domain = new JVMEnvFixedFrameDomain(numericalDomain) }
           frame.parametersPane.setParameters(params)
           val ann = method.analyze(params)
           Some(method.mkString(ann))

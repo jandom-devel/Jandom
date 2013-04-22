@@ -32,6 +32,7 @@ import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 import it.unich.sci.jandom.domains.PPLProperty
 import parma_polyhedra_library.C_Polyhedron
 import it.unich.sci.jandom.domains.PPLDomain
+import it.unich.sci.jandom.targets.jvm.JVMEnvFixedFrameDomain
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -46,7 +47,7 @@ class  JVMSootSuite extends FunSuite {
     c.setApplicationClass()
     val method = new BafMethod(c.getMethodByName("nested"))
     val params = new Parameters(method) {
-      val domain = new JVMEnvDomain(PPLCPolyhedron)      
+      val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)      
       //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
       narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing,2))
     }

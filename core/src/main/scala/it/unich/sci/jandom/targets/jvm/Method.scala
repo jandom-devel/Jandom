@@ -78,12 +78,12 @@ class Method(val methodNode: MethodNode) extends Target {
       hashCode + ": from " + startIndex + " to " + endIndex + " next " + next + " jump " + jump + (if (widening) "(widening)" else "")
     }
 
-    def analyze[Property <: NumericalProperty[Property]](state: JVMEnv[Property]): Seq[(BasicBlock, JVMEnv[Property])] = {
+    def analyze[Property <: JVMEnv[Property]](state: Property): Seq[(BasicBlock, Property)] = {
       import Opcodes._
       val s = state.clone
       var node = startNode
       var lastNode = endNode.getNext()
-      var exits = Seq[(BasicBlock, JVMEnv[Property])]()
+      var exits = Seq[(BasicBlock, Property)]()
       while (node != lastNode) {
         val op = node.getOpcode
         node match {

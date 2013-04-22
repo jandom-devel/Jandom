@@ -20,8 +20,10 @@ package it.unich.sci.jandom.targets.jvmsoot
 
 import java.io.PrintWriter
 import java.io.StringWriter
+
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
+
 import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Target
@@ -29,13 +31,13 @@ import it.unich.sci.jandom.targets.jvm.JVMEnv
 import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
 import it.unich.sci.jandom.targets.jvm.UnsupportedBafByteCodeException
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
+
 import soot._
 import soot.baf._
 import soot.jimple._
 import soot.options.Options
-import soot.tagkit.StringTag
-import soot.toolkits.graph._
 import soot.tagkit.LoopInvariantTag
+import soot.toolkits.graph._
 
 /**
  * Analysis of a method using the Baf intermediate representation.
@@ -71,9 +73,9 @@ class BafMethod(method: SootMethod) extends Target {
     ann
   }
 
-  private def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[ProgramPoint, JVMEnv[Property]]): Seq[(ProgramPoint, JVMEnv[Property])] = {
+  private def analyzeBlock[Property <: JVMEnv[Property]](pp: ProgramPoint, ann: Annotation[ProgramPoint, Property]): Seq[(ProgramPoint, Property)] = {
 
-    var exits = Seq[(ProgramPoint, JVMEnv[Property])]()
+    var exits = Seq[(ProgramPoint, Property)]()
     val state = ann(pp).clone
     var unit = pp
     var nextunit = pp
@@ -173,7 +175,7 @@ class BafMethod(method: SootMethod) extends Target {
     ann
   }
 
-  def mkString[D <: JVMEnv[_]](ann: Annotation[ProgramPoint, D]): String = {
+  def mkString[D <: JVMEnv[D]](ann: Annotation[ProgramPoint, D]): String = {
     for ((unit, prop) <- ann) {
       unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList) + " ]"))
     }
