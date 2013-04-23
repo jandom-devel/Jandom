@@ -19,55 +19,73 @@
 package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
+
 import it.unich.sci.jandom.domains.PPLCPolyhedron
-import it.unich.sci.jandom.narrowings.DefaultNarrowing
-import it.unich.sci.jandom.narrowings.NoNarrowing
-import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
-import it.unich.sci.jandom.ppfactories.MemoizingFactory
-import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
-import it.unich.sci.jandom.targets.jvmsoot._
-import it.unich.sci.jandom.widenings.DefaultWidening
-import soot._
-import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
-import it.unich.sci.jandom.domains.PPLProperty
-import parma_polyhedra_library.C_Polyhedron
 import it.unich.sci.jandom.domains.PPLDomain
+import it.unich.sci.jandom.narrowings.NoNarrowing
+import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
+import it.unich.sci.jandom.ppfactories.MemoizingFactory
+import it.unich.sci.jandom.targets.jvm.JVMEnvDynFrameDomain
 import it.unich.sci.jandom.targets.jvm.JVMEnvFixedFrameDomain
+import it.unich.sci.jandom.targets.jvmsoot._
+
+import parma_polyhedra_library.C_Polyhedron
+import soot._
 
 /**
  * Simple test suite for the JVMSoot target.
  * @author Gianluca Amato
  *
  */
-class  JVMSootSuite extends FunSuite {
+class JVMSootSuite extends FunSuite {
   test("simple baf analysis") {
     val scene = Scene.v()
     scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
-    val c = scene.loadClass("SimpleTest",1)
+    val c = scene.loadClass("SimpleTest", 1)
     c.setApplicationClass()
     val method = new BafMethod(c.getMethodByName("nested"))
     val params = new Parameters(method) {
-      val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)      
+      val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)
       //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
-      narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing,2))
+      narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
     }
     val ann = method.analyze(params)
     println(method.mkString(ann))
   }
- 
+
+  test("simple baf analysis dynamic frame") {
+    val scene = Scene.v()
+    scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
+    val c = scene.loadClass("SimpleTest", 1)
+    c.setApplicationClass()
+    val method = new BafMethod(c.getMethodByName("nested"))
+    val params = new Parameters(method) {
+      val domain = new JVMEnvDynFrameDomain(PPLCPolyhedron)
+      //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
+      narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
+      debugWriter = new java.io.StringWriter
+    }
+    try {
+      val ann = method.analyze(params)
+      println(method.mkString(ann))
+    } finally {
+      println(params.debugWriter)
+    }
+  }
+
   test("simple soot analysis") {
     val scene = Scene.v()
     scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
-    val c = scene.loadClass("SimpleTest",1)
+    val c = scene.loadClass("SimpleTest", 1)
     c.setApplicationClass()
     val method = new JimpleMethod(c.getMethodByName("nested"))
     val params = new Parameters(method) {
       val domain = new PPLDomain[C_Polyhedron]
       wideningFactory = MemoizingFactory(method)(wideningFactory)
-      narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing,2))
+      narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
     }
     val ann = method.analyze(params)
     println(method.mkString(ann))
   }
-  
+
 }
