@@ -147,11 +147,12 @@ class BafMethod(method: SootMethod) extends Target {
         val x = annEdge.getOrElseUpdate(destpp, HashMap[ProgramPoint,params.Property]())
         x(pp) = state.clone
         if (ann contains destpp) {
-          params.log(s"join node: ${ann(destpp)} with $state\n" )
+          params.log(s"join node: ${ann(destpp)} with $state" )
           val modified = if (order(destpp) <= order(pp))
             ann(destpp).widening(state, params.wideningFactory(destpp))
           else
             ann(destpp).union(state)
+          params.log(s" got ${ann(destpp)}\n")
           if (modified) taskList.enqueue(destpp)
         } else {
           ann(destpp) = state
@@ -167,8 +168,12 @@ class BafMethod(method: SootMethod) extends Target {
         annEdge(destpp)(pp) = state.clone
         var v = state.clone
         v.empty
-        for (edgeval <- annEdge(destpp))
+        for (edgeval <- annEdge(destpp)) {
+          params.log(s"join edges: $v with ${edgeval._2}\n" )
           v.union(edgeval._2)
+        }
+        params.log(s"join edges got $v\n" )
+        params.log(s"narrowing ${ann(destpp)} with $v\n")
         val modified = if (order(destpp) <= order(pp))
           ann(destpp).narrowing(v, params.narrowingFactory(destpp))
         else
