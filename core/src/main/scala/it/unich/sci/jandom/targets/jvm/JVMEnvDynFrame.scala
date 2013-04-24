@@ -18,17 +18,17 @@
 
 package it.unich.sci.jandom.targets.jvm
 import scala.collection.mutable.ArrayStack
-import it.unich.sci.jandom.domains.{ AbstractDomain, NumericalDomain, NumericalProperty }
-import it.unich.sci.jandom.targets.linearcondition.AtomicCond
-import it.unich.sci.jandom.targets.LinearForm
-import it.unich.sci.jandom.widenings.Widening
+
+import it.unich.sci.jandom.domains.{NumericalDomain, NumericalProperty}
 import it.unich.sci.jandom.narrowings.Narrowing
+import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
+import it.unich.sci.jandom.widenings.Widening
 
 /**
- * This is the abstract property abstracting the environment (stack and frame) of a Java Virtual Machine.
- * At the moment it only handles numerical variables. The class JVMEnvDynFrame is mutable. Most operations are
- * the counterpart of bytecode operations.
- * @tparam Property the numerical property used to describe numerical variables
+ * This is an abstract JVM environment using a dynamically expandable frame. At the moment, it only supports
+ * numerical properties.
+ * @tparam NumProperty the numerical property used to describe numerical variables
  * @param frame associates each element on the JVM frame to a dimension of `property`. The value `-1`
  * corresponds to a non-numerical local variable.
  * @param stack associates each element on the JVM stack to a dimension of `property`.  The value `-1`
@@ -37,13 +37,13 @@ import it.unich.sci.jandom.narrowings.Narrowing
  * @author Gianluca Amato <gamato@unich.it>
  */
 
-class JVMEnvDynFrame[Property <: NumericalProperty[Property]](
-  val frame: Array[Int], val stack: ArrayStack[Int], var property: Property) extends JVMEnv[JVMEnvDynFrame[Property]] {
+class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
+  val frame: Array[Int], val stack: ArrayStack[Int], var property: NumProperty) extends JVMEnv[JVMEnvDynFrame[NumProperty]] {
 
   /**
    * Returns a deep copy of JVMEnv.
    */
-  override def clone: JVMEnvDynFrame[Property] =
+  override def clone: JVMEnvDynFrame[NumProperty] =
     new JVMEnvDynFrame(frame.clone, stack.clone, property)
 
   /**
@@ -59,7 +59,7 @@ class JVMEnvDynFrame[Property <: NumericalProperty[Property]](
   /**
    * Return the numerical property of `this` with dimensions conformant with `that`
    */
-  private def propertyConformantWith(that: JVMEnvDynFrame[Property]): Property = {
+  private def propertyConformantWith(that: JVMEnvDynFrame[NumProperty]): NumProperty = {
     // TODO fix mapDimension in numerical property so that it can also add dimensions. In this way, we do not need this complexity.
     var extractedProperty = this.property
     var dimMap = scala.collection.mutable.IndexedSeq.fill(extractedProperty.dimension)(-1)
@@ -136,7 +136,7 @@ class JVMEnvDynFrame[Property <: NumericalProperty[Property]](
    * @param that the abstract environment to join with `this`
    * @return true if the result is bigger than `this`
    */
-  def union(that: JVMEnvDynFrame[Property]): Boolean = {
+  def union(that: JVMEnvDynFrame[NumProperty]): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)
@@ -153,7 +153,7 @@ class JVMEnvDynFrame[Property <: NumericalProperty[Property]](
    * @param that the abstract environment to intersect with `this`
    * @return true if the result is slower than `this`
    */
-  def intersection(that: JVMEnvDynFrame[Property]): Boolean = {
+  def intersection(that: JVMEnvDynFrame[NumProperty]): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)
@@ -171,7 +171,7 @@ class JVMEnvDynFrame[Property <: NumericalProperty[Property]](
    * @param n the narrowing to apply to the numerical component
    * @return true if the result is bigger than `this`
    */
-  def narrowing(that: JVMEnvDynFrame[Property], n: Narrowing): Boolean = {
+  def narrowing(that: JVMEnvDynFrame[NumProperty], n: Narrowing): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)
@@ -189,7 +189,7 @@ class JVMEnvDynFrame[Property <: NumericalProperty[Property]](
    * @prarm w the widening to apply to the numerical component
    * @return true if the result is bigger than `this`
    */
-  def widening(that: JVMEnvDynFrame[Property], w: Widening): Boolean = {
+  def widening(that: JVMEnvDynFrame[NumProperty], w: Widening): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)

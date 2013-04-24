@@ -59,7 +59,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   /*
    * The method currently selected, or None if no method is selected.
    */
-  private var method: Option[Method] = None
+  private var method: Option[AsmMethod] = None
 
   editorPane.editable = false
   layout(new ScrollPane(editorPane)) = BorderPanel.Position.Center
@@ -68,7 +68,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   val methodSelectAction = new Action("Method Select") {
     def apply() {
       val methodName = methodComboBox.selection.item
-      method = Some(new Method(methodList.find(_.name == methodName).get))
+      method = Some(new AsmMethod(methodList.find(_.name == methodName).get))
       editorPane.text = method.get.toString
     }
   }

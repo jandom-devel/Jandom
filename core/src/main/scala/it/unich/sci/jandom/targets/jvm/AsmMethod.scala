@@ -33,13 +33,14 @@ import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 
 /**
- * This class analyzes a single method of a class.
+ * This class analyzes a method of a Java class. It uses the ASM library.
+ * @param methodNode the method to analyze
  * @author Gianluca Amato
  */
 
-class Method(val methodNode: MethodNode) extends Target {
+class AsmMethod(val methodNode: MethodNode) extends Target {
   type ProgramPoint = BasicBlock
-  type Tgt = Method
+  type Tgt = AsmMethod
   type DomainBase = JVMEnvDomain
 
   private val labelBlocks = HashMap[AbstractInsnNode, BasicBlock]()

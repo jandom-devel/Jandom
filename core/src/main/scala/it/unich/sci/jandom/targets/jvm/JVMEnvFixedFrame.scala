@@ -25,9 +25,8 @@ import it.unich.sci.jandom.widenings.Widening
 import it.unich.sci.jandom.narrowings.Narrowing
 
 /**
- * This is the abstract property abstracting the environment (stack and frame) of a Java Virtual Machine. 
- * At the moment it only handles numerical variables. The class JVMEnv is mutable. Most operations are
- * the counterpart of bytecode operations.
+ * This is an abstract JVM environment using a fixed frame and stack. At the moment, it only supports
+ * numerical properties.
  * @tparam Property the numerical property used to describe numerical variables
  * @param frame associates each element on the JVM frame to a dimension of `property`. The value `-1`
  * corresponds to a non-numerical local variable.
@@ -36,15 +35,15 @@ import it.unich.sci.jandom.narrowings.Narrowing
  * @param property the numerical property describing the state of numerical variables.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class JVMEnvFixedFrame[Property <: NumericalProperty[Property]] (val frame: Array[Int], val stack: ArrayStack[Int], 
-    var property: Property) extends JVMEnv[JVMEnvFixedFrame[Property]]  {
+class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]] (val frame: Array[Int], val stack: ArrayStack[Int],
+    var property: NumProperty) extends JVMEnv[JVMEnvFixedFrame[NumProperty]]  {
 
   /**
    * Returns a deep copy of JVMEnv.
    */
-  override def clone: JVMEnvFixedFrame[Property] =
+  override def clone: JVMEnvFixedFrame[NumProperty] =
     new JVMEnvFixedFrame(frame.clone, stack.clone, property)
-  
+
   /**
    * Empties the abstract environment (i.e., it returns an abstract environment
    * representing no concrete environments).
@@ -52,7 +51,7 @@ class JVMEnvFixedFrame[Property <: NumericalProperty[Property]] (val frame: Arra
   def empty {
     property = property.empty
   }
-  
+
   def ipush(c: Int) {
     property = property.addDimension
     property = property.constantAssignment(property.dimension - 1, c)
@@ -77,14 +76,14 @@ class JVMEnvFixedFrame[Property <: NumericalProperty[Property]] (val frame: Arra
     val vm = stack.pop
     val vn = stack.top
     // do I need to correct the frame?
-    property = property.variableAdd(vn, vm).delDimension(vm)    
+    property = property.variableAdd(vn, vm).delDimension(vm)
   }
-  
+
   def iinc(v: Int, c: Int) {
     val vn = frame(v)
     property = property.constantAdd(vn,1)
   }
-  
+
   def if_icmp(op: AtomicCond.ComparisonOperators.Value) {
     import AtomicCond.ComparisonOperators._
     val vm = stack.pop
@@ -95,20 +94,20 @@ class JVMEnvFixedFrame[Property <: NumericalProperty[Property]] (val frame: Arra
       case LT => AtomicCond(lfn - lfm + LinearForm.fromCoefficient(1), LTE)
       case GT => AtomicCond(lfn - lfm - LinearForm.fromCoefficient(1), GTE)
       // we should optmized NEQ
-      case _ => AtomicCond(lfn - lfm, op)      
-    }    
+      case _ => AtomicCond(lfn - lfm, op)
+    }
     // do I need to correct the frame?
     property = condition.analyze(property)
     property = property.delDimension(vm max vn)
     property = property.delDimension(vm min vn)
   }
-  
+
   /**
    * Union of two abstract environments.
    * @param that the abstract environment to join with `this`
    * @return true if the result is bigger than `this`
    */
-  def union(that: JVMEnvFixedFrame[Property]): Boolean = {
+  def union(that: JVMEnvFixedFrame[NumProperty]): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)
@@ -116,16 +115,16 @@ class JVMEnvFixedFrame[Property <: NumericalProperty[Property]] (val frame: Arra
     property = property union that.property
     if (property > oldproperty)
       true
-    else 
+    else
       false
   }
-  
+
   /**
    * Intersection of two abstract environments.
    * @param that the abstract environment to intersect with `this`
    * @return true if the result is slower than `this`
    */
-  def intersection(that: JVMEnvFixedFrame[Property]): Boolean = {
+  def intersection(that: JVMEnvFixedFrame[NumProperty]): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)
@@ -133,17 +132,17 @@ class JVMEnvFixedFrame[Property <: NumericalProperty[Property]] (val frame: Arra
     property = property intersection that.property
     if (property < oldproperty)
       true
-    else 
+    else
       false
   }
-  
+
   /**
    * Narrowing of two abstract environments.
    * @param that the abstract environment to widen with `this`
    * @param n the narrowing to apply to the numerical component
    * @return true if the result is bigger than `this`
    */
-  def narrowing(that: JVMEnvFixedFrame[Property], n: Narrowing): Boolean = {
+  def narrowing(that: JVMEnvFixedFrame[NumProperty], n: Narrowing): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)
@@ -161,7 +160,7 @@ class JVMEnvFixedFrame[Property <: NumericalProperty[Property]] (val frame: Arra
    * @prarm w the widening to apply to the numerical component
    * @return true if the result is bigger than `this`
    */
-  def widening(that: JVMEnvFixedFrame[Property], w: Widening): Boolean = {
+  def widening(that: JVMEnvFixedFrame[NumProperty], w: Widening): Boolean = {
     // this should always hold!!
     //require(frame == that.frame)
     //require(stack == that.stack)
@@ -169,10 +168,10 @@ class JVMEnvFixedFrame[Property <: NumericalProperty[Property]] (val frame: Arra
     property = w(property,that.property)
     if (property > oldproperty)
       true
-    else 
+    else
       false
   }
-  
+
   def mkString(vars: IndexedSeq[String]) =
      " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property.mkString(vars).mkString(", ")
 
@@ -189,7 +188,7 @@ class JVMEnvFixedFrame[Property <: NumericalProperty[Property]] (val frame: Arra
  */
  class JVMEnvFixedFrameDomain(val dom: NumericalDomain) extends JVMEnvDomain {
    type Property = JVMEnvFixedFrame[dom.Property]
-   
+
    /**
     * Creates a full JVM environment of dimension 0.
     * @param maxLocal maximum number of locals in the frame.
@@ -200,7 +199,7 @@ class JVMEnvFixedFrame[Property <: NumericalProperty[Property]] (val frame: Arra
     * Creates an empty JVM environment of dimension 0.
     * @param maxLocal maximum number of locals in the frame.
     */
-   
+
    def empty(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property]((0 until maxLocals).toArray, ArrayStack[Int](), dom.empty(maxLocals))
-   
+
 }

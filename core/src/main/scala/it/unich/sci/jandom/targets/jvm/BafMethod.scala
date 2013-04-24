@@ -16,20 +16,17 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.jvmsoot
+package it.unich.sci.jandom.targets.jvm
 
 import java.io.PrintWriter
 import java.io.StringWriter
 
+import scala.Array.canBuildFrom
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
 
-import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Target
-import it.unich.sci.jandom.targets.jvm.JVMEnv
-import it.unich.sci.jandom.targets.jvm.JVMEnvDomain
-import it.unich.sci.jandom.targets.jvm.UnsupportedBafByteCodeException
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 
 import soot._
@@ -40,9 +37,8 @@ import soot.tagkit.LoopInvariantTag
 import soot.toolkits.graph._
 
 /**
- * Analysis of a method using the Baf intermediate representation.
+ * This class analyzes a method of a Java class. It uses the Baf intermediate representation of the Soot library.
  * @author Gianluca Amato
- *
  */
 class BafMethod(method: SootMethod) extends Target {
   import scala.collection.JavaConversions._

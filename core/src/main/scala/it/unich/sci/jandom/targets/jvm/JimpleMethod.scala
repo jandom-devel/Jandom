@@ -16,30 +16,28 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.jvmsoot
+package it.unich.sci.jandom.targets.jvm
 
 import java.io.PrintWriter
 import java.io.StringWriter
-
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
-
 import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.targets.linearcondition._
-
 import soot._
 import soot.baf._
 import soot.jimple._
 import soot.options.Options
 import soot.tagkit.LoopInvariantTag
 import soot.toolkits.graph._
+import scala.Array.canBuildFrom
+import scala.collection.JavaConversions.asScalaIterator
 
 /**
- * Analysis of a method using the Jimple intermediate representation.
+ * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library.
  * @author Gianluca Amato
- *
  */
 class JimpleMethod(method: SootMethod) extends Target {
   import scala.collection.JavaConversions._

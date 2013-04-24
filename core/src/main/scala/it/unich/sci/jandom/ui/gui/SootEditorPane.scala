@@ -30,8 +30,6 @@ import it.unich.sci.jandom.ppfactories.MemoizingFactory
 import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.Parameters
 import it.unich.sci.jandom.targets.jvm._
-import it.unich.sci.jandom.targets.jvmsoot.BafMethod
-import it.unich.sci.jandom.targets.jvmsoot.JimpleMethod
 
 import javax.swing.KeyStroke
 import soot.Scene
@@ -60,7 +58,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   }
 
   /*
-   * The list of currently available methods 
+   * The list of currently available methods
    */
   private var methodList = Seq[SootMethod]()
 
@@ -68,7 +66,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
    * The method currently selected, or None if no method is selected.
    */
   private var method: Option[Target] = None
-  
+
   editorPane.editable = false
   layout(new ScrollPane(editorPane)) = BorderPanel.Position.Center
   layout(methodSelector) = BorderPanel.Position.North
@@ -77,11 +75,11 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
     def apply() {
       val methodName = methodComboBox.selection.item
       val sootMethod = methodList.find(_.getName == methodName)
-      method = sootMethod flatMap { sootMethod => 
+      method = sootMethod flatMap { sootMethod =>
         frame.mode match {
         	case Baf => Some(new BafMethod(sootMethod))
             case Jimple => Some(new JimpleMethod(sootMethod))
-        }      
+        }
       }
       editorPane.text = method match {
         case Some(method) => method.toString
@@ -89,7 +87,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
       }
     }
   }
-  
+
   val newAction = new Action("New") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK))
     def apply() { editorPane.text = "" }
@@ -102,7 +100,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
       if (returnVal != FileChooser.Result.Approve) return ;
       val file = fileChooser.selectedFile
       val fileName = file.getName
-      val (name, extension) = fileName.splitAt(fileName.lastIndexOf("."))      
+      val (name, extension) = fileName.splitAt(fileName.lastIndexOf("."))
 
       val scene = Scene.v()
       scene.setSootClassPath(scene.defaultClassPath + ":" + file.getParent())
@@ -136,7 +134,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
           frame.mode match {
             case Baf =>
               val bafMethod = method.asInstanceOf[BafMethod]
-              val params = new Parameters(bafMethod) { val domain = new JVMEnvFixedFrameDomain(numericalDomain) }              
+              val params = new Parameters(bafMethod) { val domain = new JVMEnvFixedFrameDomain(numericalDomain) }
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(bafMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(bafMethod)(params.narrowingFactory)
@@ -168,9 +166,9 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   val fileMenuItems = Seq(new MenuItem(newAction), new MenuItem(openAction))
 
   val editMenuItems = Seq()
-  
+
   def select = {
     methodSelectAction()
     updateFrameTitle()
-  }     
+  }
 }

@@ -25,9 +25,7 @@ import it.unich.sci.jandom.domains.PPLDomain
 import it.unich.sci.jandom.narrowings.NoNarrowing
 import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 import it.unich.sci.jandom.ppfactories.MemoizingFactory
-import it.unich.sci.jandom.targets.jvm.JVMEnvDynFrameDomain
-import it.unich.sci.jandom.targets.jvm.JVMEnvFixedFrameDomain
-import it.unich.sci.jandom.targets.jvmsoot._
+import it.unich.sci.jandom.targets.jvm._
 
 import parma_polyhedra_library.C_Polyhedron
 import soot._
