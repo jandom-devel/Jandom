@@ -121,24 +121,16 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
 }
 
 /**
- * This is the abstract domain of JVM environments. At the moment, it only deals with numerical
- * variables.
+ * This is the abstract domain of JVM environments witrh fixed frames. At the moment, it only deals with numerical
+ * properties.
  * @param dom the numerical domain to use for the numerical variables.
  * @author Gianluca Amato <gamato@unich.it>
  */
 class JVMEnvFixedFrameDomain(val dom: NumericalDomain) extends JVMEnvDomain {
   type Property = JVMEnvFixedFrame[dom.Property]
 
-  /**
-   * Creates a full JVM environment of dimension 0.
-   * @param maxLocals maximum number of locals in the frame.
-   */
   def full(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.full(maxLocals))
 
-  /**
-   * Creates an empty JVM environment of dimension 0.
-   * @param maxLocals maximum number of locals in the frame.
-   */
   def empty(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.empty(maxLocals))
 
 }

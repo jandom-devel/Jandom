@@ -40,9 +40,6 @@ import it.unich.sci.jandom.widenings.Widening
 class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
   val frame: Array[Int], val stack: ArrayStack[Int], var property: NumProperty) extends JVMEnv[JVMEnvDynFrame[NumProperty]] {
 
-  /**
-   * Returns a deep copy of JVMEnv.
-   */
   override def clone: JVMEnvDynFrame[NumProperty] =
     new JVMEnvDynFrame(frame.clone, stack.clone, property)
 
@@ -74,10 +71,6 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
     extractedProperty.mapDimensions(dimMap)
   }
 
-  /**
-   * Empties the abstract environment (i.e., it returns an abstract environment
-   * representing no concrete environments).
-   */
   def empty {
     property = property.empty
   }
@@ -125,21 +118,12 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
       // TODO optimize NEQ
       case _ => AtomicCond(lfn - lfm, op)
     }
-    // do I need to correct the frame?
     property = condition.analyze(property)
     delDimension(vm max vn)
     delDimension(vm min vn)
   }
 
-  /**
-   * Union of two abstract environments.
-   * @param that the abstract environment to join with `this`
-   * @return true if the result is bigger than `this`
-   */
   def union(that: JVMEnvDynFrame[NumProperty]): Boolean = {
-    // this should always hold!!
-    //require(frame == that.frame)
-    //require(stack == that.stack)
     val oldproperty = property
     property = property union that.propertyConformantWith(this)
     if (property > oldproperty)
@@ -148,15 +132,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
       false
   }
 
-  /**
-   * Intersection of two abstract environments.
-   * @param that the abstract environment to intersect with `this`
-   * @return true if the result is slower than `this`
-   */
   def intersection(that: JVMEnvDynFrame[NumProperty]): Boolean = {
-    // this should always hold!!
-    //require(frame == that.frame)
-    //require(stack == that.stack)
     val oldproperty = property
     property = property intersection that.propertyConformantWith(this)
     if (property < oldproperty)
@@ -165,16 +141,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
       false
   }
 
-  /**
-   * Narrowing of two abstract environments.
-   * @param that the abstract environment to widen with `this`
-   * @param n the narrowing to apply to the numerical component
-   * @return true if the result is bigger than `this`
-   */
   def narrowing(that: JVMEnvDynFrame[NumProperty], n: Narrowing): Boolean = {
-    // this should always hold!!
-    //require(frame == that.frame)
-    //require(stack == that.stack)
     val oldproperty = property
     property = n(property, that.propertyConformantWith(this))
     if (property < oldproperty)
@@ -183,16 +150,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
       false
   }
 
-  /**
-   * Widening of two abstract environments.
-   * @param that the abstract environment to widen with `this`
-   * @prarm w the widening to apply to the numerical component
-   * @return true if the result is bigger than `this`
-   */
   def widening(that: JVMEnvDynFrame[NumProperty], w: Widening): Boolean = {
-    // this should always hold!!
-    //require(frame == that.frame)
-    //require(stack == that.stack)
     val oldproperty = property
     property = w(property, that.propertyConformantWith(this))
     if (property > oldproperty)
@@ -210,25 +168,15 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
 }
 
 /**
- * This is the abstract domain of JVM environments. At the moment, it only deals with numerical
- * variables.
+ * This is the abstract domain of JVM environments with dynamic frame. At the moment, it only deals with numerical
+ * properties.
  * @param dom the numerical domain to use for the numerical variables.
  * @author Gianluca Amato <gamato@unich.it>
  */
 class JVMEnvDynFrameDomain(val dom: NumericalDomain) extends JVMEnvDomain {
   type Property = JVMEnvDynFrame[dom.Property]
 
-  /**
-   * Creates a full JVM environment of dimension 0.
-   * @param maxLocal maximum number of locals in the frame.
-   */
   def full(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.full(0))
 
-  /**
-   * Creates an empty JVM environment of dimension 0.
-   * @param maxLocal maximum number of locals in the frame.
-   */
-
   def empty(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.empty(0))
-
 }

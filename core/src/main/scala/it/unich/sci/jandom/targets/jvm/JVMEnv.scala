@@ -31,6 +31,16 @@ import it.unich.sci.jandom.widenings.Widening
  *
  */
 abstract class JVMEnv[Property <: AnyRef] extends Cloneable {
+
+  /**
+   * Returns a deep copy of JVMEnv.
+   */
+  override def clone: Property = super.clone.asInstanceOf[Property]
+
+  /**
+   * Empties the abstract environment (i.e., it returns an abstract environment
+   * representing no concrete environments).
+   */
   def empty
 
   def ipush(c: Int)
@@ -45,17 +55,37 @@ abstract class JVMEnv[Property <: AnyRef] extends Cloneable {
 
   def if_icmp(op: AtomicCond.ComparisonOperators.Value)
 
+  /**
+   * Union of two abstract environments.
+   * @param that the abstract environment to join with `this`
+   * @return true if the result is bigger than `this`
+   */
   def union(that: Property): Boolean
 
+  /**
+   * Intersection of two abstract environments.
+   * @param that the abstract environment to intersect with `this`
+   * @return true if the result is slower than `this`
+   */
   def intersection(that: Property): Boolean
 
+  /**
+   * Narrowing of two abstract environments.
+   * @param that the abstract environment to widen with `this`
+   * @param n the narrowing to apply to the numerical component
+   * @return true if the result is bigger than `this`
+   */
   def narrowing(that: Property, n: Narrowing): Boolean
 
+  /**
+   * Widening of two abstract environments.
+   * @param that the abstract environment to widen with `this`
+   * @prarm w the widening to apply to the numerical component
+   * @return true if the result is bigger than `this`
+   */
   def widening(that: Property, w: Widening): Boolean
 
   def mkString(vars: IndexedSeq[String]): String
-
-  override def clone: Property = super.clone.asInstanceOf[Property]
 }
 
 /**
@@ -67,7 +97,7 @@ abstract class JVMEnvDomain extends AbstractDomain {
 
   /**
    * Creates a full JVM environment.
-   * @param maxLocal maximum number of locals in the frame.
+   * @param maxLocals maximum number of locals in the frame.
    */
   def full(maxLocals: Int): Property
 
