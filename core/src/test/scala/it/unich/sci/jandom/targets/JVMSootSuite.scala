@@ -46,9 +46,14 @@ class JVMSootSuite extends FunSuite {
       val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)
       //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
       narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
+      debugWriter = new java.io.StringWriter
     }
-    val ann = method.analyze(params)
-    println(method.mkString(ann))
+    try {
+      val ann = method.analyze(params)
+      println(method.mkString(ann))
+    } finally {
+      println(params.debugWriter)
+    }
   }
 
   test("simple baf analysis dynamic frame") {
