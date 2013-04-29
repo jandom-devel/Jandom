@@ -34,15 +34,16 @@ import soot.tagkit.LoopInvariantTag
 import soot.toolkits.graph._
 import scala.Array.canBuildFrom
 import scala.collection.JavaConversions.asScalaIterator
+import it.unich.sci.jandom.targets.cfg.ControlFlowGraph
 
 /**
  * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library.
  * @author Gianluca Amato
  */
-class JimpleMethod(method: SootMethod) extends Target {
+class JimpleMethod(method: SootMethod) extends ControlFlowGraph {
   import scala.collection.JavaConversions._
 
-  type ProgramPoint = Unit
+  type Node = Unit
   type Tgt = JimpleMethod
   type DomainBase = NumericalDomain
 
@@ -56,12 +57,14 @@ class JimpleMethod(method: SootMethod) extends Target {
   for (n <- 0 until locals.size) {
     envMap(i.next()) = n
   }
+
+  val graph = new ExceptionalUnitGraph(body)
+  val size = locals.size
   val order = weakTopologicalOrder
 
-  def weakTopologicalOrder: Annotation[ProgramPoint, Integer] = {
-    val cfg = new ExceptionalUnitGraph(body)
-    val order = new PseudoTopologicalOrderer[Unit].newList(cfg, false)
-    val ann = getAnnotation[Integer]
+  def weakTopologicalOrder: Annotation[Unit, Int] = {
+    val order = new PseudoTopologicalOrderer[Unit].newList(graph, false)
+    val ann = getAnnotation[Int]
     var index = 0
     order.iterator.foreach { u => ann(u) = index; index += 1 }
     ann
@@ -128,96 +131,35 @@ class JimpleMethod(method: SootMethod) extends Target {
     Some(a)
   }
 
-  def analyzeBlock[Property <: NumericalProperty[Property]](pp: ProgramPoint, ann: Annotation[ProgramPoint, Property]): Seq[(ProgramPoint, Property)] = {
-
-    var exits = Seq[(ProgramPoint, Property)]()
-    var state = ann(pp)
-    var unit = pp
-    var nextunit = pp
-    do {
-      unit = nextunit
-      unit match {
-        case unit: AssignStmt =>
-          val local = unit.getLeftOp().asInstanceOf[Local]
-          val lf = jimpleExprToLinearForm(unit.getRightOp())
-          lf match {
-            case None =>
-              state = state.nonDeterministicAssignment(envMap(local))
-            case Some(a) =>
-              state = state.linearAssignment(envMap(local), a.tail, a(0))
-          }
-        case unit: IfStmt =>
-          val cond = unit.getCondition
-          val lc = jimpleExprToLinearCond(cond)
-          lc match {
-            case None =>
-              exits :+= (unit.getTarget, state)
-            case Some(c) =>
-              exits :+= (unit.getTarget, c.analyze(state))
-              state = c.opposite.analyze(state)
-          }
-        case unit: GotoStmt =>
-          exits :+= (unit.getTarget, state)
-
-        case unit: ReturnVoidStmt =>
-          ann(unit) = state
-      }
-      // We use the chain to get the fall through node. We used the first successor
-      // in the CFG, but it is not clear from the documentation if we can rely on
-      // this assumption.
-      nextunit = chain.getSuccOf(unit)
-    } while (unit.fallsThrough() && nextunit.getBoxesPointingToThis().isEmpty())
-    if (unit.fallsThrough) exits :+= (nextunit, state)
+  protected def analyzeBlock(params: Parameters)(node: Unit, prop: params.Property): Seq[params.Property] = {
+    var exits = Seq[params.Property]()
+    var newprop = prop
+    node match {
+      case unit: AssignStmt =>
+        val local = unit.getLeftOp().asInstanceOf[Local]
+        val lf = jimpleExprToLinearForm(unit.getRightOp())
+        lf match {
+          case None =>
+            newprop = prop.nonDeterministicAssignment(envMap(local))
+          case Some(a) =>
+            newprop = prop.linearAssignment(envMap(local), a.tail, a(0))
+        }
+      case unit: IfStmt =>
+        val cond = unit.getCondition
+        val lc = jimpleExprToLinearCond(cond)
+        lc match {
+          case None =>
+            exits :+= prop
+          case Some(c) =>
+            exits :+= c.analyze(prop)
+            newprop = c.opposite.analyze(prop)
+        }
+      case unit: GotoStmt =>
+        exits :+= prop
+      case unit: ReturnVoidStmt =>
+    }
+    if (node.fallsThrough) exits +:= newprop
     exits
-  }
-
-  def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
-    val ann = getAnnotation[params.Property]
-    val taskList = Queue[ProgramPoint](chain.getFirst())
-    ann(chain.getFirst()) = params.domain.full(body.getLocalCount())
-    val annEdge = HashMap[ProgramPoint, HashMap[ProgramPoint, params.Property]]()
-    while (!taskList.isEmpty) {
-      val pp = taskList.dequeue()
-      val result = analyzeBlock(pp, ann)
-      for ((destpp, state) <- result) {
-        annEdge.getOrElseUpdate(destpp, HashMap[ProgramPoint, params.Property]()).update(pp, state)
-        if (ann contains destpp) {
-          val oldstate = ann(destpp)
-          val newstate = if (order(destpp) <= order(pp)) {
-            val w = params.wideningFactory(destpp)
-            w(ann(destpp), state)
-          } else
-            ann(destpp) union state
-          if (newstate > oldstate) {
-            ann(destpp) = newstate
-            taskList.enqueue(destpp)
-          }
-        } else {
-          ann(destpp) = state
-          taskList.enqueue(destpp)
-        }
-      }
-    }
-    taskList.enqueue(chain.getFirst())
-    while (!taskList.isEmpty) {
-      val pp = taskList.dequeue()
-      val result = analyzeBlock(pp, ann)
-      for ((destpp, state) <- result) {
-        annEdge(destpp)(pp) = state
-        val base = annEdge(destpp).foldRight(state.empty)(_._2 union _)
-        val oldstate = ann(destpp)
-        val newstate = if (order(destpp) <= order(pp)) {
-          val n = params.narrowingFactory(destpp)
-          n(oldstate,base)
-        } else
-          base
-        if (newstate < oldstate) {
-          ann(destpp) = newstate
-          taskList.enqueue(destpp)
-        }
-      }
-    }
-    ann
   }
 
   def mkString[D <: NumericalProperty[D]](ann: Annotation[ProgramPoint, D]): String = {

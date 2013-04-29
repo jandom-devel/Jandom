@@ -35,7 +35,7 @@ import soot._
  * @author Gianluca Amato
  *
  */
-class JVMSootSuite extends FunSuite {
+class JVMSootSuite2 extends FunSuite {
   test("simple baf analysis") {
     val scene = Scene.v()
     scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
@@ -76,7 +76,7 @@ class JVMSootSuite extends FunSuite {
     }
   }
 
-  test("simple soot analysis") {
+  test("simple jimple analysis") {
     val scene = Scene.v()
     scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
     val c = scene.loadClass("SimpleTest", 1)
@@ -86,9 +86,13 @@ class JVMSootSuite extends FunSuite {
       val domain = new PPLDomain[C_Polyhedron]
       wideningFactory = MemoizingFactory(method)(wideningFactory)
       narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
+      debugWriter = new java.io.StringWriter
     }
-    val ann = method.analyze(params)
-    println(method.mkString(ann))
+    try {
+      val ann = method.analyze(params)
+      println(method.mkString(ann))
+    } finally {
+      println(params.debugWriter)
+    }
   }
-
 }
