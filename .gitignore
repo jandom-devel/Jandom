@@ -3,3 +3,5 @@ target/
 .project
 .cache
 .classpath
+.worksheet
+*.sc
