@@ -159,6 +159,12 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
       false
   }
 
+  def tryCompareTo[B >: JVMEnvDynFrame[NumProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
+    case other: JVMEnvDynFrame[NumProperty] =>
+    	property.tryCompareTo(other.propertyConformantWith(this))
+    case _ => None
+  }
+
   def mkString(vars: IndexedSeq[String]) = {
     "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
   }

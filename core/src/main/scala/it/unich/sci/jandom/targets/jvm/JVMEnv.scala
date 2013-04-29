@@ -22,6 +22,7 @@ import it.unich.sci.jandom.domains.AbstractDomain
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.narrowings.Narrowing
 import it.unich.sci.jandom.widenings.Widening
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * This is the base class for abstractions of the JVM environment. It uses F-bounded polymorhpism to
@@ -30,7 +31,7 @@ import it.unich.sci.jandom.widenings.Widening
  * @author Gianluca Amato
  *
  */
-abstract class JVMEnv[Property <: AnyRef] extends Cloneable {
+abstract class JVMEnv[Property <: AnyRef] extends AbstractProperty[Property] with Cloneable {
 
   /**
    * Returns a deep copy of JVMEnv.

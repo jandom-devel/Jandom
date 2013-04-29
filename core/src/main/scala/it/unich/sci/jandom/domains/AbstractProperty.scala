@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,15 +19,10 @@
 package it.unich.sci.jandom.domains
 
 /**
- * The base class for all abstract domains. At the moment, the only thing that all abstract
- * domains have in common is a type `Property`, which determines the properties which are part
- * of the domain.
+ * The base class for all abstract properties.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-abstract class AbstractDomain {
-  /**
-   * The type of the properties created by this abstract domain.
-   */
-  type Property <: AbstractProperty[Property]
+abstract class AbstractProperty[Property] extends PartiallyOrdered[Property] {
+
 }

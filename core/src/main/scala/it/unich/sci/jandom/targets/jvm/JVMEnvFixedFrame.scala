@@ -111,6 +111,12 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
       false
   }
 
+  def tryCompareTo[B >: JVMEnvFixedFrame[NumProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
+    case other: JVMEnvFixedFrame[NumProperty] =>
+    	property.tryCompareTo(other.property)
+    case _ => None
+  }
+
   def mkString(vars: IndexedSeq[String]) = property.mkString(vars).mkString(", ")
 
   override def toString = {
