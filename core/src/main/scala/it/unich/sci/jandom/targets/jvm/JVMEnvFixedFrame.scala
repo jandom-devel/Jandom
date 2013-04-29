@@ -74,46 +74,21 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
     property = condition.analyze(property).delDimension(property.dimension - 1).delDimension(property.dimension - 2)
   }
 
-  def union(that: JVMEnvFixedFrame[NumProperty]): Boolean = {
-    val oldproperty = property
-    property = property union that.property
-    if (property > oldproperty)
-      true
-    else
-      false
-  }
+  def union(that: JVMEnvFixedFrame[NumProperty]): JVMEnvFixedFrame[NumProperty] =
+    new JVMEnvFixedFrame[NumProperty](maxLocals, property union that.property)
 
-  def intersection(that: JVMEnvFixedFrame[NumProperty]): Boolean = {
-    val oldproperty = property
-    property = property intersection that.property
-    if (property < oldproperty)
-      true
-    else
-      false
-  }
+  def intersection(that: JVMEnvFixedFrame[NumProperty]): JVMEnvFixedFrame[NumProperty] =
+    new JVMEnvFixedFrame[NumProperty](maxLocals, property intersection that.property)
 
-  def narrowing(that: JVMEnvFixedFrame[NumProperty], n: Narrowing): Boolean = {
-    val oldproperty = property
-    property = n(property, that.property)
-    if (property < oldproperty)
-      true
-    else
-      false
-  }
+  def narrowing(that: JVMEnvFixedFrame[NumProperty]): JVMEnvFixedFrame[NumProperty] =
+    new JVMEnvFixedFrame[NumProperty](maxLocals, property narrowing that.property)
 
-
-  def widening(that: JVMEnvFixedFrame[NumProperty], w: Widening): Boolean = {
-    val oldproperty = property
-    property = w(property, that.property)
-    if (property > oldproperty)
-      true
-    else
-      false
-  }
+  def widening(that: JVMEnvFixedFrame[NumProperty]): JVMEnvFixedFrame[NumProperty] =
+    new JVMEnvFixedFrame[NumProperty](maxLocals, property widening that.property)
 
   def tryCompareTo[B >: JVMEnvFixedFrame[NumProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: JVMEnvFixedFrame[NumProperty] =>
-    	property.tryCompareTo(other.property)
+      property.tryCompareTo(other.property)
     case _ => None
   }
 

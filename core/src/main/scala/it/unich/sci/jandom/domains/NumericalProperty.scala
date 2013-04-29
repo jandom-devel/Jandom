@@ -37,39 +37,6 @@ package it.unich.sci.jandom.domains
 abstract class NumericalProperty[Property] extends AbstractProperty[Property] {
 
   /**
-   * The standard widening for two abstract objects.
-   * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
-   * @note $NOTEDIMENSION
-   * @return the widening of the two abstract objects.
-   */
-  def widening(that: Property): Property
-
-  /**
-   * The standard widening for two abstract objects.
-   * @param that the abstract object to be narrowed with `this`. `that` IS assumed to be smaller than `this`.
-   * @note `that` should be be bigger than `this`.
-   * @note $NOTEDIMENSION
-   * @return the narrowing of the two abstract objects.
-   */
-  def narrowing(that: Property): Property
-
-  /**
-   * Union of two abstract objects.
-   * @param that the abstract object to be joined with `this`.
-   * @note $NOTEDIMENSION
-   * @return the union of the two abstract objects.
-   */
-  def union(that: Property): Property
-
-  /**
-   * Intersection of two abstract objects.
-   * @param that the abstract object to be intersected with `this`.
-   * @note $NOTEDIMENSION
-   * @return the intersection of the two abstract objects.
-   */
-  def intersection(that: Property): Property
-
-  /**
    * Non deterministic assignment (also called `forget` operator).
    * @note $NOTEN
    * @param n the variable to which non-deterministic assignment should be applied.
@@ -217,4 +184,5 @@ abstract class NumericalProperty[Property] extends AbstractProperty[Property] {
    * variable names `v1` ... `vn`.
    */
   override def toString: String = "[ " + (mkString( for (i <- 0 until dimension) yield "v"+i )).mkString(" , ") + " ]"
+
 }

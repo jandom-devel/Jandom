@@ -21,8 +21,42 @@ package it.unich.sci.jandom.domains
 /**
  * The base class for all abstract properties.
  * @author Gianluca Amato <gamato@unich.it>
- *
  */
 abstract class AbstractProperty[Property] extends PartiallyOrdered[Property] {
+  /**
+   * The standard widening for two abstract properties.
+   * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
+   * @note $NOTEDIMENSION
+   * @return the widening of the two abstract properties.
+   */
+  def widening(that: Property): Property
+
+  /**
+   * The standard widening for two abstract properties.
+   * @param that the abstract object to be narrowed with `this`. `that` IS assumed to be smaller than `this`.
+   * @note `that` should be be bigger than `this`.
+   * @note $NOTEDIMENSION
+   * @return the narrowing of the two abstract properties.
+   */
+  def narrowing(that: Property): Property
+
+
+  /**
+   * Compute an upper bound of two abstract properties. If it is possible and convenient, this should compute
+   * the lowest upper bound, but it is not a requirement.
+   * @param that the abstract object to be joined with `this`.
+   * @note $NOTEDIMENSION
+   * @return an upper bound of the two abstract properties.
+   */
+  def union(that: Property): Property
+
+  /**
+   * Compute a lower bound of two abstract properties. If it is possible and convenient, this should compute
+   * the greatest lower bound, but it is not a requirement.
+   * @param that the abstract object to meet with `this`.
+   * @note $NOTEDIMENSION
+   * @return a lower bound of the two abstract properties.
+   */
+  def intersection(that: Property): Property
 
 }

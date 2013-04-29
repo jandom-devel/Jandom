@@ -144,12 +144,15 @@ class BafMethod(method: SootMethod) extends Target {
         x(pp) = state.clone
         if (ann contains destpp) {
           params.log(s"join node: ${ann(destpp)} with $state" )
-          val modified = if (order(destpp) <= order(pp))
-            ann(destpp).widening(state, params.wideningFactory(destpp))
+          val newstate = if (order(destpp) <= order(pp))
+            ann(destpp) widening state
           else
-            ann(destpp).union(state)
-          params.log(s" got ${ann(destpp)}\n")
-          if (modified) taskList.enqueue(destpp)
+            ann(destpp) union state
+          params.log(s" got ${newstate}\n")
+          if (newstate > ann(destpp)) {
+            ann(destpp) = newstate
+            taskList.enqueue(destpp)
+          }
         } else {
           ann(destpp) = state
           taskList.enqueue(destpp)
@@ -166,15 +169,18 @@ class BafMethod(method: SootMethod) extends Target {
         v.empty
         for (edgeval <- annEdge(destpp)) {
           params.log(s"join edges: $v with ${edgeval._2}\n" )
-          v.union(edgeval._2)
+          v = v  union edgeval._2
         }
         params.log(s"join edges got $v\n" )
         params.log(s"narrowing ${ann(destpp)} with $v\n")
-        val modified = if (order(destpp) <= order(pp))
-          ann(destpp).narrowing(v, params.narrowingFactory(destpp))
+        val newv = if (order(destpp) <= order(pp))
+          ann(destpp) narrowing v
         else
-          ann(destpp).intersection(v)
-        if (modified) taskList.enqueue(destpp)
+          ann(destpp) intersection(v)
+        if (newv < ann(destpp)) {
+          ann(destpp) = newv
+          taskList.enqueue(destpp)
+        }
       }
     }
     ann

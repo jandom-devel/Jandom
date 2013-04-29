@@ -123,41 +123,17 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
     delDimension(vm min vn)
   }
 
-  def union(that: JVMEnvDynFrame[NumProperty]): Boolean = {
-    val oldproperty = property
-    property = property union that.propertyConformantWith(this)
-    if (property > oldproperty)
-      true
-    else
-      false
-  }
+  def union(that: JVMEnvDynFrame[NumProperty]) =
+    new JVMEnvDynFrame(frame.clone, stack.clone, property union that.propertyConformantWith(this) )
 
-  def intersection(that: JVMEnvDynFrame[NumProperty]): Boolean = {
-    val oldproperty = property
-    property = property intersection that.propertyConformantWith(this)
-    if (property < oldproperty)
-      true
-    else
-      false
-  }
+  def intersection(that: JVMEnvDynFrame[NumProperty]): JVMEnvDynFrame[NumProperty] =
+    new JVMEnvDynFrame(frame.clone, stack.clone, property intersection that.propertyConformantWith(this) )
 
-  def narrowing(that: JVMEnvDynFrame[NumProperty], n: Narrowing): Boolean = {
-    val oldproperty = property
-    property = n(property, that.propertyConformantWith(this))
-    if (property < oldproperty)
-      true
-    else
-      false
-  }
+  def narrowing(that: JVMEnvDynFrame[NumProperty]): JVMEnvDynFrame[NumProperty] =
+     new JVMEnvDynFrame(frame.clone, stack.clone, property narrowing that.propertyConformantWith(this) )
 
-  def widening(that: JVMEnvDynFrame[NumProperty], w: Widening): Boolean = {
-    val oldproperty = property
-    property = w(property, that.propertyConformantWith(this))
-    if (property > oldproperty)
-      true
-    else
-      false
-  }
+  def widening(that: JVMEnvDynFrame[NumProperty]): JVMEnvDynFrame[NumProperty] =
+    new JVMEnvDynFrame(frame.clone, stack.clone, property widening that.propertyConformantWith(this) )
 
   def tryCompareTo[B >: JVMEnvDynFrame[NumProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: JVMEnvDynFrame[NumProperty] =>

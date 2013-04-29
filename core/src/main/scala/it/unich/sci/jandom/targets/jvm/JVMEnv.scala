@@ -56,36 +56,6 @@ abstract class JVMEnv[Property <: AnyRef] extends AbstractProperty[Property] wit
 
   def if_icmp(op: AtomicCond.ComparisonOperators.Value)
 
-  /**
-   * Union of two abstract environments.
-   * @param that the abstract environment to join with `this`
-   * @return true if the result is bigger than `this`
-   */
-  def union(that: Property): Boolean
-
-  /**
-   * Intersection of two abstract environments.
-   * @param that the abstract environment to intersect with `this`
-   * @return true if the result is slower than `this`
-   */
-  def intersection(that: Property): Boolean
-
-  /**
-   * Narrowing of two abstract environments.
-   * @param that the abstract environment to widen with `this`
-   * @param n the narrowing to apply to the numerical component
-   * @return true if the result is bigger than `this`
-   */
-  def narrowing(that: Property, n: Narrowing): Boolean
-
-  /**
-   * Widening of two abstract environments.
-   * @param that the abstract environment to widen with `this`
-   * @prarm w the widening to apply to the numerical component
-   * @return true if the result is bigger than `this`
-   */
-  def widening(that: Property, w: Widening): Boolean
-
   def mkString(vars: IndexedSeq[String]): String
 }
 
@@ -106,6 +76,6 @@ abstract class JVMEnvDomain extends AbstractDomain {
    * Creates an empty JVM environment.
    * @param maxLocal maximum number of locals in the frame.
    */
-
   def empty(maxLocals: Int): Property
+
 }

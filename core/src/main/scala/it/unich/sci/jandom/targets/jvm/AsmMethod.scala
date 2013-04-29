@@ -21,7 +21,7 @@ package it.unich.sci.jandom.targets.jvm
 import java.io.{ PrintWriter, StringWriter }
 import java.util.NoSuchElementException
 
-import scala.collection.mutable.{BitSet, HashMap, Queue}
+import scala.collection.mutable.{ BitSet, HashMap, Queue }
 
 import org.objectweb.asm._
 import org.objectweb.asm.tree._
@@ -227,7 +227,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target {
     startBlock
   }
 
-  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
+  def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     val ann = getAnnotation[params.Property]
     ann(startBlock) = params.domain.full(methodNode.maxLocals)
     val taskList = Queue[BasicBlock](startBlock)
@@ -236,11 +236,14 @@ class AsmMethod(val methodNode: MethodNode) extends Target {
       val result = b.analyze(ann(b))
       for ((block, state) <- result) {
         if (ann contains block) {
-          val modified = if (block.widening)
-            ann(block).widening(state,params.wideningFactory(block))
+          val newstate = if (block.widening)
+            ann(block) widening state
           else
             ann(block) union state
-          if (modified) taskList.enqueue(block)
+          if (newstate > ann(block)) {
+            ann(block) = state
+            taskList.enqueue(block)
+          }
         } else {
           ann(block) = state
           taskList.enqueue(block)
@@ -252,7 +255,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target {
 
   def size = methodNode.maxStack + methodNode.maxLocals
 
-  def mkString[D <: JVMEnv[_]](ann: Annotation[ProgramPoint,D]): String = {
+  def mkString[D <: JVMEnv[_]](ann: Annotation[ProgramPoint, D]): String = {
     val sw = new StringWriter
     val pw = new PrintWriter(sw)
     val textifier = new Textifier
