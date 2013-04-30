@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,20 +23,19 @@ package it.unich.sci.jandom.targets
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-private[jandom] class MockTarget extends Target {
-  type Tgt = MockTarget
-  type ProgramPoint = Int  
-    
+private[jandom] class MockTarget extends Target[MockTarget] {
+  type ProgramPoint = Int
+
   def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = getAnnotation[params.Property]
 }
 
-/** 
+/**
  * The companion object for the MockTarget.
- * @author Gianluca Amato <amato@sci.unich.it> 
+ * @author Gianluca Amato <amato@sci.unich.it>
  */
 private[jandom] object MockTarget {
   /**
    * Creates a mock target.
    */
-  def apply() = new MockTarget()  
+  def apply() = new MockTarget()
 }

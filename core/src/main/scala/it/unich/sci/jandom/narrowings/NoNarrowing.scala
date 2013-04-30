@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,13 @@
 
 package it.unich.sci.jandom.narrowings
 
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
- * This is a narrowing which does not perform any descending step, it just returns the 
+ * This is a narrowing which does not perform any descending step, it just returns the
  * current value.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 object NoNarrowing extends Narrowing {
-	def apply[Property <: NumericalProperty[Property]] (current: Property, next: Property) = current
+	def apply[Property <: AbstractProperty[Property]] (current: Property, next: Property) = current
 }

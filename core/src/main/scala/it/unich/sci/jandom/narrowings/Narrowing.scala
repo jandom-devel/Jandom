@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom.narrowings
 
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * This is the trait for narrowings, operators used to accelerate fixpoint computations.
@@ -30,5 +30,5 @@ trait Narrowing {
    * @param next the property at the next iteration. This IS assumed to be smaller than current.
    * @return the result of the narrowing.
    */
-  def apply[Property <: NumericalProperty[Property]](current: Property, next: Property): Property
+  def apply[Property <: AbstractProperty[Property]](current: Property, next: Property): Property
 }

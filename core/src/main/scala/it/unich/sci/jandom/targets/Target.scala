@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,21 +24,16 @@ import it.unich.sci.jandom.domains.AbstractDomain
 
 /**
  * The abstract class for targets, which are the static analyzers for the
- * differente target languages. 
+ * differente target languages.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract class Target {
+abstract class Target[Tgt <: Target[Tgt]] {
   /**
    * Abstract type for program points.
    */
   type ProgramPoint
 
-  /**
-   * The type of the given target.
-   */
-  type Tgt <: Target
-  
   /**
    * Target cannot work for all static analyzers, hence we specify here the base domain in the hierarchy
    * which is supported by the target.
@@ -49,14 +44,14 @@ abstract class Target {
    * An alias for parameters in input by the analyzer.
    */
   protected type Parameters = it.unich.sci.jandom.targets.Parameters[Tgt]
-  
+
   /**
-   * Returns an empty annotation which is well suited for this target. The 
+   * Returns an empty annotation which is well suited for this target. The
    * default implementation just returns an HashMap.
    */
   def getAnnotation[Property]: Annotation[ProgramPoint,Property] =
     new HashMap[ProgramPoint,Property] with Annotation[ProgramPoint,Property]
-  
+
   /**
    * Perform a static analysis over the target.
    * @param param the parameters which drive the analyzer

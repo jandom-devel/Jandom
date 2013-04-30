@@ -23,15 +23,15 @@ import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Target
 import soot.toolkits.graph.DirectedGraph
 import soot.util.Chain
+import it.unich.sci.jandom.widenings.Widening
 
 /**
  * @author Gianluca Amato
  */
-abstract class ControlFlowGraph extends Target {
+abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt]] extends Target[Tgt] {
   type Node
   type Edge = (Node, Node)
   type ProgramPoint = Node
-  type Tgt <: ControlFlowGraph
 
   val chain: Chain[Node]
   val graph: DirectedGraph[Node]
@@ -59,9 +59,9 @@ abstract class ControlFlowGraph extends Target {
         annEdge((node, succ)) = out
         if (ann contains succ) {
           params.log(s"join $succ : ${ann(succ)} with $out")
-          val succval = if (order(succ) <= order(node))
+          val succval: params.Property = if (order(succ) <= order(node)) {
             ann(succ) widening out
-          else
+          } else
             ann(succ) union out
           if (succval > ann(succ)) {
             params.log(s" update with $succval\n")

@@ -16,7 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.lts 
+package it.unich.sci.jandom.targets.lts
 
 import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.targets.{Environment, Target}
@@ -31,7 +31,7 @@ import it.unich.sci.jandom.targets.Annotation
  *
  */
 
-case class LTS(private val locations: IndexedSeq[Location], private val transitions: Seq[Transition], private val env: Environment) extends Target {
+case class LTS(private val locations: IndexedSeq[Location], private val transitions: Seq[Transition], private val env: Environment) extends Target[LTS] {
 
   // fill locations with their numerical index.. this is used to speed up execution
   locations.zipWithIndex.foreach { case (loc, index) => loc.id = index }
@@ -41,7 +41,6 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
   private[this] val s = locations.size
 
   type ProgramPoint = Location
-  type Tgt = LTS
   type DomainBase = NumericalDomain
 
   def size = s
@@ -64,11 +63,11 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
   override def getAnnotation[Property] = new LTSAnnotation[Property]
 
   def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
-    // build widening and narrowing for each program point    
+    // build widening and narrowing for each program point
     val widenings = locations map params.wideningFactory
     val narrowings = locations map params.narrowingFactory
 
-    // build an empty property.. it is used several times, so we speed execution    
+    // build an empty property.. it is used several times, so we speed execution
     val empty = params.domain.empty(env.size)
 
     var current = locations map { _ => empty }

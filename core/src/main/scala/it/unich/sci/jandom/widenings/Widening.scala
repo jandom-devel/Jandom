@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,19 +18,19 @@
 
 package it.unich.sci.jandom.widenings
 
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * This is the trait for widenings, operators used to accelerate fixpoint computations.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 
-trait Widening  {
+trait Widening {
   /**
-   * @tparam Property the type of the property 
+   * @tparam Property the type of the property
    * @param current the property at the current iteration
    * @param next the property at the next iteration.  This is NOT assumed to be bigger than current.
-   * @return the result of widening 
+   * @return the result of widening
    */
-  def apply[Property <: NumericalProperty[Property]](current: Property, next: Property): Property
+  def apply[Property <: AbstractProperty[Property]](current: Property, next: Property): Property
 }

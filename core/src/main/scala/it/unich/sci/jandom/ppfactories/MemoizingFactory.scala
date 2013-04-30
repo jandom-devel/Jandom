@@ -63,6 +63,6 @@ object MemoizingFactory {
    * @param tgt the target
    * @return the factory
    */
-  def apply[Tgt <: Target, T](tgt: Tgt)(factory: PPFactory[tgt.ProgramPoint, T]): PPFactory[tgt.ProgramPoint,T] =
+  def apply[Tgt <: Target[Tgt], T](tgt: Tgt)(factory: PPFactory[tgt.ProgramPoint, T]): PPFactory[tgt.ProgramPoint,T] =
     new MemoizingFactory(factory, tgt.getAnnotation[T])
 }

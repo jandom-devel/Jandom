@@ -27,7 +27,7 @@ import it.unich.sci.jandom.targets.Target
  * @author Gianluca Amato <gamato@unich.it>
  */
 
-abstract class SLILTarget extends Target {
+abstract class SLILTarget extends Target[SLILTarget] {
   type ProgramPoint = (SLILTarget, Int)
   type Tgt = SLILTarget
   type DomainBase = NumericalDomain

@@ -38,11 +38,10 @@ import soot.toolkits.graph._
  * This class analyzes a method of a Java class. It uses the Baf intermediate representation of the Soot library.
  * @author Gianluca Amato
  */
-class BafMethod(method: SootMethod) extends ControlFlowGraph {
+class BafMethod(method: SootMethod) extends ControlFlowGraph[BafMethod] {
   import scala.collection.JavaConversions._
 
   type Node = Unit
-  type Tgt = BafMethod
   type DomainBase = JVMEnvDomain
 
   val jimple = method.retrieveActiveBody()

@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,24 +18,24 @@
 
 package it.unich.sci.jandom.narrowings
 
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * Delayed narrowing. It performs delayes normal descending steps, and then start applying the
  * narrowing given as an argument.
  * @param narrowing the original narrowing
- * @param delay the number of delayed steps 
+ * @param delay the number of delayed steps
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-  
-class DelayedNarrowing(private val narrowing: Narrowing, private var delay: Int) extends Narrowing { 
+
+class DelayedNarrowing(private val narrowing: Narrowing, private var delay: Int) extends Narrowing {
   require (delay>=0)
-  
-  def apply[Property <: NumericalProperty[Property]]  (current: Property, next: Property) = {      
+
+  def apply[Property <: AbstractProperty[Property]] (current: Property, next: Property) = {
     if (delay>0) {
       delay -= 1
       next
-    } else 
+    } else
       narrowing(current, next)
-  } 
+  }
 }

@@ -40,11 +40,10 @@ import it.unich.sci.jandom.targets.cfg.ControlFlowGraph
  * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library.
  * @author Gianluca Amato
  */
-class JimpleMethod(method: SootMethod) extends ControlFlowGraph {
+class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod] {
   import scala.collection.JavaConversions._
 
   type Node = Unit
-  type Tgt = JimpleMethod
   type DomainBase = NumericalDomain
 
   val body = method.retrieveActiveBody()

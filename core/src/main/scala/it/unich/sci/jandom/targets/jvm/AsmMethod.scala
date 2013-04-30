@@ -38,9 +38,8 @@ import it.unich.sci.jandom.targets.linearcondition.AtomicCond
  * @author Gianluca Amato
  */
 
-class AsmMethod(val methodNode: MethodNode) extends Target {
+class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
   type ProgramPoint = BasicBlock
-  type Tgt = AsmMethod
   type DomainBase = JVMEnvDomain
 
   private val labelBlocks = HashMap[AbstractInsnNode, BasicBlock]()

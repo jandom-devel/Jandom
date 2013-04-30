@@ -65,7 +65,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   /*
    * The method currently selected, or None if no method is selected.
    */
-  private var method: Option[Target] = None
+  private var method: Option[Target[_]] = None
 
   editorPane.editable = false
   layout(new ScrollPane(editorPane)) = BorderPanel.Position.Center

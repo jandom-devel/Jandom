@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ class ParametersPane extends GridBagPanel {
   val delayModel = new SpinnerNumberModel(0, 0, Double.PositiveInfinity, 1)
   val delay = Component.wrap(new JSpinner(delayModel))
   val debug = new CheckBox("Debug")
-  
+
   layout(new Label("Widening Delay:")) = new Constraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
       GridBagConstraints.NONE, new Insets(0,0,5,5), 0, 0)
   layout(delay) = new Constraints(1, 3, 1, 1, 0.0, 0.0, GridBagConstraints.WEST,
@@ -51,7 +51,7 @@ class ParametersPane extends GridBagPanel {
       GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0)
   layout(Swing.VGlue) = new Constraints(0, 5, 2, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
       GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0)
-  
+
   object ParameterRenderer extends Renderer[ParameterValue[_]] {
     val r = implicitly[Renderer[String]]
     def componentFor(list: ListView[_], isSelected: Boolean,
@@ -62,7 +62,7 @@ class ParametersPane extends GridBagPanel {
         return c
       }
   }
-  
+
   private def addParameterEnumeration(row: Int, pe: ParameterEnumeration[_]): ComboBox[_] = {
     val label = new Label(pe.name + ":") {
       tooltip = pe.description
@@ -78,8 +78,8 @@ class ParametersPane extends GridBagPanel {
   }
 
   def selectedNumericalDomain = NumericalDomains.values(domainComboBox.selection.index).value
-  
-  def setParameters[T <: Target](parameters: Parameters[T]) {
+
+  def setParameters[T <: Target[T]](parameters: Parameters[T]) {
     parameters.wideningScope = WideningScopes.values(wideningComboBox.selection.index).value
     parameters.narrowingStrategy = NarrowingStrategies.values(narrowingComboBox.selection.index).value
     val delay = delayModel.getValue().asInstanceOf[Double].toInt
@@ -89,5 +89,5 @@ class ParametersPane extends GridBagPanel {
     parameters.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)
     if (debug.selected) parameters.debugWriter = new java.io.StringWriter
   }
- 
+
 }

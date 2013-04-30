@@ -34,19 +34,19 @@ import it.unich.sci.jandom.widenings.Widening
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract class Parameters[Tgt <: Target](val tgt: Tgt)  {
+abstract class Parameters[Tgt <: Target[Tgt]](val tgt: Tgt)  {
   /**
    * This is the domain to use for the analysis. It should be compatible with the
    * domains supported by `Tgt`. Conceptually, it should go in the parameter list of
    * the class, but this does not work, due to SI-5521
    */
   val domain: tgt.DomainBase
-  
+
   /**
    * The property to analyze.
    */
   type Property = domain.Property
- 
+
   /**
    * The widening factory used in the analysis. Defaults to the factory for the standard domain widening.
    */
