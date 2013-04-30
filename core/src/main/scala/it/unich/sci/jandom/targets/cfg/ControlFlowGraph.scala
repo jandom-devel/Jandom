@@ -28,8 +28,7 @@ import it.unich.sci.jandom.widenings.Widening
 /**
  * @author Gianluca Amato
  */
-abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt]] extends Target[Tgt] {
-  type Node
+abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt,Node],Node] extends Target[Tgt] {
   type Edge = (Node, Node)
   type ProgramPoint = Node
 
@@ -60,7 +59,8 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt]] extends Target[Tgt
         if (ann contains succ) {
           params.log(s"join $succ : ${ann(succ)} with $out")
           val succval: params.Property = if (order(succ) <= order(node)) {
-            ann(succ) widening out
+            val widening = params.wideningFactory(node)
+            widening(ann(succ), out)
           } else
             ann(succ) union out
           if (succval > ann(succ)) {
@@ -78,7 +78,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt]] extends Target[Tgt
     }
 
     // DESCENDING phase
-    taskList.enqueue(chain.iterator.toSeq :_*)
+    taskList.enqueue(chain.iterator.toSeq: _*)
     params.log("Descending Phase\n")
     while (!taskList.isEmpty) {
       val node = taskList.dequeue
@@ -87,17 +87,18 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt]] extends Target[Tgt
       params.log("result " + (graph.getSuccsOf(node) zip result).mkString(" ; ") + "\n")
       for ((succ, out) <- graph.getSuccsOf(node) zip result) {
         annEdge((node, succ)) = out
-        val newinput = graph.getPredsOf(succ) map { annEdge(_,succ) } reduce { _ union _ }
+        val newinput = graph.getPredsOf(succ) map { annEdge(_, succ) } reduce { _ union _ }
         params.log(s"narrow $succ : ${ann(succ)} with $newinput ")
         // this may probably cause an infinite loop
-        val succval = if (order(succ) <= order(node))
-            ann(succ) narrowing newinput
-          else
-            newinput
+        val succval = if (order(succ) <= order(node)) {
+          val narrowing = params.narrowingFactory(node)
+          narrowing(ann(succ),newinput)
+        } else
+          newinput
         params.log(s"result $succval\n")
         if (succval < ann(succ)) {
-            ann(succ) = succval
-            taskList.enqueue(succ)
+          ann(succ) = succval
+          taskList.enqueue(succ)
         }
       }
     }
