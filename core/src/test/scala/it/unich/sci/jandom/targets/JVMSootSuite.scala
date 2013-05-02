@@ -19,23 +19,23 @@
 package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
-
 import it.unich.sci.jandom.domains.PPLCPolyhedron
 import it.unich.sci.jandom.domains.PPLDomain
 import it.unich.sci.jandom.narrowings.NoNarrowing
 import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 import it.unich.sci.jandom.ppfactories.MemoizingFactory
 import it.unich.sci.jandom.targets.jvm._
-
 import parma_polyhedra_library.C_Polyhedron
 import soot._
+import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
+import it.unich.sci.jandom.widenings.DefaultWidening
 
 /**
  * Simple test suite for the JVMSoot target.
  * @author Gianluca Amato
  *
  */
-class JVMSootSuite2 extends FunSuite {
+class JVMSootSuite extends FunSuite {
   test("simple baf analysis") {
     val scene = Scene.v()
     scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
@@ -44,7 +44,7 @@ class JVMSootSuite2 extends FunSuite {
     val method = new BafMethod(c.getMethodByName("nested"))
     val params = new Parameters[BafMethod] {
       val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)
-      //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
+      wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
       narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
       debugWriter = new java.io.StringWriter
     }
@@ -64,7 +64,7 @@ class JVMSootSuite2 extends FunSuite {
     val method = new BafMethod(c.getMethodByName("nested"))
     val params = new Parameters[BafMethod] {
       val domain = new JVMEnvDynFrameDomain(PPLCPolyhedron)
-      //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
+      wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
       narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
       debugWriter = new java.io.StringWriter
     }
@@ -84,7 +84,7 @@ class JVMSootSuite2 extends FunSuite {
     val method = new JimpleMethod(c.getMethodByName("nested"))
     val params = new Parameters[JimpleMethod] {
       val domain = new PPLDomain[C_Polyhedron]
-      wideningFactory = MemoizingFactory(method)(wideningFactory)
+      wideningFactory =  MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
       narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
       debugWriter = new java.io.StringWriter
     }
