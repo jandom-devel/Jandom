@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 amato
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -28,40 +28,43 @@ import soot.util.Chain
 
 /**
  * This is a generic analyzer for control flow graphs. It uses the `Soot` library and exploits F-bounded
- * polymorphism.
- * @tparam Node the type of the nodes for the control flow graph
- * @tparam Tgt the definitive type of the target
- * @author Gianluca Amato
+ * polymorphism to ensure type safety.
+ * @tparam Node the type of the nodes for the control flow graph.
+ * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
+ * @author Gianluca Amato <gamato@unich.it>
  */
 abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt,Node],Node] extends Target[Tgt] {
 
+  /**
+   * The `ProgramPoint` type is defined as an alias for the `Node`. We are wondering whether to make
+   * `ProgramPoint` an alias for `Edge`.
+   */
   type ProgramPoint = Node
-  val chain: Chain[Node]
 
   /**
-   * A directed graph of nodes.
+   * The analyzer needs a representation of the CFG. Here we use the class `DirectedGraph` of `Soot`.
    */
   val graph: DirectedGraph[Node]
 
   /**
-   * An ordering on nodes.
+   * In order to determine widening points, we need an ordering on nodes.
    */
-  val order: Map[Node,Int]
+  val ordering: Ordering[Node]
 
   /**
-   * The number of variables in the method. It is used to get the initial values of the abstract domains.
-   * It should be removed once we have methods `empty` and `full` which do not depend from a given dimension.
+   * The dimension of the environment space. It is used to get the initial values of the abstract domains.
+   * It should be removed once we have methods `empty` and `full` which do not depend on a given dimension.
    */
   val size: Int
 
   private type Edge = (Node, Node)
 
   /**
-   * This method should be provided by subclasses, and should be able to analyze a single `Node`.
+   * This method is provided by subclasses, and should be able to analyze a single `Node`.
    * @param params the parameters of the analysis
    * @param node the node to analyze
    * @param prop the ingoing property to the node
-   * @return a sequence of properties, one for each outgoing edge. The order of thiese properties should
+   * @return a sequence of properties, one for each outgoing edge. The order of these properties should
    * correspond to the order of edges in `graph`.
    */
   protected def analyzeBlock(params: Parameters)(node: Node, prop: params.Property): Seq[params.Property]
@@ -88,7 +91,8 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt,Node],Node] extends 
         annEdge((node, succ)) = out
         if (ann contains succ) {
           params.log(s"join $succ : ${ann(succ)} with $out")
-          val succval: params.Property = if (order(succ) <= order(node)) {
+          val succval: params.Property = if (ordering.lteq(succ,node)) {
+            params.log(s" widening")
             val widening = params.wideningFactory(node)
             widening(ann(succ), out)
           } else
@@ -108,7 +112,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt,Node],Node] extends 
     }
 
     // DESCENDING phase
-    taskList.enqueue(chain.iterator.toSeq: _*)
+    taskList.enqueue(graph.toSeq: _*)
     params.log("Descending Phase\n")
     while (!taskList.isEmpty) {
       val node = taskList.dequeue
@@ -120,7 +124,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt,Node],Node] extends 
         val newinput = graph.getPredsOf(succ) map { annEdge(_, succ) } reduce { _ union _ }
         params.log(s"narrow $succ : ${ann(succ)} with $newinput ")
         // this may probably cause an infinite loop
-        val succval = if (order(succ) <= order(node)) {
+        val succval = if (ordering.lteq(succ,node)) {
           val narrowing = params.narrowingFactory(node)
           narrowing(ann(succ),newinput)
         } else

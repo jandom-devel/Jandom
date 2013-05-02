@@ -49,37 +49,43 @@ class BafMethod(method: SootMethod) extends ControlFlowGraph[BafMethod,Unit] {
   private val body = Baf.v().newBody(method.retrieveActiveBody())
   private val envMap = body.getLocals().zipWithIndex.toMap
 
-  val chain = body.getUnits()
   val graph = new ExceptionalUnitGraph(body)
   val size = body.getLocalCount()
-  val order = new PseudoTopologicalOrderer[Unit].newList(graph, false).zipWithIndex.toMap
+  val ordering = new Ordering[Node] {
+    val order = new PseudoTopologicalOrderer[Unit].newList(graph, false).zipWithIndex.toMap
+    def compare(x: Node, y: Node) = order(x) - order(y)
+  }
 
+  /**
+   * @note In developing this method we are assuming that, if a unit has a fall-through, it is the first
+   * successor returned by `getSuccsOf`.
+   */
   protected def analyzeBlock(params: Parameters)(node: Unit, prop: params.Property): Seq[params.Property] = {
     var exits = Seq[params.Property]()
-    val newprop = prop.clone
+    val fallProp = prop.clone
 
     def analyzeIf(op: AtomicCond.ComparisonOperators.Value) = {
-      val scopy = prop.clone
-      scopy.if_icmp(op)
-      exits :+= scopy
-      newprop.if_icmp(AtomicCond.ComparisonOperators.opposite(op))
+      val jumpProp = prop.clone
+      jumpProp.if_icmp(op)
+      exits :+= jumpProp
+      fallProp.if_icmp(AtomicCond.ComparisonOperators.opposite(op))
     }
 
     node match {
       case unit: PushInst =>
         unit.getConstant() match {
-          case i: IntConstant => newprop.ipush(i.value)
+          case i: IntConstant => fallProp.ipush(i.value)
         }
       case unit: AddInst =>
-        newprop.iadd
+        fallProp.iadd
       case unit: IncInst =>
         unit.getConstant() match {
-          case i: IntConstant => newprop.iinc(envMap(unit.getLocal), i.value)
+          case i: IntConstant => fallProp.iinc(envMap(unit.getLocal), i.value)
         }
       case unit: StoreInst =>
-        newprop.istore(envMap(unit.getLocal))
+        fallProp.istore(envMap(unit.getLocal))
       case unit: LoadInst =>
-        newprop.iload(envMap(unit.getLocal))
+        fallProp.iload(envMap(unit.getLocal))
       case unit: IfCmpLeInst =>
         analyzeIf(AtomicCond.ComparisonOperators.LTE)
       case unit: IfCmpLtInst =>
@@ -93,28 +99,40 @@ class BafMethod(method: SootMethod) extends ControlFlowGraph[BafMethod,Unit] {
       case unit: IfCmpNeInst =>
         analyzeIf(AtomicCond.ComparisonOperators.NEQ)
       case unit: GotoInst =>
-        exits :+= newprop
+        exits :+= fallProp
       case unit: ReturnVoidInst =>
       case unit: Inst =>
         throw UnsupportedBafByteCodeException(unit)
     }
-    if (node.fallsThrough) exits +:= newprop
+    if (node.fallsThrough) exits +:= fallProp
     exits
   }
 
+  /**
+   * Output the program intertwined with the given annotation. It uses the tag system of
+   * Soot, but the result is manipulated heavily since we want tags to be printed before
+   * the corresponding unit. It is an hack and may not work if there are comments in the
+   * program.
+   * @tparam D the type of the JVM environment used in the annotation.
+   * @param ann the annotation to print together with the program.
+   */
   def mkString[D <: JVMEnv[D]](ann: Annotation[ProgramPoint, D]): String = {
+    // tag the method
     val localsList = body.getLocals().toIndexedSeq  map { _.getName() }
     for ((unit, prop) <- ann) {
       unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList) + " ]"))
     }
+
+    // generate output with tag
     Options.v().set_print_tags_in_output(true)
     val printer = Printer.v()
-    val ss = new StringWriter()
-    val ps = new PrintWriter(ss)
+    val sw = new StringWriter()
+    val ps = new PrintWriter(sw)
     printer.printTo(body, ps)
     ps.close()
-    val out = ss.getBuffer.toString
+    val out = sw.getBuffer.toString
 
+    // mangle output to put annotations before the program code
     val lines = out.split("\n")
     for (i <- 0 until lines.length) {
       if (lines(i).startsWith("/*") && i > 0 && !lines(i - 1).startsWith("/*")) {
@@ -123,6 +141,8 @@ class BafMethod(method: SootMethod) extends ControlFlowGraph[BafMethod,Unit] {
         lines(i - 1) = temp
       }
     }
+
+    // remove annotations
     for ((unit, prop) <- ann)
       unit.removeAllTags()
     lines.mkString("\n")

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,9 +19,10 @@
 package it.unich.sci.jandom.domains
 
 /**
- * The base class for all abstract domains. At the moment, the only thing that all abstract
- * domains have in common is a type `Property`, which determines the properties which are part
- * of the domain.
+ * The base class for all abstract domains. An abstract domain is essentially a poset. The elements
+ * of this posets are values of the type `Property`. Moreover, each abstract domain is able to create and
+ * full (top) element and an empty (bottom) element. Top and bottom elements depends from the dimension of
+ * the environment space. This is only a temporary measure and will disappear in future versions.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */

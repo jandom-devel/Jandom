@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 amato
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,14 +19,20 @@
 package it.unich.sci.jandom.domains
 
 /**
- * The base class for all abstract properties.
+ * The base class for all abstract properties, i.e. elements of abstract domains. Abstract
+ * properties implements a set of poset-like operations, which are union/intersection
+ * (corresponding to meet/join) and widening/narrowing. Moreover, abstract properties are
+ * partially ordered. Abstract properties use F-bounded polymorhpism to ensure type safety.
+ * @tparam Property the real class we are endowing with the AbstractProperty quality.
+ * @define NOTEDIMENSION Some domains have a notion of dimension for the abstract properties. In this case,
+ * `this` and `that` should generally be of the same dimension.
  * @author Gianluca Amato <gamato@unich.it>
  */
-abstract class AbstractProperty[Property] extends PartiallyOrdered[Property] {
+abstract class AbstractProperty[Property <: AbstractProperty[Property]] extends PartiallyOrdered[Property] {
   /**
    * The standard widening for two abstract properties.
    * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
-   * @note $NOTEDIMENSION
+   * @note NOTEDIMENSION
    * @return the widening of the two abstract properties.
    */
   def widening(that: Property): Property
@@ -34,18 +40,16 @@ abstract class AbstractProperty[Property] extends PartiallyOrdered[Property] {
   /**
    * The standard widening for two abstract properties.
    * @param that the abstract object to be narrowed with `this`. `that` IS assumed to be smaller than `this`.
-   * @note `that` should be be bigger than `this`.
-   * @note $NOTEDIMENSION
+   * @note NOTEDIMENSION
    * @return the narrowing of the two abstract properties.
    */
   def narrowing(that: Property): Property
 
-
   /**
    * Compute an upper bound of two abstract properties. If it is possible and convenient, this should compute
-   * the lowest upper bound, but it is not a requirement.
-   * @param that the abstract object to be joined with `this`.
-   * @note $NOTEDIMENSION
+   * the least upper bound, but it is not a requirement.
+   * @param that the abstract object to join with `this`.
+   * @note NOTEDIMENSION
    * @return an upper bound of the two abstract properties.
    */
   def union(that: Property): Property
@@ -54,9 +58,8 @@ abstract class AbstractProperty[Property] extends PartiallyOrdered[Property] {
    * Compute a lower bound of two abstract properties. If it is possible and convenient, this should compute
    * the greatest lower bound, but it is not a requirement.
    * @param that the abstract object to meet with `this`.
-   * @note $NOTEDIMENSION
+   * @note NOTEDIMENSION
    * @return a lower bound of the two abstract properties.
    */
   def intersection(that: Property): Property
-
 }

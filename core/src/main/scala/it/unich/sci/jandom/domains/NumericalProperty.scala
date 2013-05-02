@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -25,16 +25,15 @@ package it.unich.sci.jandom.domains
  * properties are immutable.
  *
  * @tparam Property the property type we attach to and provide numerical operations.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  * @define PPL [[http://bugseng.com/products/ppl/ PPL]]
  * @define APRON [[http://apron.cri.ensmp.fr/library/ APRON]]
- * @define NOTEDIMENSION `this` and `that` should be of the same `dimension`.
  * @define NOTEN `n` should be within `0` and `dimension-1`.
  * @define TODOGEN it should be generalized to linear forms over arbitrary types.
  * @define ILLEGAL IllegalArgumentException if parameters are not correct.
  */
 
-abstract class NumericalProperty[Property] extends AbstractProperty[Property] {
+abstract class NumericalProperty[Property <: NumericalProperty[Property]] extends AbstractProperty[Property] {
 
   /**
    * Non deterministic assignment (also called `forget` operator).

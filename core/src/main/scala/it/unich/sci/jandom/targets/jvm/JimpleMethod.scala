@@ -61,10 +61,12 @@ class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod, Un
   private val body = method.retrieveActiveBody()
   private val envMap = body.getLocals().zipWithIndex.toMap
 
-  val chain = body.getUnits()
   val graph = new ExceptionalUnitGraph(body)
   val size = body.getLocalCount()
-  val order = new PseudoTopologicalOrderer[Unit].newList(graph, false).zipWithIndex.toMap
+  val ordering = new Ordering[Node] {
+    val order = new PseudoTopologicalOrderer[Unit].newList(graph, false).zipWithIndex.toMap
+    def compare(x: Node, y: Node) = order(x) - order(y)
+  }
 
   /**
    * Convert a `Value` into a LinearCond.
@@ -167,6 +169,14 @@ class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod, Un
     exits
   }
 
+  /**
+   * Output the program intertwined with the given annotation. It uses the tag system of
+   * Soot, but the result is manipulated heavily since we want tags to be printed before
+   * the corresponding unit. It is an hack and may not work if there are comments in the
+   * program.
+   * @tparam D the type of the JVM environment used in the annotation.
+   * @param ann the annotation to print together with the program.
+   */
   def mkString[D <: NumericalProperty[D]](ann: Annotation[ProgramPoint, D]): String = {
     val localsList = body.getLocals().toIndexedSeq  map { _.getName() }
     for ((unit, prop) <- ann) {

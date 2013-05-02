@@ -31,7 +31,7 @@ import it.unich.sci.jandom.domains.AbstractProperty
  * @author Gianluca Amato
  *
  */
-abstract class JVMEnv[Property <: AnyRef] extends AbstractProperty[Property] with Cloneable {
+abstract class JVMEnv[Property <: JVMEnv[Property]] extends AbstractProperty[Property] with Cloneable {
 
   /**
    * Returns a deep copy of JVMEnv.
