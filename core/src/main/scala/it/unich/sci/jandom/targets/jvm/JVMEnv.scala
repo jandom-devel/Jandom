@@ -56,26 +56,11 @@ abstract class JVMEnv[Property <: JVMEnv[Property]] extends AbstractProperty[Pro
 
   def if_icmp(op: AtomicCond.ComparisonOperators.Value)
 
-  def mkString(vars: IndexedSeq[String]): String
 }
 
 /**
  * This is the base class for domains abstracting the JVM Environment.
  */
 abstract class JVMEnvDomain extends AbstractDomain {
-
   type Property <: JVMEnv[Property]
-
-  /**
-   * Creates a full JVM environment.
-   * @param maxLocals maximum number of locals in the frame.
-   */
-  def full(maxLocals: Int): Property
-
-  /**
-   * Creates an empty JVM environment.
-   * @param maxLocal maximum number of locals in the frame.
-   */
-  def empty(maxLocals: Int): Property
-
 }

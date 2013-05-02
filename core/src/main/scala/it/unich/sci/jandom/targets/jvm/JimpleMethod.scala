@@ -43,7 +43,7 @@ import soot.toolkits.graph._
  * @param method the method we want to analyze
  * @author Gianluca Amato
  */
-class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod, Unit] {
+class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
   import scala.collection.JavaConversions._
 
   /**
@@ -58,15 +58,10 @@ class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod, Un
    */
   type DomainBase = NumericalDomain
 
-  private val body = method.retrieveActiveBody()
-  private val envMap = body.getLocals().zipWithIndex.toMap
-
+  val body = method.retrieveActiveBody()
   val graph = new ExceptionalUnitGraph(body)
-  val size = body.getLocalCount()
-  val ordering = new Ordering[Node] {
-    val order = new PseudoTopologicalOrderer[Unit].newList(graph, false).zipWithIndex.toMap
-    def compare(x: Node, y: Node) = order(x) - order(y)
-  }
+
+  private val envMap = body.getLocals().zipWithIndex.toMap
 
   /**
    * Convert a `Value` into a LinearCond.
@@ -168,40 +163,4 @@ class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod, Un
     if (node.fallsThrough) exits +:= newprop
     exits
   }
-
-  /**
-   * Output the program intertwined with the given annotation. It uses the tag system of
-   * Soot, but the result is manipulated heavily since we want tags to be printed before
-   * the corresponding unit. It is an hack and may not work if there are comments in the
-   * program.
-   * @tparam D the type of the JVM environment used in the annotation.
-   * @param ann the annotation to print together with the program.
-   */
-  def mkString[D <: NumericalProperty[D]](ann: Annotation[ProgramPoint, D]): String = {
-    val localsList = body.getLocals().toIndexedSeq  map { _.getName() }
-    for ((unit, prop) <- ann) {
-      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
-    }
-    Options.v().set_print_tags_in_output(true)
-    val printer = Printer.v()
-    val ss = new StringWriter()
-    val ps = new PrintWriter(ss)
-    printer.printTo(body, ps)
-    ps.close()
-    val out = ss.getBuffer.toString
-
-    val lines = out.split("\n")
-    for (i <- 0 until lines.length) {
-      if (lines(i).startsWith("/*") && i > 0 && !lines(i - 1).startsWith("/*")) {
-        val temp = lines(i)
-        lines(i) = lines(i - 1)
-        lines(i - 1) = temp
-      }
-    }
-    for ((unit, prop) <- ann)
-      unit.removeAllTags()
-    lines.mkString("\n")
-  }
-
-  override def toString = mkString(getAnnotation[Null])
 }

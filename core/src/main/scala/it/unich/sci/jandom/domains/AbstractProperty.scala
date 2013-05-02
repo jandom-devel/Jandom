@@ -62,4 +62,14 @@ abstract class AbstractProperty[Property <: AbstractProperty[Property]] extends 
    * @return a lower bound of the two abstract properties.
    */
   def intersection(that: Property): Property
+
+  /**
+   * Returns a string representation of the abstract property.
+   * @param vars an array with the name of the variables in the environment
+   * @return a sequence of strings. The idea is that each string is an atomic piece of information
+   * which should be printed out together, while different strings may be also printed out
+   * separately.
+   */
+  def mkString(vars: IndexedSeq[String]): Seq[String]
+
 }

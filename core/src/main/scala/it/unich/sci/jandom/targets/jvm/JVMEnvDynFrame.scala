@@ -141,9 +141,8 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
     case _ => None
   }
 
-  def mkString(vars: IndexedSeq[String]) = {
-    "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
-  }
+  def mkString(vars: IndexedSeq[String]) =
+    Seq("Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property)
 
   override def toString =
     "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property

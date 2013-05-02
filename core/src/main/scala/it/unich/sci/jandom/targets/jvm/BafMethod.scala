@@ -40,21 +40,15 @@ import soot.toolkits.graph._
  * @param method the method we want to analyze
  * @author Gianluca Amato
  */
-class BafMethod(method: SootMethod) extends ControlFlowGraph[BafMethod,Unit] {
+class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Unit] {
   import scala.collection.JavaConversions._
 
-  type Node = Unit
   type DomainBase = JVMEnvDomain
 
-  private val body = Baf.v().newBody(method.retrieveActiveBody())
-  private val envMap = body.getLocals().zipWithIndex.toMap
-
+  val body = Baf.v().newBody(method.retrieveActiveBody())
   val graph = new ExceptionalUnitGraph(body)
-  val size = body.getLocalCount()
-  val ordering = new Ordering[Node] {
-    val order = new PseudoTopologicalOrderer[Unit].newList(graph, false).zipWithIndex.toMap
-    def compare(x: Node, y: Node) = order(x) - order(y)
-  }
+
+  private val envMap = body.getLocals().zipWithIndex.toMap
 
   /**
    * @note In developing this method we are assuming that, if a unit has a fall-through, it is the first
@@ -107,47 +101,5 @@ class BafMethod(method: SootMethod) extends ControlFlowGraph[BafMethod,Unit] {
     if (node.fallsThrough) exits +:= fallProp
     exits
   }
-
-  /**
-   * Output the program intertwined with the given annotation. It uses the tag system of
-   * Soot, but the result is manipulated heavily since we want tags to be printed before
-   * the corresponding unit. It is an hack and may not work if there are comments in the
-   * program.
-   * @tparam D the type of the JVM environment used in the annotation.
-   * @param ann the annotation to print together with the program.
-   */
-  def mkString[D <: JVMEnv[D]](ann: Annotation[ProgramPoint, D]): String = {
-    // tag the method
-    val localsList = body.getLocals().toIndexedSeq  map { _.getName() }
-    for ((unit, prop) <- ann) {
-      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList) + " ]"))
-    }
-
-    // generate output with tag
-    Options.v().set_print_tags_in_output(true)
-    val printer = Printer.v()
-    val sw = new StringWriter()
-    val ps = new PrintWriter(sw)
-    printer.printTo(body, ps)
-    ps.close()
-    val out = sw.getBuffer.toString
-
-    // mangle output to put annotations before the program code
-    val lines = out.split("\n")
-    for (i <- 0 until lines.length) {
-      if (lines(i).startsWith("/*") && i > 0 && !lines(i - 1).startsWith("/*")) {
-        val temp = lines(i)
-        lines(i) = lines(i - 1)
-        lines(i - 1) = temp
-      }
-    }
-
-    // remove annotations
-    for ((unit, prop) <- ann)
-      unit.removeAllTags()
-    lines.mkString("\n")
-  }
-
-  override def toString = mkString(getAnnotation[Null])
 }
 

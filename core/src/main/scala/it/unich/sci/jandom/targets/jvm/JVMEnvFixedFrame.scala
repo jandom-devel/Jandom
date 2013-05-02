@@ -92,12 +92,12 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
     case _ => None
   }
 
-  def mkString(vars: IndexedSeq[String]) = property.mkString(vars).mkString(", ")
+  def mkString(vars: IndexedSeq[String]) = Seq(property.mkString(vars).mkString(", "))
 
   override def toString = {
     val vars = ((0 until maxLocals) map { i => "i" + i }) ++
       ((maxLocals until property.dimension) map { i => "s" + i })
-    mkString(vars)
+    vars.head
   }
 }
 
