@@ -52,7 +52,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
     contents += methodComboBox
   }
   /*
-   * The list of currently available methods 
+   * The list of currently available methods
    */
   private var methodList = Seq[MethodNode]()
 
@@ -113,7 +113,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
       case Some(method) =>
         try {
           val numericalDomain = frame.parametersPane.selectedNumericalDomain
-          val params = new Parameters(method) { val domain = new JVMEnvFixedFrameDomain(numericalDomain) }
+          val params = new Parameters[AsmMethod] { val domain = new JVMEnvFixedFrameDomain(numericalDomain) }
           frame.parametersPane.setParameters(params)
           val ann = method.analyze(params)
           Some(method.mkString(ann))
@@ -124,7 +124,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
           case e: Exception =>
             Dialog.showMessage(ASMEditorPane.this, e.getMessage, "Error", Dialog.Message.Error)
             e.printStackTrace()
-            None           
+            None
         }
       case None => None
     }
@@ -133,7 +133,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   val fileMenuItems = Seq(new MenuItem(newAction), new MenuItem(openAction))
 
   val editMenuItems = Seq()
-  
+
   def select() = updateFrameTitle()
 
 }

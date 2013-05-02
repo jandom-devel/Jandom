@@ -40,7 +40,7 @@ class JVMSuite extends FunSuite {
     cr.accept(node, ClassReader.SKIP_DEBUG)
     val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
     val method = new AsmMethod(methodList.find(_.name == "loop").get)
-    val params = new Parameters(method) {
+    val params = new Parameters[AsmMethod] {
       val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)
     }
     println(method.toString)

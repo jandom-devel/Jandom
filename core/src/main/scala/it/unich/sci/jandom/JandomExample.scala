@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ object JandomExample extends App {
     val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
-      val params = new targets.Parameters[SLILTarget](program) { val domain = domains.BoxDouble }
+      val params = new targets.Parameters[SLILTarget] { val domain = domains.BoxDouble }
       params.narrowingStrategy = NarrowingStrategy.Restart
       params.wideningScope = WideningScope.BackEdges
       val ann = program.analyze(params)
@@ -58,7 +58,7 @@ object JandomExample extends App {
     val parsed = parsers.LPInvParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
-      val params = new targets.Parameters(program) { val domain = PPLCPolyhedron }
+      val params = new targets.Parameters[LTS] { val domain = PPLCPolyhedron }
       val x= DelayedWideningFactory[LTS](DefaultWidening, 2)
       params.wideningFactory = MemoizingFactory(program)(DelayedWideningFactory(DefaultWidening, 2))
       params.narrowingFactory = MemoizingFactory(program)(DelayedNarrowingFactory(DefaultNarrowing, 2))
@@ -70,5 +70,5 @@ object JandomExample extends App {
     }
   }
   println("Jandom version: "+version)
-  println("PPL version: "+Parma_Polyhedra_Library.version);  
+  println("PPL version: "+Parma_Polyhedra_Library.version);
 }

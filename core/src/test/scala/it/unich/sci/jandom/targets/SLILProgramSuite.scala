@@ -39,7 +39,7 @@ class SLILProgramSuite extends FunSuite {
         AssignStmt(0, LinearForm.fromCoefficient(0)),
         WhileStmt(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LT),
           AssignStmt(0, LinearForm(List(1, 1))))))
-    val params = new Parameters[SLILTarget](program) { val domain = BoxDouble }
+    val params = new Parameters[SLILTarget] { val domain = BoxDouble }
     val ann = program.analyze(params)
     expectResult(BoxDouble(Array(10), Array(11))) { ann((program.stmt, 2)) }
   }
@@ -50,17 +50,17 @@ class SLILProgramSuite extends FunSuite {
     		i = 0
     		while (TRUE) {
               tag(0)
-    		  if (brandom()) 
+    		  if (brandom())
     		     i = 1
     		  else
     		     i = -1
             }
-      }     
+      }
     """
     val parsed = RandomParser().parseProgram(source)
     val program = parsed.get
 
-    val params = new Parameters[SLILTarget](program) { val domain = BoxDouble }
+    val params = new Parameters[SLILTarget] { val domain = BoxDouble }
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Output
     program.analyze(params)
@@ -76,14 +76,14 @@ class SLILProgramSuite extends FunSuite {
     program.analyze(params)
     expectResult(BoxDouble(Array(-1), Array(1))) { params.tag(0) }
   }
-  
+
   test("statement without program") {
-     val stmt: SLILTarget = 
+     val stmt: SLILTarget =
       CompoundStmt(
         AssignStmt(0, LinearForm.fromCoefficient(0)),
         WhileStmt(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LT),
           AssignStmt(0, LinearForm(List(1, 1)))))
-     val params = new Parameters(stmt) { val domain = BoxDouble }
+     val params = new Parameters[SLILTarget] { val domain = BoxDouble }
      val ann = stmt.analyze(params)
      expectResult(BoxDouble(Array(10), Array(11))) { ann((stmt, 2)) }
   }

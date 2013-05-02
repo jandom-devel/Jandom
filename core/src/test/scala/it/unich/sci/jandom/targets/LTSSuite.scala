@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,15 +34,15 @@ class LTSSuite extends FunSuite {
     val env = Environment("x")
 	val l1 = Location("start", Nil)
 	val l2 = Location("ciclo", List(FalseCond))
-	val t1 = Transition("init", l1, l2, 
-	    guard = Nil, 
+	val t1 = Transition("init", l1, l2,
+	    guard = Nil,
 	    assignments = List(LinearAssignment(0,LinearForm.fromCoefficient(0))))
-	val t2 = Transition("loop", l2, l2, 
+	val t2 = Transition("loop", l2, l2,
 	    guard = List(AtomicCond(LinearForm(List(-10,1)), AtomicCond.ComparisonOperators.LTE)),
 	    assignments = List(LinearAssignment(0,LinearForm(List(1,1)))))
 	val lts = LTS(IndexedSeq(l1,l2), Seq(t1,t2), env)
-	val params = new Parameters(lts) { val domain = BoxDouble }    
+	val params = new Parameters[LTS] { val domain = BoxDouble }
     val ann = lts.analyze(params)
     expectResult ( BoxDouble(Array(0), Array(11)) ) { ann(l2) }
-  }   
+  }
 }

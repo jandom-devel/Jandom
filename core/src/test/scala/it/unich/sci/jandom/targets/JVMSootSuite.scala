@@ -42,7 +42,7 @@ class JVMSootSuite2 extends FunSuite {
     val c = scene.loadClass("SimpleTest", 1)
     c.setApplicationClass()
     val method = new BafMethod(c.getMethodByName("nested"))
-    val params = new Parameters(method) {
+    val params = new Parameters[BafMethod] {
       val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)
       //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
       narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
@@ -62,7 +62,7 @@ class JVMSootSuite2 extends FunSuite {
     val c = scene.loadClass("SimpleTest", 1)
     c.setApplicationClass()
     val method = new BafMethod(c.getMethodByName("nested"))
-    val params = new Parameters(method) {
+    val params = new Parameters[BafMethod] {
       val domain = new JVMEnvDynFrameDomain(PPLCPolyhedron)
       //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
       narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
@@ -82,7 +82,7 @@ class JVMSootSuite2 extends FunSuite {
     val c = scene.loadClass("SimpleTest", 1)
     c.setApplicationClass()
     val method = new JimpleMethod(c.getMethodByName("nested"))
-    val params = new Parameters(method) {
+    val params = new Parameters[JimpleMethod] {
       val domain = new PPLDomain[C_Polyhedron]
       wideningFactory = MemoizingFactory(method)(wideningFactory)
       narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))

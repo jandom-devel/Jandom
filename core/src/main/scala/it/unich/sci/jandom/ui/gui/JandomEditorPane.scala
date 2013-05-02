@@ -240,7 +240,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     parser.parseProgram(editorPane.text) match {
       case parser.Success(program, _) =>
         val numericalDomain = frame.parametersPane.selectedNumericalDomain
-        val params = new Parameters[SLILTarget](program) { val domain = numericalDomain }        
+        val params = new Parameters[SLILTarget] { val domain = numericalDomain }
         frame.parametersPane.setParameters(params)
         val ann = program.analyze(params)
         Some(params.debugWriter.toString + program.mkString(ann))
@@ -255,6 +255,6 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     new MenuItem(saveAsAction))
   val editMenuItems = Seq(new MenuItem(undoAction), new MenuItem(redoAction), new Separator,
     new MenuItem(cutAction), new MenuItem(copyAction), new MenuItem(pasteAction))
-    
+
   def select() = updateFrameTitle()
 }

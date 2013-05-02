@@ -34,13 +34,11 @@ import it.unich.sci.jandom.widenings.Widening
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-abstract class Parameters[Tgt <: Target[Tgt]](val tgt: Tgt)  {
+abstract class Parameters[Tgt <: Target[Tgt]]  {
   /**
-   * This is the domain to use for the analysis. It should be compatible with the
-   * domains supported by `Tgt`. Conceptually, it should go in the parameter list of
-   * the class, but this does not work, due to SI-5521
+   * This is the domain to use for the analysis. It need to be compatible with the target type.
    */
-  val domain: tgt.DomainBase
+  val domain: Tgt#DomainBase
 
   /**
    * The property to analyze.
@@ -50,12 +48,12 @@ abstract class Parameters[Tgt <: Target[Tgt]](val tgt: Tgt)  {
   /**
    * The widening factory used in the analysis. Defaults to the factory for the standard domain widening.
    */
-  var wideningFactory: PPFactory[tgt.ProgramPoint, Widening] = DefaultWidening
+  var wideningFactory: PPFactory[Tgt#ProgramPoint, Widening] = DefaultWidening
 
   /**
    * The narrowing factory used in the analysis. Defaults to the standard domain narrowing.
    */
-  var narrowingFactory: PPFactory[tgt.ProgramPoint, Narrowing] = DefaultNarrowing
+  var narrowingFactory: PPFactory[Tgt#ProgramPoint, Narrowing] = DefaultNarrowing
 
   /**
    * This parameter determines whether results are saved for each program point or only for widening points.
