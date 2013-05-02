@@ -20,55 +20,57 @@ package it.unich.sci.jandom.targets.jvm
 
 import java.io.PrintWriter
 import java.io.StringWriter
+
+import scala.Array.canBuildFrom
 import scala.collection.mutable.HashMap
-import scala.collection.mutable.Queue
+
 import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets._
+import it.unich.sci.jandom.targets.cfg.ControlFlowGraph
 import it.unich.sci.jandom.targets.linearcondition._
+
 import soot._
 import soot.baf._
 import soot.jimple._
 import soot.options.Options
 import soot.tagkit.LoopInvariantTag
 import soot.toolkits.graph._
-import scala.Array.canBuildFrom
-import scala.collection.JavaConversions.asScalaIterator
-import it.unich.sci.jandom.targets.cfg.ControlFlowGraph
 
 /**
- * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library.
+ * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library. It is
+ * based on the generic analyzer for control flow graphs.
+ * @param method the method we want to analyze
  * @author Gianluca Amato
  */
-class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod,Unit] {
+class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod, Unit] {
   import scala.collection.JavaConversions._
 
+  /**
+   * @inheritdoc
+   * The base node of this CFG is `Unit`.
+   */
   type Node = Unit
+
+  /**
+   * @inheritdoc
+   * Here, we only handle numerical domains.
+   */
   type DomainBase = NumericalDomain
 
-  val body = method.retrieveActiveBody()
+  private val body = method.retrieveActiveBody()
+  private val envMap = body.getLocals().zipWithIndex.toMap
+
   val chain = body.getUnits()
-  val locals = body.getLocals()
-  val localsList = locals.iterator.toArray map { _.getName() }
-  val envMap = new HashMap[Local, Int]
-
-  val i = locals.iterator
-  for (n <- 0 until locals.size) {
-    envMap(i.next()) = n
-  }
-
   val graph = new ExceptionalUnitGraph(body)
-  val size = locals.size
-  val order = weakTopologicalOrder
+  val size = body.getLocalCount()
+  val order = new PseudoTopologicalOrderer[Unit].newList(graph, false).zipWithIndex.toMap
 
-  def weakTopologicalOrder: Annotation[Unit, Int] = {
-    val order = new PseudoTopologicalOrderer[Unit].newList(graph, false)
-    val ann = getAnnotation[Int]
-    var index = 0
-    order.iterator.foreach { u => ann(u) = index; index += 1 }
-    ann
-  }
-
+  /**
+   * Convert a `Value` into a LinearCond.
+   * @param v the Value to convert.
+   * @return the corresponding linear condition, or `None` if `v` is not a linear condition.
+   */
   private def jimpleExprToLinearCond(v: Value): Option[LinearCond] = {
     import AtomicCond.ComparisonOperators
     val newcond = v match {
@@ -77,9 +79,8 @@ class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod,Uni
         val res2 = jimpleExprToLinearForm(v.getOp2())
         res1 flatMap { res1 =>
           res2 flatMap { res2 =>
-            // this is terrible... we need it because the linear form / linear cond
-            // API should be rewritten
-            val lf = LinearForm(for (i <- 0 to locals.size) yield res1(i) - res2(i))
+            // TODO: this is terrible... we need it because the linear form / linear cond API should be rewritten
+            val lf = LinearForm(for (i <- 0 to size) yield res1(i) - res2(i))
             v match {
               case _: GtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GT))
               case _: GeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GTE))
@@ -107,8 +108,13 @@ class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod,Uni
     newcond
   }
 
+  /**
+   * Convert a `Value` into a LinearForm.
+   * @param v the Value to convert.
+   * @return the corresponding linear form, or `None` if `v` is not a linear form.
+   */
   def jimpleExprToLinearForm(v: Value): Option[Array[Double]] = {
-    val a = Array.fill(locals.size() + 1)(0.0)
+    val a = Array.fill(size + 1)(0.0)
     var c = 0.0
     v match {
       case v: IntConstant =>
@@ -122,7 +128,7 @@ class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod,Uni
           case Tuple2(Some(a1), Some(a2)) =>
             v match {
               case v: AddExpr =>
-                for (i <- 0 to locals.size) a(i) = a1(i) + a2(i)
+                for (i <- 0 to size) a(i) = a1(i) + a2(i)
             }
           case _ => return None
         }
@@ -162,6 +168,7 @@ class JimpleMethod(method: SootMethod) extends ControlFlowGraph[JimpleMethod,Uni
   }
 
   def mkString[D <: NumericalProperty[D]](ann: Annotation[ProgramPoint, D]): String = {
+    val localsList = body.getLocals().toIndexedSeq  map { _.getName() }
     for ((unit, prop) <- ann) {
       unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
     }

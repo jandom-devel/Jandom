@@ -35,7 +35,9 @@ import soot.tagkit.LoopInvariantTag
 import soot.toolkits.graph._
 
 /**
- * This class analyzes a method of a Java class. It uses the Baf intermediate representation of the Soot library.
+ * This class analyzes a method of a Java class. It uses the Baf intermediate representation of the Soot library.  It is
+ * based on the generic analyzer for control flow graphs.
+ * @param method the method we want to analyze
  * @author Gianluca Amato
  */
 class BafMethod(method: SootMethod) extends ControlFlowGraph[BafMethod,Unit] {
@@ -44,28 +46,13 @@ class BafMethod(method: SootMethod) extends ControlFlowGraph[BafMethod,Unit] {
   type Node = Unit
   type DomainBase = JVMEnvDomain
 
-  val jimple = method.retrieveActiveBody()
-  val body = Baf.v().newBody(jimple)
+  private val body = Baf.v().newBody(method.retrieveActiveBody())
+  private val envMap = body.getLocals().zipWithIndex.toMap
+
   val chain = body.getUnits()
   val graph = new ExceptionalUnitGraph(body)
-  val order = weakTopologicalOrder
-
-  val envMap = new HashMap[Local, Int]
-  val locals = body.getLocals()
-  val localsList = locals.iterator.toArray map { _.getName() }
-  val i = locals.iterator
-  for (n <- 0 until locals.size) {
-    envMap(i.next()) = n
-  }
-  val size = locals.size
-
-  lazy val weakTopologicalOrder: Annotation[Unit, Int] = {
-    val order = new PseudoTopologicalOrderer[Unit].newList(graph, false)
-    val ann = getAnnotation[Int]
-    var index = 0
-    order.iterator.foreach { u => ann(u) = index; index += 1 }
-    ann
-  }
+  val size = body.getLocalCount()
+  val order = new PseudoTopologicalOrderer[Unit].newList(graph, false).zipWithIndex.toMap
 
   protected def analyzeBlock(params: Parameters)(node: Unit, prop: params.Property): Seq[params.Property] = {
     var exits = Seq[params.Property]()
@@ -116,6 +103,7 @@ class BafMethod(method: SootMethod) extends ControlFlowGraph[BafMethod,Unit] {
   }
 
   def mkString[D <: JVMEnv[D]](ann: Annotation[ProgramPoint, D]): String = {
+    val localsList = body.getLocals().toIndexedSeq  map { _.getName() }
     for ((unit, prop) <- ann) {
       unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList) + " ]"))
     }

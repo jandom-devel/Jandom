@@ -19,26 +19,56 @@
 package it.unich.sci.jandom.targets.cfg
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
+
 import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Target
+
 import soot.toolkits.graph.DirectedGraph
 import soot.util.Chain
-import it.unich.sci.jandom.widenings.Widening
 
 /**
+ * This is a generic analyzer for control flow graphs. It uses the `Soot` library and exploits F-bounded
+ * polymorphism.
+ * @tparam Node the type of the nodes for the control flow graph
+ * @tparam Tgt the definitive type of the target
  * @author Gianluca Amato
  */
 abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt,Node],Node] extends Target[Tgt] {
-  type Edge = (Node, Node)
-  type ProgramPoint = Node
 
+  type ProgramPoint = Node
   val chain: Chain[Node]
+
+  /**
+   * A directed graph of nodes.
+   */
   val graph: DirectedGraph[Node]
-  val order: Annotation[Node, Int]
+
+  /**
+   * An ordering on nodes.
+   */
+  val order: Map[Node,Int]
+
+  /**
+   * The number of variables in the method. It is used to get the initial values of the abstract domains.
+   * It should be removed once we have methods `empty` and `full` which do not depend from a given dimension.
+   */
   val size: Int
 
+  private type Edge = (Node, Node)
+
+  /**
+   * This method should be provided by subclasses, and should be able to analyze a single `Node`.
+   * @param params the parameters of the analysis
+   * @param node the node to analyze
+   * @param prop the ingoing property to the node
+   * @return a sequence of properties, one for each outgoing edge. The order of thiese properties should
+   * correspond to the order of edges in `graph`.
+   */
   protected def analyzeBlock(params: Parameters)(node: Node, prop: params.Property): Seq[params.Property]
 
+  /**
+   * The analyzer.  At the moment, it implements a work-list based analysis.
+   */
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     import scala.collection.JavaConversions._
 
