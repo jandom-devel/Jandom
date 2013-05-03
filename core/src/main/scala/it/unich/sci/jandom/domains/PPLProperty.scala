@@ -36,8 +36,8 @@ import parma_polyhedra_library.Partial_Function
 /**
  * This is the universal PPL numerical property. It is able to represent (almost) any property
  * representable by PPL. It only requires that some methods and constructors are defined in the
- * PPL class, and access them using reflection. Since it uses reflexivity, this is slower than 
- * a direct implementation. 
+ * PPL class, and access them using reflection. Since it uses reflexivity, this is slower than
+ * a direct implementation.
  *
  * @constructor creates a new PPLProperty object
  * @tparam PPLNativeProperty is the PPL class implementing the abstract property, such as Double_Box,
@@ -125,7 +125,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
     domain.remove_space_dimensions(newpplobject, dims)
     new PPLProperty(domain, newpplobject)
   }
-  
+
   def mapDimensions(rho: Seq[Int]) = {
     val newpplobject = domain.copyConstructor(pplobject)
     val pf = new Partial_Function
@@ -196,13 +196,13 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   /*
    * The class object correspondening to PPLNativeProperty
    */
-  
+
   private val myClass =
     implicitly[Manifest[PPLNativeProperty]].runtimeClass.asInstanceOf[java.lang.Class[PPLNativeProperty]]
 
   /*
    * The use of otherClass is a sort of hack, needed since C_Polyhedron is a subclass of Polyhedron.
-   * Some methods takes a Polyhedron as a secondary parameter, and getMethod requires the precise 
+   * Some methods takes a Polyhedron as a secondary parameter, and getMethod requires the precise
    * signature of methods.
    */
 
@@ -252,11 +252,11 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private[domains] def add_space_dimensions_and_project(me: PPLNativeProperty, l: Long) = addSpaceDimensionsAndProjectHandle.invoke(me, l: java.lang.Long)
   private[domains] def remove_space_dimensions(me: PPLNativeProperty, vars: Variables_Set) = removeSpaceDimensionsHandle.invoke(me, vars)
   private[domains] def narrowing_assign(me: PPLNativeProperty, that: PPLNativeProperty) = narrowingAssignHandle.invoke(me, that)
-  private[domains] def map_space_dimensions(me: PPLNativeProperty, pf: Partial_Function) = mapSpaceDimensionsHandle.invoke(me, pf) 
+  private[domains] def map_space_dimensions(me: PPLNativeProperty, pf: Partial_Function) = mapSpaceDimensionsHandle.invoke(me, pf)
   /**
    * It is true if `PPLNativeProperty` has the `CC76_narrowing_assign` method.
    */
-  val supportsNarrowing = narrowingAssignHandle != None
+  val supportsNarrowing = narrowingAssignHandle != null
 
   def full(n: Int): PPLProperty[PPLNativeProperty] = {
     val pplobject = constructor(n, Degenerate_Element.UNIVERSE)
