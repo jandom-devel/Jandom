@@ -120,7 +120,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
 
   def addDimension = {
     val newpplobject = domain.copyConstructor(pplobject)
-    domain.add_space_dimensions_and_project(newpplobject, 1)
+    domain.add_space_dimensions_and_embed(newpplobject, 1)
     new PPLProperty(domain, newpplobject)
   }
 
@@ -233,7 +233,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private val isUniverseHandle = myClass.getMethod("is_universe")
   private val minimizedConstraintsHandle = myClass.getMethod("minimized_constraints")
   private val unconstrainSpaceDimensionHandle = myClass.getMethod("unconstrain_space_dimension", classOf[Variable])
-  private val addSpaceDimensionsAndProjectHandle = myClass.getMethod("add_space_dimensions_and_project", classOf[Long])
+  private val addSpaceDimensionsAndEmbedHandle = myClass.getMethod("add_space_dimensions_and_embed", classOf[Long])
   private val removeSpaceDimensionsHandle = myClass.getMethod("remove_space_dimensions", classOf[Variables_Set])
   private val mapSpaceDimensionsHandle = myClass.getMethod("map_space_dimensions", classOf[Partial_Function])
   private val narrowingAssignHandle = try {
@@ -255,7 +255,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private[domains] def is_universe(me: PPLNativeProperty) = isUniverseHandle.invoke(me).asInstanceOf[Boolean]
   private[domains] def minimized_constraints(me: PPLNativeProperty) = minimizedConstraintsHandle.invoke(me).asInstanceOf[Constraint_System]
   private[domains] def unconstrain_space_dimension(me: PPLNativeProperty, v: Variable) = unconstrainSpaceDimensionHandle.invoke(me, v)
-  private[domains] def add_space_dimensions_and_project(me: PPLNativeProperty, l: Long) = addSpaceDimensionsAndProjectHandle.invoke(me, l: java.lang.Long)
+  private[domains] def add_space_dimensions_and_embed(me: PPLNativeProperty, l: Long) = addSpaceDimensionsAndEmbedHandle.invoke(me, l: java.lang.Long)
   private[domains] def remove_space_dimensions(me: PPLNativeProperty, vars: Variables_Set) = removeSpaceDimensionsHandle.invoke(me, vars)
   private[domains] def narrowing_assign(me: PPLNativeProperty, that: PPLNativeProperty) = narrowingAssignHandle.invoke(me, that)
   private[domains] def map_space_dimensions(me: PPLNativeProperty, pf: Partial_Function) = mapSpaceDimensionsHandle.invoke(me, pf)

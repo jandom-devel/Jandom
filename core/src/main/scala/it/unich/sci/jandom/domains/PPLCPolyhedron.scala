@@ -98,7 +98,7 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
 
   def addDimension: PPLCPolyhedron = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
-    newpplpolyhedron.add_space_dimensions_and_project(1)
+    newpplpolyhedron.add_space_dimensions_and_embed(1)
     new PPLCPolyhedron(newpplpolyhedron)
   }
 

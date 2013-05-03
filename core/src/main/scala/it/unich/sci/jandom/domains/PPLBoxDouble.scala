@@ -99,7 +99,7 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
 
   def addDimension: PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
-    newpplbox.add_space_dimensions_and_project(1)
+    newpplbox.add_space_dimensions_and_embed(1)
     new PPLBoxDouble(newpplbox)
   }
 
