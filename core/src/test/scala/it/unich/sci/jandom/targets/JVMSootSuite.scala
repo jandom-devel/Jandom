@@ -25,6 +25,8 @@ import it.unich.sci.jandom.targets.jvm._
 import soot._
 import it.unich.sci.jandom.domains.PPLProperty
 import it.unich.sci.jandom.domains.PPLDomain
+import it.unich.sci.jandom.domains.PPLBoxDouble
+import scala.collection.mutable.ArrayStack
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -36,58 +38,53 @@ class JVMSootSuite extends FunSuite {
   scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
   val c = scene.loadClass("SimpleTest", 1)
   c.setApplicationClass()
-  val Domain = new PPLDomain[parma_polyhedra_library.Octagonal_Shape_double]
+  val domain = PPLCPolyhedron
 
-  test("simple baf analysis") {
-    val tests = Seq(//"sequential" -> "i0 == 10", "conditional" -> "i0 == 1", "loop" -> "i0 == 10",
-                    "nested" -> "i0==1")
+  val bafTests = Seq(
+    ("sequential", Array(0), "i0 == 10"),
+    ("conditional", Array(0), "i0 == 1"),
+    ("loop", Array(0), "i0 == 10"),
+    ("nested", Array(0, 1, -1), "i0 >= 9 && i1 == 10"),
+    // "longassignment" -> "true",  unsupported bytecode
+    ("topologicalorder", Array(0), "i0 >= 3 && i0 <= 4"))
+
+  test("Baf analysis with fixed frame environment") {
     val params = new Parameters[BafMethod] {
-      val domain = new JVMEnvFixedFrameDomain(Domain)
-      debugWriter = new java.io.PrintWriter(System.err)
+      val domain = new JVMEnvFixedFrameDomain(JVMSootSuite.this.domain)
+      //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
+      //narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
+      //debugWriter = new java.io.StringWriter
     }
-
-    for ((methodName, propString) <- tests) {
+    for ((methodName, frame, propString) <- bafTests) {
       val method = new BafMethod(c.getMethodByName(methodName))
       val ann = method.analyze(params)
       val env = Environment()
       val parser = new NumericalPropertyParser(env)
-      val prop = parser.parseProperty(propString, Domain).get
-      println(method.mkString(ann))
-      params.debugWriter.flush()
-
-      assert(ann(method.lastPP.get) === new JVMEnvFixedFrame(method.size, prop))
-    }
-  }
-  /*
-  test("simple baf analysis dynamic frame") {
-    val method = new BafMethod(c.getMethodByName("nested"))
-    val params = new Parameters[BafMethod] {
-      val domain = new JVMEnvDynFrameDomain(PPLCPolyhedron)
-      wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
-      narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
-      debugWriter = new java.io.StringWriter
-    }
-    try {
-      val ann = method.analyze(params)
-      println(method.mkString(ann))
-    } finally {
-      println(params.debugWriter)
+      val prop = parser.parseProperty(propString, domain).get
+      val jvmenv = new JVMEnvDynFrame(frame, ArrayStack(), prop).toJVMEnvFixedFrame
+      assert(ann(method.lastPP.get) === jvmenv , s"In the analysis of ${methodName}")
     }
   }
 
-  test("simple jimple analysis") {
-    val method = new JimpleMethod(c.getMethodByName("nested"))
+  test("Jimple analysis") {
+    val tests = Seq(
+      "sequential" -> "v0 == 0 && v1 == 10 && v2 == 10",
+      "conditional" -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3",
+      "loop" -> "v0 >= 10 && v0 <= 11",
+      "nested" -> "v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2",
+      // "longassignment" -> "true",  unsupported bytecode
+      "topologicalorder" -> "v0==1 && v1-v2 == -1 &&  v2 >= 3 && v2 <= 4")
+
     val params = new Parameters[JimpleMethod] {
-      val domain = new PPLDomain[C_Polyhedron]
-      wideningFactory =  MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
-      narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
-      debugWriter = new java.io.StringWriter
+      val domain = JVMSootSuite.this.domain
     }
-    try {
+    for ((methodName, propString) <- tests) {
+      val method = new JimpleMethod(c.getMethodByName(methodName))
       val ann = method.analyze(params)
-      println(method.mkString(ann))
-    } finally {
-      println(params.debugWriter)
+      val env = Environment()
+      val parser = new NumericalPropertyParser(env)
+      val prop = parser.parseProperty(propString, domain).get
+      assert(ann(method.lastPP.get) === prop, s"In the analysis of ${methodName}")
     }
-  }*/
+  }
 }
