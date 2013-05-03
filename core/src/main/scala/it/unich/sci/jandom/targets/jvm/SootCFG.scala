@@ -61,7 +61,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt,Node], Node <: Unit] extends ControlFl
     // tag the method
     val localsList = body.getLocals().toIndexedSeq  map { _.getName() }
     for ((unit, prop) <- ann) {
-      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList) + " ]"))
+      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
     }
 
     // generate output with tag
