@@ -34,7 +34,7 @@ package it.unich.sci.jandom.domains
  */
 
 abstract class NumericalProperty[Property <: NumericalProperty[Property]] extends AbstractProperty[Property] {
-
+  this: Property =>
   /**
    * Non deterministic assignment (also called `forget` operator).
    * @note $NOTEN
@@ -176,6 +176,15 @@ abstract class NumericalProperty[Property <: NumericalProperty[Property]] extend
     val v = Array.fill(dimension)(0.0)
     v(n) = 1
     linearAssignment(n,v,c)
+  }
+
+  /**
+   * Add many undetermined dimensions.
+   * @param n number of dimensions to add.
+   */
+  def addDimension(n: Int): Property = {
+    require (n >= 0)
+    (0 until n).foldLeft(this) { (prop,_) => prop.addDimension }
   }
 
   /**
