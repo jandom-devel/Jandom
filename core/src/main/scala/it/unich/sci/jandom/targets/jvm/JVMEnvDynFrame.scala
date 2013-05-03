@@ -19,7 +19,7 @@
 package it.unich.sci.jandom.targets.jvm
 import scala.collection.mutable.ArrayStack
 
-import it.unich.sci.jandom.domains.{NumericalDomain, NumericalProperty}
+import it.unich.sci.jandom.domains.{ NumericalDomain, NumericalProperty }
 import it.unich.sci.jandom.narrowings.Narrowing
 import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
@@ -124,21 +124,41 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
   }
 
   def union(that: JVMEnvDynFrame[NumProperty]) =
-    new JVMEnvDynFrame(frame.clone, stack.clone, property union that.propertyConformantWith(this) )
+    new JVMEnvDynFrame(frame.clone, stack.clone, property union that.propertyConformantWith(this))
 
   def intersection(that: JVMEnvDynFrame[NumProperty]): JVMEnvDynFrame[NumProperty] =
-    new JVMEnvDynFrame(frame.clone, stack.clone, property intersection that.propertyConformantWith(this) )
+    new JVMEnvDynFrame(frame.clone, stack.clone, property intersection that.propertyConformantWith(this))
 
   def narrowing(that: JVMEnvDynFrame[NumProperty]): JVMEnvDynFrame[NumProperty] =
-     new JVMEnvDynFrame(frame.clone, stack.clone, property narrowing that.propertyConformantWith(this) )
+    new JVMEnvDynFrame(frame.clone, stack.clone, property narrowing that.propertyConformantWith(this))
 
   def widening(that: JVMEnvDynFrame[NumProperty]): JVMEnvDynFrame[NumProperty] =
-    new JVMEnvDynFrame(frame.clone, stack.clone, property widening that.propertyConformantWith(this) )
+    new JVMEnvDynFrame(frame.clone, stack.clone, property widening that.propertyConformantWith(this))
 
   def tryCompareTo[B >: JVMEnvDynFrame[NumProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: JVMEnvDynFrame[NumProperty] =>
-    	property.tryCompareTo(other.propertyConformantWith(this))
+      property.tryCompareTo(other.propertyConformantWith(this))
     case _ => None
+  }
+
+  /**
+   * Convert a dynamic frame into a fixed frame
+   */
+  def toJVMEnvFixedFrame = {
+    val bigProp = property.addDimension(frame.length + stack.length)
+    val framedProp = (0 until frame.length).foldLeft(bigProp) {
+      (prop, i) => if (frame(i) != -1) prop.variableAssignment(property.dimension + i, frame(i)) else prop
+    }
+    val stackedProp = (0 until stack.length).foldLeft(framedProp) {
+      (prop, i) => if (stack(i) != -1) prop.variableAssignment(property.dimension + frame.length +  i, stack(i)) else prop
+    }
+    val finalProp = (0 until property.dimension).foldLeft(stackedProp) { (prop,_) => prop.delDimension(0)}
+    new JVMEnvFixedFrame(frame.length, finalProp)
+  }
+
+  override def equals(that: Any) = that match {
+    case that: JVMEnvDynFrame[NumProperty] => property == that.property && frame == frame && stack == stack
+    case _ => false
   }
 
   def mkString(vars: IndexedSeq[String]) =

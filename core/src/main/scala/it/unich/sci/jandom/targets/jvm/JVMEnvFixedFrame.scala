@@ -92,12 +92,16 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
     case _ => None
   }
 
+  override def equals(that: Any) =  that match {
+    case that: JVMEnvFixedFrame[NumProperty] => property==that.property && maxLocals == that.maxLocals
+    case _ => false
+  }
+
   def mkString(vars: IndexedSeq[String]) =
     property.mkString(vars ++ ((maxLocals until property.dimension) map { i => "s" + i }))
 
   override def toString =
     mkString((0 until maxLocals) map { i => "i" + i }).mkString(",")
-
 }
 
 /**
