@@ -265,11 +265,23 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
   /**
    * @inheritdoc
    * @note @inheritdoc
-   * @note Not implemented yet
    * @throws $ILLEGAL
    */
-  def linearDisequality(coeff: Array[Double], known: Double): BoxDouble =
-    throw new IllegalAccessException("Unimplemented feature")
+  def linearDisequality(coeff: Array[Double], known: Double): BoxDouble = {
+    val count = coeff.count(_ != 0)
+    count match {
+      case 0 =>
+        if (known == 0) empty else this
+      case 1 =>
+        val dim = coeff.indexWhere( _ != 0)
+        if (low(dim) == known && high(dim) == known)
+          empty
+          else
+            this
+      case _ => this
+    }
+  }
+
 
   def addDimension: BoxDouble =
     if (isEmpty)
@@ -293,7 +305,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
     Array.copy(high, n + 1, newhigh, n, dimension - n - 1)
     new BoxDouble(newlow, newhigh)
   }
-  
+
   /**
    * @inheritdoc
    * This is a complete operator for boxes.

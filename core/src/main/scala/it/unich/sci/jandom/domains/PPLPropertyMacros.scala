@@ -98,7 +98,13 @@ object PPLPropertyMacros {
         }
 
         def linearDisequality(coeff: Array[Double], known: Double): PPLProperty = {
-          throw new IllegalAccessException("Unimplemented feature");
+          val le = PPLUtils.toPPLLinearExpression(coeff, known)
+          val newpplbox1 = new Double_Box(pplbox)
+          val newpplbox2 = new Double_Box(pplbox)
+          newpplbox1.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
+          newpplbox2.refine_with_constraint(new Constraint(le, Relation_Symbol.GREATER_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
+          newpplbox1.upper_bound_assign_if_exact(newpplbox2)
+          new PPLProperty(newpplbox1)
         }
 
         def addDimension: PPLProperty = {
@@ -155,7 +161,7 @@ object PPLPropertyMacros {
         /*
         def mkString(vars: IndexedSeq[String]): Seq[String] =
           PPLUtils.replaceOutputWithVars(pplbox.toString, vars)
-          * 
+          *
           */
 
         def mkString(vars: IndexedSeq[String]): Seq[String] = {

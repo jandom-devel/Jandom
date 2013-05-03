@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,19 +26,19 @@ import org.scalatest.FunSuite
  *
  */
 class BoxDoubleSuite extends FunSuite {
-    
+
     test("constructors should only work with normalized bounds")  {
       intercept[IllegalArgumentException] { BoxDouble(Array(0,2),Array(0,2,3)) }
       intercept[IllegalArgumentException] { BoxDouble(Array(Double.PositiveInfinity,2),Array(0,2,3)) }
     }
-           
+
     test("operations on boxes") {
     	val i = BoxDouble(Array(1,2),Array(5,4))
-        val j = BoxDouble(Array(0,3),Array(3,4))        
-        expectResult(BoxDouble(Array(0,2),Array(5,4))) { i union j }     
-    	expectResult( BoxDouble(Array(1,3),Array(3,4))) { i intersection j }    	
-    } 
-            
+        val j = BoxDouble(Array(0,3),Array(3,4))
+        expectResult(BoxDouble(Array(0,2),Array(5,4))) { i union j }
+    	expectResult( BoxDouble(Array(1,3),Array(3,4))) { i intersection j }
+    }
+
     test("empty boxes") {
       val i = BoxDouble(Array(-1,-2),Array(-4,3))
       val j = BoxDouble(Array(0,0),Array(5,5))
@@ -50,14 +50,25 @@ class BoxDoubleSuite extends FunSuite {
       intercept[IllegalArgumentException] { i.linearAssignment(-1,Array(1,1),1) }
       intercept[IllegalArgumentException] { i.linearAssignment(2,Array(1,1),1) }
     }
-    
+
     test("linear inequations") {
       val i = BoxDouble.full(2).linearInequality(Array(1,0),-3)
       val j = BoxDouble(Array(0,0),Array(5,5)).linearInequality(Array(1,1),-4)
       expectResult(BoxDouble(Array(Double.NegativeInfinity,Double.NegativeInfinity), Array(3,Double.PositiveInfinity))) { i }
       expectResult(BoxDouble(Array(0,0),Array(4,4))) { j }
     }
-    
+
+    test("disequality is supported") {
+      val i = BoxDouble.full(2).linearInequality(Array(1,0),0)
+      expectResult(i) { i.linearDisequality(Array(1,0), 0)}
+      val j = i.linearInequality(Array(-1,0), 0)
+      expectResult(BoxDouble.empty(2)) { j.linearDisequality(Array(1,0), 0)}
+      expectResult(BoxDouble.empty(2)) { j.linearDisequality(Array(0,0), 0)}
+      expectResult( j ) { j.linearDisequality(Array(0,0), 2)}
+      expectResult( j ) { j.linearDisequality(Array(1,1), 2)}
+      expectResult( j ) { j.linearDisequality(Array(1,0), 2)}
+    }
+
     test("non deterministic assignment") {
       val i = BoxDouble(Array(0,0),Array(5,5))
       val j = BoxDouble(Array(0,Double.NegativeInfinity), Array(5, Double.PositiveInfinity))
@@ -67,7 +78,7 @@ class BoxDoubleSuite extends FunSuite {
       intercept[IllegalArgumentException] { i.nonDeterministicAssignment(-1) }
       intercept[IllegalArgumentException] { i.nonDeterministicAssignment(2) }
     }
-    
+
     test("dimensional variation") {
       val i = BoxDouble(Array(0,0),Array(1,2))
       val j = BoxDouble(Array(0,0,Double.NegativeInfinity),Array(1,2,Double.PositiveInfinity))
@@ -78,7 +89,7 @@ class BoxDoubleSuite extends FunSuite {
       intercept[IllegalArgumentException] { i.delDimension(-1) }
       intercept[IllegalArgumentException] { i.delDimension(2) }
     }
-    
+
     test("dimensional maps") {
        val i = BoxDouble(Array(0,0),Array(1,2))
        val j = BoxDouble(Array(0,0),Array(2,1))
@@ -87,10 +98,10 @@ class BoxDoubleSuite extends FunSuite {
        expectResult (i) ( i.mapDimensions(Seq(0,1)) )
        expectResult (h) ( i.mapDimensions(Seq(-1,0)) )
     }
-    
+
     test("string conversion") {
       val i = BoxDouble(Array(0,-1), Array(2,3))
       expectResult(Seq("0.0 <= x <= 2.0","-1.0 <= y <= 3.0")) { i.mkString(IndexedSeq("x","y")) }
       expectResult("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
-    }       
+    }
 }

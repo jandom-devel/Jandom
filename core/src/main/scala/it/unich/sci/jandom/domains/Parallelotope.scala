@@ -324,11 +324,19 @@ class Parallelotope(
   /**
    * @inheritdoc
    * @note @inheritdoc
-   * @note Not implemented yet
    * @throws $ILLEGAL
    */
   def linearDisequality(coeff: Array[Double], known: Double): Parallelotope = {
-    throw new IllegalAccessException("Unimplemented feature")
+	 if (coeff.forall(_ == 0))
+	   if (known == 0) empty else this
+     else {
+       val row = (0 until dimension).find (A(_,::).toDenseVector == DenseVector(coeff))
+       row match {
+         case None => this
+         case Some(row) =>
+           if (low(row) == known && high(row) == known) empty else this
+       }
+     }
   }
 
   /**

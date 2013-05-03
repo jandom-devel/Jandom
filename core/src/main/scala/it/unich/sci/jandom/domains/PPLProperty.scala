@@ -109,8 +109,14 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
    * @note Not yet implemented.
    */
   def linearDisequality(coeff: Array[Double], known: Double): PPLProperty[PPLNativeProperty] = {
-    throw new IllegalAccessException("Unimplemented feature");
-  }
+     val le = PPLUtils.toPPLLinearExpression(coeff,known)
+     val newpplobject1 = domain.copyConstructor(pplobject)
+	 val newpplobject2 = domain.copyConstructor(pplobject)
+     domain.refine_with_constraint(newpplobject1, new Constraint(le, Relation_Symbol.LESS_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
+     domain.refine_with_constraint(newpplobject2, new Constraint(le, Relation_Symbol.GREATER_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
+     domain.upper_bound_assign(newpplobject1, newpplobject2)
+  	 new PPLProperty(domain, newpplobject1)
+   }
 
   def addDimension = {
     val newpplobject = domain.copyConstructor(pplobject)
