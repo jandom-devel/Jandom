@@ -89,7 +89,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt,Node],Node] extends 
       params.log("result " + (graph.getSuccsOf(node) zip result).mkString(" ; ") + "\n")
       for ((succ, out) <- graph.getSuccsOf(node) zip result) {
         annEdge((node, succ)) = out
-        if (ann contains succ) {
+        if (graph.getPredsOf(succ).length>1 &&  (ann contains succ)) {
           params.log(s"join $succ : ${ann(succ)} with $out")
           val succval: params.Property = if (ordering.lteq(succ,node)) {
             params.log(s" widening")
