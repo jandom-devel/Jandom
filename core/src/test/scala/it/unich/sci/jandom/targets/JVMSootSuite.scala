@@ -20,15 +20,11 @@ package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
 import it.unich.sci.jandom.domains.PPLCPolyhedron
-import it.unich.sci.jandom.domains.PPLDomain
-import it.unich.sci.jandom.narrowings.NoNarrowing
-import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
-import it.unich.sci.jandom.ppfactories.MemoizingFactory
+import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvm._
-import parma_polyhedra_library.C_Polyhedron
 import soot._
-import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
-import it.unich.sci.jandom.widenings.DefaultWidening
+import it.unich.sci.jandom.domains.PPLProperty
+import it.unich.sci.jandom.domains.PPLDomain
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -36,31 +32,34 @@ import it.unich.sci.jandom.widenings.DefaultWidening
  *
  */
 class JVMSootSuite extends FunSuite {
+  val scene = Scene.v()
+  scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
+  val c = scene.loadClass("SimpleTest", 1)
+  c.setApplicationClass()
+  val Domain = new PPLDomain[parma_polyhedra_library.Octagonal_Shape_double]
+
   test("simple baf analysis") {
-    val scene = Scene.v()
-    scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
-    val c = scene.loadClass("SimpleTest", 1)
-    c.setApplicationClass()
-    val method = new BafMethod(c.getMethodByName("nested"))
+    val tests = Seq(//"sequential" -> "i0 == 10", "conditional" -> "i0 == 1", "loop" -> "i0 == 10",
+                    "nested" -> "i0==1")
     val params = new Parameters[BafMethod] {
-      val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)
-      wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
-      narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
-      debugWriter = new java.io.StringWriter
+      val domain = new JVMEnvFixedFrameDomain(Domain)
+      debugWriter = new java.io.PrintWriter(System.err)
     }
-    try {
+
+    for ((methodName, propString) <- tests) {
+      val method = new BafMethod(c.getMethodByName(methodName))
       val ann = method.analyze(params)
+      val env = Environment()
+      val parser = new NumericalPropertyParser(env)
+      val prop = parser.parseProperty(propString, Domain).get
       println(method.mkString(ann))
-    } finally {
-      println(params.debugWriter)
+      params.debugWriter.flush()
+
+      assert(ann(method.lastPP.get) === new JVMEnvFixedFrame(method.size, prop))
     }
   }
-
+  /*
   test("simple baf analysis dynamic frame") {
-    val scene = Scene.v()
-    scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
-    val c = scene.loadClass("SimpleTest", 1)
-    c.setApplicationClass()
     val method = new BafMethod(c.getMethodByName("nested"))
     val params = new Parameters[BafMethod] {
       val domain = new JVMEnvDynFrameDomain(PPLCPolyhedron)
@@ -77,10 +76,6 @@ class JVMSootSuite extends FunSuite {
   }
 
   test("simple jimple analysis") {
-    val scene = Scene.v()
-    scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
-    val c = scene.loadClass("SimpleTest", 1)
-    c.setApplicationClass()
     val method = new JimpleMethod(c.getMethodByName("nested"))
     val params = new Parameters[JimpleMethod] {
       val domain = new PPLDomain[C_Polyhedron]
@@ -94,5 +89,5 @@ class JVMSootSuite extends FunSuite {
     } finally {
       println(params.debugWriter)
     }
-  }
+  }*/
 }

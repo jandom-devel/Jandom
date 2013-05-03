@@ -44,6 +44,7 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
   type DomainBase = NumericalDomain
 
   def size = s
+  val lastPP = None
 
   class LTSAnnotation[Property] extends Annotation[ProgramPoint, Property] {
     private val buffer = Array.fill[Option[Property]](s)(None)

@@ -35,6 +35,11 @@ abstract class Target[Tgt <: Target[Tgt]] {
   type ProgramPoint
 
   /**
+   * Returns the exit program point in the target, if it exists.
+   */
+  val lastPP: Option[ProgramPoint]
+
+  /**
    * Target cannot work for all static analyzers, hence we specify here the base domain in the hierarchy
    * which is supported by the target.
    */

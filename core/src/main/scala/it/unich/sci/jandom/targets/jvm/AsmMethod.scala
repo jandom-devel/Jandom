@@ -43,7 +43,10 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
   type DomainBase = JVMEnvDomain
 
   private val labelBlocks = HashMap[AbstractInsnNode, BasicBlock]()
-  private val startBlock = createControlFlowGraph()
+  private val (startBlock, endBlock) = createControlFlowGraph()
+
+  override val lastPP = Some(endBlock)
+
   determineWidening(startBlock)
 
   /**
@@ -62,6 +65,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
     var nextBlock: Option[BasicBlock] = None
     var visited = false
     var widening = false
+
     /**
      * Returns the index of the starting instruction in the method
      */
@@ -162,7 +166,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
    * Builds the control-flow graph of the method and returns the starting node.
    * It is called by the constructor.
    */
-  private def createControlFlowGraph(): BasicBlock = {
+  private def createControlFlowGraph(): (BasicBlock, BasicBlock) = {
     import scala.collection.JavaConversions._
     import AbstractInsnNode._
 
@@ -223,7 +227,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
       currentBlock.endNode = methodNode.instructions.getLast
       currentBlock.nextBlock = None
     }
-    startBlock
+    (startBlock, currentBlock)
   }
 
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {

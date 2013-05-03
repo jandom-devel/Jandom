@@ -60,6 +60,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
 
   val body = method.retrieveActiveBody()
   val graph = new ExceptionalUnitGraph(body)
+  val lastPP = Some(body.getUnits().getLast())
 
   private val envMap = body.getLocals().zipWithIndex.toMap
 

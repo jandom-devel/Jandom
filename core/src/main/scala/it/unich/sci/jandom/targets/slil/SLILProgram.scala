@@ -54,4 +54,6 @@ case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: 
     }
     return ann.asInstanceOf[Annotation[ProgramPoint,params.Property]]
   }
+
+  override val lastPP = stmt.lastPP
 }

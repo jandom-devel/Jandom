@@ -27,6 +27,7 @@ private[jandom] class MockTarget extends Target[MockTarget] {
   type ProgramPoint = Int
 
   def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = getAnnotation[params.Property]
+  val lastPP = None
 }
 
 /**

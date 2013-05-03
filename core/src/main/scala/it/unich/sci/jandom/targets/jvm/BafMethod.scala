@@ -47,6 +47,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Unit] {
 
   val body = Baf.v().newBody(method.retrieveActiveBody())
   val graph = new ExceptionalUnitGraph(body)
+  val lastPP = Some(body.getUnits().getLast())
 
   private val envMap = body.getLocals().zipWithIndex.toMap
 
