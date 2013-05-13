@@ -19,14 +19,14 @@
 package it.unich.sci.jandom.targets
 
 import scala.collection.mutable.ArrayStack
-
 import org.scalatest.FunSuite
-
 import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvm._
-
 import soot._
+import it.unich.sci.jandom.domains.ObjectNumericalDomain
+import it.unich.sci.jandom.domains.objects.ObjectTopDomain
+import it.unich.sci.jandom.domains.SimpleObjectNumericalDomain
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -38,7 +38,8 @@ class JVMSootSuite extends FunSuite {
   scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
   val c = scene.loadClass("SimpleTest", 1)
   c.setApplicationClass()
-  val domain = PPLCPolyhedron
+  val numdomain = PPLCPolyhedron
+  val domain = new SimpleObjectNumericalDomain(numdomain,ObjectTopDomain)
 
   val bafTests = Seq(
     ("sequential", Array(0), "i0 == 10"),
@@ -50,7 +51,7 @@ class JVMSootSuite extends FunSuite {
 
   test("Baf analysis with fixed frame environment") {
     val params = new Parameters[BafMethod] {
-      val domain = new JVMEnvFixedFrameDomain(JVMSootSuite.this.domain)
+      val domain = new JVMEnvFixedFrameDomain(JVMSootSuite.this.numdomain)
       //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
       //narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
       //debugWriter = new java.io.StringWriter
@@ -60,7 +61,7 @@ class JVMSootSuite extends FunSuite {
       val ann = method.analyze(params)
       val env = Environment()
       val parser = new NumericalPropertyParser(env)
-      val prop = parser.parseProperty(propString, domain).get
+      val prop = parser.parseProperty(propString, numdomain).get
       val jvmenv = new JVMEnvDynFrame(frame, ArrayStack(), prop).toJVMEnvFixedFrame
       assert(ann(method.lastPP.get) === jvmenv , s"In the analysis of ${methodName}")
     }

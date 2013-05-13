@@ -37,7 +37,7 @@ import it.unich.sci.jandom.domains.AbstractProperty
  * @define ILLEGAL IllegalArgumentException if parameters are not correct.
  */
 
-abstract class NumericalProperty[Property <: NumericalProperty[Property]] extends AbstractProperty[Property] {
+trait NumericalProperty[Property <: NumericalProperty[Property]] extends AbstractProperty[Property] {
   this: Property =>
   /**
    * Non deterministic assignment (also called `forget` operator).
