@@ -16,11 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains
-
-import it.unich.sci.jandom.domains.numerical.NumericalDomain
-
-import it.unich.sci.jandom.domains.numerical.NumericalProperty
+package it.unich.sci.jandom.domains.numerical
 
 /**
  * This is the class which implements the sum of two abstract properties.
