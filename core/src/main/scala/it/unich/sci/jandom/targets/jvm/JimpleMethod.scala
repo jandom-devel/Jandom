@@ -20,22 +20,20 @@ package it.unich.sci.jandom.targets.jvm
 
 import java.io.PrintWriter
 import java.io.StringWriter
-
 import scala.Array.canBuildFrom
 import scala.collection.mutable.HashMap
-
 import it.unich.sci.jandom.domains.NumericalDomain
 import it.unich.sci.jandom.domains.NumericalProperty
 import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.targets.cfg.ControlFlowGraph
 import it.unich.sci.jandom.targets.linearcondition._
-
 import soot._
 import soot.baf._
 import soot.jimple._
 import soot.options.Options
 import soot.tagkit.LoopInvariantTag
 import soot.toolkits.graph._
+import it.unich.sci.jandom.domains.NumericalProperty
 
 /**
  * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library. It is
@@ -107,7 +105,60 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
   }
 
   /**
-   * Convert a `Value` into a LinearForm.
+   * Analyze a `Value`.
+   * @tparam Property the type of the abstract state
+   * @param v the `Value` to analyze
+   * @param prop the abstract initial state
+   * @return the abstract end state. The last dimension of property corresponds to the
+   * returned value.
+   */
+  def analyzeExpr[Property <: NumericalProperty[Property]](v: Value, prop: Property): Property = {
+    v match {
+      case v: IntConstant =>
+        prop.addDimension.constantAssignment(c = v.value)
+      case v: Local =>
+        prop.addDimension.variableAssignment(m = envMap(v))
+      case v: BinopExpr =>
+        val res1 = analyzeExpr(v.getOp1(), prop)
+        val res2 = analyzeExpr(v.getOp2(), res1)
+        v match {
+          case v: AddExpr => res2.variableAdd()
+          case v: SubExpr => res2.variableSub()
+          case v: MulExpr => res2.variableMul()
+          case v: DivExpr => res2.variableDiv()
+          case v: RemExpr => res2.variableRem()
+          case v: ShlExpr => res2.variableShl()
+          case v: ShrExpr => res2.variableShr()
+          case v: UshrExpr => res2.variableUshr()
+
+          // bitwise expressions (not supported yet)
+          case v: AndExpr => res2.delDimension()
+          case v: AndExpr => res2.delDimension()
+          case v: XorExpr => res2.delDimension()
+
+          // boolean expressions (not supported yet)
+          case v: CmpExpr => res2.delDimension()
+          case v: CmpgExpr => res2.delDimension()
+          case v: CmplExpr => res2.delDimension()
+          case v: ConditionExpr => res2.delDimension()
+        }
+      case v: UnopExpr =>
+        val res = analyzeExpr(v.getOp(), prop)
+        v match {
+          case v: LengthExpr => prop.addDimension
+          case v: NegExpr => prop.variableNeg()
+        }
+      case v: AnyNewExpr => prop.addDimension
+      case v: InvokeExpr => prop.addDimension
+      case v: InstanceOfExpr => prop.addDimension
+      case v: CastExpr => prop.addDimension // TODO: this can be made more precise
+      case _ =>
+        throw new IllegalArgumentException("Invalid Jimple statement encountered")
+    }
+  }
+
+  /**
+   * Convert a `Value` into a LinearForm, if possible.
    * @param v the Value to convert.
    * @return the corresponding linear form, or `None` if `v` is not a linear form.
    */
@@ -140,13 +191,22 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
     node match {
       case unit: AssignStmt =>
         val local = unit.getLeftOp().asInstanceOf[Local]
+        // try to get a linear expression, otherwise analyze piecewise
         val lf = jimpleExprToLinearForm(unit.getRightOp())
         lf match {
           case None =>
-            newprop = prop.nonDeterministicAssignment(envMap(local))
+            newprop = analyzeExpr(unit.getRightOp(), prop).variableAssignment(envMap(local), prop.dimension).delDimension(prop.dimension)
           case Some(a) =>
             newprop = prop.linearAssignment(envMap(local), a.tail, a(0))
         }
+      case unit: BreakpointStmt =>
+        throw new IllegalArgumentException("Invalid Jimple statement encountered")
+      case unit: DefinitionStmt =>
+        throw new IllegalArgumentException("Unsupported Jimple statement")
+      case unit: EnterMonitorStmt =>
+      case unit: ExitMonitorStmt =>
+      case unit: GotoStmt =>
+        exits :+= prop
       case unit: IfStmt =>
         val cond = unit.getCondition
         val lc = jimpleExprToLinearCond(cond)
@@ -157,9 +217,14 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
             exits :+= c.analyze(prop)
             newprop = c.opposite.analyze(prop)
         }
-      case unit: GotoStmt =>
-        exits :+= prop
+      case unit: InvokeStmt =>
+      case unit: LookupSwitchStmt =>
+      case unit: NopStmt =>
+      case unit: RetStmt =>
+      case unit: ReturnStmt =>
       case unit: ReturnVoidStmt =>
+      case unit: TableSwitchStmt =>
+      case unit: ThrowStmt =>
     }
     if (node.fallsThrough) exits +:= newprop
     exits

@@ -24,6 +24,8 @@ package it.unich.sci.jandom.domains
  * compatible properties, i.e. properties over vector spaces of the same dimension. Numerical
  * properties are immutable.
  *
+ * Most of the operations accepting dimensions as parameters have default value of `dimension-1` or `dimension-2`.
+ *
  * @tparam Property the property type we attach to and provide numerical operations.
  * @author Gianluca Amato <gamato@unich.it>
  * @define PPL [[http://bugseng.com/products/ppl/ PPL]]
@@ -40,7 +42,7 @@ abstract class NumericalProperty[Property <: NumericalProperty[Property]] extend
    * @note $NOTEN
    * @param n the variable to which non-deterministic assignment should be applied.
    */
-  def nonDeterministicAssignment(n: Int): Property
+  def nonDeterministicAssignment(n: Int = dimension-1): Property
 
   /**
    * Linear assignment over an abstract object of the form `x(n) = x*coeff+known`.
@@ -51,7 +53,7 @@ abstract class NumericalProperty[Property <: NumericalProperty[Property]] extend
    * @note `coeff` should have at least `dimension` elements
    * @param known the in-homogeneous coefficient.
    */
-  def linearAssignment(n: Int, coeff:Array[Double], known: Double): Property
+  def linearAssignment(n:Int, coeff:Array[Double], known: Double): Property
 
   /**
    * Intersection with the half-plane `{ x |  coeff*x+known <= 0 }`.
@@ -81,7 +83,7 @@ abstract class NumericalProperty[Property <: NumericalProperty[Property]] extend
    * @param n the dimension to be suppressed.
    * @note $NOTEN
    */
-  def delDimension(n: Int): Property
+  def delDimension(n: Int = dimension-1): Property
 
   /**
    * Map dimensions according to a partial injective function.
@@ -137,18 +139,18 @@ abstract class NumericalProperty[Property <: NumericalProperty[Property]] extend
    * linearAssignment, but it may be overriden in subclasses to optimize speed.
    * @note $NOTEN
    */
-  def constantAssignment(n: Int, d: Double) =
-    linearAssignment(n, Array.fill(dimension)(0.0), d)
+  def constantAssignment(n: Int = dimension-1, c: Double) =
+    linearAssignment(n, Array.fill(dimension)(0.0), c)
 
   /**
    * Assignment of a variable to another variable.
    * @note $NOTEN
    * @note `source` should be within `0` and `dimension-1`.
    */
-  def variableAssignment(n: Int, source: Int)  = {
-    require (source < dimension)
+  def variableAssignment(n: Int = dimension-1, m: Int)  = {
+    require (m < dimension)
     val v = Array.fill(dimension)(0.0)
-    v(source) = 1
+    v(m) = 1
     linearAssignment(n,v,0)
   }
 
@@ -158,7 +160,7 @@ abstract class NumericalProperty[Property <: NumericalProperty[Property]] extend
    * @note $NOTEN
    * @note `m` should be within `0` and `dimension-1`.
    */
-  def variableAdd(n: Int, m: Int) = {
+  def variableAdd(n: Int = dimension-2, m: Int = dimension-1) = {
     require (n < dimension && m < dimension)
     val v = Array.fill(dimension)(0.0)
     v(n) = 1
@@ -167,15 +169,117 @@ abstract class NumericalProperty[Property <: NumericalProperty[Property]] extend
   }
 
   /**
+   * Assignments of the kind vn = vn + vm.  The standard implementation calls
+   * linearAssignment, but it may be overriden in subclasses to optimize speed.
+   * @note $NOTEN
+   * @note `m` should be within `0` and `dimension-1`.
+   */
+  def variableSub(n: Int = dimension-2, m: Int = dimension-1) = {
+    require (n < dimension && m < dimension)
+    val v = Array.fill(dimension)(0.0)
+    v(n) = 1
+    v(m) = -1
+    linearAssignment(n,v,0)
+  }
+
+  /**
    * Assignments of the kind vn = vn + c.  The standard implementation calls
    * linearAssignment, but it may be overriden in subclasses to optimize speed.
    * @note $NOTEN
    */
-  def constantAdd(n: Int, c: Double) = {
+  def constantAdd(n: Int = dimension-1, c: Double) = {
     require (n < dimension)
     val v = Array.fill(dimension)(0.0)
     v(n) = 1
     linearAssignment(n,v,c)
+  }
+
+  /**
+   * Assignments of the kind vn = vn * vm.  The standard implementation calls
+   * nonDeterministicAssignment on vn
+   * @note $NOTEN
+   */
+  def variableMul(n: Int = dimension-2, m: Int= dimension-1)  = {
+     nonDeterministicAssignment(n)
+  }
+
+  /**
+   * Assignments of the kind vn = vn / vm.  The standard implementation calls
+   * nonDeterministicAssignment on vn
+   * @note $NOTEN
+   */
+  def variableDiv(n: Int = dimension-2, m: Int= dimension-1)  = {
+     nonDeterministicAssignment(n)
+  }
+
+  /**
+   * Assignments of the kind vn = vn % vm.  The standard implementation calls
+   * nonDeterministicAssignment on vn
+   * @note $NOTEN
+   */
+  def variableRem(n: Int = dimension-2, m: Int= dimension-1)  = {
+     nonDeterministicAssignment(n)
+  }
+
+  /**
+   * Assignments of the kind vn = vn << vm.  The standard implementation calls
+   * nonDeterministicAssignment on vn
+   * @note $NOTEN
+   */
+  def variableShl(n: Int = dimension-2, m: Int= dimension-1)  = {
+     nonDeterministicAssignment(n)
+  }
+
+    /**
+   * Assignments of the kind vn = vn >> vm.  The standard implementation calls
+   * nonDeterministicAssignment on vn
+   * @note $NOTEN
+   */
+  def variableShr(n: Int = dimension-2, m: Int= dimension-1)  = {
+     nonDeterministicAssignment(n)
+  }
+
+  /**
+   * Assignments of the kind vn = vn >> vm for unsigned shift.  The standard implementation calls
+   * nonDeterministicAssignment on vn
+   * @note $NOTEN
+   */
+  def variableUshr(n: Int = dimension-2, m: Int= dimension-1)  = {
+     nonDeterministicAssignment(n)
+  }
+
+  /**
+   * Assignments of the kind vn = vn & vm.  The standard implementation calls
+   * nonDeterministicAssignment on vn
+   * @note $NOTEN
+   */
+  def variableAnd(n: Int = dimension-2, m: Int= dimension-1)  = {
+     nonDeterministicAssignment(n)
+  }
+
+  /**
+   * Assignments of the kind vn = vn | vm.  The standard implementation calls
+   * nonDeterministicAssignment on vn
+   * @note $NOTEN
+   */
+  def variableOr(n: Int = dimension-2, m: Int= dimension-1)  = {
+     nonDeterministicAssignment(n)
+  }
+
+  /**
+   * Assignments of the kind vn = vn ^ vm.  The standard implementation calls
+   * nonDeterministicAssignment on vn
+   * @note $NOTEN
+   */
+  def variableXor(n: Int = dimension-2, m: Int= dimension-1)  = {
+     nonDeterministicAssignment(n)
+  }
+
+  def variableNeg(n: Int = dimension-1) = {
+    require (n >=0 && n < dimension)
+    val coeff = Array.fill(dimension)(0.0)
+    coeff(n) = -1
+    linearAssignment(n, coeff, 0)
   }
 
   /**
