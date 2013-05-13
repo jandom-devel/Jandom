@@ -16,10 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains
+package it.unich.sci.jandom.domains.numerical
 
 import language.experimental.macros
 import scala.reflect.macros.Context
+import parma_polyhedra_library.Double_Box
 
 /**
  * This class containts macros for compile-time creation of PPL backed numerical properties.

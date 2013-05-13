@@ -19,11 +19,12 @@
 package it.unich.sci.jandom.targets.jvm
 import scala.collection.mutable.ArrayStack
 
-import it.unich.sci.jandom.domains.{ NumericalDomain, NumericalProperty }
 import it.unich.sci.jandom.narrowings.Narrowing
 import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.widenings.Widening
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
 
 /**
  * This is an abstract JVM environment using a dynamically expandable frame. At the moment, it only supports

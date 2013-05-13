@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom.targets.linearcondition
 
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
 
 /**
  * This is the class for the logical and of two conditions.

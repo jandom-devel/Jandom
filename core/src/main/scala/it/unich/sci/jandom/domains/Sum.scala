@@ -18,6 +18,10 @@
 
 package it.unich.sci.jandom.domains
 
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
+
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
+
 /**
  * This is the class which implements the sum of two abstract properties.
  * @todo This is only a stub.

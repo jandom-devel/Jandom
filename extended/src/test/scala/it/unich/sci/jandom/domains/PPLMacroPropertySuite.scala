@@ -16,7 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains
+package it.unich.sci.jandom.domains.numerical
 
 import org.scalatest.FunSuite
 import parma_polyhedra_library.Octagonal_Shape_double

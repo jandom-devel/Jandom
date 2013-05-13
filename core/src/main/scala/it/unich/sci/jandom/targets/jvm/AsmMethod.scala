@@ -27,7 +27,7 @@ import org.objectweb.asm._
 import org.objectweb.asm.tree._
 import org.objectweb.asm.util._
 
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond

@@ -19,7 +19,7 @@
 package it.unich.sci.jandom.parsers
 import scala.util.parsing.combinator.JavaTokenParsers
 
-import it.unich.sci.jandom.domains.NumericalDomain
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.targets.Environment
 
 /**

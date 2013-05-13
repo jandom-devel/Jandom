@@ -20,7 +20,7 @@ package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.domains.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDouble
 
 import linearcondition.{FalseCond,AtomicCond}
 import lts._

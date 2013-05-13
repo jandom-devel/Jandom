@@ -18,16 +18,15 @@
 
 package it.unich.sci.jandom.targets
 
+import scala.collection.mutable.ArrayStack
+
 import org.scalatest.FunSuite
-import it.unich.sci.jandom.domains.PPLCPolyhedron
+
+import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvm._
+
 import soot._
-import it.unich.sci.jandom.domains.PPLProperty
-import it.unich.sci.jandom.domains.PPLDomain
-import it.unich.sci.jandom.domains.PPLBoxDouble
-import scala.collection.mutable.ArrayStack
-import java.io.PrintWriter
 
 /**
  * Simple test suite for the JVMSoot target.

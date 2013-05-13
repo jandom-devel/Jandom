@@ -19,8 +19,8 @@
 package it.unich.sci.jandom.domains
 
 import org.scalatest.FunSuite
-
 import breeze.linalg._
+import it.unich.sci.jandom.domains.numerical.Parallelotope
 
 /**
  * Test suite for the parallelotope domain. Disabled at the moment due to non-functionin domain.

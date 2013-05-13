@@ -20,7 +20,7 @@ package it.unich.sci.jandom.narrowings
 
 import org.scalatest.FunSpec
 
-import it.unich.sci.jandom.domains.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDouble
 
 /**
  * Test suite for delayed narrowing.

@@ -16,7 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains
+package it.unich.sci.jandom.domains.numerical
+
+import it.unich.sci.jandom.domains.AbstractProperty
 
 /**
  * Base class for numerical properties and their operations. A concrete class `C` implementing a numerical

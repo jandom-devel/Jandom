@@ -18,22 +18,15 @@
 
 package it.unich.sci.jandom.targets.jvm
 
-import java.io.PrintWriter
-import java.io.StringWriter
-import scala.Array.canBuildFrom
-import scala.collection.mutable.HashMap
-import it.unich.sci.jandom.domains.NumericalDomain
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets._
-import it.unich.sci.jandom.targets.cfg.ControlFlowGraph
 import it.unich.sci.jandom.targets.linearcondition._
+
 import soot._
 import soot.baf._
 import soot.jimple._
-import soot.options.Options
-import soot.tagkit.LoopInvariantTag
 import soot.toolkits.graph._
-import it.unich.sci.jandom.domains.NumericalProperty
 
 /**
  * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library. It is

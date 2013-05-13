@@ -19,6 +19,7 @@
 package it.unich.sci.jandom.domains
 
 import org.scalatest.FunSuite
+import it.unich.sci.jandom.domains.numerical.BoxDouble
 
 /**
  * This is a unit test for the BoxDouble numerical domain.

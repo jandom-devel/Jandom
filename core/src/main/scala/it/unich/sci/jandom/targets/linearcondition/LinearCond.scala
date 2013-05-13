@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom.targets.linearcondition
 
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
 
 /**
  * This is the abstract class for all linear conditions. Each condition has an opposite method

@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom.targets
 
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
 
 /**
  * This class represent an assignment of linear forms.

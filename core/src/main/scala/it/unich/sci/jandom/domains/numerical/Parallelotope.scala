@@ -16,9 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains
+package it.unich.sci.jandom.domains.numerical
 
 import breeze.linalg._
+import scala.Array.canBuildFrom
 
 /**
  * This is the abstract domain of parallelotopes as appears in the NSAD 2012 paper. It is written

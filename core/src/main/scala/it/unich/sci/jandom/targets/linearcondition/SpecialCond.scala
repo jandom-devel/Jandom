@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom.targets.linearcondition
 
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
 
 /**
  * An atomic condition for a non-deterministic choice.

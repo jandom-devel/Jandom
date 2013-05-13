@@ -16,22 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains
+package it.unich.sci.jandom.domains.numerical
 
 import it.unich.sci.jandom.utils.PPLUtils
-import parma_polyhedra_library.By_Reference
-import parma_polyhedra_library.Coefficient
-import parma_polyhedra_library.Constraint
-import parma_polyhedra_library.Constraint_System
-import parma_polyhedra_library.Degenerate_Element
-import parma_polyhedra_library.Linear_Expression
-import parma_polyhedra_library.Linear_Expression_Coefficient
-import parma_polyhedra_library.Polyhedron
-import parma_polyhedra_library.Relation_Symbol
-import parma_polyhedra_library.Variable
-import parma_polyhedra_library.Variable_Stringifier
-import parma_polyhedra_library.Variables_Set
-import parma_polyhedra_library.Partial_Function
+
+import parma_polyhedra_library._
 
 /**
  * This is the universal PPL numerical property. It is able to represent (almost) any property

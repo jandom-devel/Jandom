@@ -19,6 +19,8 @@
 package it.unich.sci.jandom.domains
 
 import breeze.linalg.{DenseMatrix, DenseVector}
+import it.unich.sci.jandom.domains.numerical.Parallelotope
+import it.unich.sci.jandom.domains.numerical.BoxDouble
 
 /**
  * This object is a collection of transformations between different abstract properties.

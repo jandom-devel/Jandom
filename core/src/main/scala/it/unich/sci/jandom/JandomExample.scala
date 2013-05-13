@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom
 
-import it.unich.sci.jandom.domains.PPLCPolyhedron
+import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
 import it.unich.sci.jandom.narrowings.DefaultNarrowing
 import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
@@ -43,7 +43,7 @@ object JandomExample extends App {
     val parsed = parsers.RandomParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
-      val params = new targets.Parameters[SLILTarget] { val domain = domains.BoxDouble }
+      val params = new targets.Parameters[SLILTarget] { val domain = domains.numerical.BoxDouble }
       params.narrowingStrategy = NarrowingStrategy.Restart
       params.wideningScope = WideningScope.BackEdges
       val ann = program.analyze(params)

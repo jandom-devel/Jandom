@@ -20,7 +20,7 @@ package it.unich.sci.jandom. widenings
 
 import org.scalatest.FunSpec
 
-import it.unich.sci.jandom.domains.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDouble
 import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
 import it.unich.sci.jandom.targets.MockTarget
 

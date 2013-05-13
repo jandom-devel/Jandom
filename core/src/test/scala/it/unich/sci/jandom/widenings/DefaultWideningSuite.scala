@@ -20,7 +20,7 @@ package it.unich.sci.jandom.widenings
 
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.domains.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDouble
 
 /**
  * A test for the default widening.

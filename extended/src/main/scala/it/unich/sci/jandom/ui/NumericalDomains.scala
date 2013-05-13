@@ -21,11 +21,11 @@
 
 package it.unich.sci.jandom.ui
 
-import it.unich.sci.jandom.domains.BoxDouble
-import it.unich.sci.jandom.domains.NumericalDomain
-import it.unich.sci.jandom.domains.PPLDomain
-import it.unich.sci.jandom.domains.Parallelotope
-import it.unich.sci.jandom.domains.PPLPropertyMacros
+import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import it.unich.sci.jandom.domains.numerical.PPLDomain
+import it.unich.sci.jandom.domains.numerical.Parallelotope
+import it.unich.sci.jandom.domains.numerical.PPLPropertyMacros
 
 import parma_polyhedra_library.C_Polyhedron
 import parma_polyhedra_library.Double_Box

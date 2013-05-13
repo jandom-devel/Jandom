@@ -18,6 +18,10 @@
 
 package it.unich.sci.jandom.domains
 
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
+
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
+
 /**
  * This is the class which implements the product of two basic numerical properties. It is not a
  * real reduced product, but a cartesian product with some reduction given by transformation

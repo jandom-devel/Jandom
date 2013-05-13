@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom.targets.lts
 
-import it.unich.sci.jandom.domains.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets.LinearAssignment
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 

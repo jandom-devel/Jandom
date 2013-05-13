@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom.targets.slil
 
-import it.unich.sci.jandom.domains.NumericalDomain
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.targets.Target
 
 /**

@@ -25,7 +25,7 @@ import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.domains.PPLCPolyhedron
+import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
 import it.unich.sci.jandom.targets.jvm.JVMEnvFixedFrameDomain
 import it.unich.sci.jandom.targets.jvm.AsmMethod
 import it.unich.sci.jandom.targets.jvm.UnsupportedASMByteCodeException
