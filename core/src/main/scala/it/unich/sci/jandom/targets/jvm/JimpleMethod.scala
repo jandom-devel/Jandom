@@ -133,7 +133,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
 
           // bitwise expressions (not supported yet)
           case v: AndExpr => res2.delDimension()
-          case v: AndExpr => res2.delDimension()
+          case v: OrExpr => res2.delDimension()
           case v: XorExpr => res2.delDimension()
 
           // boolean expressions (not supported yet)
