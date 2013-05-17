@@ -134,7 +134,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
           frame.mode match {
             case Baf =>
               val bafMethod = method.asInstanceOf[BafMethod]
-              val params = new Parameters[BafMethod] { val domain = new JVMEnvFixedFrameDomain(numericalDomain) }
+              val params = new Parameters[BafMethod] { val domain = new JVMEnvDynFrameDomain(numericalDomain) }
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(bafMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(bafMethod)(params.narrowingFactory)
