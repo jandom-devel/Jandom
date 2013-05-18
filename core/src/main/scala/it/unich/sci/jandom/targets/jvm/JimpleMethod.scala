@@ -41,14 +41,8 @@ import it.unich.sci.jandom.domains.NumericalProperty
  * @param method the method we want to analyze
  * @author Gianluca Amato
  */
-class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
+class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
   import scala.collection.JavaConversions._
-
-  /**
-   * @inheritdoc
-   * The base node of this CFG is `Unit`.
-   */
-  type Node = Unit
 
   /**
    * @inheritdoc
@@ -57,8 +51,8 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
   type DomainBase = NumericalDomain
 
   val body = method.retrieveActiveBody()
-  val graph = new ExceptionalUnitGraph(body)
-  val lastPP = Some(body.getUnits().getLast())
+  val graph = new ExceptionalBlockGraph(body)
+  val lastPP = Some(graph.getTails().get(0))
 
   private val envMap = body.getLocals().zipWithIndex.toMap
 
@@ -185,19 +179,19 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
     Some(a)
   }
 
-  protected def analyzeBlock(params: Parameters)(node: Unit, prop: params.Property): Seq[params.Property] = {
+  protected def analyzeBlock(params: Parameters)(node: Block, initprop: params.Property): Seq[params.Property] = {
     var exits = Seq[params.Property]()
-    var newprop = prop
-    node match {
+    var currprop = initprop
+    for (unit <- node.iterator()) unit match {
       case unit: AssignStmt =>
         val local = unit.getLeftOp().asInstanceOf[Local]
         // try to get a linear expression, otherwise analyze piecewise
         val lf = jimpleExprToLinearForm(unit.getRightOp())
         lf match {
           case None =>
-            newprop = analyzeExpr(unit.getRightOp(), prop).variableAssignment(envMap(local), prop.dimension).delDimension(prop.dimension)
+            currprop = analyzeExpr(unit.getRightOp(), currprop).variableAssignment(envMap(local), currprop.dimension).delDimension(currprop.dimension)
           case Some(a) =>
-            newprop = prop.linearAssignment(envMap(local), a.tail, a(0))
+            currprop = currprop.linearAssignment(envMap(local), a.tail, a(0))
         }
       case unit: BreakpointStmt =>
         throw new IllegalArgumentException("Invalid Jimple statement encountered")
@@ -206,16 +200,16 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
       case unit: EnterMonitorStmt =>
       case unit: ExitMonitorStmt =>
       case unit: GotoStmt =>
-        exits :+= prop
+        exits :+= currprop
       case unit: IfStmt =>
         val cond = unit.getCondition
         val lc = jimpleExprToLinearCond(cond)
         lc match {
           case None =>
-            exits :+= prop
+            exits :+= currprop
           case Some(c) =>
-            exits :+= c.analyze(prop)
-            newprop = c.opposite.analyze(prop)
+            exits :+= c.analyze(currprop)
+            currprop = c.opposite.analyze(currprop)
         }
       case unit: InvokeStmt =>
       case unit: LookupSwitchStmt =>
@@ -226,7 +220,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Unit] {
       case unit: TableSwitchStmt =>
       case unit: ThrowStmt =>
     }
-    if (node.fallsThrough) exits +:= newprop
+    if (node.getTail.fallsThrough()) exits +:= currprop
     exits
   }
 }

@@ -18,17 +18,16 @@
 
 package it.unich.sci.jandom.targets.jvm
 import java.io._
-
 import it.unich.sci.jandom.domains.AbstractProperty
 import it.unich.sci.jandom.targets.Annotation
-
 import it.unich.sci.jandom.targets.cfg.ControlFlowGraph
-
 import soot._
 import soot.options.Options
 import soot.tagkit.LoopInvariantTag
 import soot.toolkits.graph.ExceptionalUnitGraph
 import soot.toolkits.graph.PseudoTopologicalOrderer
+import soot.tagkit.Host
+import soot.toolkits.graph.Block
 
 /**
  * This class is an ancestor for all the analyzers of JVM methods using the Soot library.
@@ -36,7 +35,7 @@ import soot.toolkits.graph.PseudoTopologicalOrderer
  * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
  * @author Gianluca Amato <gamato@unich.it>
  */
-abstract class SootCFG[Tgt <: SootCFG[Tgt,Node], Node <: Unit] extends ControlFlowGraph[Tgt,Node] {
+abstract class SootCFG[Tgt <: SootCFG[Tgt,Node], Node <: Block] extends ControlFlowGraph[Tgt,Node] {
   import scala.collection.JavaConversions._
 
   protected val body: Body
@@ -61,7 +60,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt,Node], Node <: Unit] extends ControlFl
     // tag the method
     val localsList = body.getLocals().toIndexedSeq  map { _.getName() }
     for ((unit, prop) <- ann) {
-      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
+      unit.getHead().addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
     }
 
     // generate output with tag
@@ -85,7 +84,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt,Node], Node <: Unit] extends ControlFl
 
     // remove annotations
     for ((unit, prop) <- ann)
-      unit.removeAllTags()
+      unit.getHead().removeAllTags()
     lines.mkString("\n")
   }
 

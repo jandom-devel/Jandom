@@ -27,6 +27,7 @@ import it.unich.sci.jandom.domains.PPLProperty
 import it.unich.sci.jandom.domains.PPLDomain
 import it.unich.sci.jandom.domains.PPLBoxDouble
 import scala.collection.mutable.ArrayStack
+import java.io.PrintWriter
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -68,8 +69,8 @@ class JVMSootSuite extends FunSuite {
 
   test("Jimple analysis") {
     val tests = Seq(
-      "sequential" -> "v0 == 0 && v1 == 10 && v2 == 10",
-      "conditional" -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3",
+   //   "sequential" -> "v0 == 0 && v1 == 10 && v2 == 10",
+  //    "conditional" -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3",
       "loop" -> "v0 >= 10 && v0 <= 11",
       "nested" -> "v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2",
       // "longassignment" -> "true",  unsupported bytecode
@@ -77,6 +78,7 @@ class JVMSootSuite extends FunSuite {
 
     val params = new Parameters[JimpleMethod] {
       val domain = JVMSootSuite.this.domain
+      debugWriter = new PrintWriter(System.err)
     }
     for ((methodName, propString) <- tests) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
@@ -84,6 +86,7 @@ class JVMSootSuite extends FunSuite {
       val env = Environment()
       val parser = new NumericalPropertyParser(env)
       val prop = parser.parseProperty(propString, domain).get
+      params.debugWriter.flush()
       assert(ann(method.lastPP.get) === prop, s"In the analysis of ${methodName}")
     }
   }

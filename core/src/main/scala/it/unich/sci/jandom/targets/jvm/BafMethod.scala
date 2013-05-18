@@ -40,14 +40,14 @@ import soot.toolkits.graph._
  * @param method the method we want to analyze
  * @author Gianluca Amato
  */
-class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Unit] {
+class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Block] {
   import scala.collection.JavaConversions._
 
   type DomainBase = JVMEnvDomain
 
   val body = Baf.v().newBody(method.retrieveActiveBody())
-  val graph = new ExceptionalUnitGraph(body)
-  val lastPP = Some(body.getUnits().getLast())
+  val graph = new ExceptionalBlockGraph(body)
+  val lastPP = Some(graph.getTails().get(0))
 
   private val envMap = body.getLocals().zipWithIndex.toMap
 
@@ -55,32 +55,32 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Unit] {
    * @note In developing this method we are assuming that, if a unit has a fall-through, it is the first
    * successor returned by `getSuccsOf`.
    */
-  protected def analyzeBlock(params: Parameters)(node: Unit, prop: params.Property): Seq[params.Property] = {
+  protected def analyzeBlock(params: Parameters)(node: Block, initprop: params.Property): Seq[params.Property] = {
     var exits = Seq[params.Property]()
-    val fallProp = prop.clone
+    var currprop = initprop.clone
 
     def analyzeIf(op: AtomicCond.ComparisonOperators.Value) = {
-      val jumpProp = prop.clone
+      val jumpProp = currprop.clone
       jumpProp.if_icmp(op)
       exits :+= jumpProp
-      fallProp.if_icmp(AtomicCond.ComparisonOperators.opposite(op))
+      currprop.if_icmp(AtomicCond.ComparisonOperators.opposite(op))
     }
 
-    node match {
+    for (unit <- node.iterator()) unit match {
       case unit: PushInst =>
         unit.getConstant() match {
-          case i: IntConstant => fallProp.ipush(i.value)
+          case i: IntConstant => currprop.ipush(i.value)
         }
       case unit: AddInst =>
-        fallProp.iadd
+        currprop.iadd
       case unit: IncInst =>
         unit.getConstant() match {
-          case i: IntConstant => fallProp.iinc(envMap(unit.getLocal), i.value)
+          case i: IntConstant => currprop.iinc(envMap(unit.getLocal), i.value)
         }
       case unit: StoreInst =>
-        fallProp.istore(envMap(unit.getLocal))
+        currprop.istore(envMap(unit.getLocal))
       case unit: LoadInst =>
-        fallProp.iload(envMap(unit.getLocal))
+        currprop.iload(envMap(unit.getLocal))
       case unit: IfCmpLeInst =>
         analyzeIf(AtomicCond.ComparisonOperators.LTE)
       case unit: IfCmpLtInst =>
@@ -94,12 +94,12 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Unit] {
       case unit: IfCmpNeInst =>
         analyzeIf(AtomicCond.ComparisonOperators.NEQ)
       case unit: GotoInst =>
-        exits :+= fallProp
+        exits :+= currprop
       case unit: ReturnVoidInst =>
       case unit: Inst =>
         throw UnsupportedBafByteCodeException(unit)
     }
-    if (node.fallsThrough) exits +:= fallProp
+    if (node.getTail().fallsThrough) exits +:= currprop
     exits
   }
 }

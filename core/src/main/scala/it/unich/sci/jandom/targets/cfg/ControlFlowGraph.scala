@@ -33,7 +33,7 @@ import soot.util.Chain
  * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
  * @author Gianluca Amato <gamato@unich.it>
  */
-abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt,Node],Node] extends Target[Tgt] {
+abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extends Target[Tgt] {
 
   /**
    * The `ProgramPoint` type is defined as an alias for the `Node`. We are wondering whether to make
@@ -89,9 +89,9 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt,Node],Node] extends 
       params.log("result " + (graph.getSuccsOf(node) zip result).mkString(" ; ") + "\n")
       for ((succ, out) <- graph.getSuccsOf(node) zip result) {
         annEdge((node, succ)) = out
-        if (graph.getPredsOf(succ).length>1 &&  (ann contains succ)) {
+        if (graph.getPredsOf(succ).length > 1 && (ann contains succ)) {
           params.log(s"join $succ : ${ann(succ)} with $out")
-          val succval: params.Property = if (ordering.lteq(succ,node)) {
+          val succval: params.Property = if (ordering.lteq(succ, node)) {
             params.log(s" widening")
             val widening = params.wideningFactory(node)
             widening(ann(succ), out)
@@ -124,9 +124,9 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt,Node],Node] extends 
         val newinput = graph.getPredsOf(succ) map { annEdge(_, succ) } reduce { _ union _ }
         params.log(s"narrow $succ : ${ann(succ)} with $newinput ")
         // this may probably cause an infinite loop
-        val succval = if (ordering.lteq(succ,node)) {
+        val succval = if (ordering.lteq(succ, node)) {
           val narrowing = params.narrowingFactory(node)
-          narrowing(ann(succ),newinput)
+          narrowing(ann(succ), newinput)
         } else
           newinput
         params.log(s"result $succval\n")
