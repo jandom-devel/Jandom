@@ -51,7 +51,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
   type DomainBase = NumericalDomain
 
   val body = method.retrieveActiveBody()
-  val graph = new ExceptionalBlockGraph(body)
+  val graph = new soot.jandom.BigBlockGraph(body)
   val lastPP = Some(graph.getTails().get(0))
 
   private val envMap = body.getLocals().zipWithIndex.toMap
