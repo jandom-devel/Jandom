@@ -1,5 +1,5 @@
 /* Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,5 +40,5 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
     ParameterValue(new PPLDomain[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double (using reflection)."),
     ParameterValue(new PPLDomain[Octagonal_Shape_double], "PPL Octagon_Shape_double", "PPL based implementation of Octagon over double (using reflection)."),
     ParameterValue(new PPLDomain[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using reflection)."))
-  val default = values.last.value
+  val default = values.last
 }

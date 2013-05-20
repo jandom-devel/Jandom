@@ -46,5 +46,5 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
     ParameterValue(PPLPropertyMacros[Octagonal_Shape_double], "PPL Octagonal_Shape_double", "PPL based implementation of Octagon over double (using macros)."),
     ParameterValue(PPLPropertyMacros[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using macros).")
     )
-  val default = values.last.value
+  val default = values.last
 }

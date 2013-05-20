@@ -31,7 +31,7 @@ import it.unich.sci.jandom.ui.WideningScopes
 class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
   def enumConverter(e: Enumeration) = singleArgConverter(e.withName(_))
   // we need to factour out common code here
-  val wideningScope = opt[WideningScope.Value]("widening", default = Some(WideningScopes.default))(enumConverter(WideningScope))
-  val narrowingStrategy = opt[NarrowingStrategy.Value]("narrowing", default = Some(NarrowingStrategies.default))(enumConverter(NarrowingStrategy))
+  val wideningScope = opt[WideningScope.Value]("widening", default = Some(WideningScopes.default.value))(enumConverter(WideningScope))
+  val narrowingStrategy = opt[NarrowingStrategy.Value]("narrowing", default = Some(NarrowingStrategies.default.value))(enumConverter(NarrowingStrategy))
   val file = opt[String]("input", required = true)
 }

@@ -69,6 +69,7 @@ class ParametersPane extends GridBagPanel {
     }
     val comboBox = new ComboBox(pe.values: Seq[ParameterValue[_]]) {
       renderer = ParameterRenderer
+      selection.item = pe.default
     }
     layout(label) = new Constraints(0, row, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
       GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0)

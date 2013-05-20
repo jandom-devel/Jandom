@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@ import it.unich.sci.jandom.targets.WideningScope._
 /**
  * The ParameterEnumeration for WideningScope.
  */
-object WideningScopes extends ParameterEnumeration[Value] {  
+object WideningScopes extends ParameterEnumeration[Value] {
   val name = "Widening Scope"
   val description = "The Widening scope"
   val values = Seq(
@@ -31,5 +31,5 @@ object WideningScopes extends ParameterEnumeration[Value] {
       ParameterValue(BackEdges, "Back Edges", "The widening is applied at the input back edges"),
       ParameterValue(Random, "Localized", "The widening is applied like in Random (a variant of Back Edge)")
       )
-  val default = Random
+  val default = values(2)
 }

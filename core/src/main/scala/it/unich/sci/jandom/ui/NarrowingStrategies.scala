@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,5 +32,5 @@ object NarrowingStrategies extends ParameterEnumeration[Value] {
 		ParameterValue(Restart, "Restart", "Localized narrowing with Restart strategy, as described in the paper submitted to SAS 2013."),
 		ParameterValue(Continue, "Continue", "Localized narrowing with Continue strategy, as described in the paper submitted to SAS 2013.")
 	    )
-	val default = Separate
+	val default = values(1)
 }
