@@ -1,24 +1,23 @@
-/* Soot - a J*va Optimization Framework
- * Copyright (C) 1999 Patrice Pominville, Raja Vallee-Rai
+/**
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+ * JANDOM is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ * JANDOM is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 59 Temple Place - Suite 330,
- * Boston, MA 02111-1307, USA.
+ * You should have received a copy of the GNU General Public License
+ * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 /*
- * Modified by the Sable Research Group and others 1997-2003.
+ * Derived from work by the Sable Research Group and others 1997-2003.
  * See the 'credits' file distributed with Soot for the complete list of
  * contributors.  (Soot is distributed at http://www.sable.mcgill.ca/soot)
  */
@@ -31,52 +30,41 @@ import soot.*;
 import soot.util.Chain;
 import soot.toolkits.graph.*;
 
+
 /**
- * <p>
- * Represents the control flow graph of a {@link Body} at the basic block level.
- * Each node of the graph is a {@link Block} while the edges represent the flow
- * of control from one basic block to the next.
- * </p>
+ *  <p>
+ *  Represents the control flow graph of a {@link Body} at the basic
+ *  block level. Each node of the graph is a {@link Block} while the
+ *  edges represent the flow of control from one basic block to
+ *  the next.</p>
  *
- * <p>
- * This is an abstract base class for different variants of {@link BlockGraph},
- * where the variants differ in how they analyze the control flow between
- * individual units (represented by passing different variants of
- * {@link UnitGraph} to the <code>BlockGraph</code> constructor) and in how they
- * identify block leaders (represented by overriding <code>BlockGraph</code>'s
- * definition of {@link computeLeaders()}.
+ *  <p> This is an abstract base class for different variants of
+ *  {@link BigBlockGraph}, where the variants differ in how they
+ *  analyze the control flow between individual units (represented
+ *  by passing different variants of {@link UnitGraph} to the
+ *  <code>BlockGraph</code> constructor) and in how they identify
+ *  block leaders (represented by overriding <code>BlockGraph</code>'s
+ *  definition of {@link computeLeaders()}.</p>
+ *
+ *  <p>The difference with {@link BlockGraph} is that it allows (and
+ *  builds by default) bigger blocks, in that a jump instruction is
+ *  not required to end a  {@link Block}.
  */
-public class BigBlockGraph extends BlockGraph {
 
-
-
-    /**
-     *  Constructs a {@link BigBlockGraph} from a given {@link Body}.
-     *
-     *   <p> Note that this constructor builds a {@link
-     *   BriefUnitGraph} internally when splitting <tt>body</tt>'s
-     *   {@link Unit}s into {@link Block}s.  Callers who already have
-     *   a {@link BriefUnitGraph} to hand can use the constructor
-     *   taking a <tt>CompleteUnitGraph</tt> as a parameter, as a
-     *   minor optimization.
-     *
-     *  @param body the {@link Body} for which to build a graph.
-     */
-    public  BigBlockGraph(Body body) {
-        this(new ExceptionalUnitGraph(body));
-    }
+public abstract class BigBlockGraph extends BlockGraph {
 
     /**
-     *  Constructs a {@link BriefBlockGraph} representing the
-     *  <tt>Unit</tt>-level control flow represented by the passed
-     *  {@link BriefUnitGraph}.
+     *  Create a <code>BigBlockGraph</code> representing at the basic block
+     *  level the control flow specified, at the <code>Unit</code> level,
+     *  by a given {@link UnitGraph}.
      *
-     *  @param unitGraph the {@link Body} for which to build a graph.
+     *   @param unitGraph  A representation of the control flow at
+     *                     the level of individual {@link Unit}s.
      */
-    public BigBlockGraph(UnitGraph unitGraph) {
-        super(unitGraph);
-        soot.util.PhaseDumper.v().dumpGraph(this, mBody);
-    }
+	 protected BigBlockGraph(UnitGraph unitGraph)
+	 {
+		 super(unitGraph);
+     }
 
 	/**
 	 * <p>
@@ -90,20 +78,9 @@ public class BigBlockGraph extends BlockGraph {
 	 *
 	 * <ul>
 	 *
-	 * <li>Any <code>Unit</code> which has zero predecessors (e.g. the
-	 * <code>Unit</code> following a return or unconditional branch) or more
-	 * than one predecessor (e.g. a merge point).</li>
-	 *
-	 * <li><code>Unit</code>s which are the target of any branch (even if they
-	 * have no other predecessors and the branch has no other successors, which
-	 * is possible for the targets of unconditional branches or degenerate
-	 * conditional branches which both branch and fall through to the same
-	 * <code>Unit</code>).</li>
-	 *
-	 * <li>All successors of any <code>Unit</code> which has more than one
-	 * successor (this includes the successors of <code>Unit</code>s which may
-	 * throw an exception that gets caught within the <code>Body</code>, as well
-	 * the successors of conditional branches).</li>
+	 * <li>Any <code>Unit</code> which has zero predecessors or is the target of
+	 * a jump. (We should check the case when the target of a conditional jump is
+	 * the fall-through node).
 	 *
 	 * <li>The first <code>Unit</code> in any <code>Trap</code> handler.
 	 * (Strictly speaking, if <code>unitGraph</code> were a
@@ -170,6 +147,13 @@ public class BigBlockGraph extends BlockGraph {
 	 * <code>unitGraph</code>, and defines as tails the blocks which end with
 	 * <code>Unit</code>s which are tails in <code>unitGraph</code>. Subclasses
 	 * might override this behavior.
+	 * </p>
+	 *
+	 * <p>
+	 * Differently from the {@link BlockGraph} variant, we allow a jump not to
+	 * end a BasicBlock, since we scan the entire block for jumps, not only its
+	 * last {@link Unit}.
+	 *
 	 *
 	 * @param leaders
 	 *            Contains <code>Unit</code>s which are to be block leaders.
@@ -354,8 +338,8 @@ public class BigBlockGraph extends BlockGraph {
 	 *            will add the newly created block to this list.
 	 * @param unitToBlock
 	 *            A map from units to blocks. <code>addBlock()</code> will add
-	 *            mappings from <code>head</code> and <code>tail</code> to the
-	 *            new block
+	 *            mappings from all the units betweend <code>head</code> and
+	 *            <code>tail</code> to the new block.
 	 */
 	private void addBlock(Unit head, Unit tail, int index, int length,
 			List<Block> blockList, Map<Unit, Block> unitToBlock) {
