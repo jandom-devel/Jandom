@@ -52,7 +52,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
 
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.BriefBigBlockGraph(body)
-  val lastPP = Some(graph.getTails().get(0))
+  BlockGraphConverter.addStartStopNodesTo(graph)
 
   private val envMap = body.getLocals().zipWithIndex.toMap
 
@@ -216,11 +216,15 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
       case unit: NopStmt =>
       case unit: RetStmt =>
       case unit: ReturnStmt =>
+        // the successor of a return unit is the fake final node
+        exits :+= currprop
       case unit: ReturnVoidStmt =>
+        // the successor of a return unit is the fake final node
+        exits :+= currprop
       case unit: TableSwitchStmt =>
       case unit: ThrowStmt =>
     }
-    if (node.getTail.fallsThrough()) exits +:= currprop
+    if (node.getTail==null || node.getTail.fallsThrough()) exits +:= currprop
     exits
   }
 }

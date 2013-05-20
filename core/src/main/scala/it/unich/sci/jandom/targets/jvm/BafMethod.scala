@@ -47,7 +47,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Block] {
 
   val body = Baf.v().newBody(method.retrieveActiveBody())
   val graph = new ExceptionalBlockGraph(body)
-  val lastPP = Some(graph.getTails().get(0))
+  BlockGraphConverter.addStartStopNodesTo(graph)
 
   private val envMap = body.getLocals().zipWithIndex.toMap
 
@@ -96,10 +96,11 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Block] {
       case unit: GotoInst =>
         exits :+= currprop
       case unit: ReturnVoidInst =>
+        exits :+= currprop
       case unit: Inst =>
         throw UnsupportedBafByteCodeException(unit)
     }
-    if (node.getTail().fallsThrough) exits +:= currprop
+    if (node.getTail==null || node.getTail.fallsThrough()) exits +:= currprop
     exits
   }
 }

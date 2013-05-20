@@ -35,13 +35,14 @@ import soot.toolkits.graph.Block
  * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
  * @author Gianluca Amato <gamato@unich.it>
  */
-abstract class SootCFG[Tgt <: SootCFG[Tgt,Node], Node <: Block] extends ControlFlowGraph[Tgt,Node] {
+abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block] extends ControlFlowGraph[Tgt, Node] {
   import scala.collection.JavaConversions._
 
   protected val body: Body
 
   // we need lazy vals because the body has not yet been initialized when these instructions
   // are executed
+  lazy val lastPP = Some(graph.getTails().get(0))
   lazy val size = body.getLocalCount()
   lazy val ordering = new Ordering[Node] {
     val order = new PseudoTopologicalOrderer[Node].newList(graph, false).zipWithIndex.toMap
@@ -58,9 +59,9 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt,Node], Node <: Block] extends ControlF
    */
   def mkString[D <: AbstractProperty[D]](ann: Annotation[ProgramPoint, D]): String = {
     // tag the method
-    val localsList = body.getLocals().toIndexedSeq  map { _.getName() }
-    for ((unit, prop) <- ann) {
-      unit.getHead().addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
+    val localsList = body.getLocals().toIndexedSeq map { _.getName() }
+    for ((node, prop) <- ann; unit = node.getHead; if unit != null) {
+      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
     }
 
     // generate output with tag
@@ -83,9 +84,14 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt,Node], Node <: Block] extends ControlF
     }
 
     // remove annotations
-    for ((unit, prop) <- ann)
-      unit.getHead().removeAllTags()
-    lines.mkString("\n")
+    for ((node, prop) <- ann; unit = node.getHead; if unit != null)
+      unit.removeAllTags()
+
+    val outLine = if (ann contains lastPP.get)
+      "/* Output: " + ann(lastPP.get) + "*/\n"
+    else
+      ""
+    lines.mkString("", "\n", "\n") + outLine
   }
 
   /**
