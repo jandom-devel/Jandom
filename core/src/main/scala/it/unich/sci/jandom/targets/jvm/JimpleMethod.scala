@@ -18,15 +18,15 @@
 
 package it.unich.sci.jandom.targets.jvm
 
-import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import it.unich.sci.jandom.domains.ObjectNumericalDomain
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.targets.linearcondition._
+
 import soot._
 import soot.baf._
 import soot.jimple._
 import soot.toolkits.graph._
-import it.unich.sci.jandom.domains.ObjectNumericalDomain
 
 /**
  * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library. It is
@@ -48,6 +48,8 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
   BlockGraphConverter.addStartStopNodesTo(graph)
 
   private val envMap = body.getLocals().zipWithIndex.toMap
+
+  def topProperty(node: Block, params: Parameters): params.Property = params.domain.full(body.getLocalCount())
 
   /**
    * Convert a `Value` into a LinearCond.

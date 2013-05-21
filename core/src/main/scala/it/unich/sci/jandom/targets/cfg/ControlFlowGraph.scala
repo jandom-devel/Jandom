@@ -70,15 +70,24 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
   protected def analyzeBlock(params: Parameters)(node: Node, prop: params.Property): Seq[params.Property]
 
   /**
+   * This method returns the top property for a given node in the CFG
+   * @param node the node for which the top element should be determined
+   * @param params parameters of the analysis
+   */
+  protected def topProperty(node: Node, params: Parameters): params.Property
+
+  /**
    * The analyzer.  At the moment, it implements a work-list based analysis.
    */
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     import scala.collection.JavaConversions._
 
     val ann = getAnnotation[params.Property]
+    // initialize heads of the CFG with top elements
+    for (node <- graph.getHeads) ann(node) = topProperty(node, params)
+
     val annEdge = HashMap[Edge, params.Property]()
     val taskList = Queue[ProgramPoint](graph.getHeads: _*)
-    for (node <- graph.getHeads) ann(node) = params.domain.full(size)
 
     // ASCENDING phase
     params.log("Ascening Phase\n")

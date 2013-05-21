@@ -51,6 +51,8 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Block] {
 
   private val envMap = body.getLocals().zipWithIndex.toMap
 
+  def topProperty(node: Block, params: Parameters): params.Property = params.domain.full(body.getLocalCount())
+
   /**
    * @note In developing this method we are assuming that, if a unit has a fall-through, it is the first
    * successor returned by `getSuccsOf`.
