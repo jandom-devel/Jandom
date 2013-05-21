@@ -63,4 +63,10 @@ abstract class JVMEnv[Property <: JVMEnv[Property]] extends AbstractProperty[Pro
  */
 abstract class JVMEnvDomain extends AbstractDomain {
   type Property <: JVMEnv[Property]
+
+  /**
+   * Returns the top elements for the given number of locals
+   * @param numLocal number of locals in the frame
+   */
+  def full(numLocals: Int): Property
 }

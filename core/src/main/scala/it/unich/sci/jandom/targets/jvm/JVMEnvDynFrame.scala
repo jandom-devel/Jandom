@@ -167,6 +167,12 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
 
   override def toString =
     "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
+
+  def isTop = false
+
+  def isBottom = false
+
+  def isEmpty = property.isEmpty
 }
 
 /**

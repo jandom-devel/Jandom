@@ -104,6 +104,12 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
 
   override def toString =
     mkString((0 until maxLocals) map { i => "i" + i }).mkString(",")
+
+  def isTop = false
+
+  def isBottom = false
+
+  def isEmpty = property.isEmpty
 }
 
 /**

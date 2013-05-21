@@ -18,27 +18,20 @@
 
 package it.unich.sci.jandom.domains.objects
 
-/**
- * This is the class for object properties of the top domain. There is a single `ObjectTop`
- */
-case class ObjectTop() extends ObjectProperty[ObjectTop] {
-  def tryCompareTo[B >: ObjectTop](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
-    case other: ObjectTop => Some(0)
-    case _ => None
-  }
-  def widening(that: ObjectTop) = this
-  def union(that: ObjectTop) = this
-  def narrowing(that: ObjectTop) = this
-  def intersection(that: ObjectTop) = this
-  def mkString(vars: IndexedSeq[String]): Seq[String] = Seq("top")
-}
+import it.unich.sci.jandom.domains._
 
 /**
- * The most abstract object domain.
+ * @author Gianluca Amato <gamato@unich.it>
+ *
+ */
+class ObjectTop extends TopLike[ObjectTop] with ObjectProperty[ObjectTop]
+
+/**
+ * The most abstract domain for object analysis.
  * @author Gianluca Amato <gamato@unich.it>
  */
-object ObjectTopDomain extends ObjectDomain {
+object ObjectTopDomain extends ObjectDomain with WithTop with WithBottom {
   type Property = ObjectTop
-  def full(n: Int) = new Property()
-  def empty(n: Int) = new Property()
+  val top = new ObjectTop()
+  val bottom = top
 }

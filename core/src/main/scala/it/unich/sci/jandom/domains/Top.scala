@@ -16,17 +16,18 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains.objects
-
-import it.unich.sci.jandom.domains.AbstractDomain
-import it.unich.sci.jandom.domains.WithBottom
-import it.unich.sci.jandom.domains.WithTop
+package it.unich.sci.jandom.domains
 
 /**
- * This is the base for all domains which analyze objects abstractly, i.e. without
- * any semantic knowledge of their contents.
+ * This is the class for the top element of the type AbstractProperty.
+ */
+protected class TopProperty() extends TopLike[TopProperty]
+
+/**
+ * The is the top domain of type AbstractProperty.
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait ObjectDomain extends AbstractDomain with WithTop with WithBottom {
-  type Property <: ObjectProperty[Property]
+object TopDomain extends TopDomainLike {
+  type Property = TopProperty
+  val top = new TopProperty()
 }

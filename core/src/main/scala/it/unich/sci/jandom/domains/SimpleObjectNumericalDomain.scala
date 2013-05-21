@@ -25,8 +25,9 @@ import it.unich.sci.jandom.domains.numerical.NumericalDomain
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
+
 class SimpleObjectNumericalDomain (val numdom: NumericalDomain, val objdom: ObjectDomain) extends ObjectNumericalDomain {
   type Property = SimpleObjectNumericalProperty[numdom.Property, objdom.Property]
-  def full(n: Int) = new SimpleObjectNumericalProperty(numdom.full(n), objdom.full(n))
-  def empty(n: Int) = new SimpleObjectNumericalProperty(numdom.empty(n), objdom.empty(n))
+  def full(n: Int) = new SimpleObjectNumericalProperty(numdom.full(n),objdom.top)
+  def empty(n: Int) = new SimpleObjectNumericalProperty(numdom.empty(n),objdom.bottom)
 }

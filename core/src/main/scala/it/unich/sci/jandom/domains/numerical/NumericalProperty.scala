@@ -123,6 +123,18 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
   def full: Property
 
   /**
+   * @inheritdoc
+   * Returns false since, if not otherwise specified, numerical domains have no top element.
+   */
+  def isTop = false
+
+  /**
+   * @inheritdoc
+   * Returns false since, if not otherwise specified, numerical domains have no bottom element.
+   */
+  def isBottom = false
+
+  /**
    * Returns a string representation of the property.
    * @param vars an array with the name of the variables
    * @return a sequence of strings. The idea is that each string is an atomic piece of information

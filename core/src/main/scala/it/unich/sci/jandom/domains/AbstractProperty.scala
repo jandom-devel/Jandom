@@ -72,4 +72,25 @@ abstract class AbstractProperty[Property <: AbstractProperty[Property]] extends 
    */
   def mkString(vars: IndexedSeq[String]): Seq[String]
 
+  /**
+   * Returns true if this is the top element of the domain. A top element
+   * is bigger than all the other elements, is neutral for intersection and
+   * narrowing, and is absorbing for widening and union. There is a single top
+   * element in a domain, up to equality.
+   */
+  def isTop: Boolean
+
+  /**
+   * Returns true if this is the bottom element of the domain. A bottom element
+   * is smaller than all the other elements, is neutral for union and widening
+   * and is absorbing for intersection and narrowing. There is a single bottom
+   * element in a domain, up to equality.
+   */
+  def isBottom: Boolean
+
+  /**
+   * Returns true if this an empty element, i.e. it represents unreachability.
+   * If this is true, then `isBottom` is true also.
+   */
+  def isEmpty: Boolean
 }

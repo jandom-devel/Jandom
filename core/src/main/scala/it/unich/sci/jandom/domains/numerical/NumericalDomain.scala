@@ -29,8 +29,24 @@ abstract class NumericalDomain extends AbstractDomain {
 
   /**
    * @inheritdoc
-   * For numerical domains, these properties needs to be instances of
+   * For numerical domains, these properties needs to be instances of [[it.unich.sci.jandom.domains.NumericalProperty]].
    *
    */
   type Property <: NumericalProperty[Property]
+
+  /**
+   * Create an abstract property representing the full n-dimensional space.
+   * @param n the dimension of the environment space.
+   * @note `n` should be positive.
+   * @return the full n-dimensional space.
+   */
+  def full(n: Int): Property
+
+  /**
+   * Create an abstract property representing the empty n-dimensional space.
+   * @param n the dimension of the environment space.
+   * @note `n` should be positive.
+   * @return the empty n-dimensional space.
+   */
+  def empty(n: Int): Property
 }

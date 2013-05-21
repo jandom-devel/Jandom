@@ -23,6 +23,6 @@ import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.domains.objects.ObjectDomain
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
 
-abstract class ObjectNumericalDomain extends NumericalDomain with ObjectDomain {
+abstract class ObjectNumericalDomain extends NumericalDomain {
   type Property <: NumericalProperty[Property] with ObjectProperty[Property]
 }

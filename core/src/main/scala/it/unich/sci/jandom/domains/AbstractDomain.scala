@@ -20,9 +20,7 @@ package it.unich.sci.jandom.domains
 
 /**
  * The base class for all abstract domains. An abstract domain is essentially a poset. The elements
- * of this posets are values of the type `Property`. Moreover, each abstract domain is able to create and
- * full (top) element and an empty (bottom) element. Top and bottom elements depends from the dimension of
- * the environment space. This is only a temporary measure and will disappear in future versions.
+ * of this posets are values of the type `Property`.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
@@ -31,20 +29,29 @@ abstract class AbstractDomain {
    * The type of the properties created by this abstract domain.
    */
   type Property <: AbstractProperty[Property]
+}
+
+/**
+ * This trait is for domains endowed with a global top element.
+ */
+trait WithTop {
+  this: AbstractDomain =>
 
   /**
-   * Create an abstract property representing the full n-dimensional space.
-   * @param n the dimension of the environment space.
-   * @note `n` should be positive.
-   * @return the full n-dimensional space.
+   * The abstract top of the domain. We ensure that `top.isTop` is true.
+   * @author Gianluca Amato <gamato@unich.it>
    */
-  def full(n: Int): Property
+  val top: Property
+}
+
+/**
+ * This trait is for domains endowed with a global bottom element.
+ */
+trait WithBottom {
+  this: AbstractDomain =>
 
   /**
-   * Create an abstract property representing the empty n-dimensional space.
-   * @param n the dimension of the environment space.
-   * @note `n` should be positive.
-   * @return the empty n-dimensional space.
+   * The abstract top of the domain. We ensure that `bottom.isBottom` is true.
    */
-  def empty(n: Int): Property
+  val bottom: Property
 }
