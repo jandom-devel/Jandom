@@ -1,6 +1,9 @@
 package javatest;
 
-class SimpleTest {
+class A {
+}
+
+public class SimpleTest {
 	static void sequential() {
 		int x = 0;
 		int y = 10;
@@ -45,4 +48,11 @@ class SimpleTest {
 			z = 2;
 		z = z + 1;
 	}
+
+	@SuppressWarnings("unused")
+	static void objcreation() {
+		A a1 = new A();
+		A a2 = new A();
+	}
+
 }

@@ -39,16 +39,16 @@ class JVMSootSuite extends FunSuite {
   val c = scene.loadClass("javatest.SimpleTest", 1)
   c.setApplicationClass()
   val numdomain = PPLCPolyhedron
-  val domain = new SimpleObjectNumericalDomain(numdomain,ObjectTopDomain)
+  val domain = new SimpleObjectNumericalDomain(numdomain, ObjectTopDomain)
 
   test("Baf analysis with fixed frame environment") {
     val tests = Seq(
-    ("sequential", Array(0), "i0 == 10"),
-    ("conditional", Array(0), "i0 == 1"),
-    ("loop", Array(0), "i0 == 10"),
-    ("nested", Array(0, 1, -1), "i0 >= 9 && i1 == 10"),
-    // "longassignment" -> "true",  unsupported bytecode
-    ("topologicalorder", Array(0), "i0 >= 3 && i0 <= 4"))
+      ("sequential", Array(0), "i0 == 10"),
+      ("conditional", Array(0), "i0 == 1"),
+      ("loop", Array(0), "i0 == 10"),
+      ("nested", Array(0, 1, -1), "i0 >= 9 && i1 == 10"),
+      // "longassignment" -> "true",  unsupported bytecode
+      ("topologicalorder", Array(0), "i0 >= 3 && i0 <= 4"))
 
     val params = new Parameters[BafMethod] {
       val domain = new JVMEnvFixedFrameDomain(JVMSootSuite.this.numdomain)
@@ -63,7 +63,7 @@ class JVMSootSuite extends FunSuite {
       val parser = new NumericalPropertyParser(env)
       val prop = parser.parseProperty(propString, numdomain).get
       val jvmenv = new JVMEnvDynFrame(frame, ArrayStack(), prop).toJVMEnvFixedFrame
-      assert(ann(method.lastPP.get) === jvmenv , s"In the analysis of ${methodName}")
+      assert(ann(method.lastPP.get) === jvmenv, s"In the analysis of ${methodName}")
     }
   }
 
@@ -74,7 +74,8 @@ class JVMSootSuite extends FunSuite {
       "loop" -> "v0 >= 10 && v0 <= 11",
       "nested" -> "v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2",
       "longassignment" -> "v0 >= 0 && v1 <= 11 && v1 >= 10 && v2 == v2 && v3 == v3 && v4 == v4",
-      "topologicalorder" -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4")
+      "topologicalorder" -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4",
+      "objcreation" -> "v0 == v0 && v1 == v1 && v2 == v2 && v3 == v3")
 
     val params = new Parameters[JimpleMethod] {
       val domain = JVMSootSuite.this.domain
