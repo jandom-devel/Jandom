@@ -17,21 +17,11 @@
 
 package it.unich.sci.jandom.targets.jvm
 
-import java.io.PrintWriter
-import java.io.StringWriter
-
-import scala.Array.canBuildFrom
-import scala.collection.mutable.HashMap
-
-import it.unich.sci.jandom.targets.Annotation
-import it.unich.sci.jandom.targets.cfg.ControlFlowGraph
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 
 import soot._
 import soot.baf._
 import soot.jimple._
-import soot.options.Options
-import soot.tagkit.LoopInvariantTag
 import soot.toolkits.graph._
 
 /**
@@ -46,8 +36,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Block] {
   type DomainBase = JVMEnvDomain
 
   val body = Baf.v().newBody(method.retrieveActiveBody())
-  val graph = new ExceptionalBlockGraph(body)
-  BlockGraphConverter.addStartStopNodesTo(graph)
+  val graph = new soot.jandom.BriefBigBlockGraph(body)
 
   private val envMap = body.getLocals().zipWithIndex.toMap
 
@@ -102,7 +91,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod,Block] {
       case unit: Inst =>
         throw UnsupportedBafByteCodeException(unit)
     }
-    if (node.getTail==null || node.getTail.fallsThrough()) exits +:= currprop
+    if (node.getTail.fallsThrough()) exits +:= currprop
     exits
   }
 }

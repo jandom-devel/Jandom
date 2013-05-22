@@ -78,9 +78,10 @@ public abstract class BigBlockGraph extends BlockGraph {
 	 *
 	 * <ul>
 	 *
-	 * <li>Any <code>Unit</code> which has zero predecessors or is the target of
-	 * a jump. (We should check the case when the target of a conditional jump is
-	 * the fall-through node).
+	 * <li>Any <code>Unit</code> which has zero predecessors, is the target of
+	 * a jump (we should check the case when the target of a conditional jump is
+	 * the fall-through node) or a tail of the unit graph (so that returns open
+	 * a new block)
 	 *
 	 * <li>The first <code>Unit</code> in any <code>Trap</code> handler.
 	 * (Strictly speaking, if <code>unitGraph</code> were a
@@ -124,7 +125,7 @@ public abstract class BigBlockGraph extends BlockGraph {
 			List<Unit> predecessors = unitGraph.getPredsOf(u);
 			int predCount = predecessors.size();
 
-			if (predCount != 1 || predecessors.get(0) != units.getPredOf(u)) {
+			if (predCount != 1 || predecessors.get(0) != units.getPredOf(u) || unitGraph.getTails().contains(u)) {
 				leaders.add(u);
 			}
 		}

@@ -31,35 +31,20 @@ class BriefBigBlockGraphSuite extends FunSpec {
   val c = scene.loadClass("javatest.SimpleTest", 1)
   c.setApplicationClass()
 
-  describe("The BriefBigBlockGraph for the sequential method") {
-    val body = c.getMethodByName("sequential").retrieveActiveBody()
-    val graph = new BriefBigBlockGraph(body)
-    val units = body.getUnits()
-    val block = graph.getBlocks().get(0)
-
-    it("should have a single node") { assert(graph.size() === 1) }
-
-    describe("Its only node") {
-      it("should have no successors") { assert(block.getSuccs().isEmpty()) }
-      it("should have predecessors") { assert(block.getSuccs().isEmpty()) }
-      it("should have head equal to the first unit in the body") { assert(block.getHead() === units.getFirst()) }
-      it("shoudl have tail equal to the last unit in the body") { assert(block.getTail() === units.getLast()) }
-    }
-  }
-
   describe("The BriefBigBlockGraph for the nested method") {
     import scala.collection.JavaConversions._
 
     val body = c.getMethodByName("nested").retrieveActiveBody()
     val graph = new BriefBigBlockGraph(body)
     val expectedGraph = Seq(
-      (Seq(), Seq(1)),
-      (Seq(0, 3), Seq(2, 4)),
-      (Seq(1, 2), Seq(3, 2)),
-      (Seq(2), Seq(1)),
-      (Seq(1), Seq()))
+      (Seq(), Seq(4)),
+      (Seq(4), Seq(3)),
+      (Seq(3), Seq(3)),
+      (Seq(1,2), Seq(4,2)),
+      (Seq(0,3), Seq(5,1)),
+      (Seq(4), Seq()))
 
-    it("should have five nodes") { assert(graph.size() === 5) }
+    it("should have five nodes") { assert(graph.size() === 6) }
     it("should be isomorphic to the expected graph") {
       for ( (block, (preds, succs)) <- graph zip expectedGraph) {
     	  assert ( (block.getPreds() map { _.getIndexInMethod() }) === preds)
