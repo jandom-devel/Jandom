@@ -18,13 +18,12 @@
 
 package it.unich.sci.jandom.targets.jvm
 
-import it.unich.sci.jandom.domains.ObjectNumericalDomain
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.targets.linearcondition._
 
 import soot._
-import soot.baf._
 import soot.jimple._
 import soot.toolkits.graph._
 
@@ -41,7 +40,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
    * @inheritdoc
    * Here, we only handle numerical domains.
    */
-  type DomainBase = ObjectNumericalDomain
+  type DomainBase = NumericalDomain
 
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.BriefBigBlockGraph(body)
@@ -50,6 +49,36 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
   private val envMap = body.getLocals().zipWithIndex.toMap
 
   def topProperty(node: Block, params: Parameters): params.Property = params.domain.full(body.getLocalCount())
+
+  /**
+   * Convert a `Value` into a LinearForm, if possible.
+   * @param v the Value to convert.
+   * @return the corresponding linear form, or `None` if `v` is not a linear form.
+   */
+  def jimpleExprToLinearForm(v: Value): Option[Array[Double]] = {
+    val a = Array.fill(size + 1)(0.0)
+    var c = 0.0
+    v match {
+      case v: IntConstant =>
+        a(0) = v.value
+      case v: Local =>
+        a(envMap(v) + 1) = 1
+      case v: BinopExpr =>
+        val res1 = jimpleExprToLinearForm(v.getOp1())
+        val res2 = jimpleExprToLinearForm(v.getOp2())
+        (res1, res2) match {
+          case Tuple2(Some(a1), Some(a2)) =>
+            v match {
+              case v: AddExpr =>
+                for (i <- 0 to size) a(i) = a1(i) + a2(i)
+              case _ =>
+                None
+            }
+          case _ => return None
+        }
+    }
+    Some(a)
+  }
 
   /**
    * Convert a `Value` into a LinearCond.
@@ -146,50 +175,13 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
     }
   }
 
-  /**
-   * Convert a `Value` into a LinearForm, if possible.
-   * @param v the Value to convert.
-   * @return the corresponding linear form, or `None` if `v` is not a linear form.
-   */
-  def jimpleExprToLinearForm(v: Value): Option[Array[Double]] = {
-    val a = Array.fill(size + 1)(0.0)
-    var c = 0.0
-    v match {
-      case v: IntConstant =>
-        a(0) = v.value
-      case v: Local =>
-        a(envMap(v) + 1) = 1
-      case v: BinopExpr =>
-        val res1 = jimpleExprToLinearForm(v.getOp1())
-        val res2 = jimpleExprToLinearForm(v.getOp2())
-        (res1, res2) match {
-          case Tuple2(Some(a1), Some(a2)) =>
-            v match {
-              case v: AddExpr =>
-                for (i <- 0 to size) a(i) = a1(i) + a2(i)
-              case _ =>
-                None
-            }
-          case _ => return None
-        }
-    }
-    Some(a)
-  }
-
   protected def analyzeBlock(params: Parameters)(node: Block, initprop: params.Property): Seq[params.Property] = {
     var exits = Seq[params.Property]()
     var currprop = initprop
     for (unit <- node.iterator()) unit match {
       case unit: AssignStmt =>
         val local = unit.getLeftOp().asInstanceOf[Local]
-        // try to get a linear expression, otherwise analyze piecewise
-        val lf = jimpleExprToLinearForm(unit.getRightOp())
-        lf match {
-          case None =>
-            currprop = analyzeExpr(unit.getRightOp(), currprop).variableAssignment(envMap(local), currprop.dimension).delDimension(currprop.dimension)
-          case Some(a) =>
-            currprop = currprop.linearAssignment(envMap(local), a.tail, a(0))
-        }
+        currprop = analyzeExpr(unit.getRightOp(), currprop).variableAssignment(envMap(local), currprop.dimension).delDimension(currprop.dimension)
       case unit: BreakpointStmt =>
         throw new IllegalArgumentException("Invalid Jimple statement encountered")
       case unit: DefinitionStmt =>

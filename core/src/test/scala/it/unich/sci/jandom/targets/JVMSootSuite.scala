@@ -26,7 +26,6 @@ import it.unich.sci.jandom.targets.jvm._
 import soot._
 import it.unich.sci.jandom.domains.ObjectNumericalDomain
 import it.unich.sci.jandom.domains.objects.ObjectTopDomain
-import it.unich.sci.jandom.domains.SimpleObjectNumericalDomain
 import soot.options.Options
 
 /**
@@ -39,7 +38,6 @@ class JVMSootSuite extends FunSuite {
   val c = scene.loadClass("javatest.SimpleTest", 1)
   c.setApplicationClass()
   val numdomain = PPLCPolyhedron
-  val domain = new SimpleObjectNumericalDomain(numdomain, ObjectTopDomain)
 
   test("Baf analysis with fixed frame environment") {
     val tests = Seq(
@@ -78,7 +76,7 @@ class JVMSootSuite extends FunSuite {
       "objcreation" -> "v0 == v0 && v1 == v1 && v2 == v2 && v3 == v3")
 
     val params = new Parameters[JimpleMethod] {
-      val domain = JVMSootSuite.this.domain
+      val domain = JVMSootSuite.this.numdomain
       //debugWriter = new java.io.PrintWriter(System.err)
     }
     for ((methodName, propString) <- tests) {
@@ -86,7 +84,7 @@ class JVMSootSuite extends FunSuite {
       val ann = method.analyze(params)
       val env = Environment()
       val parser = new NumericalPropertyParser(env)
-      val prop = parser.parseProperty(propString, domain).get
+      val prop = parser.parseProperty(propString, numdomain).get
       //params.debugWriter.flush()
       assert(ann(method.lastPP.get) === prop, s"In the analysis of ${methodName}")
     }
