@@ -28,8 +28,7 @@ import soot._
  */
 class BriefBigBlockGraphSuite extends FunSpec {
   val scene = Scene.v()
-  scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
-  val c = scene.loadClass("SimpleTest", 1)
+  val c = scene.loadClass("javatest.SimpleTest", 1)
   c.setApplicationClass()
 
   describe("The BriefBigBlockGraph for the sequential method") {

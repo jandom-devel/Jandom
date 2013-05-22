@@ -1,3 +1,5 @@
+package javatest;
+
 class SimpleTest {
 	static void sequential() {
 		int x = 0;

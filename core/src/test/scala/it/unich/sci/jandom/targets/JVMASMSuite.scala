@@ -30,11 +30,11 @@ import it.unich.sci.jandom.targets.jvm.JVMEnvFixedFrameDomain
 import it.unich.sci.jandom.targets.jvm.AsmMethod
 import it.unich.sci.jandom.targets.jvm.UnsupportedASMByteCodeException
 
-class JVMSuite extends FunSuite {
+class JVMASMSuite extends FunSuite {
   import scala.collection.JavaConversions.asScalaBuffer
 
   test("simple method analysis") {
-    val is = new FileInputStream("examples/Java/SimpleTest.class")
+    val is = getClass().getResourceAsStream("/javatest/SimpleTest.class")
     val cr = new ClassReader(is)
     val node = new ClassNode()
     cr.accept(node, ClassReader.SKIP_DEBUG)
@@ -43,7 +43,6 @@ class JVMSuite extends FunSuite {
     val params = new Parameters[AsmMethod] {
       val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)
     }
-    println(method.toString)
     try {
       val ann = method.analyze(params)
       println(method.mkString(ann))
@@ -51,7 +50,6 @@ class JVMSuite extends FunSuite {
       case e: UnsupportedASMByteCodeException =>
         println(e.node)
     }
-
     is.close
   }
 }

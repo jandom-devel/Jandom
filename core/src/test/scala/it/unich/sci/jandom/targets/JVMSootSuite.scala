@@ -27,6 +27,7 @@ import soot._
 import it.unich.sci.jandom.domains.ObjectNumericalDomain
 import it.unich.sci.jandom.domains.objects.ObjectTopDomain
 import it.unich.sci.jandom.domains.SimpleObjectNumericalDomain
+import soot.options.Options
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -35,8 +36,7 @@ import it.unich.sci.jandom.domains.SimpleObjectNumericalDomain
  */
 class JVMSootSuite extends FunSuite {
   val scene = Scene.v()
-  scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
-  val c = scene.loadClass("SimpleTest", 1)
+  val c = scene.loadClass("javatest.SimpleTest", 1)
   c.setApplicationClass()
   val numdomain = PPLCPolyhedron
   val domain = new SimpleObjectNumericalDomain(numdomain,ObjectTopDomain)
