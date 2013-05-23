@@ -39,7 +39,8 @@ class JVMSootSuite extends FunSuite {
   c.setApplicationClass()
   val domain = PPLCPolyhedron
 
-  val bafTests = Seq(
+  test("Baf analysis with fixed frame environment") {
+    val tests = Seq(
     ("sequential", Array(0), "i0 == 10"),
     ("conditional", Array(0), "i0 == 1"),
     ("loop", Array(0), "i0 == 10"),
@@ -47,14 +48,13 @@ class JVMSootSuite extends FunSuite {
     // "longassignment" -> "true",  unsupported bytecode
     ("topologicalorder", Array(0), "i0 >= 3 && i0 <= 4"))
 
-  test("Baf analysis with fixed frame environment") {
     val params = new Parameters[BafMethod] {
       val domain = new JVMEnvFixedFrameDomain(JVMSootSuite.this.domain)
       //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
       //narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
       //debugWriter = new java.io.StringWriter
     }
-    for ((methodName, frame, propString) <- bafTests) {
+    for ((methodName, frame, propString) <- tests) {
       val method = new BafMethod(c.getMethodByName(methodName))
       val ann = method.analyze(params)
       val env = Environment()
@@ -71,12 +71,12 @@ class JVMSootSuite extends FunSuite {
       "conditional" -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3",
       "loop" -> "v0 >= 10 && v0 <= 11",
       "nested" -> "v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2",
-      //"longassignment" -> "true",  unsupported bytecode
-      "topologicalorder" -> "v0==1 && v1-v2 == -1 &&  v2 >= 3 && v2 <= 4")
+      "longassignment" -> "v0 >= 0 && v1 <= 11 && v1 >= 10 && v2 == v2 && v3 == v3 && v4 == v4",
+      "topologicalorder" -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4")
 
     val params = new Parameters[JimpleMethod] {
       val domain = JVMSootSuite.this.domain
-      //debugWriter = new PrintWriter(System.err)
+      //debugWriter = new java.io.PrintWriter(System.err)
     }
     for ((methodName, propString) <- tests) {
       val method = new JimpleMethod(c.getMethodByName(methodName))

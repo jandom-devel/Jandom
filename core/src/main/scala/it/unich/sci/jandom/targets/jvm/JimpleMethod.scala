@@ -52,7 +52,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
 
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.BriefBigBlockGraph(body)
-  BlockGraphConverter.addStartStopNodesTo(graph)
+  //BlockGraphConverter.addStartStopNodesTo(graph)
 
   private val envMap = body.getLocals().zipWithIndex.toMap
 
@@ -172,6 +172,8 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
             v match {
               case v: AddExpr =>
                 for (i <- 0 to size) a(i) = a1(i) + a2(i)
+              case _ =>
+                None
             }
           case _ => return None
         }
@@ -224,7 +226,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
       case unit: TableSwitchStmt =>
       case unit: ThrowStmt =>
     }
-    if (node.getTail==null || node.getTail.fallsThrough()) exits +:= currprop
+    if (node.getTail.fallsThrough()) exits +:= currprop
     exits
   }
 }
