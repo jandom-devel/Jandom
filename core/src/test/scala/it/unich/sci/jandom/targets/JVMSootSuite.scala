@@ -18,16 +18,15 @@
 
 package it.unich.sci.jandom.targets
 
+import scala.collection.mutable.ArrayStack
+
 import org.scalatest.FunSuite
+
 import it.unich.sci.jandom.domains.PPLCPolyhedron
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvm._
+
 import soot._
-import it.unich.sci.jandom.domains.PPLProperty
-import it.unich.sci.jandom.domains.PPLDomain
-import it.unich.sci.jandom.domains.PPLBoxDouble
-import scala.collection.mutable.ArrayStack
-import java.io.PrintWriter
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -36,8 +35,7 @@ import java.io.PrintWriter
  */
 class JVMSootSuite extends FunSuite {
   val scene = Scene.v()
-  scene.setSootClassPath(scene.defaultClassPath + ":examples/Java/")
-  val c = scene.loadClass("SimpleTest", 1)
+  val c = scene.loadClass("javatest.SimpleTest", 1)
   c.setApplicationClass()
   val domain = PPLCPolyhedron
 

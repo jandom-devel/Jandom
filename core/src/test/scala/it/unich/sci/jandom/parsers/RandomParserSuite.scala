@@ -49,31 +49,33 @@ class RandomParserSuite extends FunSuite with Checkers {
     val prog: String = """
        xyline <- function(x) {
           y = 0;
-          while (y < x) 
+          while (y < x)
     		y=y+1
       }
     """
     val env = Environment("x", "y")
     val program = SLILProgram(env, List(0),
       CompoundStmt(
-        AssignStmt(1, LinearForm.fromCoefficient[Int](0)), 
+        AssignStmt(1, LinearForm.fromCoefficient[Int](0)),
         WhileStmt(AtomicCond(new LinearForm(List(0, -1, 1)), AtomicCond.ComparisonOperators.LT),
           CompoundStmt(AssignStmt(1, new LinearForm(List(1, 0, 1)))))))
     expectResult(program) { RandomParser().parseProgram(prog).get }
   }
 
-  val dir = new File("examples/Random")
+  val resourceURL = getClass().getResource("/random")
+  val dir = new File(resourceURL.toURI())
+
   val nameFilter = new FilenameFilter() {
     def accept(dir: File, name: String) = name.endsWith(".R");
   }
   val files = dir.listFiles(nameFilter)
-  for (f <- files) {  
+  for (f <- files) {
     test("SLIL Target analyze "+f.getName()) {
       val source = scala.io.Source.fromFile(f).getLines.mkString("\n")
       val parser = RandomParser()
       parser.parseProgram(source) match {
-        case parser.Success(_,_) => 
-        case parser.NoSuccess(msg, next) => fail(msg + " in line " + next.pos.line + " column " + next.pos.column)     
+        case parser.Success(_,_) =>
+        case parser.NoSuccess(msg, next) => fail(msg + " in line " + next.pos.line + " column " + next.pos.column)
       }
     }
   }
