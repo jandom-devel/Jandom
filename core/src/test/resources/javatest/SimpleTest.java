@@ -1,6 +1,12 @@
 package javatest;
 
 class A {
+
+}
+
+class ListA {
+	ListA next;
+	A v;
 }
 
 public class SimpleTest {
@@ -53,6 +59,9 @@ public class SimpleTest {
 	static void objcreation() {
 		A a1 = new A();
 		A a2 = new A();
+		ListA l = new ListA();
+		l.v = a1;
+		a2 = l.v;
 	}
 
 }

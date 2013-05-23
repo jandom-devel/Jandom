@@ -17,7 +17,6 @@
  */
 
 package it.unich.sci.jandom.targets
-
 import scala.collection.immutable.BitSet
 import scala.collection.mutable.ArrayStack
 import org.scalatest.FunSuite
@@ -89,6 +88,32 @@ class JVMSootSuite extends FunSuite {
         val prop = parser.parseProperty(propString, numdomain).get
         val objprop = new ObjectNumericalProperty(prop, BitSet(0 until prop.dimension: _*))
         assert(ann(method.lastPP.get) === objprop, s"In the analysis of ${methodName}")
+      } finally {
+        //params.debugWriter.flush()
+      }
+    }
+  }
+
+  test("Jimple object analysis") {
+    val tests = Seq(
+      "sequential" -> "v0 == 0 && v1 == 10 && v2 == 10",
+      "conditional" -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3",
+      "loop" -> "v0 >= 10 && v0 <= 11",
+      "nested" -> "v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2",
+      "longassignment" -> "v0 >= 0 && v1 <= 11 && v1 >= 10 && v2 == v2 && v3 == v3 && v4 == v4",
+      "topologicalorder" -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4",
+      "objcreation" -> "v0 == v0 && v1 == v1 && v2 == v2 && v3 == v3"
+      )
+
+    val params = new Parameters[JimpleMethod] {
+      val domain = new PairSharingDomain()
+      //debugWriter = new java.io.PrintWriter(System.err)
+    }
+    for ((methodName, propString) <- tests) {
+      val method = new JimpleMethod(c.getMethodByName(methodName))
+      try {
+        val ann = method.analyze(params)
+        println (method.mkString(ann))
       } finally {
         //params.debugWriter.flush()
       }
