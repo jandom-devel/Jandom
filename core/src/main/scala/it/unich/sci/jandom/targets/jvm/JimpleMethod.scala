@@ -22,10 +22,11 @@ import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.targets.linearcondition._
-
 import soot._
 import soot.jimple._
 import soot.toolkits.graph._
+import it.unich.sci.jandom.domains.objects.ObjectDomain
+import it.unich.sci.jandom.domains.objects.ObjectProperty
 
 /**
  * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library. It is
@@ -40,15 +41,14 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
    * @inheritdoc
    * Here, we only handle numerical domains.
    */
-  type DomainBase = NumericalDomain
+  type DomainBase = ObjectDomain
 
   val body = method.retrieveActiveBody()
-  val graph = new soot.jandom.BriefBigBlockGraph(body)
-  //BlockGraphConverter.addStartStopNodesTo(graph)
+  val graph = new soot.jandom.UnitBlockGraph(body)
 
   private val envMap = body.getLocals().zipWithIndex.toMap
 
-  def topProperty(node: Block, params: Parameters): params.Property = params.domain.full(body.getLocalCount())
+  def topProperty(node: Block, params: Parameters): params.Property = params.domain.initial(body.getLocalCount())
 
   /**
    * Convert a `Value` into a LinearForm, if possible.
@@ -130,48 +130,47 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
    * @return the abstract end state. The last dimension of property corresponds to the
    * returned value.
    */
-  def analyzeExpr[Property <: NumericalProperty[Property]](v: Value, prop: Property): Property = {
+  def analyzeExpr[Property <: ObjectProperty[Property]](v: Value, prop: Property): Property = {
     v match {
       case v: IntConstant =>
-        prop.addDimension.constantAssignment(c = v.value)
+        prop.evalConstant(v.value)
       case v: Local =>
-        prop.addDimension.variableAssignment(m = envMap(v))
+        prop.evalVariable(envMap(v))
       case v: BinopExpr =>
         val res1 = analyzeExpr(v.getOp1(), prop)
         val res2 = analyzeExpr(v.getOp2(), res1)
         v match {
-          case v: AddExpr => res2.variableAdd()
-          case v: SubExpr => res2.variableSub()
-          case v: MulExpr => res2.variableMul()
-          case v: DivExpr => res2.variableDiv()
-          case v: RemExpr => res2.variableRem()
-          case v: ShlExpr => res2.variableShl()
-          case v: ShrExpr => res2.variableShr()
-          case v: UshrExpr => res2.variableUshr()
+          case v: AddExpr => res2.evalAdd
+          case v: SubExpr => res2.evalSub
+          case v: MulExpr => res2.evalMul
+          case v: DivExpr => res2.evalDiv
+          case v: RemExpr => res2.evalRem
+          case v: ShlExpr => res2.evalShl
+          case v: ShrExpr => res2.evalShr
+          case v: UshrExpr => res2.evalUshr
 
           // bitwise expressions (not supported yet)
-          case v: AndExpr => res2.delDimension()
-          case v: OrExpr => res2.delDimension()
-          case v: XorExpr => res2.delDimension()
+          case v: AndExpr => res2.evalBinOp
+          case v: OrExpr => res2.evalBinOp
+          case v: XorExpr => res2.evalBinOp
 
           // boolean expressions (not supported yet)
-          case v: CmpExpr => res2.delDimension()
-          case v: CmpgExpr => res2.delDimension()
-          case v: CmplExpr => res2.delDimension()
-          case v: ConditionExpr => res2.delDimension()
+          case v: CmpExpr => res2.evalBinOp
+          case v: CmpgExpr => res2.evalBinOp
+          case v: CmplExpr => res2.evalBinOp
+          case v: ConditionExpr => res2.evalBinOp
         }
       case v: UnopExpr =>
         val res = analyzeExpr(v.getOp(), prop)
         v match {
-          case v: LengthExpr => prop.addDimension
-          case v: NegExpr => prop.variableNeg()
+          case v: LengthExpr => prop.evalLength
+          case v: NegExpr => prop.evalNeg
         }
-      case v: AnyNewExpr => prop.addDimension
-      case v: InvokeExpr => prop.addDimension
-      case v: InstanceOfExpr => prop.addDimension
-      case v: CastExpr => prop.addDimension // TODO: this can be made more precise
-      case _ =>
-        throw new IllegalArgumentException("Invalid Jimple statement encountered")
+      case v: AnyNewExpr => prop.evalNew
+      case v: InvokeExpr => prop.evalNull
+      case v: InstanceOfExpr => prop.evalNull
+      case v: CastExpr => prop.evalNull // TODO: this can be made more precise
+      case v: InstanceFieldRef => prop.evalField(envMap(v.getBase().asInstanceOf[Local]), v.getField().getNumber())
     }
   }
 
@@ -180,8 +179,14 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
     var currprop = initprop
     for (unit <- node.iterator()) unit match {
       case unit: AssignStmt =>
-        val local = unit.getLeftOp().asInstanceOf[Local]
-        currprop = analyzeExpr(unit.getRightOp(), currprop).variableAssignment(envMap(local), currprop.dimension).delDimension(currprop.dimension)
+        val expr =  analyzeExpr(unit.getRightOp(), currprop)
+        unit.getLeftOp() match {
+          case local: Local =>
+            currprop = expr.assignVariable(envMap(local))
+          case field: InstanceFieldRef =>
+            val local = field.getBase().asInstanceOf[Local]
+            currprop = expr.assignField(envMap(local), field.getField().getNumber())
+        }
       case unit: BreakpointStmt =>
         throw new IllegalArgumentException("Invalid Jimple statement encountered")
       case unit: DefinitionStmt =>
@@ -197,8 +202,9 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
           case None =>
             exits :+= currprop
           case Some(c) =>
-            exits :+= c.analyze(currprop)
-            currprop = c.opposite.analyze(currprop)
+        //    exits :+= c.analyze(currprop)
+        //    currprop = c.opposite.analyze(currprop)
+            exits :+= currprop
         }
       case unit: InvokeStmt =>
       case unit: LookupSwitchStmt =>

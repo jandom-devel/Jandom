@@ -19,7 +19,6 @@
 package it.unich.sci.jandom.domains
 
 import org.scalatest.FunSpec
-import it.unich.sci.jandom.domains.objects.ObjectTopDomain
 
 /**
  * A functional specification for top domains.
@@ -27,7 +26,7 @@ import it.unich.sci.jandom.domains.objects.ObjectTopDomain
  *
  */
 class TopSuite extends FunSpec {
-  val domains = Seq(TopDomain, ObjectTopDomain)
+  val domains = Seq(TopDomain)
 
   for (dom <- domains) {
     describe("The top domain " + dom.getClass().getSimpleName()) {

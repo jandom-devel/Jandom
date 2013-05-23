@@ -18,15 +18,16 @@
 
 package it.unich.sci.jandom.targets
 
+import scala.collection.immutable.BitSet
 import scala.collection.mutable.ArrayStack
 import org.scalatest.FunSuite
 import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
+import it.unich.sci.jandom.domains.objects.ObjectNumericalDomain
+import it.unich.sci.jandom.domains.objects.ObjectNumericalProperty
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvm._
 import soot._
-import it.unich.sci.jandom.domains.ObjectNumericalDomain
-import it.unich.sci.jandom.domains.objects.ObjectTopDomain
-import soot.options.Options
+import it.unich.sci.jandom.domains.objects.PairSharingDomain
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -35,7 +36,7 @@ import soot.options.Options
  */
 class JVMSootSuite extends FunSuite {
   val scene = Scene.v()
-  val c = scene.loadClass("javatest.SimpleTest", 1)
+  val c = scene.loadClassAndSupport("javatest.SimpleTest")
   c.setApplicationClass()
   val numdomain = PPLCPolyhedron
 
@@ -65,7 +66,7 @@ class JVMSootSuite extends FunSuite {
     }
   }
 
-  test("Jimple analysis") {
+  test("Jimple numerical analysis") {
     val tests = Seq(
       "sequential" -> "v0 == 0 && v1 == 10 && v2 == 10",
       "conditional" -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3",
@@ -76,17 +77,22 @@ class JVMSootSuite extends FunSuite {
       "objcreation" -> "v0 == v0 && v1 == v1 && v2 == v2 && v3 == v3")
 
     val params = new Parameters[JimpleMethod] {
-      val domain = JVMSootSuite.this.numdomain
+      val domain = new ObjectNumericalDomain(JVMSootSuite.this.numdomain)
       //debugWriter = new java.io.PrintWriter(System.err)
     }
     for ((methodName, propString) <- tests) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
-      val ann = method.analyze(params)
-      val env = Environment()
-      val parser = new NumericalPropertyParser(env)
-      val prop = parser.parseProperty(propString, numdomain).get
-      //params.debugWriter.flush()
-      assert(ann(method.lastPP.get) === prop, s"In the analysis of ${methodName}")
+      try {
+        val ann = method.analyze(params)
+        val env = Environment()
+        val parser = new NumericalPropertyParser(env)
+        val prop = parser.parseProperty(propString, numdomain).get
+        val objprop = new ObjectNumericalProperty(prop, BitSet(0 until prop.dimension: _*))
+        assert(ann(method.lastPP.get) === objprop, s"In the analysis of ${methodName}")
+      } finally {
+        //params.debugWriter.flush()
+      }
     }
   }
+
 }

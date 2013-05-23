@@ -19,6 +19,7 @@
 package it.unich.sci.jandom.domains.objects
 
 import it.unich.sci.jandom.domains.AbstractProperty
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
 
 /**
  * This is the base trait for all properties of objects.
@@ -26,5 +27,42 @@ import it.unich.sci.jandom.domains.AbstractProperty
  *
  */
 trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractProperty[Property] {
+  this: Property =>
 
+  type Variable = Int
+
+  /**
+   * Returns number of variables in the root scope
+   */
+  def size: Int
+
+  def evalConstant(c: Int): Property
+  def evalNull: Property
+  def evalNew: Property
+  def evalVariable(v: Variable): Property
+  def evalField(v: Variable, f: Int): Property
+
+  def evalAdd: Property
+  def evalSub: Property
+  def evalMul: Property
+  def evalDiv: Property
+  def evalRem: Property
+  def evalShl: Property
+  def evalShr: Property
+  def evalUshr: Property
+  def evalBinOp: Property
+  def evalNeg: Property
+  def evalLength: Property
+
+  /**
+   * Assign a variable to another variable.
+   * @param v the destination variable.
+   */
+  def assignVariable(dst: Variable): Property
+  def assignField(dst: Variable, fieldNum: Int): Property
+
+  def isTop = false
+  def isBottom = false
+
+  override def toString: String = "[ " + (mkString(for (i <- 0 until size) yield "v" + i)).mkString(" , ") + " ]"
 }

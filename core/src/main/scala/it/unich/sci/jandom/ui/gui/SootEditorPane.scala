@@ -31,8 +31,7 @@ import it.unich.sci.jandom.targets.jvm._
 import javax.swing.KeyStroke
 import soot.Scene
 import soot.SootMethod
-import it.unich.sci.jandom.domains.objects.ObjectTopDomain
-
+import it.unich.sci.jandom.domains.objects.ObjectNumericalDomain
 
 /**
  * This is the pane used to select the class and method to analyze for
@@ -140,7 +139,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               Some(bafMethod.mkString(ann))
             case Jimple =>
               val jimpleMethod = method.asInstanceOf[JimpleMethod]
-              val params = new Parameters[JimpleMethod]{ val domain = numericalDomain }
+              val params = new Parameters[JimpleMethod]{ val domain = new ObjectNumericalDomain(numericalDomain) }
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(jimpleMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(jimpleMethod)(params.narrowingFactory)

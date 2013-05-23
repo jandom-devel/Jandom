@@ -21,12 +21,17 @@ package it.unich.sci.jandom.domains.objects
 import it.unich.sci.jandom.domains.AbstractDomain
 import it.unich.sci.jandom.domains.WithBottom
 import it.unich.sci.jandom.domains.WithTop
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
 
 /**
  * This is the base for all domains which analyze objects abstractly, i.e. without
  * any semantic knowledge of their contents.
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait ObjectDomain extends AbstractDomain with WithTop with WithBottom {
+trait ObjectDomain extends AbstractDomain {
   type Property <: ObjectProperty[Property]
+
+  def initial(numroots: Int): Property
+  def top(numroots: Int): Property
+  def bottom(numroots: Int): Property
 }
