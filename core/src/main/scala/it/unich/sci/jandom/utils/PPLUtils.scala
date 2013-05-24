@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@ import parma_polyhedra_library.Linear_Expression
 import parma_polyhedra_library.Linear_Expression_Coefficient
 import parma_polyhedra_library.Linear_Expression_Variable
 import parma_polyhedra_library.Variable
+import java.util.regex.Matcher
 
 /**
  * This is a collection of methods used by the PPL-based numerical domains.
@@ -45,13 +46,13 @@ private[jandom] object PPLUtils {
       val letter = i % ('Z'-'A' + 1)
       val number = i / ('Z'-'A' + 1)
       val pplvar = (letter+'A').toChar.toString + (if (number!=0) number + " " else " ")
-      str = str.replaceAll(pplvar, vars(i)+" ")
+      str = str.replaceAll(pplvar, Matcher.quoteReplacement(vars(i))+" ")
     }
     str.split("[ ]*,[ ]*")
   }
-      
+
   /**
-   * Converts a sequence of homogeneous and in-homogeneous coefficients into a `Linear_Expression` 
+   * Converts a sequence of homogeneous and in-homogeneous coefficients into a `Linear_Expression`
    * object.
    * @param coeff the homogeneous coefficients.
    * @param known the in-homogeneous coefficient.
