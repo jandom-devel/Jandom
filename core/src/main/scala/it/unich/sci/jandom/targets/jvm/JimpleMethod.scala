@@ -45,10 +45,11 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
 
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.UnitBlockGraph(body)
+  val locals = body.getLocals().toSeq
 
-  private val envMap = body.getLocals().zipWithIndex.toMap
+  private val envMap = locals.zipWithIndex.toMap
 
-  def topProperty(node: Block, params: Parameters): params.Property = params.domain.initial(body.getLocalCount())
+  def topProperty(node: Block, params: Parameters): params.Property = params.domain.initial(locals map { _.getType() })
 
   /**
    * Convert a `Value` into a LinearForm, if possible.
@@ -122,6 +123,27 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
     newcond
   }
 
+  def analyzeCond[Property <: ObjectProperty[Property]](v: Value, prop: Property): (Property, Property) = {
+    val lc = jimpleExprToLinearCond(v)
+    lc match {
+      case Some(lc) => prop.testLinearCondition(lc)
+      case None =>
+        v match {
+          case v: ConditionExpr =>
+            val res1 = analyzeExpr(v.getOp1(), prop)
+            val res2 = analyzeExpr(v.getOp2(), res1)
+            v match {
+              case v: GtExpr => res2.testGt
+              case v: GeExpr => res2.testGe
+              case v: LtExpr => res2.testLt
+              case v: LeExpr => res2.testLe
+              case v: EqExpr => res2.testEq
+              case v: NeExpr => res2.testNe
+            }
+        }
+    }
+  }
+
   /**
    * Analyze a `Value`.
    * @tparam Property the type of the abstract state
@@ -158,7 +180,13 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
           case v: CmpExpr => res2.evalBinOp
           case v: CmpgExpr => res2.evalBinOp
           case v: CmplExpr => res2.evalBinOp
-          case v: ConditionExpr => res2.evalBinOp
+
+          case v: GtExpr => res2.evalGt
+          case v: GeExpr => res2.evalGe
+          case v: LtExpr => res2.evalLt
+          case v: LeExpr => res2.evalLe
+          case v: EqExpr => res2.evalEq
+          case v: NeExpr => res2.evalNe
         }
       case v: UnopExpr =>
         val res = analyzeExpr(v.getOp(), prop)
@@ -179,7 +207,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
     var currprop = initprop
     for (unit <- node.iterator()) unit match {
       case unit: AssignStmt =>
-        val expr =  analyzeExpr(unit.getRightOp(), currprop)
+        val expr = analyzeExpr(unit.getRightOp(), currprop)
         unit.getLeftOp() match {
           case local: Local =>
             currprop = expr.assignVariable(envMap(local))
@@ -189,27 +217,22 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
         }
       case unit: BreakpointStmt =>
         throw new IllegalArgumentException("Invalid Jimple statement encountered")
-      case unit: DefinitionStmt =>
+      case unit: IdentityStmt =>
         throw new IllegalArgumentException("Unsupported Jimple statement")
       case unit: EnterMonitorStmt =>
       case unit: ExitMonitorStmt =>
       case unit: GotoStmt =>
         exits :+= currprop
       case unit: IfStmt =>
-        val cond = unit.getCondition
-        val lc = jimpleExprToLinearCond(cond)
-        lc match {
-          case None =>
-            exits :+= currprop
-          case Some(c) =>
-        //    exits :+= c.analyze(currprop)
-        //    currprop = c.opposite.analyze(currprop)
-            exits :+= currprop
-        }
+        val (tbranch, fbranch) = analyzeCond(unit.getCondition(), currprop)
+        exits :+= tbranch
+        currprop = fbranch
       case unit: InvokeStmt =>
       case unit: LookupSwitchStmt =>
+        throw new IllegalArgumentException("Unsupported Jimple statement")
       case unit: NopStmt =>
       case unit: RetStmt =>
+        throw new IllegalArgumentException("Unsupported Jimple statement")
       case unit: ReturnStmt =>
         // the successor of a return unit is the fake final node
         exits :+= currprop
@@ -217,7 +240,9 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
         // the successor of a return unit is the fake final node
         exits :+= currprop
       case unit: TableSwitchStmt =>
+        throw new IllegalArgumentException("Unsupported Jimple statement")
       case unit: ThrowStmt =>
+        throw new IllegalArgumentException("Unsupported Jimple statement")
     }
     if (node.getTail.fallsThrough()) exits +:= currprop
     exits

@@ -18,6 +18,8 @@
 
 package it.unich.sci.jandom.domains.objects
 
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
+
 /**
  * @author amato
  *
@@ -28,6 +30,9 @@ case class PairSharingProperty(val ps: Set[UP[Int]], val size: Int) extends Obje
 
   private def renameVariable(ps: Set[UP[Int]], newvar: Int, oldvar: Int) = ps map { _.replace(newvar, oldvar) }
   private def removeVariable(ps: Set[UP[Int]], v: Int) = ps filterNot { _.contains(v) }
+
+  def delVariable = PairSharingProperty(ps, size-1)
+  def addVariable(tpe: soot.Type) = PairSharingProperty(ps, size+1)
 
   def starUnion(ps: Set[UP[Int]], v: Int) =
     (for ( UP(l,r) <- ps; if l == v || r == v;  first = if (l == v) r else l;
@@ -47,16 +52,39 @@ case class PairSharingProperty(val ps: Set[UP[Int]], val size: Int) extends Obje
   else
    	PairSharingProperty(Set(), size+1)
 
-  def evalAdd = PairSharingProperty(ps, size - 1)
-  def evalSub = PairSharingProperty(ps, size - 1)
-  def evalMul = PairSharingProperty(ps, size - 1)
-  def evalDiv = PairSharingProperty(ps, size - 1)
-  def evalRem = PairSharingProperty(ps, size - 1)
-  def evalShl = PairSharingProperty(ps, size - 1)
-  def evalShr = PairSharingProperty(ps, size - 1)
-  def evalUshr = PairSharingProperty(ps, size - 1)
-  def evalBinOp = PairSharingProperty(ps, size - 1)
-  def evalNeg = PairSharingProperty(ps, size - 1)
+  def evalAdd = delVariable
+  def evalSub = delVariable
+  def evalMul = delVariable
+  def evalDiv = delVariable
+  def evalRem = delVariable
+  def evalShl = delVariable
+  def evalShr = delVariable
+  def evalUshr = delVariable
+  def evalBinOp = delVariable
+  def evalNeg = delVariable
+
+  def evalGt = delVariable
+  def evalGe = delVariable
+  def evalLt = delVariable
+  def evalLe = delVariable
+  def evalEq = delVariable
+  def evalNe = delVariable
+
+  def evalLinearForm(lf: Array[Double]) = PairSharingProperty(ps, size+1)
+
+  def test = {
+    val dropped = delVariable
+    (dropped, dropped)
+  }
+
+  def testGt = evalGt.test
+  def testGe = evalGe.test
+  def testLe = evalLe.test
+  def testLt = evalLt.test
+  def testEq = evalEq.test
+  def testNe = evalNe.test
+  def testLinearCondition(lc: LinearCond) = ( this, this )
+
 
   def assignVariable(dst: Int) = PairSharingProperty(renameVariable(removeVariable(ps, dst), dst, size - 1), size - 1)
   def assignField(dst: Int, fieldNum: Int) =
@@ -105,10 +133,10 @@ case class PairSharingProperty(val ps: Set[UP[Int]], val size: Int) extends Obje
 
 class PairSharingDomain extends ObjectDomain {
   type Property = PairSharingProperty
-  def top(numroots: Int) = {
-    val pairs = (for (l <- 0 until numroots; r <- l until numroots) yield UP(l, r)).toSet
-    PairSharingProperty(pairs, numroots)
+  def top(roots: Seq[soot.Type]) = {
+    val pairs = (for (l <- 0 until roots.size; r <- l until roots.size) yield UP(l, r)).toSet
+    PairSharingProperty(pairs, roots.size)
   }
-  def bottom(numroots: Int) = PairSharingProperty(Set(), numroots)
-  def initial(numroots: Int) = bottom(numroots)
+  def bottom(roots: Seq[soot.Type]) = PairSharingProperty(Set(), roots.size)
+  def initial(roots: Seq[soot.Type]) = bottom(roots)
 }

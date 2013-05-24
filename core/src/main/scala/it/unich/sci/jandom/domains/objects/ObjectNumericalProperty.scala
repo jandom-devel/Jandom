@@ -21,6 +21,10 @@ package it.unich.sci.jandom.domains.objects
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import scala.collection.immutable.BitSet
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
+import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
+import soot.PrimType
 
 /**
  * This class only represent numerical information using the NumericalProperty class N.
@@ -33,6 +37,10 @@ case class ObjectNumericalProperty[N <: NumericalProperty[N]](val prop: N, val n
       case _ => None
     }
 
+
+  def addVariable(tpe: soot.Type) = ObjectNumericalProperty(prop.addDimension, if (tpe.isInstanceOf[soot.IntegerType]) numerical + size else numerical)
+  def delVariable = ObjectNumericalProperty(prop.delDimension(), numerical - (size - 1))
+
   def size = prop.dimension
 
   def variable(n: Int) = n
@@ -41,30 +49,65 @@ case class ObjectNumericalProperty[N <: NumericalProperty[N]](val prop: N, val n
   def evalNull = ObjectNumericalProperty(prop.addDimension, numerical)
   def evalNew = evalNull
   def evalVariable(v: Int) = if (numerical contains v)
-    ObjectNumericalProperty(prop.addDimension.variableAdd(size, v), numerical + size)
+    ObjectNumericalProperty(prop.addDimension.variableAssignment(size, v), numerical + size)
   else
     ObjectNumericalProperty(prop.addDimension, numerical)
-  def evalLength = evalNull
   def evalField(v: Int, f: Int) = evalNull
 
   def assignConstant(v: Int, c: Int) = new ObjectNumericalProperty(prop.constantAssignment(v, c), numerical + v)
   def assignVariable(dst: Int) =
-    if (numerical contains (size-1))
-      new ObjectNumericalProperty(prop.variableAssignment(dst, size-1).delDimension(size-1), numerical + dst - (size-1))
+    if (numerical contains (size - 1))
+      new ObjectNumericalProperty(prop.variableAssignment(dst, size - 1).delDimension(size - 1), numerical + dst - (size - 1))
     else
       this
   def assignField(dst: Int, fieldNum: Int) = this
 
-  def evalAdd = ObjectNumericalProperty(prop.variableAdd().delDimension(), numerical - (size - 1))
-  def evalSub = ObjectNumericalProperty(prop.variableSub().delDimension(), numerical - (size - 1))
-  def evalMul = ObjectNumericalProperty(prop.variableMul().delDimension(), numerical - (size - 1))
-  def evalDiv = ObjectNumericalProperty(prop.variableDiv().delDimension(), numerical - (size - 1))
-  def evalRem = ObjectNumericalProperty(prop.variableRem().delDimension(), numerical - (size - 1))
-  def evalShl = ObjectNumericalProperty(prop.variableShl().delDimension(), numerical - (size - 1))
-  def evalShr = ObjectNumericalProperty(prop.variableShr().delDimension(), numerical - (size - 1))
-  def evalUshr = ObjectNumericalProperty(prop.variableUshr().delDimension(), numerical - (size - 1))
+  override def evalAdd = ObjectNumericalProperty(prop.variableAdd().delDimension(), numerical - (size - 1))
+  override def evalSub = ObjectNumericalProperty(prop.variableSub().delDimension(), numerical - (size - 1))
+  override def evalMul = ObjectNumericalProperty(prop.variableMul().delDimension(), numerical - (size - 1))
+  override def evalDiv = ObjectNumericalProperty(prop.variableDiv().delDimension(), numerical - (size - 1))
+  override def evalRem = ObjectNumericalProperty(prop.variableRem().delDimension(), numerical - (size - 1))
+  override def evalShl = ObjectNumericalProperty(prop.variableShl().delDimension(), numerical - (size - 1))
+  override def evalShr = ObjectNumericalProperty(prop.variableShr().delDimension(), numerical - (size - 1))
+  override def evalUshr = ObjectNumericalProperty(prop.variableUshr().delDimension(), numerical - (size - 1))
+
   def evalBinOp = ObjectNumericalProperty(prop.delDimension().delDimension().addDimension, numerical)
   def evalNeg = ObjectNumericalProperty(prop.variableNeg().delDimension(), numerical)
+  def evalLength = ObjectNumericalProperty(prop, numerical + (size - 1))
+
+  def evalGt = delVariable
+  def evalGe = delVariable
+  def evalLt = delVariable
+  def evalLe = delVariable
+  def evalEq = delVariable
+  def evalNe = delVariable
+
+  def test = {
+    val dropped = delVariable
+    (dropped, dropped)
+  }
+
+  private def testComp(op: AtomicCond.ComparisonOperators.Value) = {
+    import AtomicCond.ComparisonOperators._
+    val coeffs = Array.fill(size + 1)(0.0)
+    coeffs(size - 1) = 1.0
+    coeffs(size) = 1.0
+    val lf = LinearForm(coeffs)
+    val tbranch = ObjectNumericalProperty(AtomicCond(lf, op).analyze(prop), numerical - (size - 1) - (size - 2))
+    val fbranch = ObjectNumericalProperty(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop), numerical - (size - 1) - (size - 2))
+    (tbranch, fbranch)
+  }
+
+  def testGt = testComp(AtomicCond.ComparisonOperators.GT)
+  def testGe = testComp(AtomicCond.ComparisonOperators.GTE)
+  def testLe = testComp(AtomicCond.ComparisonOperators.LTE)
+  def testLt = testComp(AtomicCond.ComparisonOperators.LT)
+  def testEq = testComp(AtomicCond.ComparisonOperators.EQ)
+  def testNe = testComp(AtomicCond.ComparisonOperators.NEQ)
+
+  def testLinearCondition(lc: LinearCond) = (
+    ObjectNumericalProperty(lc.analyze(prop), numerical),
+    ObjectNumericalProperty(lc.opposite.analyze(prop), numerical))
 
   def union(that: ObjectNumericalProperty[N]) = {
     ObjectNumericalProperty(prop union that.prop, numerical intersect that.numerical)
@@ -98,8 +141,14 @@ case class ObjectNumericalProperty[N <: NumericalProperty[N]](val prop: N, val n
 
 class ObjectNumericalDomain(val numdom: NumericalDomain) extends ObjectDomain {
   type Property = ObjectNumericalProperty[numdom.Property]
-  def top(n: Int) = ObjectNumericalProperty(numdom.full(n), BitSet())
-  def bottom(n: Int) = ObjectNumericalProperty(numdom.empty(n), BitSet())
-  def initial(n: Int) = top(n)
+
+  private def typesToNumerical(roots: Seq[ soot.Type ]): BitSet = {
+     val indices = for ( (tpe,index) <- roots.zipWithIndex; if tpe.isInstanceOf[PrimType] ) yield index
+     BitSet(indices: _*)
+  }
+
+  def top( roots: Seq[soot.Type] ) = ObjectNumericalProperty( numdom.full(roots.size), typesToNumerical(roots))
+  def bottom (roots: Seq[soot.Type]) = ObjectNumericalProperty(numdom.empty(roots.size), typesToNumerical(roots))
+  def initial(roots: Seq[soot.Type]) = top(roots)
   def apply(prop: numdom.Property) = new ObjectNumericalProperty(prop, BitSet(0 until prop.dimension: _*))
 }

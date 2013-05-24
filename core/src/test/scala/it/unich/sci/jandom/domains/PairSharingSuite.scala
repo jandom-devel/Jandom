@@ -33,22 +33,23 @@ import it.unich.sci.jandom.domains.objects.PairSharingProperty
 class PairSharingSuite extends FunSuite {
   val dom = new PairSharingDomain()
   val size = 3
+  def types(size: Int) = Seq.fill(size)(new soot.Singletons().soot_RefType())
 
   test("Bottom element") {
-    assert ( PairSharingProperty(Set(), size) === dom.bottom(size) )
+    assert ( PairSharingProperty(Set(), size) === dom.bottom(types(size)) )
   }
 
   test("Top element") {
     val pairs = for ( i <- 0 until size; j <- i until size ) yield UP(i,j)
-	assert ( PairSharingProperty(Set(pairs: _*), size) === dom.top(size) )
+	assert ( PairSharingProperty(Set(pairs: _*), size) === dom.top(types(size)) )
   }
 
   test("Initial element is the same as bottom element") {
-    assert (dom.initial(size) === dom.bottom(size))
+    assert (dom.initial(types(size)) === dom.bottom(types(size)))
   }
 
   test("Complex operations on variables") {
-    val ps1 = dom.initial(3)
+    val ps1 = dom.initial(types(size))
     val ps2 = ps1.evalNull
     assert ( ps2 === PairSharingProperty(Set(), 4) )
     val ps3 = ps2.evalNew
@@ -68,11 +69,11 @@ class PairSharingSuite extends FunSuite {
     val ps2 = ps1.assignField(0, 1)
     assert (ps2 === PairSharingProperty(Set(UP(0,0), UP(0,1), UP(0,4), UP(1,1), UP(1,4), UP(3,3), UP(4,4)), 5))
     val ps3 = ps1.assignField(2, 1)
-    assert (ps3 === dom.bottom(5))
+    assert (ps3 === dom.bottom(types(5)))
     val ps4 = PairSharingProperty(Set(UP(0,0), UP(0,1), UP(1,1), UP(2,2)), 4)
     val ps5 = ps4.assignField(0,1)
     assert (ps5 == PairSharingProperty(Set(UP(0,0), UP(0,1), UP(1,1), UP(2,2)), 3))
-    assert (ps4.evalField(3,1) == dom.bottom(5))
+    assert (ps4.evalField(3,1) == dom.bottom(types(5)))
     assert (ps4.evalField(2,2) == ps4.evalVariable(2))
   }
 

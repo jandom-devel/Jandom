@@ -55,12 +55,20 @@ public class SimpleTest {
 		z = z + 1;
 	}
 
+	static void complexif() {
+		int x = 0;
+		int y = 0;
+		int z = 0;
+		if (2*x < y) z = 1;
+	}
+
 	@SuppressWarnings("unused")
 	static void objcreation() {
 		A a1 = new A();
 		A a2 = new A();
 		ListA l = new ListA();
 		l.v = a1;
+		l.next.next = l.next;
 		a2 = l.v;
 	}
 

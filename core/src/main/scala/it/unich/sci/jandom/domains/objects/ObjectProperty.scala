@@ -20,6 +20,8 @@ package it.unich.sci.jandom.domains.objects
 
 import it.unich.sci.jandom.domains.AbstractProperty
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
+import it.unich.sci.jandom.targets.LinearForm
 
 /**
  * This is the base trait for all properties of objects.
@@ -35,6 +37,8 @@ trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractPrope
    * Returns number of variables in the root scope
    */
   def size: Int
+
+  def delVariable: Property
 
   def evalConstant(c: Int): Property
   def evalNull: Property
@@ -54,12 +58,28 @@ trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractPrope
   def evalNeg: Property
   def evalLength: Property
 
+  def evalGt: Property
+  def evalGe: Property
+  def evalLt: Property
+  def evalLe: Property
+  def evalEq: Property
+  def evalNe: Property
+
   /**
    * Assign a variable to another variable.
    * @param v the destination variable.
    */
   def assignVariable(dst: Variable): Property
   def assignField(dst: Variable, fieldNum: Int): Property
+  def test: (Property, Property)
+  def testGt: (Property, Property)
+  def testGe: (Property, Property)
+  def testLt: (Property, Property)
+  def testLe: (Property, Property)
+  def testEq: (Property, Property)
+  def testNe: (Property, Property)
+
+  def testLinearCondition(lf: LinearCond): (Property, Property)
 
   def isTop = false
   def isBottom = false
