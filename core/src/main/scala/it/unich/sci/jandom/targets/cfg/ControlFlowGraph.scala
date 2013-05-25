@@ -93,9 +93,9 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
     params.log("Ascening Phase\n")
     while (!taskList.isEmpty) {
       val node = taskList.dequeue
-      params.log(s"node ${node} input ${ann(node)} ")
+      params.log(s"node ${node}input ${ann(node)}\n")
       val result = analyzeBlock(params)(node, ann(node))
-      params.log("result " + (graph.getSuccsOf(node) zip result).mkString(" ; ") + "\n")
+      params.log("result " +  result.mkString(",") + "\n")
       for ((succ, out) <- graph.getSuccsOf(node) zip result) {
         annEdge((node, succ)) = out
         if (graph.getPredsOf(succ).length > 1 && (ann contains succ)) {
