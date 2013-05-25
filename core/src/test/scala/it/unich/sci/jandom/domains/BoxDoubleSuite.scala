@@ -28,81 +28,93 @@ import it.unich.sci.jandom.domains.numerical.BoxDouble
  */
 class BoxDoubleSuite extends FunSuite {
 
-    test("constructors should only work with normalized bounds")  {
-      intercept[IllegalArgumentException] { BoxDouble(Array(0,2),Array(0,2,3)) }
-      intercept[IllegalArgumentException] { BoxDouble(Array(Double.PositiveInfinity,2),Array(0,2,3)) }
-    }
+  test("constructors should only work with normalized bounds") {
+    intercept[IllegalArgumentException] { BoxDouble(Array(0, 2), Array(0, 2, 3)) }
+    intercept[IllegalArgumentException] { BoxDouble(Array(Double.PositiveInfinity, 2), Array(0, 2, 3)) }
+  }
 
-    test("operations on boxes") {
-    	val i = BoxDouble(Array(1,2),Array(5,4))
-        val j = BoxDouble(Array(0,3),Array(3,4))
-        expectResult(BoxDouble(Array(0,2),Array(5,4))) { i union j }
-    	expectResult( BoxDouble(Array(1,3),Array(3,4))) { i intersection j }
-    }
+  test("operations on boxes") {
+    val i = BoxDouble(Array(1, 2), Array(5, 4))
+    val j = BoxDouble(Array(0, 3), Array(3, 4))
+    expectResult(BoxDouble(Array(0, 2), Array(5, 4))) { i union j }
+    expectResult(BoxDouble(Array(1, 3), Array(3, 4))) { i intersection j }
+  }
 
-    test("empty boxes") {
-      val i = BoxDouble(Array(-1,-2),Array(-4,3))
-      val j = BoxDouble(Array(0,0),Array(5,5))
-      expectResult(BoxDouble.empty(2)) { i }
-      expectResult(j) { i union j }
-      expectResult(i) { i intersection j }
-      expectResult(i) { i.linearAssignment(1,Array(1,1),1) }
-      expectResult(i) { i.linearAssignment(1,Array(0,0),0) }
-      intercept[IllegalArgumentException] { i.linearAssignment(-1,Array(1,1),1) }
-      intercept[IllegalArgumentException] { i.linearAssignment(2,Array(1,1),1) }
-    }
+  test("empty boxes") {
+    val i = BoxDouble(Array(-1, -2), Array(-4, 3))
+    val j = BoxDouble(Array(0, 0), Array(5, 5))
+    expectResult(BoxDouble.empty(2)) { i }
+    expectResult(j) { i union j }
+    expectResult(i) { i intersection j }
+    expectResult(i) { i.linearAssignment(1, Array(1, 1), 1) }
+    expectResult(i) { i.linearAssignment(1, Array(0, 0), 0) }
+    intercept[IllegalArgumentException] { i.linearAssignment(-1, Array(1, 1), 1) }
+    intercept[IllegalArgumentException] { i.linearAssignment(2, Array(1, 1), 1) }
+  }
 
-    test("linear inequations") {
-      val i = BoxDouble.full(2).linearInequality(Array(1,0),-3)
-      val j = BoxDouble(Array(0,0),Array(5,5)).linearInequality(Array(1,1),-4)
-      expectResult(BoxDouble(Array(Double.NegativeInfinity,Double.NegativeInfinity), Array(3,Double.PositiveInfinity))) { i }
-      expectResult(BoxDouble(Array(0,0),Array(4,4))) { j }
-    }
+  test("linear inequations") {
+    val i = BoxDouble.full(2).linearInequality(Array(1, 0), -3)
+    val j = BoxDouble(Array(0, 0), Array(5, 5)).linearInequality(Array(1, 1), -4)
+    expectResult(BoxDouble(Array(Double.NegativeInfinity, Double.NegativeInfinity), Array(3, Double.PositiveInfinity))) { i }
+    expectResult(BoxDouble(Array(0, 0), Array(4, 4))) { j }
+  }
 
-    test("disequality is supported") {
-      val i = BoxDouble.full(2).linearInequality(Array(1,0),0)
-      expectResult(i) { i.linearDisequality(Array(1,0), 0)}
-      val j = i.linearInequality(Array(-1,0), 0)
-      expectResult(BoxDouble.empty(2)) { j.linearDisequality(Array(1,0), 0)}
-      expectResult(BoxDouble.empty(2)) { j.linearDisequality(Array(0,0), 0)}
-      expectResult( j ) { j.linearDisequality(Array(0,0), 2)}
-      expectResult( j ) { j.linearDisequality(Array(1,1), 2)}
-      expectResult( j ) { j.linearDisequality(Array(1,0), 2)}
-    }
+  test("disequality is supported") {
+    val i = BoxDouble.full(2).linearInequality(Array(1, 0), 0)
+    expectResult(i) { i.linearDisequality(Array(1, 0), 0) }
+    val j = i.linearInequality(Array(-1, 0), 0)
+    expectResult(BoxDouble.empty(2)) { j.linearDisequality(Array(1, 0), 0) }
+    expectResult(BoxDouble.empty(2)) { j.linearDisequality(Array(0, 0), 0) }
+    expectResult(j) { j.linearDisequality(Array(0, 0), 2) }
+    expectResult(j) { j.linearDisequality(Array(1, 1), 2) }
+    expectResult(j) { j.linearDisequality(Array(1, 0), 2) }
+  }
 
-    test("non deterministic assignment") {
-      val i = BoxDouble(Array(0,0),Array(5,5))
-      val j = BoxDouble(Array(0,Double.NegativeInfinity), Array(5, Double.PositiveInfinity))
-      val l = BoxDouble(Array(Double.NegativeInfinity,0), Array(Double.PositiveInfinity,5))
-      expectResult (j) { i.nonDeterministicAssignment(1) }
-      expectResult (l) { i.nonDeterministicAssignment(0) }
-      intercept[IllegalArgumentException] { i.nonDeterministicAssignment(-1) }
-      intercept[IllegalArgumentException] { i.nonDeterministicAssignment(2) }
-    }
+  test("non deterministic assignment") {
+    val i = BoxDouble(Array(0, 0), Array(5, 5))
+    val j = BoxDouble(Array(0, Double.NegativeInfinity), Array(5, Double.PositiveInfinity))
+    val l = BoxDouble(Array(Double.NegativeInfinity, 0), Array(Double.PositiveInfinity, 5))
+    expectResult(j) { i.nonDeterministicAssignment(1) }
+    expectResult(l) { i.nonDeterministicAssignment(0) }
+    intercept[IllegalArgumentException] { i.nonDeterministicAssignment(-1) }
+    intercept[IllegalArgumentException] { i.nonDeterministicAssignment(2) }
+  }
 
-    test("dimensional variation") {
-      val i = BoxDouble(Array(0,0),Array(1,2))
-      val j = BoxDouble(Array(0,0,Double.NegativeInfinity),Array(1,2,Double.PositiveInfinity))
-      val h = BoxDouble(Array(0,Double.NegativeInfinity),Array(1,Double.PositiveInfinity))
-      expectResult (j) ( i.addDimension )
-      expectResult (h) ( j.delDimension(1) )
-      expectResult (i) ( j.delDimension(2) )
-      intercept[IllegalArgumentException] { i.delDimension(-1) }
-      intercept[IllegalArgumentException] { i.delDimension(2) }
-    }
+  test("dimensional variation") {
+    val i = BoxDouble(Array(0, 0), Array(1, 2))
+    val j = BoxDouble(Array(0, 0, Double.NegativeInfinity), Array(1, 2, Double.PositiveInfinity))
+    val h = BoxDouble(Array(0, Double.NegativeInfinity), Array(1, Double.PositiveInfinity))
+    expectResult(j)(i.addDimension)
+    expectResult(h)(j.delDimension(1))
+    expectResult(i)(j.delDimension(2))
+    intercept[IllegalArgumentException] { i.delDimension(-1) }
+    intercept[IllegalArgumentException] { i.delDimension(2) }
+  }
 
-    test("dimensional maps") {
-       val i = BoxDouble(Array(0,0),Array(1,2))
-       val j = BoxDouble(Array(0,0),Array(2,1))
-       val h = BoxDouble(Array(0),Array(2))
-       expectResult (j) ( i.mapDimensions(Seq(1,0)) )
-       expectResult (i) ( i.mapDimensions(Seq(0,1)) )
-       expectResult (h) ( i.mapDimensions(Seq(-1,0)) )
-    }
+  test("dimensional maps") {
+    val i = BoxDouble(Array(0, 0), Array(1, 2))
+    val j = BoxDouble(Array(0, 0), Array(2, 1))
+    val h = BoxDouble(Array(0), Array(2))
+    expectResult(j)(i.mapDimensions(Seq(1, 0)))
+    expectResult(i)(i.mapDimensions(Seq(0, 1)))
+    expectResult(h)(i.mapDimensions(Seq(-1, 0)))
+  }
 
-    test("string conversion") {
-      val i = BoxDouble(Array(0,-1), Array(2,3))
-      expectResult(Seq("0.0 <= x <= 2.0","-1.0 <= y <= 3.0")) { i.mkString(IndexedSeq("x","y")) }
-      expectResult("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
-    }
+  test("minimization/maximization") {
+    val i = BoxDouble(Array(0, 0), Array(1, 2))
+    expectResult(3)(i.maximize(Array(1, 1), 0))
+    expectResult(0)(i.minimize(Array(1, 1), 0))
+    expectResult(None)(i.frequency(Array(1, 1), 0))
+    val j = BoxDouble(Array(0, 1, 0), Array(0, 1, 1))
+    expectResult(None)(j.frequency(Array(1, 1, 1), 0))
+    expectResult(None)(j.frequency(Array(0, 0, 1), 0))
+    expectResult(Some(0))(j.frequency(Array(1, 0, 0), 0))
+    expectResult(Some(1))(j.frequency(Array(0, 1, 0), 0))
+  }
+
+  test("string conversion") {
+    val i = BoxDouble(Array(0, -1), Array(2, 3))
+    expectResult(Seq("0.0 <= x <= 2.0", "-1.0 <= y <= 3.0")) { i.mkString(IndexedSeq("x", "y")) }
+    expectResult("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
+  }
 }

@@ -36,6 +36,9 @@ case class NumericalTop (val dimension: Int) extends NumericalProperty[Numerical
   def linearAssignment(n:Int, coeff:Array[Double], known: Double) = this
   def linearInequality(coeff: Array[Double], known: Double) = this
   def linearDisequality(coeff: Array[Double], known: Double) = this
+  def minimize(coeff: Array[Double], known: Double) = Double.NegativeInfinity
+  def maximize(coeff: Array[Double], known: Double) = Double.PositiveInfinity
+  def frequency(coeff: Array[Double], known: Double) = None
   def addDimension = NumericalTopDomain.full(dimension+1)
   def delDimension(n: Int = dimension-1) = NumericalTopDomain.full(dimension-1)
   def mapDimensions(rho: Seq[Int]) = NumericalTopDomain.full(rho count { _ != -1 })

@@ -98,14 +98,51 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
    * @note Not yet implemented.
    */
   def linearDisequality(coeff: Array[Double], known: Double): PPLProperty[PPLNativeProperty] = {
-     val le = PPLUtils.toPPLLinearExpression(coeff,known)
-     val newpplobject1 = domain.copyConstructor(pplobject)
-	 val newpplobject2 = domain.copyConstructor(pplobject)
-     domain.refine_with_constraint(newpplobject1, new Constraint(le, Relation_Symbol.LESS_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
-     domain.refine_with_constraint(newpplobject2, new Constraint(le, Relation_Symbol.GREATER_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
-     domain.upper_bound_assign(newpplobject1, newpplobject2)
-  	 new PPLProperty(domain, newpplobject1)
-   }
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val newpplobject1 = domain.copyConstructor(pplobject)
+    val newpplobject2 = domain.copyConstructor(pplobject)
+    domain.refine_with_constraint(newpplobject1, new Constraint(le, Relation_Symbol.LESS_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
+    domain.refine_with_constraint(newpplobject2, new Constraint(le, Relation_Symbol.GREATER_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
+    domain.upper_bound_assign(newpplobject1, newpplobject2)
+    new PPLProperty(domain, newpplobject1)
+  }
+
+  def minimize(coeff: Array[Double], known: Double) = {
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val exact = new By_Reference[java.lang.Boolean](false)
+    val val_n = new Coefficient(0)
+    val val_d = new Coefficient(0)
+    val result = domain.minimize(pplobject, le, val_n, val_d, exact)
+    if (!result)
+      Double.NegativeInfinity
+    else
+      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
+  }
+
+  def maximize(coeff: Array[Double], known: Double) = {
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val exact = new By_Reference[java.lang.Boolean](false)
+    val val_n = new Coefficient(0)
+    val val_d = new Coefficient(0)
+    val result = domain.maximize(pplobject, le, val_n, val_d, exact)
+    if (!result)
+      Double.PositiveInfinity
+    else
+      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
+  }
+
+  def frequency(coeff: Array[Double], known: Double) = {
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val freq_n = new Coefficient(0)
+    val freq_d = new Coefficient(0)
+    val val_n = new Coefficient(0)
+    val val_d = new Coefficient(0)
+    val result = domain.frequency(pplobject, le, freq_n, freq_d, val_n, val_d)
+    if (!result)
+      None
+    else
+      Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue())
+  }
 
   def addDimension = {
     val newpplobject = domain.copyConstructor(pplobject)
@@ -124,11 +161,11 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
   def mapDimensions(rho: Seq[Int]) = {
     val newpplobject = domain.copyConstructor(pplobject)
     val pf = new Partial_Function
-    for ( (newi,i) <- rho.zipWithIndex; if newi >= 0) {
+    for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {
       pf.insert(i, newi)
     }
-    domain.map_space_dimensions(newpplobject,pf)
-    new PPLProperty(domain,newpplobject)
+    domain.map_space_dimensions(newpplobject, pf)
+    new PPLProperty(domain, newpplobject)
   }
 
   def dimension: Int = domain.space_dimension(pplobject).toInt
@@ -225,7 +262,12 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private val addSpaceDimensionsAndEmbedHandle = myClass.getMethod("add_space_dimensions_and_embed", classOf[Long])
   private val removeSpaceDimensionsHandle = myClass.getMethod("remove_space_dimensions", classOf[Variables_Set])
   private val mapSpaceDimensionsHandle = myClass.getMethod("map_space_dimensions", classOf[Partial_Function])
+  private val minimizeHandle = myClass.getMethod("minimize", classOf[Linear_Expression], classOf[Coefficient], classOf[Coefficient], classOf[By_Reference[java.lang.Boolean]])
+  private val maximizeHandle = myClass.getMethod("maximize", classOf[Linear_Expression], classOf[Coefficient], classOf[Coefficient], classOf[By_Reference[java.lang.Boolean]])
+  private val frequencyHandle = myClass.getMethod("frequency", classOf[Linear_Expression], classOf[Coefficient], classOf[Coefficient], classOf[Coefficient], classOf[Coefficient])
+
   private val narrowingAssignHandle = try {
+
     myClass.getMethod("CC76_narrowing_assign", otherClass)
   } catch {
     case _: Throwable => null
@@ -248,6 +290,13 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private[domains] def remove_space_dimensions(me: PPLNativeProperty, vars: Variables_Set) = removeSpaceDimensionsHandle.invoke(me, vars)
   private[domains] def narrowing_assign(me: PPLNativeProperty, that: PPLNativeProperty) = narrowingAssignHandle.invoke(me, that)
   private[domains] def map_space_dimensions(me: PPLNativeProperty, pf: Partial_Function) = mapSpaceDimensionsHandle.invoke(me, pf)
+  private[domains] def minimize(me: PPLNativeProperty, le: Linear_Expression, val_n: Coefficient, val_d: Coefficient, exact: By_Reference[java.lang.Boolean]) =
+    minimizeHandle.invoke(me, le, val_n, val_d, exact).asInstanceOf[java.lang.Boolean].booleanValue()
+  private[domains] def maximize(me: PPLNativeProperty, le: Linear_Expression, val_n: Coefficient, val_d: Coefficient, exact: By_Reference[java.lang.Boolean]) =
+    maximizeHandle.invoke(me, le, val_n, val_d, exact).asInstanceOf[java.lang.Boolean].booleanValue()
+  private[domains] def frequency(me: PPLNativeProperty, le: Linear_Expression, freq_n: Coefficient, freq_d: Coefficient, val_n: Coefficient, val_d: Coefficient) =
+    frequencyHandle.invoke(me, le, freq_n, freq_d, val_n, val_d).asInstanceOf[java.lang.Boolean].booleanValue()
+
   /**
    * It is true if `PPLNativeProperty` has the `CC76_narrowing_assign` method.
    */

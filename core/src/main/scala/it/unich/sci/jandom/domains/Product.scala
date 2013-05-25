@@ -25,7 +25,7 @@ import it.unich.sci.jandom.domains.numerical.NumericalProperty
 /**
  * This is the class which implements the product of two basic numerical properties. It is not a
  * real reduced product, but a cartesian product with some reduction given by transformation
- * funtions. 
+ * funtions.
  * @todo This is only a stub.
  * @author Gianluca Amato
  * @author Francesca Scozzari
@@ -35,18 +35,18 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
   extends NumericalProperty[Product[Prop1, Prop2]] {
 
   require(p1.dimension == p2.dimension)
-  
+
   type Property = Product[Prop1, Prop2]
-  
+
   def this(pair:(Prop1,Prop2)) = {
     this(pair._1,pair._2)
   }
-  
+
   def reduce(x1: Prop1, x2: Prop2) = {
     (x1,x2)
     // to be done.....
   }
-  
+
   def union(that: Property): Property = {
     val q1 = p1 union that.p1
     val q2 = p2 union that.p2
@@ -64,7 +64,7 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
     val q2 = p2 intersection that.p2
     new Product(q1, q2)
   }
-   
+
   def nonDeterministicAssignment(n: Int): Property =
     throw new IllegalAccessException("Unimplemented feature on Product")
 
@@ -75,6 +75,15 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
     throw new IllegalAccessException("Unimplemented feature on Product")
 
   def linearDisequality(coeff: Array[Double], known: Double): Property =
+    throw new IllegalAccessException("Unimplemented feature on Product")
+
+  def minimize(coeff: Array[Double], known: Double): Double =
+    throw new IllegalAccessException("Unimplemented feature on Product")
+
+  def maximize(coeff: Array[Double], known: Double): Double =
+    throw new IllegalAccessException("Unimplemented feature on Product")
+
+  def frequency(coeff: Array[Double], known: Double): Some[Double] =
     throw new IllegalAccessException("Unimplemented feature on Product")
 
   def addDimension: Property =
@@ -103,8 +112,8 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
 
   def mkString(vars: IndexedSeq[String]): Seq[String] =
     throw new IllegalAccessException("Unimplemented feature on Product")
-  
-  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = 
+
+  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
     throw new IllegalAccessException("Unimplemented feature on Product")
 }
 
@@ -115,10 +124,10 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
  * @author Francesca Scozzari
  */
 class ProductDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends NumericalDomain {
-  
+
   type Property = Product[dom1.Property, dom2.Property]
-  
+
   def full(n: Int) =    throw new IllegalAccessException("Unimplemented feature on Product")
-  
+
   def empty(n: Int) =    throw new IllegalAccessException("Unimplemented feature on Product")
 }

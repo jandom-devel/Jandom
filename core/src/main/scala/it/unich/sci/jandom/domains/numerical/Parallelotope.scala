@@ -399,6 +399,15 @@ class Parallelotope(
     throw new IllegalAccessException("Unimplemented feature")
   }
 
+  // TODO: provide a better implementation
+  def minimize(coeff: Array[Double], known: Double) = Double.NegativeInfinity
+
+  // TODO: provide a better implementation
+  def maximize(coeff: Array[Double], known: Double) = Double.PositiveInfinity
+
+  // TODO: provide a better implementation
+  def frequency(coeff: Array[Double], known: Double) = None
+
   def dimension = A.rows
 
   val isFull = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)

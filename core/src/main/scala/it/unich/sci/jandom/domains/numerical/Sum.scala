@@ -58,6 +58,15 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
   def linearDisequality(coeff: Array[Double], known: Double): Property =
     throw new IllegalAccessException("Unimplemented feature on Sum")
 
+  def minimize(coeff: Array[Double], known: Double): Double =
+    throw new IllegalAccessException("Unimplemented feature on Sum")
+
+  def maximize(coeff: Array[Double], known: Double): Double =
+    throw new IllegalAccessException("Unimplemented feature on Sum")
+
+  def frequency(coeff: Array[Double], known: Double): Some[Double] =
+    throw new IllegalAccessException("Unimplemented feature on Sum")
+
   def addDimension: Property =
     throw new IllegalAccessException("Unimplemented feature on Sum")
 
@@ -84,8 +93,8 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
 
   def mkString(vars: IndexedSeq[String]): Seq[String] =
     throw new IllegalAccessException("Unimplemented feature on Sum")
-  
-  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = 
+
+  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
     throw new IllegalAccessException("Unimplemented feature on Sum")
 }
 
@@ -96,10 +105,10 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
  * @author Francesca Scozzari
  */
 class SumDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends NumericalDomain {
-  
+
   type Property = Sum[dom1.Property, dom2.Property]
-  
+
   def full(n: Int) = throw new IllegalAccessException("Unimplemented feature on Sum")
-  
+
   def empty(n: Int) = throw new IllegalAccessException("Unimplemented feature on Sum")
 }

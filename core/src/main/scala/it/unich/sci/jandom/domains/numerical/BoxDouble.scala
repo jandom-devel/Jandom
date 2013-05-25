@@ -176,6 +176,15 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
     (newlow, newhigh)
   }
 
+  def minimize(coeff: Array[Double], known: Double) = linearEvaluation(coeff, known)._1
+
+  def maximize(coeff: Array[Double], known: Double) = linearEvaluation(coeff, known)._2
+
+  def frequency(coeff: Array[Double], known: Double) =  {
+    val (min,max) = linearEvaluation(coeff, known)
+    if (min == max) Some(min) else None
+  }
+
   /**
    * Compute the corner of the box which minimizes a linear form. We do not need the in-homogenous coefficients since it is not
    * relevant for the computation.

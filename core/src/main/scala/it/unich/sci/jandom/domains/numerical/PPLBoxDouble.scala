@@ -29,12 +29,12 @@ import parma_polyhedra_library._
  * @param pplbox an object of class `Double_Box` which is the $PPL wrapped object.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PPLBoxDouble] {
+class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPLBoxDouble] {
 
   def widening(that: PPLBoxDouble): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
     newpplbox.upper_bound_assign(that.pplbox)
-    newpplbox.CC76_widening_assign(pplbox,null)
+    newpplbox.CC76_widening_assign(pplbox, null)
     new PPLBoxDouble(newpplbox)
   }
 
@@ -57,7 +57,7 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
     new PPLBoxDouble(newpplbox)
   }
 
-  def nonDeterministicAssignment(n:Int): PPLBoxDouble = {
+  def nonDeterministicAssignment(n: Int): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
     newpplbox.unconstrain_space_dimension(new Variable(n))
     new PPLBoxDouble(newpplbox)
@@ -65,15 +65,15 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
 
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
-    newpplbox.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(coeff,known), new Coefficient(1))
+    newpplbox.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(coeff, known), new Coefficient(1))
     new PPLBoxDouble(newpplbox)
   }
 
   def linearInequality(coeff: Array[Double], known: Double): PPLBoxDouble = {
-	 val le = PPLUtils.toPPLLinearExpression(coeff,known)
-	 val newpplbox = new Double_Box(pplbox)
-	 newpplbox.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
-	 new PPLBoxDouble(newpplbox)
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val newpplbox = new Double_Box(pplbox)
+    newpplbox.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
+    new PPLBoxDouble(newpplbox)
   }
 
   /**
@@ -81,14 +81,51 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
    * @note @inheritdoc
    */
   def linearDisequality(coeff: Array[Double], known: Double): PPLBoxDouble = {
-     val le = PPLUtils.toPPLLinearExpression(coeff,known)
-     val newpplbox1 = new Double_Box(pplbox)
-	 val newpplbox2 = new Double_Box(pplbox)
-     newpplbox1.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
-     newpplbox2.refine_with_constraint(new Constraint(le, Relation_Symbol.GREATER_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
-     newpplbox1.upper_bound_assign_if_exact(newpplbox2)
-  	 new PPLBoxDouble(newpplbox1)
-   }
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val newpplbox1 = new Double_Box(pplbox)
+    val newpplbox2 = new Double_Box(pplbox)
+    newpplbox1.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
+    newpplbox2.refine_with_constraint(new Constraint(le, Relation_Symbol.GREATER_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
+    newpplbox1.upper_bound_assign_if_exact(newpplbox2)
+    new PPLBoxDouble(newpplbox1)
+  }
+
+  def minimize(coeff: Array[Double], known: Double) = {
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val exact = new By_Reference[java.lang.Boolean](false)
+    val val_n = new Coefficient(0)
+    val val_d = new Coefficient(0)
+    val result = pplbox.minimize(le, val_n, val_d, exact)
+    if (!result)
+      Double.NegativeInfinity
+    else
+      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
+  }
+
+  def maximize(coeff: Array[Double], known: Double) = {
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val exact = new By_Reference[java.lang.Boolean](false)
+    val val_n = new Coefficient(0)
+    val val_d = new Coefficient(0)
+    val result = pplbox.maximize(le, val_n, val_d, exact)
+    if (!result)
+      Double.NegativeInfinity
+    else
+      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
+  }
+
+  def frequency(coeff: Array[Double], known: Double) = {
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val freq_n = new Coefficient(0)
+    val freq_d = new Coefficient(0)
+    val val_n = new Coefficient(0)
+    val val_d = new Coefficient(0)
+    val result = pplbox.frequency(le, freq_n, freq_d, val_n, val_d)
+    if (!result)
+      None
+    else
+      Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue())
+  }
 
   def addDimension: PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
@@ -107,7 +144,7 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
   def mapDimensions(rho: Seq[Int]) = {
     val newpplbox = new Double_Box(pplbox)
     val pf = new Partial_Function
-    for ( (newi,i) <- rho.zipWithIndex; if newi >= 0) {
+    for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {
       pf.insert(i, newi)
     }
     newpplbox.map_space_dimensions(pf)
@@ -120,16 +157,14 @@ class PPLBoxDouble(private val pplbox : Double_Box) extends NumericalProperty[PP
 
   def isFull: Boolean = pplbox.is_universe
 
-  def empty()  = PPLBoxDouble.empty(pplbox.space_dimension.toInt)
+  def empty() = PPLBoxDouble.empty(pplbox.space_dimension.toInt)
 
-  def full()  = PPLBoxDouble.full(pplbox.space_dimension.toInt)
+  def full() = PPLBoxDouble.full(pplbox.space_dimension.toInt)
 
-  def tryCompareTo [B >: PPLBoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
+  def tryCompareTo[B >: PPLBoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLBoxDouble =>
-      if (pplbox==other.pplbox) Some(0)  else
-        if (pplbox strictly_contains other.pplbox) Some(1) else
-          if (other.pplbox strictly_contains pplbox) Some(-1)
-          	else None
+      if (pplbox == other.pplbox) Some(0) else if (pplbox strictly_contains other.pplbox) Some(1) else if (other.pplbox strictly_contains pplbox) Some(-1)
+      else None
     case _ => None
   }
 
@@ -154,7 +189,7 @@ object PPLBoxDouble extends NumericalDomain {
 
   def full(n: Int): PPLBoxDouble = {
     val pplbox = new Double_Box(n, Degenerate_Element.UNIVERSE)
-	new PPLBoxDouble(pplbox)
+    new PPLBoxDouble(pplbox)
   }
 
   def empty(n: Int): PPLBoxDouble = {

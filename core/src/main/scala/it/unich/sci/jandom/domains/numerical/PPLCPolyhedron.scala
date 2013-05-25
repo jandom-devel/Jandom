@@ -19,7 +19,6 @@
 package it.unich.sci.jandom.domains.numerical
 
 import it.unich.sci.jandom.utils.PPLUtils
-
 import parma_polyhedra_library.C_Polyhedron
 import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Constraint
@@ -29,6 +28,7 @@ import parma_polyhedra_library.Partial_Function
 import parma_polyhedra_library.Relation_Symbol
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variables_Set
+import parma_polyhedra_library.By_Reference
 
 /**
  * The domain for not necessarily closed polyhedra implemented within $PPL. This is essentially
@@ -37,12 +37,12 @@ import parma_polyhedra_library.Variables_Set
  * @param pplpolyhedron an object of class `C_Polyhedron` which is the $PPL wrapped object.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends NumericalProperty[PPLCPolyhedron] {
+class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalProperty[PPLCPolyhedron] {
 
   override def widening(that: PPLCPolyhedron): PPLCPolyhedron = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     newpplpolyhedron.upper_bound_assign(that.pplpolyhedron)
-    newpplpolyhedron.widening_assign(pplpolyhedron,null)
+    newpplpolyhedron.widening_assign(pplpolyhedron, null)
     new PPLCPolyhedron(newpplpolyhedron)
   }
 
@@ -68,7 +68,7 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
     new PPLCPolyhedron(newpplpolyhedron)
   }
 
-  def nonDeterministicAssignment(n:Int): PPLCPolyhedron = {
+  def nonDeterministicAssignment(n: Int): PPLCPolyhedron = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     newpplpolyhedron.unconstrain_space_dimension(new Variable(n))
     new PPLCPolyhedron(newpplpolyhedron)
@@ -76,15 +76,15 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
 
   def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLCPolyhedron = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
-    newpplpolyhedron.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(coeff,known), new Coefficient(1))
+    newpplpolyhedron.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(coeff, known), new Coefficient(1))
     new PPLCPolyhedron(newpplpolyhedron)
   }
 
   def linearInequality(coeff: Array[Double], known: Double): PPLCPolyhedron = {
-	 val le = PPLUtils.toPPLLinearExpression(coeff,known)
-	 val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
-	 newpplpolyhedron.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
-	 new PPLCPolyhedron(newpplpolyhedron)
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
+    newpplpolyhedron.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
+    new PPLCPolyhedron(newpplpolyhedron)
   }
 
   /**
@@ -95,6 +95,43 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
    */
   def linearDisequality(coeff: Array[Double], known: Double): PPLCPolyhedron = {
     this
+  }
+
+  def minimize(coeff: Array[Double], known: Double) = {
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val exact = new By_Reference[java.lang.Boolean](false)
+    val val_n = new Coefficient(0)
+    val val_d = new Coefficient(0)
+    val result = pplpolyhedron.minimize(le, val_n, val_d, exact)
+    if (!result)
+      Double.NegativeInfinity
+    else
+      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
+  }
+
+  def maximize(coeff: Array[Double], known: Double) = {
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val exact = new By_Reference[java.lang.Boolean](false)
+    val val_n = new Coefficient(0)
+    val val_d = new Coefficient(0)
+    val result = pplpolyhedron.maximize(le, val_n, val_d, exact)
+    if (!result)
+      Double.NegativeInfinity
+    else
+      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
+  }
+
+  def frequency(coeff: Array[Double], known: Double) = {
+    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+    val freq_n = new Coefficient(0)
+    val freq_d = new Coefficient(0)
+    val val_n = new Coefficient(0)
+    val val_d = new Coefficient(0)
+    val result = pplpolyhedron.frequency(le, freq_n, freq_d, val_n, val_d)
+    if (!result)
+      None
+    else
+      Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue())
   }
 
   def addDimension: PPLCPolyhedron = {
@@ -114,7 +151,7 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
   def mapDimensions(rho: Seq[Int]) = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     val pf = new Partial_Function
-    for ( (newi,i) <- rho.zipWithIndex; if newi >= 0) {
+    for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {
       pf.insert(i, newi)
     }
     newpplpolyhedron.map_space_dimensions(pf)
@@ -131,12 +168,10 @@ class PPLCPolyhedron (private val pplpolyhedron : C_Polyhedron) extends Numerica
 
   def full = PPLCPolyhedron.full(pplpolyhedron.space_dimension.toInt)
 
-  def tryCompareTo [B >: PPLCPolyhedron](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
+  def tryCompareTo[B >: PPLCPolyhedron](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLCPolyhedron =>
-      if (pplpolyhedron==other.pplpolyhedron) Some(0)  else
-        if (pplpolyhedron strictly_contains other.pplpolyhedron) Some(1) else
-          if (other.pplpolyhedron strictly_contains pplpolyhedron) Some(-1)
-          	else None
+      if (pplpolyhedron == other.pplpolyhedron) Some(0) else if (pplpolyhedron strictly_contains other.pplpolyhedron) Some(1) else if (other.pplpolyhedron strictly_contains pplpolyhedron) Some(-1)
+      else None
     case _ => None
   }
 
@@ -161,7 +196,7 @@ object PPLCPolyhedron extends NumericalDomain {
 
   def full(n: Int): PPLCPolyhedron = {
     val pplpolyhedron = new C_Polyhedron(n, Degenerate_Element.UNIVERSE)
-	new PPLCPolyhedron(pplpolyhedron)
+    new PPLCPolyhedron(pplpolyhedron)
   }
 
   def empty(n: Int): PPLCPolyhedron = {

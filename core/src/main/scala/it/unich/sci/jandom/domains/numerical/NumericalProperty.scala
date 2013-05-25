@@ -76,6 +76,31 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
   def linearDisequality(coeff: Array[Double], known: Double): Property
 
   /**
+   * Determines an upper bound of a linear form in the numerical object.
+   * @param coeff the homogeneous coefficients of the linear form.
+   * @param known the in-homogeneous coefficient.
+   * @return an upper bound of the linear form
+   */
+  def minimize(coeff: Array[Double], known: Double): Double
+
+ /**
+   * Determines a lower bound of a linear form in the numerical object.
+   * @param coeff the homogeneous coefficients of the linear form.
+   * @param known the in-homogeneous coefficient.
+   * @return a lower bound of the linear form
+   */
+  def maximize(coeff: Array[Double], known: Double): Double
+
+  /**
+   * Given a linear form, determines if there is a value 'c' such that the  linear form
+   *  always evaluates to c in the numerical object.
+   * @param coeff the homogeneous coefficients of the linear form.
+   * @param known the in-homogeneous coefficient.
+   * @return `Some(c)` if such a value exists, `None` otherwise.
+   */
+  def frequency(coeff: Array[Double], known: Double): Option[Double]
+
+  /**
    * Add a new undetermined dimension.
    */
   def addDimension: Property
