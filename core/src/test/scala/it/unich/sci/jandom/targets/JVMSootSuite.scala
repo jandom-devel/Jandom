@@ -27,6 +27,8 @@ import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvm._
 import soot._
 import it.unich.sci.jandom.domains.objects.PairSharingDomain
+import parma_polyhedra_library.Octagonal_Shape_double
+import it.unich.sci.jandom.domains.numerical.PPLDomain
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -67,30 +69,31 @@ class JVMSootSuite extends FunSuite {
 
   test("Jimple numerical analysis") {
     val tests = Seq(
-      //"sequential" -> "v0 == 0 && v1 == 10 && v2 == 10",
-      //"conditional" -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3",
-      //"loop" -> "v0 >= 10 && v0 <= 11",
-      //"nested" -> "v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2",
-      "longassignment" -> "v0 >= 0 && v1 <= 11 && v1 >= 10 && v2 == v2 && v3 == v3 && v4 == v4")
-      //"topologicalorder" -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4",
-      //"objcreation" -> "v0 == v0 && v1 == v1 && v2 == v2 && v3 == v3")
+      "sequential" -> ("v0 == 0 && v1 == 10 && v2 == 10" -> BitSet(0,1,2)),
+      "conditional" -> ("v0 == 0 && v1 == 0 && v2 == 1 && v3==v3" -> BitSet(0,1,2,3)),
+      "loop" -> ("v0 >= 10 && v0 <= 11" -> BitSet(0)),
+      "nested" -> ("v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2" -> BitSet(0,1,2)),
+      "longassignment" -> ("11*v0 - 33*v1 >= -63 && v1 >=10 && v2 == v2 && v3 == v3 && v4 == v4" -> BitSet(0,1,2,3,4)),
+      "topologicalorder" -> ("v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4" -> BitSet(0,1,2)))
+      //"objcreation" -> ("v0==v0 && v1==v1 && v2==v2" -> BitSet()))
 
     val params = new Parameters[JimpleMethod] {
       val domain = new ObjectNumericalDomain(JVMSootSuite.this.numdomain)
       //debugWriter = new java.io.PrintWriter(System.err)
     }
-    for ((methodName, propString) <- tests) {
+    for ((methodName, (propString, bitset)) <- tests) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
       try {
         val ann = method.analyze(params)
-        println (method.mkString(ann))
+        //println (method.mkString(ann))
         val env = Environment()
         val parser = new NumericalPropertyParser(env)
         val prop = parser.parseProperty(propString, numdomain).get
-        val objprop = new ObjectNumericalProperty(prop, BitSet(0 until prop.dimension: _*))
+        val objprop = new ObjectNumericalProperty(prop, bitset)
+        println(ann(method.lastPP.get).prop.dimension)
         assert(ann(method.lastPP.get) === objprop, s"In the analysis of ${methodName}")
       } finally {
-        //params.debugWriter.flush()
+        params.debugWriter.flush()
       }
     }
   }

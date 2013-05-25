@@ -37,7 +37,6 @@ case class ObjectNumericalProperty[N <: NumericalProperty[N]](val prop: N, val n
       case _ => None
     }
 
-
   def addVariable(tpe: soot.Type) = ObjectNumericalProperty(prop.addDimension, if (tpe.isInstanceOf[soot.IntegerType]) numerical + size else numerical)
   def delVariable = ObjectNumericalProperty(prop.delDimension(), numerical - (size - 1))
 

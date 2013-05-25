@@ -44,7 +44,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * @note $NOTEN
    * @param n the variable to which non-deterministic assignment should be applied.
    */
-  def nonDeterministicAssignment(n: Int = dimension-1): Property
+  def nonDeterministicAssignment(n: Int = dimension - 1): Property
 
   /**
    * Linear assignment over an abstract object of the form `x(n) = x*coeff+known`.
@@ -55,7 +55,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * @note `coeff` should have at least `dimension` elements
    * @param known the in-homogeneous coefficient.
    */
-  def linearAssignment(n:Int, coeff:Array[Double], known: Double): Property
+  def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property
 
   /**
    * Intersection with the half-plane `{ x |  coeff*x+known <= 0 }`.
@@ -83,7 +83,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    */
   def minimize(coeff: Array[Double], known: Double): Double
 
- /**
+  /**
    * Determines a lower bound of a linear form in the numerical object.
    * @param coeff the homogeneous coefficients of the linear form.
    * @param known the in-homogeneous coefficient.
@@ -110,7 +110,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * @param n the dimension to be suppressed.
    * @note $NOTEN
    */
-  def delDimension(n: Int = dimension-1): Property
+  def delDimension(n: Int = dimension - 1): Property
 
   /**
    * Map dimensions according to a partial injective function.
@@ -178,7 +178,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * linearAssignment, but it may be overriden in subclasses to optimize speed.
    * @note $NOTEN
    */
-  def constantAssignment(n: Int = dimension-1, c: Double) =
+  def constantAssignment(n: Int = dimension - 1, c: Double) =
     linearAssignment(n, Array.fill(dimension)(0.0), c)
 
   /**
@@ -186,11 +186,11 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * @note $NOTEN
    * @note `source` should be within `0` and `dimension-1`.
    */
-  def variableAssignment(n: Int = dimension-1, m: Int)  = {
-    require (m < dimension)
+  def variableAssignment(n: Int = dimension - 1, m: Int) = {
+    require(m < dimension)
     val v = Array.fill(dimension)(0.0)
     v(m) = 1
-    linearAssignment(n,v,0)
+    linearAssignment(n, v, 0)
   }
 
   /**
@@ -199,12 +199,12 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * @note $NOTEN
    * @note `m` should be within `0` and `dimension-1`.
    */
-  def variableAdd(n: Int = dimension-2, m: Int = dimension-1) = {
-    require (n < dimension && m < dimension)
+  def variableAdd(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    require(n < dimension && m < dimension)
     val v = Array.fill(dimension)(0.0)
     v(n) = 1
     v(m) = 1
-    linearAssignment(n,v,0)
+    linearAssignment(n, v, 0)
   }
 
   /**
@@ -213,12 +213,12 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * @note $NOTEN
    * @note `m` should be within `0` and `dimension-1`.
    */
-  def variableSub(n: Int = dimension-2, m: Int = dimension-1) = {
-    require (n < dimension && m < dimension)
+  def variableSub(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    require(n < dimension && m < dimension)
     val v = Array.fill(dimension)(0.0)
     v(n) = 1
     v(m) = -1
-    linearAssignment(n,v,0)
+    linearAssignment(n, v, 0)
   }
 
   /**
@@ -226,20 +226,39 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * linearAssignment, but it may be overriden in subclasses to optimize speed.
    * @note $NOTEN
    */
-  def constantAdd(n: Int = dimension-1, c: Double) = {
-    require (n < dimension)
+  def constantAdd(n: Int = dimension - 1, c: Double) = {
+    require(n < dimension)
     val v = Array.fill(dimension)(0.0)
     v(n) = 1
-    linearAssignment(n,v,c)
+    linearAssignment(n, v, c)
   }
 
   /**
-   * Assignments of the kind vn = vn * vm.  The standard implementation calls
-   * nonDeterministicAssignment on vn
+   * Assignments of the kind vn = vn * vm.  The standard implementation determined
+   * whether vn or vm is a constant, and use linearAssignment in such a case.
+   * Otherwise, it resorts to a non deterministic assignment.
    * @note $NOTEN
    */
-  def variableMul(n: Int = dimension-2, m: Int= dimension-1)  = {
-     nonDeterministicAssignment(n)
+  def variableMul(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    // TODO: use method "frequency" here when it works for PPL
+    val coeff = Array.fill(dimension)(0.0)
+    coeff(n) = 1
+    val c = minimize(coeff, 0)
+    if (c == maximize(coeff, 0)) {
+      coeff(n) = 0
+      coeff(m) = c
+      linearAssignment(n, coeff, 0)
+    } else {
+      coeff(n) = 0
+      coeff(m) = 1
+      val c = minimize(coeff, 0)
+      if (c == maximize(coeff, 0)) {
+        coeff(n) = c
+        coeff(m) = 0
+        linearAssignment(n, coeff, 0)
+      } else
+        nonDeterministicAssignment(n)
+    }
   }
 
   /**
@@ -247,8 +266,8 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableDiv(n: Int = dimension-2, m: Int= dimension-1)  = {
-     nonDeterministicAssignment(n)
+  def variableDiv(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    nonDeterministicAssignment(n)
   }
 
   /**
@@ -256,8 +275,8 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableRem(n: Int = dimension-2, m: Int= dimension-1)  = {
-     nonDeterministicAssignment(n)
+  def variableRem(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    nonDeterministicAssignment(n)
   }
 
   /**
@@ -265,17 +284,17 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableShl(n: Int = dimension-2, m: Int= dimension-1)  = {
-     nonDeterministicAssignment(n)
+  def variableShl(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    nonDeterministicAssignment(n)
   }
 
-    /**
+  /**
    * Assignments of the kind vn = vn >> vm.  The standard implementation calls
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableShr(n: Int = dimension-2, m: Int= dimension-1)  = {
-     nonDeterministicAssignment(n)
+  def variableShr(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    nonDeterministicAssignment(n)
   }
 
   /**
@@ -283,8 +302,8 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableUshr(n: Int = dimension-2, m: Int= dimension-1)  = {
-     nonDeterministicAssignment(n)
+  def variableUshr(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    nonDeterministicAssignment(n)
   }
 
   /**
@@ -292,8 +311,8 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableAnd(n: Int = dimension-2, m: Int= dimension-1)  = {
-     nonDeterministicAssignment(n)
+  def variableAnd(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    nonDeterministicAssignment(n)
   }
 
   /**
@@ -301,8 +320,8 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableOr(n: Int = dimension-2, m: Int= dimension-1)  = {
-     nonDeterministicAssignment(n)
+  def variableOr(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    nonDeterministicAssignment(n)
   }
 
   /**
@@ -310,12 +329,12 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableXor(n: Int = dimension-2, m: Int= dimension-1)  = {
-     nonDeterministicAssignment(n)
+  def variableXor(n: Int = dimension - 2, m: Int = dimension - 1) = {
+    nonDeterministicAssignment(n)
   }
 
-  def variableNeg(n: Int = dimension-1) = {
-    require (n >=0 && n < dimension)
+  def variableNeg(n: Int = dimension - 1) = {
+    require(n >= 0 && n < dimension)
     val coeff = Array.fill(dimension)(0.0)
     coeff(n) = -1
     linearAssignment(n, coeff, 0)
@@ -326,14 +345,14 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * @param n number of dimensions to add.
    */
   def addDimension(n: Int): Property = {
-    require (n >= 0)
-    (0 until n).foldLeft(this) { (prop,_) => prop.addDimension }
+    require(n >= 0)
+    (0 until n).foldLeft(this) { (prop, _) => prop.addDimension }
   }
 
   /**
    * Returns the string representation of the property. It calls `mkString` with the standard
    * variable names `v1` ... `vn`.
    */
-  override def toString: String = "[ " + (mkString( for (i <- 0 until dimension) yield "v"+i )).mkString(" , ") + " ]"
+  override def toString: String = "[ " + (mkString(for (i <- 0 until dimension) yield "v" + i)).mkString(" , ") + " ]"
 
 }
