@@ -1,12 +1,17 @@
 package javatest;
 
-class A {
+class A { }
 
-}
+class B { }
 
 class ListA {
 	ListA next;
 	A v;
+}
+
+class Pair {
+	A v;
+	B w;
 }
 
 public class SimpleTest {
