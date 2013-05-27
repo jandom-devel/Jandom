@@ -31,7 +31,7 @@ import it.unich.sci.jandom.domains.numerical.NumericalDomain
 trait ObjectDomain extends AbstractDomain {
   type Property <: ObjectProperty[Property]
 
-  def initial( roots: Seq[soot.Type] ): Property
-  def top( roots: Seq[soot.Type] ): Property
-  def bottom( roots: Seq[soot.Type] ): Property
+  def initial: Property
+  def top(stacksize: Int): Property
+  def bottom(stacksize: Int): Property
 }

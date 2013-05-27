@@ -22,6 +22,7 @@ import it.unich.sci.jandom.domains.AbstractProperty
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import it.unich.sci.jandom.targets.LinearForm
+import soot._
 
 /**
  * This is the base trait for all properties of objects.
@@ -31,20 +32,17 @@ import it.unich.sci.jandom.targets.LinearForm
 trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractProperty[Property] {
   this: Property =>
 
-  type Variable = Int
+  def roots: IndexedSeq[Local]
 
-  /**
-   * Returns number of variables in the root scope
-   */
   def size: Int
 
-  def delVariable: Property
+  def stacksize: Int = size - roots.size
 
   def evalConstant(c: Int): Property
   def evalNull: Property
   def evalNew: Property
-  def evalVariable(v: Variable): Property
-  def evalField(v: Variable, f: Int): Property
+  def evalLocal(l: Local): Property
+  def evalField(l: Local, f: SootField): Property
 
   def evalAdd: Property
   def evalSub: Property
@@ -65,12 +63,9 @@ trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractPrope
   def evalEq: Property
   def evalNe: Property
 
-  /**
-   * Assign a variable to another variable.
-   * @param v the destination variable.
-   */
-  def assignVariable(dst: Variable): Property
-  def assignField(dst: Variable, fieldNum: Int): Property
+  def assignLocal(l: Local): Property
+  def assignField(l: Local, f: SootField): Property
+
   def test: (Property, Property)
   def testGt: (Property, Property)
   def testGe: (Property, Property)
@@ -81,8 +76,9 @@ trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractPrope
 
   def testLinearCondition(lf: LinearCond): (Property, Property)
 
+  override def toString = mkString( (roots map { _.getName() }) ++
+      (for (i <- 0 until stacksize) yield "s"+i) ).mkString(", ")
+
   def isTop = false
   def isBottom = false
-
-  override def toString: String = "[ " + (mkString(for (i <- 0 until size) yield "v" + i)).mkString(" , ") + " ]"
 }

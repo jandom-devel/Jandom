@@ -18,136 +18,121 @@
 
 package it.unich.sci.jandom.domains.objects
 
-import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import scala.collection.immutable.BitSet
+
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
-import it.unich.sci.jandom.targets.linearcondition.AtomicCond
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
-import soot.PrimType
+import soot._
 
-/**
- * This class only represent numerical information using the NumericalProperty class N.
- */
-case class ObjectNumericalProperty[N <: NumericalProperty[N]](val prop: N, val numerical: BitSet) extends ObjectProperty[ObjectNumericalProperty[N]] {
+class ObjectNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[Local]) extends ObjectDomain {
 
-  def tryCompareTo[B >: ObjectNumericalProperty[N]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
-    other match {
-      case other: ObjectNumericalProperty[N] => prop tryCompareTo other.prop
-      case _ => None
+  private val numericalSeq = for ((local, index) <- roots.zipWithIndex; if local.getType().isInstanceOf[PrimType]) yield index
+  val numerical = BitSet(numericalSeq: _*)
+  val localMap: Map[Local, Int] = roots.zipWithIndex.toMap
+
+  def top(stacksize: Int = 0) = Property(numdom.full(roots.size + stacksize))
+  def bottom(stacksize: Int = 0) = Property(numdom.empty(roots.size + stacksize))
+  def initial = top(0)
+  def apply(prop: numdom.Property) = new Property(prop)
+
+  case class Property(val prop: numdom.Property) extends ObjectProperty[Property] {
+
+    def roots = ObjectNumericalDomain.this.roots
+
+    def size = prop.dimension
+
+    def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
+      other match {
+        case other: Property => prop tryCompareTo other.prop
+        case _ => None
+      }
+
+    private def addVariable = Property(prop.addDimension)
+    private def delVariable = Property(prop.delDimension())
+
+    def evalConstant(const: Int) = Property(prop.addDimension.constantAssignment(size, const))
+    def evalNull = addVariable
+    def evalNew = addVariable
+    def evalLocal(l: Local) = {
+      val v = localMap(l)
+      if (numerical contains v)
+        Property(prop.addDimension.variableAssignment(size, v))
+      else
+        Property(prop.addDimension)
+    }
+    def evalField(l: Local, f: SootField) = addVariable
+
+    def assignLocal(l: Local) = {
+      val dst = localMap(l)
+      if (numerical contains  dst)
+        new Property(prop.variableAssignment(dst, size - 1).delDimension())
+      else
+        this
     }
 
-  def addVariable(tpe: soot.Type) = ObjectNumericalProperty(prop.addDimension, if (tpe.isInstanceOf[soot.IntegerType]) numerical + size else numerical)
-  def delVariable = ObjectNumericalProperty(prop.delDimension(), numerical - (size - 1))
+    def assignField(l: Local, f: SootField) = delVariable
 
-  def size = prop.dimension
+    def evalAdd = Property(prop.variableAdd().delDimension())
+    def evalSub = Property(prop.variableSub().delDimension())
+    def evalMul = Property(prop.variableMul().delDimension())
+    def evalDiv = Property(prop.variableDiv().delDimension())
+    def evalRem = Property(prop.variableRem().delDimension())
+    def evalShl = Property(prop.variableShl().delDimension())
+    def evalShr = Property(prop.variableShr().delDimension())
+    def evalUshr = Property(prop.variableUshr().delDimension())
 
-  def variable(n: Int) = n
+    def evalBinOp = Property(prop.delDimension().delDimension().addDimension)
+    def evalNeg = Property(prop.variableNeg().delDimension())
+    def evalLength = addVariable
 
-  def evalConstant(const: Int) = ObjectNumericalProperty(prop.addDimension.constantAssignment(size, const), numerical + size)
-  def evalNull = ObjectNumericalProperty(prop.addDimension, numerical)
-  def evalNew = evalNull
-  def evalVariable(v: Int) = if (numerical contains v)
-    ObjectNumericalProperty(prop.addDimension.variableAssignment(size, v), numerical + size)
-  else
-    ObjectNumericalProperty(prop.addDimension, numerical)
-  def evalField(v: Int, f: Int) = evalNull
+    def evalGt = delVariable
+    def evalGe = delVariable
+    def evalLt = delVariable
+    def evalLe = delVariable
+    def evalEq = delVariable
+    def evalNe = delVariable
 
-  def assignConstant(v: Int, c: Int) = new ObjectNumericalProperty(prop.constantAssignment(v, c), numerical + v)
-  def assignVariable(dst: Int) =
-    if (numerical contains (size - 1))
-      new ObjectNumericalProperty(prop.variableAssignment(dst, size - 1).delDimension(size - 1), numerical + dst - (size - 1))
-    else
-      this
-  def assignField(dst: Int, fieldNum: Int) = this
+    def test = {
+      val dropped = delVariable
+      (dropped, dropped)
+    }
 
-  override def evalAdd = ObjectNumericalProperty(prop.variableAdd().delDimension(), numerical - (size - 1))
-  override def evalSub = ObjectNumericalProperty(prop.variableSub().delDimension(), numerical - (size - 1))
-  override def evalMul = ObjectNumericalProperty(prop.variableMul().delDimension(), numerical - (size - 1))
-  override def evalDiv = ObjectNumericalProperty(prop.variableDiv().delDimension(), numerical - (size - 1))
-  override def evalRem = ObjectNumericalProperty(prop.variableRem().delDimension(), numerical - (size - 1))
-  override def evalShl = ObjectNumericalProperty(prop.variableShl().delDimension(), numerical - (size - 1))
-  override def evalShr = ObjectNumericalProperty(prop.variableShr().delDimension(), numerical - (size - 1))
-  override def evalUshr = ObjectNumericalProperty(prop.variableUshr().delDimension(), numerical - (size - 1))
+    private def testComp(op: AtomicCond.ComparisonOperators.Value) = {
+      import AtomicCond.ComparisonOperators._
+      val coeffs = Array.fill(size + 1)(0.0)
+      coeffs(size - 1) = 1.0
+      coeffs(size) = -1.0
+      val lf = LinearForm(coeffs)
+      val tbranch = Property(AtomicCond(lf, op).analyze(prop).delDimension().delDimension())
+      val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delDimension().delDimension())
+      (tbranch, fbranch)
+    }
 
-  def evalBinOp = ObjectNumericalProperty(prop.delDimension().delDimension().addDimension, numerical)
-  def evalNeg = ObjectNumericalProperty(prop.variableNeg().delDimension(), numerical)
-  def evalLength = ObjectNumericalProperty(prop, numerical + (size - 1))
+    def testGt = testComp(AtomicCond.ComparisonOperators.GT)
+    def testGe = testComp(AtomicCond.ComparisonOperators.GTE)
+    def testLe = testComp(AtomicCond.ComparisonOperators.LTE)
+    def testLt = testComp(AtomicCond.ComparisonOperators.LT)
+    def testEq = testComp(AtomicCond.ComparisonOperators.EQ)
+    def testNe = testComp(AtomicCond.ComparisonOperators.NEQ)
 
-  def evalGt = delVariable
-  def evalGe = delVariable
-  def evalLt = delVariable
-  def evalLe = delVariable
-  def evalEq = delVariable
-  def evalNe = delVariable
+    def testLinearCondition(lc: LinearCond) = (
+      Property(lc.analyze(prop)), Property(lc.opposite.analyze(prop))
+     )
 
-  def test = {
-    val dropped = delVariable
-    (dropped, dropped)
+    def union(that: Property) = Property(prop union that.prop)
+
+    def intersection(that: Property) = Property(prop intersection that.prop)
+
+    def widening(that: Property) = Property(prop widening that.prop)
+
+    def narrowing(that: Property) = Property(prop widening that.prop)
+
+    def isEmpty = prop.isEmpty
+
+    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ ("dimension: " + size)
   }
 
-  private def testComp(op: AtomicCond.ComparisonOperators.Value) = {
-    import AtomicCond.ComparisonOperators._
-    val coeffs = Array.fill(size + 1)(0.0)
-    coeffs(size - 1) = 1.0
-    coeffs(size) = 1.0
-    val lf = LinearForm(coeffs)
-    val tbranch = ObjectNumericalProperty(AtomicCond(lf, op).analyze(prop), numerical - (size - 1) - (size - 2))
-    val fbranch = ObjectNumericalProperty(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop), numerical - (size - 1) - (size - 2))
-    (tbranch, fbranch)
-  }
-
-  def testGt = testComp(AtomicCond.ComparisonOperators.GT)
-  def testGe = testComp(AtomicCond.ComparisonOperators.GTE)
-  def testLe = testComp(AtomicCond.ComparisonOperators.LTE)
-  def testLt = testComp(AtomicCond.ComparisonOperators.LT)
-  def testEq = testComp(AtomicCond.ComparisonOperators.EQ)
-  def testNe = testComp(AtomicCond.ComparisonOperators.NEQ)
-
-  def testLinearCondition(lc: LinearCond) = (
-    ObjectNumericalProperty(lc.analyze(prop), numerical),
-    ObjectNumericalProperty(lc.opposite.analyze(prop), numerical))
-
-  def union(that: ObjectNumericalProperty[N]) = {
-    ObjectNumericalProperty(prop union that.prop, numerical intersect that.numerical)
-  }
-
-  def intersection(that: ObjectNumericalProperty[N]) = {
-    if (numerical == that.numerical)
-      new ObjectNumericalProperty(prop intersection that.prop, numerical)
-    else
-      throw new IllegalArgumentException("Intersection between incompatible states")
-  }
-
-  def widening(that: ObjectNumericalProperty[N]) = {
-    if (numerical == that.numerical)
-      new ObjectNumericalProperty(prop widening that.prop, numerical)
-    else
-      throw new IllegalArgumentException("Widening between incompatible states")
-  }
-
-  def narrowing(that: ObjectNumericalProperty[N]) = {
-    if (numerical == that.numerical)
-      new ObjectNumericalProperty(prop narrowing that.prop, numerical)
-    else
-      throw new IllegalArgumentException("Narrowing between incompatible states")
-  }
-
-  def isEmpty = prop.isEmpty
-
-  def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ numerical.mkString(" ")
-}
-
-class ObjectNumericalDomain(val numdom: NumericalDomain) extends ObjectDomain {
-  type Property = ObjectNumericalProperty[numdom.Property]
-
-  private def typesToNumerical(roots: Seq[ soot.Type ]): BitSet = {
-     val indices = for ( (tpe,index) <- roots.zipWithIndex; if tpe.isInstanceOf[PrimType] ) yield index
-     BitSet(indices: _*)
-  }
-
-  def top( roots: Seq[soot.Type] ) = ObjectNumericalProperty( numdom.full(roots.size), typesToNumerical(roots))
-  def bottom (roots: Seq[soot.Type]) = ObjectNumericalProperty(numdom.empty(roots.size), typesToNumerical(roots))
-  def initial(roots: Seq[soot.Type]) = top(roots)
-  def apply(prop: numdom.Property) = new ObjectNumericalProperty(prop, BitSet(0 until prop.dimension: _*))
 }

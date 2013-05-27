@@ -45,11 +45,11 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
 
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.UnitBlockGraph(body)
-  val locals = body.getLocals().toSeq
+  val locals = body.getLocals().toIndexedSeq
 
   private val envMap = locals.zipWithIndex.toMap
 
-  def topProperty(node: Block, params: Parameters): params.Property = params.domain.initial(locals map { _.getType() })
+  def topProperty(node: Block, params: Parameters): params.Property = params.domain.initial
 
   /**
    * Convert a `Value` into a LinearForm, if possible.
@@ -157,7 +157,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
       case v: IntConstant =>
         prop.evalConstant(v.value)
       case v: Local =>
-        prop.evalVariable(envMap(v))
+        prop.evalLocal(v)
       case v: BinopExpr =>
         val res1 = analyzeExpr(v.getOp1(), prop)
         val res2 = analyzeExpr(v.getOp2(), res1)
@@ -198,7 +198,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
       case v: InvokeExpr => prop.evalNull
       case v: InstanceOfExpr => prop.evalNull
       case v: CastExpr => prop.evalNull // TODO: this can be made more precise
-      case v: InstanceFieldRef => prop.evalField(envMap(v.getBase().asInstanceOf[Local]), v.getField().getNumber())
+      case v: InstanceFieldRef => prop.evalField(v.getBase().asInstanceOf[Local], v.getField())
     }
   }
 
@@ -210,10 +210,10 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
         val expr = analyzeExpr(unit.getRightOp(), currprop)
         unit.getLeftOp() match {
           case local: Local =>
-            currprop = expr.assignVariable(envMap(local))
+            currprop = expr.assignLocal(local)
           case field: InstanceFieldRef =>
             val local = field.getBase().asInstanceOf[Local]
-            currprop = expr.assignField(envMap(local), field.getField().getNumber())
+            currprop = expr.assignField(local, field.getField())
         }
       case unit: BreakpointStmt =>
         throw new IllegalArgumentException("Invalid Jimple statement encountered")

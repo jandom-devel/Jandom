@@ -20,10 +20,9 @@ package it.unich.sci.jandom.domains
 
 import org.scalatest.FunSuite
 import it.unich.sci.jandom.domains.objects.PairSharingDomain
-import it.unich.sci.jandom.domains.objects.PairSharingProperty
-import it.unich.sci.jandom.domains.objects.PairSharingProperty
 import it.unich.sci.jandom.domains.objects.UP
-import it.unich.sci.jandom.domains.objects.PairSharingProperty
+import soot._
+import soot.jimple.internal.JimpleLocal
 
 /**
  * A test suite for PairSharing domain.
@@ -31,50 +30,51 @@ import it.unich.sci.jandom.domains.objects.PairSharingProperty
  *
  */
 class PairSharingSuite extends FunSuite {
-  val dom = new PairSharingDomain()
+  val scene = Scene.v()
   val size = 3
-  def types(size: Int) = Seq.fill(size)(new soot.Singletons().soot_RefType())
+  val locals = for (i <- 0 until size) yield new JimpleLocal("v" + i, new soot.Singletons().soot_RefType())
+  val field = new SootField("f",new soot.Singletons().soot_RefType())
+  val dom = new PairSharingDomain(scene, locals)
 
   test("Bottom element") {
-    assert ( PairSharingProperty(Set(), size) === dom.bottom(types(size)) )
+    assert(dom.Property(Set(), size) === dom.bottom(0))
   }
 
   test("Top element") {
-    val pairs = for ( i <- 0 until size; j <- i until size ) yield UP(i,j)
-	assert ( PairSharingProperty(Set(pairs: _*), size) === dom.top(types(size)) )
+    val pairs = for (i <- 0 until size; j <- i until size) yield UP(i, j)
+    assert(dom.Property(Set(pairs: _*), size) === dom.top(0))
   }
 
   test("Initial element is the same as bottom element") {
-    assert (dom.initial(types(size)) === dom.bottom(types(size)))
+    assert( dom.initial === dom.bottom(0) )
   }
 
-  test("Complex operations on variables") {
-    val ps1 = dom.initial(types(size))
+  test("Complex operations on locals") {
+    val ps1 = dom.initial
     val ps2 = ps1.evalNull
-    assert ( ps2 === PairSharingProperty(Set(), 4) )
+    assert(ps2 === dom.Property(Set(), 4))
     val ps3 = ps2.evalNew
-    assert ( ps3 === PairSharingProperty(Set(UP(4,4)), 5) )
-    val ps4 = ps3.assignVariable(0)
-    assert ( ps4 === PairSharingProperty(Set(UP(0,0)), 4) )
-    val ps5 = ps4.evalVariable(0)
-    assert ( ps5 === PairSharingProperty(Set(UP(0,0),UP(0,4),UP(4,4)), 5) )
+    assert(ps3 === dom.Property(Set(UP(4, 4)), 5))
+    val ps4 = ps3.assignLocal(locals(0))
+    assert(ps4 === dom.Property(Set(UP(0, 0)), 4))
+    val ps5 = ps4.evalLocal(locals(0))
+    assert(ps5 === dom.Property(Set(UP(0, 0), UP(0, 4), UP(4, 4)), 5))
     val ps6 = ps5.evalNull
-    assert ( ps6 === PairSharingProperty(Set(UP(0,0),UP(0,4),UP(4,4)), 6) )
-    val ps7 = ps6.assignVariable(4)
-    assert ( ps7 === PairSharingProperty(Set(UP(0,0)), 5) )
+    assert(ps6 === dom.Property(Set(UP(0, 0), UP(0, 4), UP(4, 4)), 6))
+    val ps7 = ps6.assignLocal(locals(0))
+    assert(ps7 === dom.Property(Set(UP(4, 4)), 5))
   }
 
   test("Complex operations of fields") {
-	val ps1 = PairSharingProperty(Set(UP(0,0), UP(0,1), UP(1,1),UP(3,3), UP(4,4), UP(4,5), UP(5,5)), 6)
-    val ps2 = ps1.assignField(0, 1)
-    assert (ps2 === PairSharingProperty(Set(UP(0,0), UP(0,1), UP(0,4), UP(1,1), UP(1,4), UP(3,3), UP(4,4)), 5))
-    val ps3 = ps1.assignField(2, 1)
-    assert (ps3 === dom.bottom(types(5)))
-    val ps4 = PairSharingProperty(Set(UP(0,0), UP(0,1), UP(1,1), UP(2,2)), 4)
-    val ps5 = ps4.assignField(0,1)
-    assert (ps5 == PairSharingProperty(Set(UP(0,0), UP(0,1), UP(1,1), UP(2,2)), 3))
-    assert (ps4.evalField(3,1) == dom.bottom(types(5)))
-    assert (ps4.evalField(2,2) == ps4.evalVariable(2))
+    val ps1 = dom.Property(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 3), UP(4, 4), UP(4, 5), UP(5, 5)), 6)
+    val ps2 = ps1.assignField(locals(0), field)
+    assert(ps2 === dom.Property(Set(UP(0, 0), UP(0, 1), UP(0, 4), UP(1, 1), UP(1, 4), UP(3, 3), UP(4, 4)), 5))
+    val ps3 = ps1.assignField(locals(2), field)
+    assert(ps3 === dom.bottom(2))
+    val ps4 = dom.Property(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(2, 2)), 4)
+    val ps5 = ps4.assignField(locals(0), field)
+    assert(ps5 == dom.Property(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(2, 2)), 3))
+    assert(ps4.evalField(locals(2), field) == ps4.evalLocal(locals(2)))
   }
 
 }
