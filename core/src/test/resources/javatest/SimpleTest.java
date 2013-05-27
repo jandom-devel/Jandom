@@ -77,4 +77,12 @@ public class SimpleTest {
 		a2 = l.v;
 	}
 
+	static void classrefinement() {
+		A a = new A();
+		B b = new B();
+		Pair p = new Pair();
+        p.w = b;
+        a = p.v;
+	}
+
 }

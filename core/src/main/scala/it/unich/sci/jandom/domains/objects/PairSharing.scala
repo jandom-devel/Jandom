@@ -45,7 +45,22 @@ class PairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnalysis, roo
 
     def roots = PairSharingDomain.this.roots
 
-    private def renameVariable(ps: Set[UP[Int]], newvar: Int, oldvar: Int) = ps map { _.replace(newvar, oldvar) }
+    def classOfVar(i: Int): SootClass = {
+      val tpe = if (i < roots.size) roots(i).getType() else stack(i - roots.size)
+      assert(tpe.isInstanceOf[RefType])
+      tpe.asInstanceOf[RefType].getSootClass()
+    }
+
+    private def renameVariable(ps: Set[UP[Int]], newvar: Int, oldvar: Int) = {
+      val newclass = classOfVar(oldvar)
+      ps map { _.replace(newvar, oldvar) } filter {
+        case UP(l, r) if l == newvar && r == newvar => true
+        case UP(`newvar`, r) => classAnalysis.mayShare(classOfVar(r), newclass)
+        case UP(l, `newvar`) => classAnalysis.mayShare(classOfVar(l), newclass)
+        case _ => true
+      }
+    }
+
     private def removeVariable(ps: Set[UP[Int]], v: Int) = ps filterNot { _.contains(v) }
 
     private def delUntrackedVariable = Property(ps, stack.pop)
@@ -58,17 +73,18 @@ class PairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnalysis, roo
       ) yield UP(first, second)) ++ ps
 
     def evalConstant(c: Int) = addUntrackedVariable(IntType.v())
-    def evalNull = Property(ps, stack.push(NullType.v()))
+    def evalNull = addUntrackedVariable(IntType.v())
     def evalNew(tpe: Type) = Property(ps + UP(size, size), stack.push(tpe))
     def evalLocal(l: Local) = {
       val v = localMap(l)
+      val newstack = stack.push(l.getType())
       if (ps contains UP(v, v))
-        Property(ps ++ renameVariable(ps, size, v) + UP(size, v), stack.push(l.getType()))
+        Property(ps ++ renameVariable(ps, size, v) + UP(size, v), newstack)
       else
-        Property(ps, stack.push(l.getType()))
+        Property(ps, newstack)
     }
     def evalLength = addUntrackedVariable(IntType.v())
-    def evalField(l: Local, f: SootField) =  {
+    def evalField(l: Local, f: SootField) = {
       val v = localMap(l)
       if (ps contains UP(v, v))
         Property(ps ++ renameVariable(ps, size, v) + UP(size, v), stack.push(f.getType()))
@@ -110,8 +126,12 @@ class PairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnalysis, roo
 
     def assignLocal(l: Local) = {
       val dst = localMap(l)
-      Property(renameVariable(removeVariable(ps, dst), dst, size - 1), stack.pop)
+      if (l.getType().isInstanceOf[RefType])
+        Property(renameVariable(removeVariable(ps, dst), dst, size - 1), stack.pop)
+      else
+        Property(ps, stack.pop)
     }
+
     def assignField(l: Local, f: SootField) = {
       val dst = localMap(l)
       if (!ps.contains(UP(dst, dst))) // this should generate a null pointer exception
@@ -122,11 +142,12 @@ class PairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnalysis, roo
         Property(starUnion(removeVariable(starUnion(ps + UP(dst, size - 1), size - 1), size - 1), dst), stack.pop)
     }
 
-    def mkString(vars: IndexedSeq[String]) = (ps.view.toSeq map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }) :+ s"dimension ${size}"
+    def mkString(vars: IndexedSeq[String]) =
+      (ps.view.toSeq map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }) :+ s"dimension ${size}"
 
     def union(that: Property) = {
       assert(stack == that.stack)
-      Property(ps union that.ps, stack )
+      Property(ps union that.ps, stack)
     }
 
     def intersection(that: Property) = {

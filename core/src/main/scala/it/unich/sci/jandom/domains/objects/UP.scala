@@ -23,24 +23,27 @@ package it.unich.sci.jandom.domains.objects
  * we do no implement that interface yet.
  * @param A the type of the elements in the pair.
  */
-class UP[@specialized(Int) A](x: A, y:A)(implicit ordering: Ordering[A]) {
-  val first = ordering.min(x,y)
-  val second = ordering.max(x,y)
+final class UP[@specialized(Int) A](x: A, y:A)(implicit ordering: Ordering[A]) extends Product2[A,A] {
 
-  def replace(newval: A, oldval: A) =
-	 UP( if (first == oldval) newval else first, if (second == oldval) newval else second )
-  def contains(v: A) = first == v || second == v
+  def canEqual(that: Any) = that.isInstanceOf[UP[A]]
+
+  val _1 = ordering.min(x,y)
+  val _2 = ordering.max(x,y)
+
+  def replace(newval: A, oldval: A): UP[A] =
+	 UP( if (_1 == oldval) newval else _1, if (_2 == oldval) newval else _2 )
+  def contains(v: A) = _1 == v || _2 == v
 
   override def equals(that: Any) = that match {
-    case that: UP[A] => first == that.first && second == that.second
+    case that: UP[A] => _1 == that._1 && _2 == that._2
     case _ => false
   }
-  override def hashCode = first.hashCode * 41 + second.hashCode
-  override def toString = (first,second).toString
+  override def hashCode = _1.hashCode * 41 + _2.hashCode
+  override def toString = (_1, _2).toString
 }
 
 object UP {
   def apply[A: Ordering](x: A, y: A) = new UP(x,y)
   def apply[A: Ordering](p: (A,A)) = new UP(p._1, p._2)
-  def unapply[A](up: UP[A]): Option[(A,A)] = Some((up.first,up.second))
+  def unapply[A](up: UP[A]): Option[(A,A)] = Some((up._1,up._2))
 }

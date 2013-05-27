@@ -104,7 +104,8 @@ class JVMSootSuite extends FunSuite {
       "longassignment" -> "v0 >= 0 && v1 <= 11 && v1 >= 10 && v2 == v2 && v3 == v3 && v4 == v4",
       "topologicalorder" -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4",
       "objcreation" -> "v0 == v0 && v1 == v1 && v2 == v2 && v3 == v3",
-      "complexif" -> "v0==v0")
+      "complexif" -> "v0==v0",
+      "classrefinement" -> "v0==v0")
 
     for ((methodName, propString) <- tests) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
