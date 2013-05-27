@@ -19,13 +19,13 @@
 package it.unich.sci.jandom.domains.objects
 
 import scala.collection.immutable.BitSet
-
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import soot._
+import scala.collection.immutable.Stack
 
 class ObjectNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[Local]) extends ObjectDomain {
 
@@ -33,9 +33,9 @@ class ObjectNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[L
   val numerical = BitSet(numericalSeq: _*)
   val localMap: Map[Local, Int] = roots.zipWithIndex.toMap
 
-  def top(stacksize: Int = 0) = Property(numdom.full(roots.size + stacksize))
-  def bottom(stacksize: Int = 0) = Property(numdom.empty(roots.size + stacksize))
-  def initial = top(0)
+  def top(stack: Stack[Type]) = Property(numdom.full(roots.size + stack.size))
+  def bottom(stack: Stack[Type]) = Property(numdom.empty(roots.size + stack.size))
+  def initial = top(Stack())
   def apply(prop: numdom.Property) = new Property(prop)
 
   case class Property(val prop: numdom.Property) extends ObjectProperty[Property] {
@@ -55,7 +55,7 @@ class ObjectNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[L
 
     def evalConstant(const: Int) = Property(prop.addDimension.constantAssignment(size, const))
     def evalNull = addVariable
-    def evalNew = addVariable
+    def evalNew(tpe: Type) = addVariable
     def evalLocal(l: Local) = {
       val v = localMap(l)
       if (numerical contains v)

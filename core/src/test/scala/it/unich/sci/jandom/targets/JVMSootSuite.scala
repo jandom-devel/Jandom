@@ -108,8 +108,9 @@ class JVMSootSuite extends FunSuite {
 
     for ((methodName, propString) <- tests) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
+      val classAnalysis = new ClassReachableAnalysis(scene)
       val params = new Parameters[JimpleMethod] {
-        val domain = new PairSharingDomain(scene, method.locals)
+        val domain = new PairSharingDomain(scene, classAnalysis, method.locals)
         //debugWriter = new java.io.PrintWriter(System.err)
       }
       try {

@@ -194,7 +194,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
           case v: LengthExpr => prop.evalLength
           case v: NegExpr => prop.evalNeg
         }
-      case v: AnyNewExpr => prop.evalNew
+      case v: AnyNewExpr => prop.evalNew(v.getType())
       case v: InvokeExpr => prop.evalNull
       case v: InstanceOfExpr => prop.evalNull
       case v: CastExpr => prop.evalNull // TODO: this can be made more precise

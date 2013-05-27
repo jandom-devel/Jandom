@@ -20,32 +20,36 @@ package it.unich.sci.jandom.domains.objects
 
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import soot._
+import it.unich.sci.jandom.targets.jvm.ClassReachableAnalysis
+import scala.collection.immutable.Stack
 
 /**
  * A domain for pair sharing analysis, as described by Secci and Spoto.
  * @author Gianluca Amato <gamato@unich.it>
  */
 
-class PairSharingDomain(scene: Scene, roots: IndexedSeq[Local]) extends ObjectDomain {
+class PairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnalysis, roots: IndexedSeq[Local]) extends ObjectDomain {
 
   val localMap: Map[Local, Int] = roots.zipWithIndex.toMap
 
-  def top(stacksize: Int = 0) = {
+  def top(stack: Stack[Type]) = {
     val pairs = (for (l <- 0 until roots.size; r <- l until roots.size) yield UP(l, r)).toSet
-    Property(pairs, roots.size + stacksize)
+    Property(pairs, stack)
   }
-  def bottom(stacksize: Int = 0) = Property(Set(), roots.size + stacksize)
-  def initial = bottom(0)
+  def bottom(stack: Stack[Type]) = Property(Set(), stack)
+  def initial = bottom(Stack())
 
-  case class Property(val ps: Set[UP[Int]], val size: Int) extends ObjectProperty[Property] {
+  case class Property(val ps: Set[UP[Int]], val stack: Stack[Type]) extends ObjectProperty[Property] {
+
+    def size = roots.size + stack.size
 
     def roots = PairSharingDomain.this.roots
 
     private def renameVariable(ps: Set[UP[Int]], newvar: Int, oldvar: Int) = ps map { _.replace(newvar, oldvar) }
     private def removeVariable(ps: Set[UP[Int]], v: Int) = ps filterNot { _.contains(v) }
 
-    private def delUntrackedVariable = Property(ps, size - 1)
-    private def addUntrackedVariable = Property(ps, size + 1)
+    private def delUntrackedVariable = Property(ps, stack.pop)
+    private def addUntrackedVariable(tpe: Type) = Property(ps, stack.push(tpe))
 
     def starUnion(ps: Set[UP[Int]], v: Int) =
       (for (
@@ -53,19 +57,24 @@ class PairSharingDomain(scene: Scene, roots: IndexedSeq[Local]) extends ObjectDo
         UP(l1, r1) <- ps; if l1 == v || r1 == v; second = if (l1 == v) r1 else l1
       ) yield UP(first, second)) ++ ps
 
-    def evalConstant(c: Int) = addUntrackedVariable
-    def evalNull = Property(ps, size + 1)
-    def evalNew = Property(ps + UP(size, size), size + 1)
+    def evalConstant(c: Int) = addUntrackedVariable(IntType.v())
+    def evalNull = Property(ps, stack.push(NullType.v()))
+    def evalNew(tpe: Type) = Property(ps + UP(size, size), stack.push(tpe))
     def evalLocal(l: Local) = {
       val v = localMap(l)
       if (ps contains UP(v, v))
-        Property(ps ++ renameVariable(ps, size, v) + UP(size, v), size + 1)
+        Property(ps ++ renameVariable(ps, size, v) + UP(size, v), stack.push(l.getType()))
       else
-        Property(ps, size + 1)
+        Property(ps, stack.push(l.getType()))
     }
-    def evalLength = addUntrackedVariable
-    def evalField(l: Local, f: SootField) = evalLocal(l) // may be improved with type information
-
+    def evalLength = addUntrackedVariable(IntType.v())
+    def evalField(l: Local, f: SootField) =  {
+      val v = localMap(l)
+      if (ps contains UP(v, v))
+        Property(ps ++ renameVariable(ps, size, v) + UP(size, v), stack.push(f.getType()))
+      else
+        Property(ps, stack.push(f.getType()))
+    }
     def evalAdd = delUntrackedVariable
     def evalSub = delUntrackedVariable
     def evalMul = delUntrackedVariable
@@ -96,33 +105,33 @@ class PairSharingDomain(scene: Scene, roots: IndexedSeq[Local]) extends ObjectDo
     def testEq = evalEq.test
     def testNe = evalNe.test
 
-    def evalLinearForm(lf: Array[Double]) = addUntrackedVariable
+    def evalLinearForm(lf: Array[Double]) = addUntrackedVariable(DoubleType.v())
     def testLinearCondition(lc: LinearCond) = (this, this)
 
     def assignLocal(l: Local) = {
       val dst = localMap(l)
-      Property(renameVariable(removeVariable(ps, dst), dst, size - 1), size - 1)
+      Property(renameVariable(removeVariable(ps, dst), dst, size - 1), stack.pop)
     }
     def assignField(l: Local, f: SootField) = {
       val dst = localMap(l)
       if (!ps.contains(UP(dst, dst))) // this should generate a null pointer exception
-        Property(Set(), size - 1)
+        Property(Set(), stack.pop)
       else if (!ps.contains(UP(size - 1, size - 1))) // not required optimization
-        Property(ps, size - 1)
+        Property(ps, stack.pop)
       else
-        Property(starUnion(removeVariable(starUnion(ps + UP(dst, size - 1), size - 1), size - 1), dst), size - 1)
+        Property(starUnion(removeVariable(starUnion(ps + UP(dst, size - 1), size - 1), size - 1), dst), stack.pop)
     }
 
-    def mkString(vars: IndexedSeq[String]) =  (ps.view.toSeq map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }) :+ s"dimension ${size}"
+    def mkString(vars: IndexedSeq[String]) = (ps.view.toSeq map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }) :+ s"dimension ${size}"
 
     def union(that: Property) = {
-      assert(size == that.size)
-      Property(ps union that.ps, size max that.size)
+      assert(stack == that.stack)
+      Property(ps union that.ps, stack )
     }
 
     def intersection(that: Property) = {
-      assert(size == that.size)
-      Property(ps union that.ps, size)
+      assert(stack == that.stack)
+      Property(ps union that.ps, stack)
     }
 
     def widening(that: Property) = this union that

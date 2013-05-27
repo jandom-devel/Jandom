@@ -40,7 +40,7 @@ trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractPrope
 
   def evalConstant(c: Int): Property
   def evalNull: Property
-  def evalNew: Property
+  def evalNew(tpe: Type): Property
   def evalLocal(l: Local): Property
   def evalField(l: Local, f: SootField): Property
 

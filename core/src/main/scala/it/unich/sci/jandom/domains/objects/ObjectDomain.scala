@@ -22,6 +22,8 @@ import it.unich.sci.jandom.domains.AbstractDomain
 import it.unich.sci.jandom.domains.WithBottom
 import it.unich.sci.jandom.domains.WithTop
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import scala.collection.immutable.Stack
+import soot.Type
 
 /**
  * This is the base for all domains which analyze objects abstractly, i.e. without
@@ -32,6 +34,6 @@ trait ObjectDomain extends AbstractDomain {
   type Property <: ObjectProperty[Property]
 
   def initial: Property
-  def top(stacksize: Int): Property
-  def bottom(stacksize: Int): Property
+  def top(stack: Stack[Type]): Property
+  def bottom(stack: Stack[Type]): Property
 }
