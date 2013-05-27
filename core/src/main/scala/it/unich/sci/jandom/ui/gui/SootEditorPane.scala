@@ -31,7 +31,7 @@ import it.unich.sci.jandom.targets.jvm._
 import javax.swing.KeyStroke
 import soot.Scene
 import soot.SootMethod
-import it.unich.sci.jandom.domains.objects.ObjectNumericalDomain
+import it.unich.sci.jandom.targets.jvm.ObjectNumericalDomain
 
 /**
  * This is the pane used to select the class and method to analyze for

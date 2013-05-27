@@ -16,18 +16,17 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains.objects
+package it.unich.sci.jandom.targets.jvm
 
 import scala.collection.immutable.BitSet
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
-import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import soot._
 import scala.collection.immutable.Stack
 
-class ObjectNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[Local]) extends ObjectDomain {
+class ObjectNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[Local]) extends SootFrameDomain {
 
   private val numericalSeq = for ((local, index) <- roots.zipWithIndex; if local.getType().isInstanceOf[PrimType]) yield index
   val numerical = BitSet(numericalSeq: _*)
@@ -38,7 +37,7 @@ class ObjectNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[L
   def initial = top(Stack())
   def apply(prop: numdom.Property) = new Property(prop)
 
-  case class Property(val prop: numdom.Property) extends ObjectProperty[Property] {
+  case class Property(val prop: numdom.Property) extends SootFrameProperty[Property] {
 
     def roots = ObjectNumericalDomain.this.roots
 

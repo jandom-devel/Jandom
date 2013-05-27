@@ -19,8 +19,11 @@
 package it.unich.sci.jandom.domains
 
 /**
- * The base class for all abstract domains. An abstract domain is essentially a poset. The elements
- * of this posets are values of the type `Property`.
+ * The base class for all abstract domains. An abstract domain is essentially a poset.
+ * The elements of this posets are values of the type `Property`. Actually, with respect
+ * to standard abstract interpretation theory, an abstract domain in Jandom could be
+ * though of as "fibred": different fibers corresponds to slightly different concrete
+ * domains.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */

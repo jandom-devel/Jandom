@@ -18,13 +18,16 @@
 
 package it.unich.sci.jandom.domains
 
+import scala.collection.immutable.Stack
+
 import org.scalatest.FunSuite
-import it.unich.sci.jandom.domains.objects.PairSharingDomain
+
 import it.unich.sci.jandom.domains.objects.UP
+import it.unich.sci.jandom.targets.jvm.ClassReachableAnalysis
+import it.unich.sci.jandom.targets.jvm.SootFramePairSharingDomain
+
 import soot._
 import soot.jimple.internal.JimpleLocal
-import it.unich.sci.jandom.targets.jvm.ClassReachableAnalysis
-import scala.collection.immutable.Stack
 
 /**
  * A test suite for PairSharing domain.
@@ -37,7 +40,7 @@ class PairSharingSuite extends FunSuite {
   val locals = for (i <- 0 until size) yield new JimpleLocal("v" + i, new soot.Singletons().soot_RefType())
   val field = new SootField("f",new soot.Singletons().soot_RefType())
   val classAnalysis = new ClassReachableAnalysis(scene)
-  val dom = new PairSharingDomain(scene, classAnalysis, locals)
+  val dom = new SootFramePairSharingDomain(scene, classAnalysis, locals)
 
   test("Bottom element") {
     assert(dom.Property(Set(), Stack()) === dom.bottom(Stack()))

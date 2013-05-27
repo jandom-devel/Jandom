@@ -16,19 +16,20 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains.objects
+package it.unich.sci.jandom.targets.jvm
 
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import soot._
-import it.unich.sci.jandom.targets.jvm.ClassReachableAnalysis
 import scala.collection.immutable.Stack
+import it.unich.sci.jandom.domains.objects.UP
+import sun.org.mozilla.javascript.ast.ObjectProperty
 
 /**
  * A domain for pair sharing analysis, as described by Secci and Spoto.
  * @author Gianluca Amato <gamato@unich.it>
  */
 
-class PairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnalysis, roots: IndexedSeq[Local]) extends ObjectDomain {
+class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnalysis, roots: IndexedSeq[Local]) extends SootFrameDomain {
 
   val localMap: Map[Local, Int] = roots.zipWithIndex.toMap
 
@@ -39,11 +40,11 @@ class PairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnalysis, roo
   def bottom(stack: Stack[Type]) = Property(Set(), stack)
   def initial = bottom(Stack())
 
-  case class Property(val ps: Set[UP[Int]], val stack: Stack[Type]) extends ObjectProperty[Property] {
+  case class Property(val ps: Set[UP[Int]], val stack: Stack[Type]) extends SootFrameProperty[Property] {
 
     def size = roots.size + stack.size
 
-    def roots = PairSharingDomain.this.roots
+    def roots = SootFramePairSharingDomain.this.roots
 
     def classOfVar(i: Int): SootClass = {
       val tpe = if (i < roots.size) roots(i).getType() else stack(i - roots.size)

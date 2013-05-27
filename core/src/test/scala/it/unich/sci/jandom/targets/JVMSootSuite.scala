@@ -17,15 +17,15 @@
  */
 
 package it.unich.sci.jandom.targets
+
 import scala.collection.immutable.BitSet
 import scala.collection.mutable.ArrayStack
 import org.scalatest.FunSuite
 import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
-import it.unich.sci.jandom.domains.objects.ObjectNumericalDomain
+import it.unich.sci.jandom.targets.jvm.ObjectNumericalDomain
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvm._
 import soot._
-import it.unich.sci.jandom.domains.objects.PairSharingDomain
 import parma_polyhedra_library.Octagonal_Shape_double
 import it.unich.sci.jandom.domains.numerical.PPLDomain
 
@@ -111,7 +111,7 @@ class JVMSootSuite extends FunSuite {
       val method = new JimpleMethod(c.getMethodByName(methodName))
       val classAnalysis = new ClassReachableAnalysis(scene)
       val params = new Parameters[JimpleMethod] {
-        val domain = new PairSharingDomain(scene, classAnalysis, method.locals)
+        val domain = new SootFramePairSharingDomain(scene, classAnalysis, method.locals)
         //debugWriter = new java.io.PrintWriter(System.err)
       }
       try {

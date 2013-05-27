@@ -22,11 +22,10 @@ import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.targets.linearcondition._
+
 import soot._
 import soot.jimple._
 import soot.toolkits.graph._
-import it.unich.sci.jandom.domains.objects.ObjectDomain
-import it.unich.sci.jandom.domains.objects.ObjectProperty
 
 /**
  * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library. It is
@@ -37,11 +36,7 @@ import it.unich.sci.jandom.domains.objects.ObjectProperty
 class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
   import scala.collection.JavaConversions._
 
-  /**
-   * @inheritdoc
-   * Here, we only handle numerical domains.
-   */
-  type DomainBase = ObjectDomain
+  type DomainBase = SootFrameDomain
 
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.UnitBlockGraph(body)
@@ -123,7 +118,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
     newcond
   }
 
-  def analyzeCond[Property <: ObjectProperty[Property]](v: Value, prop: Property): (Property, Property) = {
+  def analyzeCond[Property <: DomainBase#SootFrameProperty[Property]](v: Value, prop: Property): (Property, Property) = {
     val lc = jimpleExprToLinearCond(v)
     lc match {
       case Some(lc) => prop.testLinearCondition(lc)
@@ -152,7 +147,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
    * @return the abstract end state. The last dimension of property corresponds to the
    * returned value.
    */
-  def analyzeExpr[Property <: ObjectProperty[Property]](v: Value, prop: Property): Property = {
+  def analyzeExpr[Property <: DomainBase#SootFrameProperty[Property]](v: Value, prop: Property): Property = {
     v match {
       case v: IntConstant =>
         prop.evalConstant(v.value)
