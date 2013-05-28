@@ -41,6 +41,8 @@ class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnal
   def bottom(stack: Stack[Type]) = Property(Set(), stack)
   def initial = bottom(Stack())
 
+  def apply(ps: Set[UP[Local]]) = Property(ps map { case UP(l,r) => UP(localMap(l), localMap(r)) }, Stack())
+
   case class Property(val ps: Set[UP[Int]], val stack: Stack[Type]) extends SootFrameProperty[Property] {
 
     def size = roots.size + stack.size
