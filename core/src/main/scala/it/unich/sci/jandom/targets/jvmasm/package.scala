@@ -16,13 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets
-
 /**
  * This is the Scala package containing the targets for the analysis of Java bytecode. It uses the
  * libraries ASM and Soot to read class files
  * @author Gianluca Amato <gamato@unich.it>
  */
-package object jvm {
+package it.unich.sci.jandom.targets.jvmasm {
 
 }

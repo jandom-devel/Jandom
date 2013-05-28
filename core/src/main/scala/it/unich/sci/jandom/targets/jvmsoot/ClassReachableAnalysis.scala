@@ -16,11 +16,11 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.jvm
+package it.unich.sci.jandom.targets.jvmsoot
+
+import it.unich.sci.jandom.domains.objects.UP
 
 import soot._
-import it.unich.sci.jandom.domains.objects.UP
-import soot.util.Numberable
 
 /**
  * This class analyzes a Soot Scene, looking for relationships of reachability
@@ -67,13 +67,12 @@ class ClassReachableAnalysis(scene: Scene) {
   }
 
   /**
-   * Determine whether the class `tgt` is reachable from `src`.
+   * Determines whether the class `tgt` is reachable from `src`.
    */
   def isReachableFrom(src: SootClass, tgt: SootClass) = reachablesFrom(src) contains tgt
 
   /**
-   * Determines whether two class may share. It uses memoization
-   * to speed up subsequent calls.
+   * Determines whether two class may share. It uses memoization to speed up subsequent calls.
    * @note it is possible to speed up this analysis by recording not all the classes reachable
    * from a given one, but just some selected classes in reachability loops or classes with no
    * fields.

@@ -16,18 +16,19 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.jvm
+package it.unich.sci.jandom.targets.jvmsoot
+
 import java.io._
+
 import it.unich.sci.jandom.domains.AbstractProperty
 import it.unich.sci.jandom.targets.Annotation
 import it.unich.sci.jandom.targets.cfg.ControlFlowGraph
+
 import soot._
 import soot.options.Options
 import soot.tagkit.LoopInvariantTag
-import soot.toolkits.graph.ExceptionalUnitGraph
-import soot.toolkits.graph.PseudoTopologicalOrderer
-import soot.tagkit.Host
 import soot.toolkits.graph.Block
+import soot.toolkits.graph.PseudoTopologicalOrderer
 
 /**
  * This class is an ancestor for all the analyzers of JVM methods using the Soot library.
@@ -59,9 +60,8 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block] extends Control
    */
   def mkString[D <: AbstractProperty[D]](ann: Annotation[ProgramPoint, D]): String = {
     // tag the method
-    val localsList = body.getLocals().toIndexedSeq map { _.getName() }
     for ((node, prop) <- ann; unit = node.getHead; if unit != null) {
-      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(localsList).mkString(", ") + " ]"))
+      unit.addTag(new LoopInvariantTag("[ " + prop.toString + " ]"))
     }
 
     // generate output with tag

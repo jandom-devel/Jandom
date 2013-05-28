@@ -23,8 +23,8 @@ import scala.collection.immutable.Stack
 import org.scalatest.FunSuite
 
 import it.unich.sci.jandom.domains.objects.UP
-import it.unich.sci.jandom.targets.jvm.ClassReachableAnalysis
-import it.unich.sci.jandom.targets.jvm.SootFramePairSharingDomain
+import it.unich.sci.jandom.targets.jvmsoot.ClassReachableAnalysis
+import it.unich.sci.jandom.targets.jvmsoot.SootFramePairSharingDomain
 
 import soot._
 import soot.jimple.internal.JimpleLocal

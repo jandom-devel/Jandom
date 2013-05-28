@@ -28,7 +28,7 @@ import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.{ ClassNode, MethodNode }
 
 import it.unich.sci.jandom._
-import it.unich.sci.jandom.targets.jvm._
+import it.unich.sci.jandom.targets.jvmasm._
 import it.unich.sci.jandom.targets.Parameters
 
 import javax.swing.KeyStroke
@@ -118,7 +118,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
           val ann = method.analyze(params)
           Some(method.mkString(ann))
         } catch {
-          case e: UnsupportedASMByteCodeException =>
+          case e: UnsupportedASMInsnException =>
             Dialog.showMessage(ASMEditorPane.this, e.getMessage + " : " + e.node, "Error in analysing bytecode", Dialog.Message.Error)
             None
           case e: Exception =>

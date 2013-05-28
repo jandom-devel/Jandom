@@ -16,13 +16,14 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.jvm
+package it.unich.sci.jandom.targets.jvmsoot
 
-import it.unich.sci.jandom.targets.linearcondition.LinearCond
-import soot._
 import scala.collection.immutable.Stack
+
 import it.unich.sci.jandom.domains.objects.UP
-import sun.org.mozilla.javascript.ast.ObjectProperty
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
+
+import soot._
 
 /**
  * A domain for pair sharing analysis, as described by Secci and Spoto.

@@ -18,17 +18,13 @@
 
 package it.unich.sci.jandom.targets
 
-import java.io.FileInputStream
-
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import org.scalatest.FunSuite
 
 import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
-import it.unich.sci.jandom.targets.jvm.JVMEnvFixedFrameDomain
-import it.unich.sci.jandom.targets.jvm.AsmMethod
-import it.unich.sci.jandom.targets.jvm.UnsupportedASMByteCodeException
+import it.unich.sci.jandom.targets.jvmasm._
 
 class JVMASMSuite extends FunSuite {
   import scala.collection.JavaConversions.asScalaBuffer
@@ -47,7 +43,7 @@ class JVMASMSuite extends FunSuite {
       val ann = method.analyze(params)
       println(method.mkString(ann))
     } catch {
-      case e: UnsupportedASMByteCodeException =>
+      case e: UnsupportedASMInsnException =>
         println(e.node)
     }
     is.close

@@ -16,7 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.jvm
+package it.unich.sci.jandom.targets.jvmsoot
 
 import scala.collection.immutable.Stack
 
@@ -28,7 +28,9 @@ import soot._
 
 /**
  * This is the base trait domain for the analysis of methods using Soot. It represents
- * an abstract frame with locals and stack.
+ * an abstract frame with locals and stack. It is used for both Baf and Jimple analysis,
+ * although Jimple could be made faster by analyzing one statement at a time instead of
+ * evaluating expressions compositionally.
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait SootFrameDomain extends AbstractDomain {

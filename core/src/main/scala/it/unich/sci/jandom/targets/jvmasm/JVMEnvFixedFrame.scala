@@ -16,7 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.jvm
+package it.unich.sci.jandom.targets.jvmasm
 
 import scala.collection.mutable.ArrayStack
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond

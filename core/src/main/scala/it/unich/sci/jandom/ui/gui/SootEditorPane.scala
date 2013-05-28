@@ -20,18 +20,21 @@ package it.unich.sci.jandom.ui.gui
 
 import java.awt.event.{ InputEvent, KeyEvent }
 import java.io.File
+
 import scala.collection.JavaConversions._
 import scala.swing.{Action, BorderPanel, BoxPanel, ComboBox, EditorPane, FileChooser, Label, MenuItem, Orientation, ScrollPane}
 import scala.swing.Dialog
+
 import it.unich.sci.jandom._
 import it.unich.sci.jandom.ppfactories.MemoizingFactory
-import it.unich.sci.jandom.targets.Target
 import it.unich.sci.jandom.targets.Parameters
-import it.unich.sci.jandom.targets.jvm._
+import it.unich.sci.jandom.targets.Target
+import it.unich.sci.jandom.targets.jvmasm._
+import it.unich.sci.jandom.targets.jvmsoot._
+
 import javax.swing.KeyStroke
 import soot.Scene
 import soot.SootMethod
-import it.unich.sci.jandom.targets.jvm.ObjectNumericalDomain
 
 /**
  * This is the pane used to select the class and method to analyze for
@@ -131,7 +134,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
           frame.mode match {
             case Baf =>
               val bafMethod = method.asInstanceOf[BafMethod]
-              val params = new Parameters[BafMethod] { val domain = new JVMEnvDynFrameDomain(numericalDomain) }
+              val params = new Parameters[BafMethod] { val domain = new SootFrameNumericalDomain(numericalDomain, bafMethod.locals) }
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(bafMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(bafMethod)(params.narrowingFactory)
@@ -139,7 +142,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               Some(bafMethod.mkString(ann))
             case Jimple =>
               val jimpleMethod = method.asInstanceOf[JimpleMethod]
-              val params = new Parameters[JimpleMethod]{ val domain = new ObjectNumericalDomain(numericalDomain, jimpleMethod.locals) }
+              val params = new Parameters[JimpleMethod]{ val domain = new SootFrameNumericalDomain(numericalDomain, jimpleMethod.locals) }
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(jimpleMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(jimpleMethod)(params.narrowingFactory)
@@ -147,9 +150,9 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               Some(jimpleMethod.mkString(ann))
           }
         } catch {
-          case e: UnsupportedBafByteCodeException =>
+          case e: UnsupportedSootUnitException  =>
             println(e.getMessage)
-            Dialog.showMessage(SootEditorPane.this, e.getMessage + " : " + e.inst, "Error in analysing bytecode", Dialog.Message.Error)
+            Dialog.showMessage(SootEditorPane.this, e.getMessage + " : " + e.unit, "Error in analysing bytecode", Dialog.Message.Error)
             None
           case e: Exception =>
             Dialog.showMessage(SootEditorPane.this, e.getMessage, "Error in parsing source code", Dialog.Message.Error)

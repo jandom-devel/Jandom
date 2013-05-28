@@ -19,15 +19,14 @@
 package it.unich.sci.jandom.targets
 
 import scala.collection.immutable.BitSet
-import scala.collection.mutable.ArrayStack
+
 import org.scalatest.FunSuite
+
 import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
-import it.unich.sci.jandom.targets.jvm.ObjectNumericalDomain
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
-import it.unich.sci.jandom.targets.jvm._
+import it.unich.sci.jandom.targets.jvmsoot._
+
 import soot._
-import parma_polyhedra_library.Octagonal_Shape_double
-import it.unich.sci.jandom.domains.numerical.PPLDomain
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -40,29 +39,31 @@ class JVMSootSuite extends FunSuite {
   c.setApplicationClass()
   val numdomain = PPLCPolyhedron
 
-  test("Baf analysis with fixed frame environment") {
+  test("Baf numerical analysis") {
     val tests = Seq(
-      ("sequential", Array(0), "i0 == 10"),
-      ("conditional", Array(0), "i0 == 1"),
-      ("loop", Array(0), "i0 == 10"),
-      ("nested", Array(0, 1, -1), "i0 >= 9 && i1 == 10"),
-      // "longassignment" -> "true",  unsupported bytecode
-      ("topologicalorder", Array(0), "i0 >= 3 && i0 <= 4"))
+      "sequential" -> ("i2 == 10" -> BitSet(0)),
+      "conditional" -> ("z0 == 1" -> BitSet(0)),
+      "loop" -> ("i0 >= 10 && i0 <= 11" -> BitSet(0)),
+      "nested" -> ("i0 >= i1 - 1 && i1 >= 10 && i1 <= 11 && i2==i2" -> BitSet(0, 1, 2)),
+      "longassignment" -> ("i0 >= 0 && i1 >= 10 && i2==i2" -> BitSet(0, 1, 2)),
+      "topologicalorder" -> ("b0 >= 3 && b0<=4" -> BitSet(0)))
 
-    val params = new Parameters[BafMethod] {
-      val domain = new JVMEnvFixedFrameDomain(JVMSootSuite.this.numdomain)
-      //wideningFactory = MemoizingFactory(method)(DelayedWideningFactory(DefaultWidening, 2))
-      //narrowingFactory = MemoizingFactory(method)(DelayedNarrowingFactory(NoNarrowing, 2))
-      //debugWriter = new java.io.StringWriter
-    }
-    for ((methodName, frame, propString) <- tests) {
+    for ((methodName, (propString, bitset)) <- tests) {
       val method = new BafMethod(c.getMethodByName(methodName))
-      val ann = method.analyze(params)
-      val env = Environment()
-      val parser = new NumericalPropertyParser(env)
-      val prop = parser.parseProperty(propString, numdomain).get
-      val jvmenv = new JVMEnvDynFrame(frame, ArrayStack(), prop).toJVMEnvFixedFrame
-      assert(ann(method.lastPP.get) === jvmenv, s"In the analysis of ${methodName}")
+      val params = new Parameters[BafMethod] {
+        val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain, method.locals)
+        //debugWriter = new java.io.PrintWriter(System.err)
+      }
+      try {
+        val ann = method.analyze(params)
+        val env = Environment()
+        val parser = new NumericalPropertyParser(env)
+        val prop = parser.parseProperty(propString, params.domain.numdom).get
+        val objprop = params.domain(prop)
+        assert(ann(method.lastPP.get) === objprop, s"In the analysis of ${methodName}")
+      } finally {
+        params.debugWriter.flush()
+      }
     }
   }
 
@@ -74,12 +75,11 @@ class JVMSootSuite extends FunSuite {
       "nested" -> ("v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2" -> BitSet(0, 1, 2)),
       "longassignment" -> ("11*v0 - 33*v1 >= -63 && v1 >=10 && v2 == v2 && v3 == v3 && v4 == v4" -> BitSet(0, 1, 2, 3, 4)),
       "topologicalorder" -> ("v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4" -> BitSet(0, 1, 2)))
-    //"objcreation" -> ("v0==v0 && v1==v1 && v2==v2" -> BitSet()))
 
     for ((methodName, (propString, bitset)) <- tests) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
       val params = new Parameters[JimpleMethod] {
-        val domain = new ObjectNumericalDomain(JVMSootSuite.this.numdomain, method.locals)
+        val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain, method.locals)
         //debugWriter = new java.io.PrintWriter(System.err)
       }
       try {
@@ -116,11 +116,9 @@ class JVMSootSuite extends FunSuite {
       }
       try {
         val ann = method.analyze(params)
-        println(method.mkString(ann))
       } finally {
         params.debugWriter.flush()
       }
     }
   }
-
 }

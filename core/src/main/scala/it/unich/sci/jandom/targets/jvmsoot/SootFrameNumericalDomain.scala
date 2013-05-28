@@ -16,19 +16,23 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.jvm
+package it.unich.sci.jandom.targets.jvmsoot
 
 import scala.collection.immutable.BitSet
+import scala.collection.immutable.Stack
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import soot._
-import scala.collection.immutable.Stack
+import soot.baf.WordType
 
-class ObjectNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[Local]) extends SootFrameDomain {
+class SootFrameNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[Local]) extends SootFrameDomain {
 
-  private val numericalSeq = for ((local, index) <- roots.zipWithIndex; if local.getType().isInstanceOf[PrimType]) yield index
+  private val numericalSeq = for {
+    (local, index) <- roots.zipWithIndex
+    if local.getType().isInstanceOf[PrimType] || local.getType().isInstanceOf[WordType]
+  } yield index
   val numerical = BitSet(numericalSeq: _*)
   val localMap: Map[Local, Int] = roots.zipWithIndex.toMap
 
@@ -39,7 +43,7 @@ class ObjectNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[L
 
   case class Property(val prop: numdom.Property) extends SootFrameProperty[Property] {
 
-    def roots = ObjectNumericalDomain.this.roots
+    def roots = SootFrameNumericalDomain.this.roots
 
     def size = prop.dimension
 

@@ -16,10 +16,8 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.jvm
+package it.unich.sci.jandom.targets.jvmsoot
 
-import it.unich.sci.jandom.domains.numerical.NumericalDomain
-import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.targets.linearcondition._
 
@@ -43,7 +41,6 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
   val locals = body.getLocals().toIndexedSeq
 
   private val envMap = locals.zipWithIndex.toMap
-
   def topProperty(node: Block, params: Parameters): params.Property = params.domain.initial
 
   /**

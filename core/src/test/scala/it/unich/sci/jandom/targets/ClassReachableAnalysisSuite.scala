@@ -24,7 +24,7 @@ package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.targets.jvm.ClassReachableAnalysis
+import it.unich.sci.jandom.targets.jvmsoot.ClassReachableAnalysis
 
 import soot._
 

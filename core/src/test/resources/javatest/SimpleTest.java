@@ -60,6 +60,7 @@ public class SimpleTest {
 		z = z + 1;
 	}
 
+	@SuppressWarnings("unused")
 	static void complexif() {
 		int x = 0;
 		int y = 0;
@@ -77,6 +78,7 @@ public class SimpleTest {
 		a2 = l.v;
 	}
 
+	@SuppressWarnings("unused")
 	static void classrefinement() {
 		A a = new A();
 		B b = new B();

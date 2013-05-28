@@ -16,7 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.jvm
+package it.unich.sci.jandom.targets.jvmasm
 
 import java.io.{ PrintWriter, StringWriter }
 import java.util.NoSuchElementException
@@ -96,19 +96,19 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
               case ICONST_0 | ICONST_1 | ICONST_2 | ICONST_3 | ICONST_4 | ICONST_5 => s.ipush(op - ICONST_0)
               case IADD => s.iadd
               case RETURN =>
-              case _ => throw UnsupportedASMByteCodeException(node)
+              case _ => throw UnsupportedASMInsnException(node)
             }
           case node: IntInsnNode =>
             op match {
               case BIPUSH =>
                 s.ipush(node.operand)
-              case _ => throw UnsupportedASMByteCodeException(node)
+              case _ => throw UnsupportedASMInsnException(node)
             }
           case node: VarInsnNode =>
             op match {
               case ISTORE => s.istore(node.`var`)
               case ILOAD => s.iload(node.`var`)
-              case _ => throw UnsupportedASMByteCodeException(node)
+              case _ => throw UnsupportedASMInsnException(node)
             }
           case node: JumpInsnNode =>
             op match {
@@ -119,12 +119,12 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
                 s.if_icmp(AtomicCond.ComparisonOperators.LTE)
               }
               case GOTO => exits :+= (jumpBlock.get, s)
-              case _ => throw UnsupportedASMByteCodeException(node)
+              case _ => throw UnsupportedASMInsnException(node)
             }
           case node: LabelNode =>
           case node: LineNumberNode =>
           case node: FrameNode =>
-          case _ => throw UnsupportedASMByteCodeException(node)
+          case _ => throw UnsupportedASMInsnException(node)
         }
         node = node.getNext()
       }
