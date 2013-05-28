@@ -19,6 +19,7 @@
 package it.unich.sci.jandom.domains.objects
 
 import it.unich.sci.jandom.domains.AbstractProperty
+import it.unich.sci.jandom.domains.AbstractDomain
 
 /**
  * This trait represents a domain which handles objects and their relationship. May be used, for
@@ -27,7 +28,7 @@ import it.unich.sci.jandom.domains.AbstractProperty
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-trait ObjectDomain {
+trait ObjectDomain extends AbstractDomain {
   type Property <: ObjectProperty[Property]
 
   def top(size: Int): Property
@@ -40,7 +41,7 @@ trait ObjectDomain {
     def assignNull(dst: Int = size - 1): Property
     def assignVariable(dst: Int, src: Int): Property
     def assignVariableToField(dst: Int, field: Int, src: Int): Property
-    def assignFieldToVariable(dst: Int, src: Int, field: Int): Property
+    def assignFieldToVariable(dst: Int, src: Int, field: Int, isPossible: UP[Int] => Boolean = { x => true }): Property
     def isNull(v: Int): Boolean
   }
 }

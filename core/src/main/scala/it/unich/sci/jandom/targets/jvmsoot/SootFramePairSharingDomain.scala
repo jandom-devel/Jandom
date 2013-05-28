@@ -19,11 +19,11 @@
 package it.unich.sci.jandom.targets.jvmsoot
 
 import scala.collection.immutable.Stack
-
 import it.unich.sci.jandom.domains.objects.UP
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
-
 import soot._
+import it.unich.sci.jandom.domains.objects.PairSharingDomain
+import it.unich.sci.jandom.domains.objects.ObjectDomain
 
 /**
  * A domain for pair sharing analysis, as described by Secci and Spoto.
@@ -32,18 +32,15 @@ import soot._
 
 class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnalysis, roots: IndexedSeq[Local]) extends SootFrameDomain {
 
+  val dom = PairSharingDomain
+
   val localMap: Map[Local, Int] = roots.zipWithIndex.toMap
 
-  def top(stack: Stack[Type]) = {
-    val pairs = (for (l <- 0 until roots.size; r <- l until roots.size) yield UP(l, r)).toSet
-    Property(pairs, stack)
-  }
-  def bottom(stack: Stack[Type]) = Property(Set(), stack)
+  def top(stack: Stack[Type]) = Property(dom.top(roots.size + stack.size), stack)
+  def bottom(stack: Stack[Type]) = Property(dom.bottom(roots.size + stack.size), stack)
   def initial = bottom(Stack())
 
-  def apply(ps: Set[UP[Local]]) = Property(ps map { case UP(l,r) => UP(localMap(l), localMap(r)) }, Stack())
-
-  case class Property(val ps: Set[UP[Int]], val stack: Stack[Type]) extends SootFrameProperty[Property] {
+  case class Property(val prop: dom.Property, val stack: Stack[Type]) extends SootFrameProperty[Property] {
 
     def size = roots.size + stack.size
 
@@ -55,46 +52,34 @@ class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnal
       tpe.asInstanceOf[RefType].getSootClass()
     }
 
-    private def renameVariable(ps: Set[UP[Int]], newvar: Int, oldvar: Int) = {
-      val newclass = classOfVar(oldvar)
-      ps map { _.replace(newvar, oldvar) } filter {
-        case UP(l, r) if l == newvar && r == newvar => true
-        case UP(`newvar`, r) => classAnalysis.mayShare(classOfVar(r), newclass)
-        case UP(l, `newvar`) => classAnalysis.mayShare(classOfVar(l), newclass)
-        case _ => true
-      }
-    }
+    val isPossibleFromFieldAssignment = { p: UP[Int] => classAnalysis.mayShare(classOfVar(p._1), classOfVar(p._2)) }
 
-    private def removeVariable(ps: Set[UP[Int]], v: Int) = ps filterNot { _.contains(v) }
+    private def delUntrackedVariable =
+      Property(prop.delVariable(size-1), stack.pop)
 
-    private def delUntrackedVariable = Property(ps, stack.pop)
-    private def addUntrackedVariable(tpe: Type) = Property(ps, stack.push(tpe))
-
-    def starUnion(ps: Set[UP[Int]], v: Int) =
-      (for (
-        UP(l, r) <- ps; if l == v || r == v; first = if (l == v) r else l;
-        UP(l1, r1) <- ps; if l1 == v || r1 == v; second = if (l1 == v) r1 else l1
-      ) yield UP(first, second)) ++ ps
+    private def addUntrackedVariable(tpe: Type) =
+      Property(prop.addVariable.assignNull(size), stack.push(NullType.v()))
 
     def evalConstant(c: Int) = addUntrackedVariable(IntType.v())
-    def evalNull = addUntrackedVariable(IntType.v())
-    def evalNew(tpe: Type) = Property(ps + UP(size, size), stack.push(tpe))
+
+    def evalNull =
+      Property(prop.addVariable.assignNull(size), stack.push(NullType.v()))
+
+    def evalNew(tpe: Type) =
+      Property(prop.addVariable, stack.push(tpe))
+
     def evalLocal(l: Local) = {
       val v = localMap(l)
-      val newstack = stack.push(l.getType())
-      if (ps contains UP(v, v))
-        Property(ps ++ renameVariable(ps, size, v) + UP(size, v), newstack)
-      else
-        Property(ps, newstack)
+      Property(prop.addVariable.assignVariable(size, v), stack.push(l.getType()))
     }
+
     def evalLength = addUntrackedVariable(IntType.v())
+
     def evalField(l: Local, f: SootField) = {
       val v = localMap(l)
-      if (ps contains UP(v, v))
-        Property(ps ++ renameVariable(ps, size, v) + UP(size, v), stack.push(f.getType()))
-      else
-        Property(ps, stack.push(f.getType()))
+      Property( prop.addVariable.assignFieldToVariable(size, v, f.getNumber(), isPossibleFromFieldAssignment), stack.push(f.getType()))
     }
+
     def evalAdd = delUntrackedVariable
     def evalSub = delUntrackedVariable
     def evalMul = delUntrackedVariable
@@ -131,32 +116,27 @@ class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnal
     def assignLocal(l: Local) = {
       val dst = localMap(l)
       if (l.getType().isInstanceOf[RefType])
-        Property(renameVariable(removeVariable(ps, dst), dst, size - 1), stack.pop)
+        Property(prop.assignVariable(dst, size - 1).delVariable(), stack.pop)
       else
-        Property(ps, stack.pop)
+        Property(prop.delVariable(), stack.pop)
     }
 
     def assignField(l: Local, f: SootField) = {
       val dst = localMap(l)
-      if (!ps.contains(UP(dst, dst))) // this should generate a null pointer exception
-        Property(Set(), stack.pop)
-      else if (!ps.contains(UP(size - 1, size - 1))) // not required optimization
-        Property(ps, stack.pop)
-      else
-        Property(starUnion(removeVariable(starUnion(ps + UP(dst, size - 1), size - 1), size - 1), dst), stack.pop)
+      Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop)
     }
 
     def mkString(vars: IndexedSeq[String]) =
-      (ps.view.toSeq map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }) :+ s"dimension ${size}"
+      prop mkString vars
 
     def union(that: Property) = {
       assert(stack == that.stack)
-      Property(ps union that.ps, stack)
+      Property(prop union that.prop, stack)
     }
 
     def intersection(that: Property) = {
       assert(stack == that.stack)
-      Property(ps union that.ps, stack)
+      Property(prop union that.prop, stack)
     }
 
     def widening(that: Property) = this union that
@@ -167,18 +147,7 @@ class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnal
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
       other match {
-        case other: Property =>
-          if (size == other.size) {
-            if (other.ps == ps)
-              Some(0)
-            else if (ps subsetOf other.ps)
-              Some(-1)
-            else if (other.ps subsetOf ps)
-              Some(1)
-            else
-              None
-          } else
-            None
+        case other: Property => prop tryCompareTo other.prop
         case _ => None
       }
   }

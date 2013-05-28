@@ -20,15 +20,13 @@ package it.unich.sci.jandom.targets
 
 import scala.collection.immutable.BitSet
 import scala.collection.immutable.Stack
-
 import org.scalatest.FunSuite
-
 import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
 import it.unich.sci.jandom.domains.objects.UP
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvmsoot._
-
 import soot._
+import it.unich.sci.jandom.domains.objects.PairSharingDomain
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -122,7 +120,7 @@ class JVMSootSuite extends FunSuite {
     test(s"Jimple object analysis: ${methodName}") {
       try {
         val ann = method.analyze(params)
-        assert(ann(method.lastPP.get) === new params.domain.Property(ps, Stack()))
+        assert(ann(method.lastPP.get) === new params.domain.Property(params.domain.dom.Property(ps,method.locals.size), Stack()))
       } finally {
         params.debugWriter.flush()
       }
