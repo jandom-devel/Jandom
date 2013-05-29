@@ -41,7 +41,7 @@ trait ObjectDomain extends AbstractDomain {
     def assignNull(dst: Int = size - 1): Property
     def assignVariable(dst: Int, src: Int): Property
     def assignVariableToField(dst: Int, field: Int, src: Int): Property
-    def assignFieldToVariable(dst: Int, src: Int, field: Int, isPossible: UP[Int] => Boolean = { x => true }): Property
+    def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: UP[Int] => Boolean = { x => true }): Property
     def isNull(v: Int): Boolean
   }
 }

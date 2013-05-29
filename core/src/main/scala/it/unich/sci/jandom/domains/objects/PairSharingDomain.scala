@@ -64,15 +64,14 @@ object PairSharingDomain extends ObjectDomain {
         new Property(removed ++ renameVariable(removed, dst, src) + UP(dst, src), size)
     }
 
-    def assignFieldToVariable(dst: Int, src: Int, field: Int, isPossible: UP[Int] => Boolean) = {
+    def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: UP[Int] => Boolean) = {
       val removed = removeVariable(ps, dst)
       if (isNull(src))
         new Property(removed, size)
       else {
-        val renamed = renameVariable(removed, dst, src) filter { p => p._1 == dst || p._2 == dst || isPossible(p) }
+        val renamed = renameVariable(removed, dst, src) filter  mayShare
         new Property(removed ++ renamed + UP(dst, src), size)
       }
-
     }
 
     def assignVariableToField(dst: Int, field: Int, src: Int) =

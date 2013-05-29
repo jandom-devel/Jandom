@@ -48,17 +48,16 @@ class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnal
 
     def classOfVar(i: Int): SootClass = {
       val tpe = if (i < roots.size) roots(i).getType() else stack(i - roots.size)
-      assert(tpe.isInstanceOf[RefType])
       tpe.asInstanceOf[RefType].getSootClass()
     }
 
-    val isPossibleFromFieldAssignment = { p: UP[Int] => classAnalysis.mayShare(classOfVar(p._1), classOfVar(p._2)) }
+    val mayShare = { p: UP[Int] => classAnalysis.mayShare(classOfVar(p._1), classOfVar(p._2)) }
 
     private def delUntrackedVariable =
-      Property(prop.delVariable(size-1), stack.pop)
+      Property(prop.delVariable(size - 1), stack.pop)
 
     private def addUntrackedVariable(tpe: Type) =
-      Property(prop.addVariable.assignNull(size), stack.push(NullType.v()))
+      Property(prop.addVariable.assignNull(size), stack.push(tpe))
 
     def evalConstant(c: Int) = addUntrackedVariable(IntType.v())
 
@@ -75,9 +74,11 @@ class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnal
 
     def evalLength = addUntrackedVariable(IntType.v())
 
-    def evalField(l: Local, f: SootField) = {
-      val v = localMap(l)
-      Property( prop.addVariable.assignFieldToVariable(size, v, f.getNumber(), isPossibleFromFieldAssignment), stack.push(f.getType()))
+    def evalField(l: Local, f: SootField) = addUntrackedVariable(f.getType).assignFieldToStackTop(l,f)
+
+    private def assignFieldToStackTop(src: Local, f: SootField) = {
+      val isrc = localMap(src)
+      Property(prop.assignFieldToVariable(size - 1, isrc, f.getNumber(), mayShare), stack)
     }
 
     def evalAdd = delUntrackedVariable
