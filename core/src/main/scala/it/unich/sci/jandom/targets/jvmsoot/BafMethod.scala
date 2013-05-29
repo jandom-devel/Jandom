@@ -30,18 +30,14 @@ import soot.toolkits.graph._
  * @param method the method we want to analyze
  * @author Gianluca Amato
  */
-class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block] {
+class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
   import scala.collection.JavaConversions._
-
-  type DomainBase = SootFrameDomain
 
   val body = Baf.v().newBody(method.retrieveActiveBody())
   val graph = new soot.jandom.UnitBlockGraph(body)
   val locals = body.getLocals().toIndexedSeq
 
   private val envMap = body.getLocals().zipWithIndex.toMap
-
-  def topProperty(node: Block, params: Parameters): params.Property = params.domain.initial
 
   /**
    * @note In developing this method we are assuming that, if a unit has a fall-through, it is the first

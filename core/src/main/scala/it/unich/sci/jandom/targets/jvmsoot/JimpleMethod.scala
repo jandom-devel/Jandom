@@ -31,17 +31,14 @@ import soot.toolkits.graph._
  * @param method the method we want to analyze
  * @author Gianluca Amato
  */
-class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
+class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](method) {
   import scala.collection.JavaConversions._
-
-  type DomainBase = SootFrameDomain
 
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.UnitBlockGraph(body)
   val locals = body.getLocals().toIndexedSeq
 
   private val envMap = locals.zipWithIndex.toMap
-  def topProperty(node: Block, params: Parameters): params.Property = params.domain.initial
 
   /**
    * Convert a `Value` into a LinearForm, if possible.
@@ -208,9 +205,9 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
             currprop = expr.assignField(local, field.getField())
         }
       case unit: BreakpointStmt =>
-        throw new IllegalArgumentException("Invalid Jimple statement encountered")
+        throw new UnsupportedSootUnitException(unit)
       case unit: IdentityStmt =>
-        throw new IllegalArgumentException("Unsupported Jimple statement")
+        // ignore this instruction..
       case unit: EnterMonitorStmt =>
       case unit: ExitMonitorStmt =>
       case unit: GotoStmt =>
@@ -221,10 +218,10 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
         currprop = fbranch
       case unit: InvokeStmt =>
       case unit: LookupSwitchStmt =>
-        throw new IllegalArgumentException("Unsupported Jimple statement")
+        throw new UnsupportedSootUnitException(unit)
       case unit: NopStmt =>
       case unit: RetStmt =>
-        throw new IllegalArgumentException("Unsupported Jimple statement")
+        throw new UnsupportedSootUnitException(unit)
       case unit: ReturnStmt =>
         // the successor of a return unit is the fake final node
         exits :+= currprop
@@ -232,9 +229,9 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block] {
         // the successor of a return unit is the fake final node
         exits :+= currprop
       case unit: TableSwitchStmt =>
-        throw new IllegalArgumentException("Unsupported Jimple statement")
+        throw new UnsupportedSootUnitException(unit)
       case unit: ThrowStmt =>
-        throw new IllegalArgumentException("Unsupported Jimple statement")
+        throw new UnsupportedSootUnitException(unit)
     }
     if (node.getTail.fallsThrough()) exits +:= currprop
     exits

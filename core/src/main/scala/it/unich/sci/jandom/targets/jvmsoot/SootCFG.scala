@@ -36,8 +36,25 @@ import soot.toolkits.graph.PseudoTopologicalOrderer
  * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
  * @author Gianluca Amato <gamato@unich.it>
  */
-abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block] extends ControlFlowGraph[Tgt, Node] {
+abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: SootMethod) extends ControlFlowGraph[Tgt, Node] {
   import scala.collection.JavaConversions._
+
+  type DomainBase = SootFrameDomain
+
+  val locals: IndexedSeq[Local]
+
+  /**
+   * @inheritdoc
+   * For the moment, I am assuming that the first locals are exactly the parameters
+   * of the method.
+   */
+  protected def adaptProperty(params: Parameters)(input: params.Property): params.Property = {
+    var currprop = input
+    for (i <- input.size until locals.size) currprop = currprop.evalNew(locals(i).getType())
+    currprop
+  }
+
+  protected def topProperty(node: Node, params: Parameters): params.Property = params.domain.initial
 
   protected val body: Body
 

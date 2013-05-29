@@ -40,14 +40,14 @@ class JVMSootSuite extends FunSuite {
   val numdomain = PPLCPolyhedron
 
   val bafTests = Seq(
-    "sequential" -> ("i2 == 10" -> BitSet(0)),
-    "conditional" -> ("z0 == 1" -> BitSet(0)),
-    "loop" -> ("i0 >= 10 && i0 <= 11" -> BitSet(0)),
-    "nested" -> ("i0 >= i1 - 1 && i1 >= 10 && i1 <= 11 && i2==i2" -> BitSet(0, 1, 2)),
-    "longassignment" -> ("i0 >= 0 && i1 >= 10 && i2==i2" -> BitSet(0, 1, 2)),
-    "topologicalorder" -> ("b0 >= 3 && b0<=4" -> BitSet(0)))
+    "sequential" -> "i2 == 10",
+    "conditional" -> "z0 == 1",
+    "loop" -> "i0 >= 10 && i0 <= 11",
+    "nested" -> "i0 >= i1 - 1 && i1 >= 10 && i1 <= 11 && i2==i2",
+    "longassignment" -> "i0 >= 0 && i1 >= 10 && i2==i2",
+    "topologicalorder" -> "b0 >= 3 && b0<=4")
 
-  for ((methodName, (propString, bitset)) <- bafTests) {
+  for ((methodName, propString) <- bafTests) {
     val method = new BafMethod(c.getMethodByName(methodName))
     val params = new Parameters[BafMethod] {
       val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain, method.locals)
@@ -69,24 +69,40 @@ class JVMSootSuite extends FunSuite {
   }
 
   val jimpleNumericalTests = Seq(
-    "sequential" -> ("v0 == 0 && v1 == 10 && v2 == 10" -> BitSet(0, 1, 2)),
-    "conditional" -> ("v0 == 0 && v1 == 0 && v2 == 1 && v3==v3" -> BitSet(0, 1, 2, 3)),
-    "loop" -> ("v0 >= 10 && v0 <= 11" -> BitSet(0)),
-    "nested" -> ("v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2" -> BitSet(0, 1, 2)),
-    "longassignment" -> ("11*v0 - 33*v1 >= -63 && v1 >=10 && v2 == v2 && v3 == v3 && v4 == v4" -> BitSet(0, 1, 2, 3, 4)),
-    "topologicalorder" -> ("v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4" -> BitSet(0, 1, 2)))
+    "sequential" ->
+      Seq(None -> "v0 == 0 && v1 == 10 && v2 == 10"),
+    "conditional" ->
+      Seq(None -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3"),
+    "loop" ->
+      Seq(None -> "v0 >= 10 && v0 <= 11"),
+    "nested" ->
+      Seq(None -> "v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2"),
+    "longassignment" ->
+      Seq(None -> "11*v0 - 33*v1 >= -63 && v1 >=10 && v2 == v2 && v3 == v3 && v4 == v4"),
+    "topologicalorder" ->
+      Seq(None -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4"),
+    "parametric_static" ->
+      Seq(None -> "i0 + i1 - i2 == 0",
+        Some("i0 == 0 && i1==i1 && i2==i2") -> "i0==0 && i1 - i2 == 0"),
+    "parametric_dynamic" ->
+      Seq(None -> "r0==r0 && i0 + i1 - i2 == 0 && i3==i3"))
 
-  for ((methodName, (propString, bitset)) <- jimpleNumericalTests) {
+  for ((methodName,instances) <- jimpleNumericalTests; ((input,propString),i) <- instances.zipWithIndex) {
     val method = new JimpleMethod(c.getMethodByName(methodName))
     val params = new Parameters[JimpleMethod] {
       val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain, method.locals)
       //debugWriter = new java.io.PrintWriter(System.err)
     }
-    test(s"Jimple numerical analysis: ${methodName}") {
+    test(s"Jimple numerical analysis: ${methodName} ${if (i>0) i+1 else ""}") {
+      val env = Environment()
+      val parser = new NumericalPropertyParser(env)
       try {
-        val ann = method.analyze(params)
-        val env = Environment()
-        val parser = new NumericalPropertyParser(env)
+        val ann = input match {
+          case None => method.analyze(params)
+          case Some(input) =>
+            val prop = parser.parseProperty(input, params.domain.numdom).get
+            method.analyzeFromInput(params)(params.domain(prop))
+        }
         val prop = parser.parseProperty(propString, params.domain.numdom).get
         val objprop = params.domain(prop)
         assert(ann(method.lastPP.get) === objprop)
@@ -120,7 +136,7 @@ class JVMSootSuite extends FunSuite {
     test(s"Jimple object analysis: ${methodName}") {
       try {
         val ann = method.analyze(params)
-        assert(ann(method.lastPP.get) === new params.domain.Property(params.domain.dom.Property(ps,method.locals.size), Stack()))
+        assert(ann(method.lastPP.get) === new params.domain.Property(params.domain.dom.Property(ps, method.locals.size), Stack()))
       } finally {
         params.debugWriter.flush()
       }

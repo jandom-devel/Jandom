@@ -78,6 +78,12 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
   protected def topProperty(node: Node, params: Parameters): params.Property
 
   /**
+   * This method adapt an input property (expressed typically only in terms of the input
+   * parameters) in a new property with additional information needed to carry on the analysis.
+   */
+  protected def adaptProperty(params: Parameters)(input: params.Property): params.Property
+
+  /**
    * Analyzes the target, starting from a given property.
    * @param param the parameters which drive the analyzer
    * @param input the starting property
@@ -86,7 +92,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    */
   def analyzeFromInput(params: Parameters)(input: params.Property): Annotation[ProgramPoint, params.Property] = {
     val ann = getAnnotation[params.Property]
-    for (node <- graph.getHeads()) ann(node) = input
+    for (node <- graph.getHeads()) ann(node) = adaptProperty(params)(input)
     analyzeFromAnnotation(params)(ann)
   }
 

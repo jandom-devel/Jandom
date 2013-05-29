@@ -15,6 +15,10 @@ class Pair {
 }
 
 public class SimpleTest {
+	int classX;
+	int classY;
+	int sum;
+
 	static void sequential() {
 		int x = 0;
 		int y = 10;
@@ -58,6 +62,17 @@ public class SimpleTest {
 		else
 			z = 2;
 		z = z + 1;
+	}
+
+	static int parametric_static(int x, int y) {
+		return x+y;
+	}
+
+	int parametric_dynamic(int x, int y) {
+		classX = x;
+		classY = y;
+		sum = x + y;
+		return sum;
 	}
 
 	@SuppressWarnings("unused")
