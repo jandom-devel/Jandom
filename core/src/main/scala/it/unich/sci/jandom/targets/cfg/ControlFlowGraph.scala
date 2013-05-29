@@ -34,6 +34,7 @@ import soot.util.Chain
  * @author Gianluca Amato <gamato@unich.it>
  */
 abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extends Target[Tgt] {
+  import scala.collection.JavaConversions._
 
   /**
    * The `ProgramPoint` type is defined as an alias for the `Node`. We are wondering whether to make
@@ -77,15 +78,33 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
   protected def topProperty(node: Node, params: Parameters): params.Property
 
   /**
-   * The analyzer.  At the moment, it implements a work-list based analysis.
+   * Analyzes the target, starting from a given property.
+   * @param param the parameters which drive the analyzer
+   * @param input the starting property
+   * @return the resulting annotation
+   * @note this should be moved in the Target class.
+   */
+  def analyzeFromInput(params: Parameters)(input: params.Property): Annotation[ProgramPoint, params.Property] = {
+    val ann = getAnnotation[params.Property]
+    for (node <- graph.getHeads()) ann(node) = input
+    analyzeFromAnnotation(params)(ann)
+  }
+
+  /**
+   * Perform a static analysis over the target, from a standard initial annotation
+   * @param param the parameters which drive the analyzer
+   * @return an annotation for the program
    */
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
-    import scala.collection.JavaConversions._
-
     val ann = getAnnotation[params.Property]
-    // initialize heads of the CFG with top elements
     for (node <- graph.getHeads) ann(node) = topProperty(node, params)
+    analyzeFromAnnotation(params)(ann)
+  }
 
+  /**
+   * The analyzer.  At the moment, it implements a work-list based analysis.
+   */
+  def analyzeFromAnnotation(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): Annotation[ProgramPoint, params.Property]  = {
     val annEdge = HashMap[Edge, params.Property]()
     val taskList = Queue[ProgramPoint](graph.getHeads: _*)
 
@@ -95,7 +114,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
       val node = taskList.dequeue
       params.log(s"node ${node}input ${ann(node)}\n")
       val result = analyzeBlock(params)(node, ann(node))
-      params.log("result " +  result.mkString(",") + "\n")
+      params.log("result " + result.mkString(",") + "\n")
       for ((succ, out) <- graph.getSuccsOf(node) zip result) {
         annEdge((node, succ)) = out
         if (graph.getPredsOf(succ).length > 1 && (ann contains succ)) {
