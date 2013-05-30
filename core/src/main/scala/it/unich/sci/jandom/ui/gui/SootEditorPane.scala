@@ -134,7 +134,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
           frame.mode match {
             case Baf =>
               val bafMethod = method.asInstanceOf[BafMethod]
-              val params = new Parameters[BafMethod] { val domain = new SootFrameNumericalDomain(numericalDomain, bafMethod.locals) }
+              val params = new Parameters[BafMethod] { val domain = new SootFrameNumericalDomain(numericalDomain) }
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(bafMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(bafMethod)(params.narrowingFactory)
@@ -142,7 +142,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               Some(bafMethod.mkString(ann))
             case Jimple =>
               val jimpleMethod = method.asInstanceOf[JimpleMethod]
-              val params = new Parameters[JimpleMethod]{ val domain = new SootFrameNumericalDomain(numericalDomain, jimpleMethod.locals) }
+              val params = new Parameters[JimpleMethod]{ val domain = new SootFrameNumericalDomain(numericalDomain) }
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(jimpleMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(jimpleMethod)(params.narrowingFactory)

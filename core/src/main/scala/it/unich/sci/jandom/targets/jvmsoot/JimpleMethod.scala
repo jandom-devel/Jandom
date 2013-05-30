@@ -36,9 +36,6 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
 
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.UnitBlockGraph(body)
-  val locals = body.getLocals().toIndexedSeq
-
-  private val envMap = locals.zipWithIndex.toMap
 
   /**
    * Convert a `Value` into a LinearForm, if possible.
@@ -52,7 +49,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
       case v: IntConstant =>
         a(0) = v.value
       case v: Local =>
-        a(envMap(v) + 1) = 1
+        a(localMap(v) + 1) = 1
       case v: BinopExpr =>
         val res1 = jimpleExprToLinearForm(v.getOp1())
         val res2 = jimpleExprToLinearForm(v.getOp2())
@@ -146,7 +143,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
       case v: IntConstant =>
         prop.evalConstant(v.value)
       case v: Local =>
-        prop.evalLocal(v)
+        prop.evalLocal(localMap(v))
       case v: BinopExpr =>
         val res1 = analyzeExpr(v.getOp1(), prop)
         val res2 = analyzeExpr(v.getOp2(), res1)
@@ -187,7 +184,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
       case v: InvokeExpr => prop.evalNull
       case v: InstanceOfExpr => prop.evalNull
       case v: CastExpr => prop.evalNull // TODO: this can be made more precise
-      case v: InstanceFieldRef => prop.evalField(v.getBase().asInstanceOf[Local], v.getField())
+      case v: InstanceFieldRef => prop.evalField(localMap(v.getBase().asInstanceOf[Local]), v.getField())
     }
   }
 
@@ -199,10 +196,10 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
         val expr = analyzeExpr(unit.getRightOp(), currprop)
         unit.getLeftOp() match {
           case local: Local =>
-            currprop = expr.assignLocal(local)
+            currprop = expr.assignLocal(localMap(local))
           case field: InstanceFieldRef =>
             val local = field.getBase().asInstanceOf[Local]
-            currprop = expr.assignField(local, field.getField())
+            currprop = expr.assignField(localMap(local), field.getField())
         }
       case unit: BreakpointStmt =>
         throw new UnsupportedSootUnitException(unit)

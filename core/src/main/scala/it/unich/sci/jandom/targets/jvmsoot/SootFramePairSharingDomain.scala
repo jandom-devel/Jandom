@@ -30,26 +30,27 @@ import it.unich.sci.jandom.domains.objects.ObjectDomain
  * @author Gianluca Amato <gamato@unich.it>
  */
 
-class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnalysis, roots: IndexedSeq[Local]) extends SootFrameDomain {
+class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends SootFrameDomain {
 
   val dom = PairSharingDomain
 
-  val localMap: Map[Local, Int] = roots.zipWithIndex.toMap
-
-  def top(stack: Stack[Type]) = Property(dom.top(roots.size + stack.size), stack)
-  def bottom(stack: Stack[Type]) = Property(dom.bottom(roots.size + stack.size), stack)
-  def initial = bottom(Stack())
+  def top(vars: Seq[Type]) = Property(dom.top(vars.size), Stack(vars: _*)).removeBad
+  def bottom(vars: Seq[Type]) = Property(dom.bottom(vars.size), Stack(vars: _*)).removeBad
+  def initial(vars: Seq[Type]) = bottom(vars)
 
   case class Property(val prop: dom.Property, val stack: Stack[Type]) extends SootFrameProperty[Property] {
 
-    def size = roots.size + stack.size
-
-    def roots = SootFramePairSharingDomain.this.roots
-
-    def classOfVar(i: Int): SootClass = {
-      val tpe = if (i < roots.size) roots(i).getType() else stack(i - roots.size)
-      tpe.asInstanceOf[RefType].getSootClass()
+    def removeBad = {
+      var currprop = prop
+      for (i <- 0 until stack.size)
+        if (! stack(size- i -1).isInstanceOf[RefType])
+        	currprop.assignNull(i)
+      Property(currprop, stack)
     }
+
+    def size = stack.size
+
+    def classOfVar(i: Int): SootClass = stack(size-i-1).asInstanceOf[RefType].getSootClass()
 
     val mayShare = { p: UP[Int] => classAnalysis.mayShare(classOfVar(p._1), classOfVar(p._2)) }
 
@@ -65,21 +66,20 @@ class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnal
       Property(prop.addVariable.assignNull(size), stack.push(NullType.v()))
 
     def evalNew(tpe: Type) =
-      Property(prop.addVariable, stack.push(tpe))
+      if (tpe.isInstanceOf[RefType])
+        Property(prop.addVariable, stack.push(tpe))
+      else
+        addUntrackedVariable(tpe)
 
-    def evalLocal(l: Local) = {
-      val v = localMap(l)
-      Property(prop.addVariable.assignVariable(size, v), stack.push(l.getType()))
-    }
+    def evalLocal(v: Int) =
+      Property(prop.addVariable.assignVariable(size, v), stack.push(stack(size-1-v)))
 
     def evalLength = addUntrackedVariable(IntType.v())
 
-    def evalField(l: Local, f: SootField) = addUntrackedVariable(f.getType).assignFieldToStackTop(l,f)
+    def evalField(l: Int, f: SootField) = addUntrackedVariable(f.getType()).assignFieldToStackTop(l,f)
 
-    private def assignFieldToStackTop(src: Local, f: SootField) = {
-      val isrc = localMap(src)
-      Property(prop.assignFieldToVariable(size - 1, isrc, f.getNumber(), mayShare), stack)
-    }
+    private def assignFieldToStackTop(src: Int, f: SootField) =
+      Property(prop.assignFieldToVariable(size - 1, src, f.getNumber(), mayShare), stack)
 
     def evalAdd = delUntrackedVariable
     def evalSub = delUntrackedVariable
@@ -114,21 +114,18 @@ class SootFramePairSharingDomain(scene: Scene, classAnalysis: ClassReachableAnal
     def evalLinearForm(lf: Array[Double]) = addUntrackedVariable(DoubleType.v())
     def testLinearCondition(lc: LinearCond) = (this, this)
 
-    def assignLocal(l: Local) = {
-      val dst = localMap(l)
-      if (l.getType().isInstanceOf[RefType])
+    def assignLocal(dst: Int) = {
+      if (stack(0).isInstanceOf[RefType])
         Property(prop.assignVariable(dst, size - 1).delVariable(), stack.pop)
       else
         Property(prop.delVariable(), stack.pop)
     }
 
-    def assignField(l: Local, f: SootField) = {
-      val dst = localMap(l)
+    def assignField(dst: Int, f: SootField) =
       Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop)
-    }
 
     def mkString(vars: IndexedSeq[String]) =
-      prop mkString vars
+      (prop mkString vars) :+ "vars: " :+ stack.toString
 
     def union(that: Property) = {
       assert(stack == that.stack)

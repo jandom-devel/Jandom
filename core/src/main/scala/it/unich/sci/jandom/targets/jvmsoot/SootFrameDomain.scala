@@ -36,20 +36,20 @@ import soot._
 trait SootFrameDomain extends AbstractDomain {
   type Property <: SootFrameProperty[Property]
 
+  def initial(vars: Seq[Type]): Property
+  def top(vars: Seq[Type]): Property
+  def bottom(vars: Seq[Type]): Property
+
   trait SootFrameProperty[Property <: SootFrameProperty[Property]] extends AbstractProperty[Property] {
     this: Property =>
 
-    def roots: IndexedSeq[Local]
-
     def size: Int
-
-    def stacksize: Int = size - roots.size
 
     def evalConstant(c: Int): Property
     def evalNull: Property
     def evalNew(tpe: Type): Property
-    def evalLocal(l: Local): Property
-    def evalField(l: Local, f: SootField): Property
+    def evalLocal(i: Int): Property
+    def evalField(i: Int, f: SootField): Property
 
     def evalAdd: Property
     def evalSub: Property
@@ -70,8 +70,8 @@ trait SootFrameDomain extends AbstractDomain {
     def evalEq: Property
     def evalNe: Property
 
-    def assignLocal(l: Local): Property
-    def assignField(l: Local, f: SootField): Property
+    def assignLocal(i: Int): Property
+    def assignField(i: Int, f: SootField): Property
 
     def test: (Property, Property)
     def testGt: (Property, Property)
@@ -83,14 +83,9 @@ trait SootFrameDomain extends AbstractDomain {
 
     def testLinearCondition(lf: LinearCond): (Property, Property)
 
-    override def toString = mkString((roots map { _.getName() }) ++
-      (for (i <- 0 until stacksize) yield "s" + i)).mkString(", ")
+    override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
 
     def isTop = false
     def isBottom = false
   }
-
-  def initial: Property
-  def top(stack: Stack[Type]): Property
-  def bottom(stack: Stack[Type]): Property
 }

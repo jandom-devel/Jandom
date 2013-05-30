@@ -76,6 +76,18 @@ public class SimpleTest {
 	}
 
 	@SuppressWarnings("unused")
+	static void mycast() {
+		short s1 = 103;
+		short s2 = 104;
+		byte z = (byte) (s1+s2);
+		int i = s1 + s2;
+		long l = s1 + s2;
+		float f1 = s1;
+		float f2 = i;
+		double d = i;
+	}
+
+	@SuppressWarnings("unused")
 	static void complexif() {
 		int x = 0;
 		int y = 0;
@@ -92,6 +104,7 @@ public class SimpleTest {
 		l.next.next = l.next;
 		a2 = l.v;
 	}
+
 
 	@SuppressWarnings("unused")
 	static void classrefinement() {

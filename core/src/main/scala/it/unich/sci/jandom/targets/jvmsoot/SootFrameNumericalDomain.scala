@@ -27,23 +27,24 @@ import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import soot._
 import soot.baf.WordType
 
-class SootFrameNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSeq[Local]) extends SootFrameDomain {
+class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDomain {
 
-  private val numericalSeq = for {
-    (local, index) <- roots.zipWithIndex
-    if local.getType().isInstanceOf[PrimType] || local.getType().isInstanceOf[WordType]
-  } yield index
-  val numerical = BitSet(numericalSeq: _*)
-  val localMap: Map[Local, Int] = roots.zipWithIndex.toMap
+  def top(vars: Seq[Type]) = Property(numdom.full(vars.size), Stack(vars: _*))
+  def bottom(vars: Seq[Type]) = Property(numdom.empty(vars.size), Stack(vars: _*))
+  def initial(vars: Seq[Type]) = top(vars)
 
-  def top(stack: Stack[Type]) = Property(numdom.full(roots.size + stack.size))
-  def bottom(stack: Stack[Type]) = Property(numdom.empty(roots.size + stack.size))
-  def initial = top(Stack())
-  def apply(prop: numdom.Property) = new Property(prop)
+/*  private def canonicalType(tpe: Type) = tpe match {
+    case _ : BooleanType => IntType.v()
+    case _ : ByteType => IntType.v()
+    case _ : ShortType => IntType.v()
+    case x  => x
+  }*/
 
-  case class Property(val prop: numdom.Property) extends SootFrameProperty[Property] {
+  def apply(prop: numdom.Property, tpe: Type) = Property(prop, Stack((for (i <- 0 until prop.dimension) yield tpe): _*))
+  def apply(prop: numdom.Property, tpes: Seq[Type]) = Property(prop, Stack(tpes: _*))
 
-    def roots = SootFrameNumericalDomain.this.roots
+
+  case class Property(val prop: numdom.Property, val vars: Stack[Type]) extends SootFrameProperty[Property] {
 
     def size = prop.dimension
 
@@ -53,43 +54,41 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSe
         case _ => None
       }
 
-    private def addVariable = Property(prop.addDimension)
-    private def delVariable = Property(prop.delDimension())
+    private def addVariable(tpe: Type) = Property(prop.addDimension, vars.push(tpe))
+    private def delVariable = Property(prop.delDimension(), vars.pop)
 
-    def evalConstant(const: Int) = Property(prop.addDimension.constantAssignment(size, const))
-    def evalNull = addVariable
-    def evalNew(tpe: Type) = addVariable
-    def evalLocal(l: Local) = {
-      val v = localMap(l)
-      if (numerical contains v)
-        Property(prop.addDimension.variableAssignment(size, v))
+    def evalConstant(const: Int) = Property(prop.addDimension.constantAssignment(size, const), vars.push(IntType.v()))
+    def evalNull = addVariable(NullType.v())
+    def evalNew(tpe: Type) = addVariable(tpe)
+    def evalLocal(v: Int) = {
+      if (vars(v).isInstanceOf[PrimType] || vars(v).isInstanceOf[WordType])
+        Property(prop.addDimension.variableAssignment(size, v), vars.push(vars(v)))
       else
-        Property(prop.addDimension)
+        addVariable(vars(v))
     }
-    def evalField(l: Local, f: SootField) = addVariable
+    def evalField(v: Int, f: SootField) = addVariable(f.getType())
 
-    def assignLocal(l: Local) = {
-      val dst = localMap(l)
-      if (numerical contains  dst)
-        new Property(prop.variableAssignment(dst, size - 1).delDimension())
+    def assignLocal(dst: Int) = {
+       if (vars(dst).isInstanceOf[PrimType] || vars(dst).isInstanceOf[WordType])
+        new Property(prop.variableAssignment(dst, size - 1).delDimension(), vars.pop)
       else
-        this
+        delVariable
     }
 
-    def assignField(l: Local, f: SootField) = delVariable
+    def assignField(dst: Int, f: SootField) = delVariable
 
-    def evalAdd = Property(prop.variableAdd().delDimension())
-    def evalSub = Property(prop.variableSub().delDimension())
-    def evalMul = Property(prop.variableMul().delDimension())
-    def evalDiv = Property(prop.variableDiv().delDimension())
-    def evalRem = Property(prop.variableRem().delDimension())
-    def evalShl = Property(prop.variableShl().delDimension())
-    def evalShr = Property(prop.variableShr().delDimension())
-    def evalUshr = Property(prop.variableUshr().delDimension())
+    def evalAdd = Property(prop.variableAdd().delDimension(), vars.pop)
+    def evalSub = Property(prop.variableSub().delDimension(), vars.pop)
+    def evalMul = Property(prop.variableMul().delDimension(), vars.pop)
+    def evalDiv = Property(prop.variableDiv().delDimension(), vars.pop)
+    def evalRem = Property(prop.variableRem().delDimension(), vars.pop)
+    def evalShl = Property(prop.variableShl().delDimension(), vars.pop)
+    def evalShr = Property(prop.variableShr().delDimension(), vars.pop)
+    def evalUshr = Property(prop.variableUshr().delDimension(), vars.pop)
 
-    def evalBinOp = Property(prop.delDimension().delDimension().addDimension)
-    def evalNeg = Property(prop.variableNeg().delDimension())
-    def evalLength = addVariable
+    def evalBinOp = Property(prop.delDimension().delDimension().addDimension, vars.pop)
+    def evalNeg = Property(prop.variableNeg().delDimension(), vars)
+    def evalLength = addVariable(IntType.v())
 
     def evalGt = delVariable
     def evalGe = delVariable
@@ -109,8 +108,8 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSe
       coeffs(size - 1) = 1.0
       coeffs(size) = -1.0
       val lf = LinearForm(coeffs)
-      val tbranch = Property(AtomicCond(lf, op).analyze(prop).delDimension().delDimension())
-      val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delDimension().delDimension())
+      val tbranch = Property(AtomicCond(lf, op).analyze(prop).delDimension().delDimension(), vars.pop.pop)
+      val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delDimension().delDimension(), vars.pop.pop)
       (tbranch, fbranch)
     }
 
@@ -122,20 +121,25 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain, val roots: IndexedSe
     def testNe = testComp(AtomicCond.ComparisonOperators.NEQ)
 
     def testLinearCondition(lc: LinearCond) = (
-      Property(lc.analyze(prop)), Property(lc.opposite.analyze(prop))
-     )
+      Property(lc.analyze(prop), vars), Property(lc.opposite.analyze(prop),vars)
+    )
 
-    def union(that: Property) = Property(prop union that.prop)
+    def union(that: Property) = Property(prop union that.prop, vars)
 
-    def intersection(that: Property) = Property(prop intersection that.prop)
+    def intersection(that: Property) = Property(prop intersection that.prop, vars)
 
-    def widening(that: Property) = Property(prop widening that.prop)
+    def widening(that: Property) = Property(prop widening that.prop, vars)
 
-    def narrowing(that: Property) = Property(prop widening that.prop)
+    def narrowing(that: Property) = Property(prop widening that.prop, vars)
 
     def isEmpty = prop.isEmpty
 
-    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ ("dimension: " + size)
+  /*  def isCompatibleWith(that: Property) =
+    	prop == that.prop &&
+    	vars.size == that.vars.size &&
+    	(vars map canonicalType) == (that.vars map canonicalType)*/
+
+    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ "vars: " :+ this.vars.toString
   }
 
 }

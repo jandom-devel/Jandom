@@ -27,6 +27,7 @@ import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvmsoot._
 import soot._
 import it.unich.sci.jandom.domains.objects.PairSharingDomain
+import soot.baf.WordType
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -50,7 +51,7 @@ class JVMSootSuite extends FunSuite {
   for ((methodName, propString) <- bafTests) {
     val method = new BafMethod(c.getMethodByName(methodName))
     val params = new Parameters[BafMethod] {
-      val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain, method.locals)
+      val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
       //debugWriter = new java.io.PrintWriter(System.err)
     }
 
@@ -60,7 +61,7 @@ class JVMSootSuite extends FunSuite {
         val env = Environment()
         val parser = new NumericalPropertyParser(env)
         val prop = parser.parseProperty(propString, params.domain.numdom).get
-        val objprop = params.domain(prop)
+        val objprop = params.domain(prop, WordType.v())
         assert(ann(method.lastPP.get) === objprop)
       } finally {
         params.debugWriter.flush()
@@ -70,7 +71,7 @@ class JVMSootSuite extends FunSuite {
 
   val jimpleNumericalTests = Seq(
     "sequential" ->
-      Seq(None -> "v0 == 0 && v1 == 10 && v2 == 10"),
+      Seq(None -> "v0 == 0 && v1 == 10 && v2 == 10" ),
     "conditional" ->
       Seq(None -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3"),
     "loop" ->
@@ -85,12 +86,14 @@ class JVMSootSuite extends FunSuite {
       Seq(None -> "i0 + i1 - i2 == 0",
         Some("i0 == 0 && i1==i1 && i2==i2") -> "i0==0 && i1 - i2 == 0"),
     "parametric_dynamic" ->
-      Seq(None -> "r0==r0 && i0 + i1 - i2 == 0 && i3==i3"))
+      Seq(None -> "r0==r0 && i0 + i1 - i2 == 0 && i3==i3") )
+ //   "mycast" ->
+ //     Seq(None -> "v0==0"))
 
   for ((methodName,instances) <- jimpleNumericalTests; ((input,propString),i) <- instances.zipWithIndex) {
     val method = new JimpleMethod(c.getMethodByName(methodName))
     val params = new Parameters[JimpleMethod] {
-      val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain, method.locals)
+      val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
       //debugWriter = new java.io.PrintWriter(System.err)
     }
     test(s"Jimple numerical analysis: ${methodName} ${if (i>0) i+1 else ""}") {
@@ -101,11 +104,10 @@ class JVMSootSuite extends FunSuite {
           case None => method.analyze(params)
           case Some(input) =>
             val prop = parser.parseProperty(input, params.domain.numdom).get
-            method.analyzeFromInput(params)(params.domain(prop))
+            method.analyzeFromInput(params)(params.domain(prop, IntType.v()))
         }
         val prop = parser.parseProperty(propString, params.domain.numdom).get
-        val objprop = params.domain(prop)
-        assert(ann(method.lastPP.get) === objprop)
+        assert(ann(method.lastPP.get).prop === prop)
       } finally {
         params.debugWriter.flush()
       }
@@ -130,13 +132,13 @@ class JVMSootSuite extends FunSuite {
     val method = new JimpleMethod(c.getMethodByName(methodName))
     val classAnalysis = new ClassReachableAnalysis(scene)
     val params = new Parameters[JimpleMethod] {
-      val domain = new SootFramePairSharingDomain(scene, classAnalysis, method.locals)
+      val domain = new SootFramePairSharingDomain(classAnalysis)
       //debugWriter = new java.io.PrintWriter(System.err)
     }
     test(s"Jimple object analysis: ${methodName}") {
       try {
         val ann = method.analyze(params)
-        assert(ann(method.lastPP.get) === new params.domain.Property(params.domain.dom.Property(ps, method.locals.size), Stack()))
+        assert(ann(method.lastPP.get).prop === params.domain.dom.Property(ps, method.locals.size))
       } finally {
         params.debugWriter.flush()
       }

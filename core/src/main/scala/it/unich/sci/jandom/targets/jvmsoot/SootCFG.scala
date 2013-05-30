@@ -41,7 +41,18 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
 
   type DomainBase = SootFrameDomain
 
-  val locals: IndexedSeq[Local]
+  val body: Body
+
+  def locals = body.getLocals().toIndexedSeq
+
+  // These are lazy values since body is not initialized when they are executed
+  lazy val localMap = body.getLocals().zipWithIndex.toMap
+  lazy val lastPP = Some(graph.getTails().get(0))
+  lazy val size = body.getLocalCount()
+  lazy val ordering = new Ordering[Node] {
+    val order = new PseudoTopologicalOrderer[Node].newList(graph, false).zipWithIndex.toMap
+    def compare(x: Node, y: Node) = order(x) - order(y)
+  }
 
   /**
    * @inheritdoc
@@ -54,18 +65,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     currprop
   }
 
-  protected def topProperty(node: Node, params: Parameters): params.Property = params.domain.initial
-
-  protected val body: Body
-
-  // we need lazy vals because the body has not yet been initialized when these instructions
-  // are executed
-  lazy val lastPP = Some(graph.getTails().get(0))
-  lazy val size = body.getLocalCount()
-  lazy val ordering = new Ordering[Node] {
-    val order = new PseudoTopologicalOrderer[Node].newList(graph, false).zipWithIndex.toMap
-    def compare(x: Node, y: Node) = order(x) - order(y)
-  }
+  protected def topProperty(node: Node, params: Parameters): params.Property = params.domain.initial(locals map { _.getType() })
 
   /**
    * Output the program intertwined with the given annotation. It uses the tag system of
@@ -78,7 +78,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   def mkString[D <: AbstractProperty[D]](ann: Annotation[ProgramPoint, D]): String = {
     // tag the method
     for ((node, prop) <- ann; unit = node.getHead; if unit != null) {
-      unit.addTag(new LoopInvariantTag("[ " + prop.toString + " ]"))
+      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(locals map {_.getName()}).mkString(" ") + " ]"))
     }
 
     // generate output with tag

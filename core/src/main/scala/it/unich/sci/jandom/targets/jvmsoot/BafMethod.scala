@@ -35,9 +35,6 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
 
   val body = Baf.v().newBody(method.retrieveActiveBody())
   val graph = new soot.jandom.UnitBlockGraph(body)
-  val locals = body.getLocals().toIndexedSeq
-
-  private val envMap = body.getLocals().zipWithIndex.toMap
 
   /**
    * @note In developing this method we are assuming that, if a unit has a fall-through, it is the first
@@ -70,13 +67,14 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
         case unit: IncInst =>
           unit.getConstant() match {
             case i: IntConstant =>
+              val l = localMap(unit.getLocal())
               // TODO: implement an inc method to speed up execution
-              currprop.evalLocal(unit.getLocal()).evalConstant(i.value).evalAdd.assignLocal(unit.getLocal())
+              currprop.evalLocal(l).evalConstant(i.value).evalAdd.assignLocal(l)
           }
         case unit: StoreInst =>
-          currprop.assignLocal(unit.getLocal)
+          currprop.assignLocal(localMap(unit.getLocal))
         case unit: LoadInst =>
-          currprop.evalLocal(unit.getLocal)
+          currprop.evalLocal(localMap(unit.getLocal))
         case unit: TargetArgInst =>
           val (tbranch, fbranch) = analyzeTargetArgInst(unit, currprop)
           exits :+= tbranch
