@@ -72,6 +72,11 @@ abstract class Parameters[Tgt <: Target[Tgt]]  {
   var narrowingStrategy = NarrowingStrategy.Restart
 
   /**
+   * If it is true, computes an io semantic
+   */
+  var io = false
+
+  /**
    * This is used for putting results in tags
    */
   var tag = scala.collection.mutable.Map[Any, Property]()

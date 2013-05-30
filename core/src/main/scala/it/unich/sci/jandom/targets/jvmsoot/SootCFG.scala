@@ -46,13 +46,13 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   def locals = body.getLocals().toIndexedSeq
 
   // These are lazy values since body is not initialized when they are executed
-  lazy val localMap = body.getLocals().zipWithIndex.toMap
   lazy val lastPP = Some(graph.getTails().get(0))
   lazy val size = body.getLocalCount()
   lazy val ordering = new Ordering[Node] {
     val order = new PseudoTopologicalOrderer[Node].newList(graph, false).zipWithIndex.toMap
     def compare(x: Node, y: Node) = order(x) - order(y)
   }
+  lazy val localMap = locals.zipWithIndex.toMap
 
   /**
    * @inheritdoc
@@ -60,12 +60,16 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
    * of the method.
    */
   protected def adaptProperty(params: Parameters)(input: params.Property): params.Property = {
+    assert(input.size <= body.getLocalCount())
     var currprop = input
-    for (i <- input.size until locals.size) currprop = currprop.evalNew(locals(i).getType())
+  	for (i <- input.size until locals.size) currprop = currprop.evalNew(locals(i).getType())
+  	if (params.io)
+  	  for (i <- 0 until method.getParameterCount()) currprop = currprop.evalLocal(i)
     currprop
   }
 
-  protected def topProperty(node: Node, params: Parameters): params.Property = params.domain.initial(locals map { _.getType() })
+  protected def topProperty(node: Node, params: Parameters): params.Property =
+    adaptProperty(params)(params.domain.top(method.getParameterTypes.asInstanceOf[java.util.List[Type]]))
 
   /**
    * Output the program intertwined with the given annotation. It uses the tag system of
