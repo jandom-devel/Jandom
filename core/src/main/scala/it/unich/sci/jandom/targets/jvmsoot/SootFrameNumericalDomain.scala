@@ -139,7 +139,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     	vars.size == that.vars.size &&
     	(vars map canonicalType) == (that.vars map canonicalType)*/
 
-    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ "vars: " :+ this.vars.toString
+    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) // :+ ("types: "+this.vars.toString)
   }
 
 }

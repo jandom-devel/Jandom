@@ -139,7 +139,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               params.wideningFactory = MemoizingFactory(bafMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(bafMethod)(params.narrowingFactory)
               val ann = bafMethod.analyze(params)
-              Some(bafMethod.mkString(ann))
+              Some(bafMethod.mkString(params)(ann))
             case Jimple =>
               val jimpleMethod = method.asInstanceOf[JimpleMethod]
               val params = new Parameters[JimpleMethod]{ val domain = new SootFrameNumericalDomain(numericalDomain) }
@@ -147,7 +147,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               params.wideningFactory = MemoizingFactory(jimpleMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(jimpleMethod)(params.narrowingFactory)
               val ann = jimpleMethod.analyze(params)
-              Some(jimpleMethod.mkString(ann))
+              Some(jimpleMethod.mkString(params)(ann))
           }
         } catch {
           case e: UnsupportedSootUnitException  =>

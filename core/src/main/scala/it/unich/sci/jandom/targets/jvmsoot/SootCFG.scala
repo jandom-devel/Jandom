@@ -62,14 +62,22 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   protected def adaptProperty(params: Parameters)(input: params.Property): params.Property = {
     assert(input.size <= body.getLocalCount())
     var currprop = input
-  	for (i <- input.size until locals.size) currprop = currprop.evalNew(locals(i).getType())
-  	if (params.io)
-  	  for (i <- 0 until method.getParameterCount()) currprop = currprop.evalLocal(i)
+    for (i <- input.size until body.getLocalCount()) currprop = currprop.evalNew(locals(i).getType())
+    if (params.io)
+      for (i <- 0 until method.getParameterCount()) currprop = currprop.evalLocal(i)
     currprop
   }
 
   protected def topProperty(node: Node, params: Parameters): params.Property =
     adaptProperty(params)(params.domain.top(method.getParameterTypes.asInstanceOf[java.util.List[Type]]))
+
+  def formatProperty(params: Parameters)(prop: params.Property) = {
+    val localNames = locals map { _.getName() }
+    val parameterNames = if (params.io) (for (i <- 0 until method.getParameterCount()) yield "@p" + i) else Seq()
+    val stackNames = for (i <- 0 until prop.size - method.getParameterCount() - body.getLocalCount()) yield "#s" + i
+    val names = localNames ++ parameterNames ++ stackNames
+    prop.mkString(names).mkString(", ")
+  }
 
   /**
    * Output the program intertwined with the given annotation. It uses the tag system of
@@ -79,11 +87,12 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
    * @tparam D the type of the JVM environment used in the annotation.
    * @param ann the annotation to print together with the program.
    */
-  def mkString[D <: AbstractProperty[D]](ann: Annotation[ProgramPoint, D]): String = {
+  def mkString(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): String = {
+
     // tag the method
-    for ((node, prop) <- ann; unit = node.getHead; if unit != null) {
-      unit.addTag(new LoopInvariantTag("[ " + prop.mkString(locals map {_.getName()}).mkString(" ") + " ]"))
-    }
+    for ((node, prop) <- ann; unit = node.getHead; if unit != null)
+      unit.addTag(new LoopInvariantTag("[ " + formatProperty(params)(prop) + " ]"))
+
 
     // generate output with tag
     Options.v().set_print_tags_in_output(true)
@@ -108,9 +117,9 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     for ((node, prop) <- ann; unit = node.getHead; if unit != null)
       unit.removeAllTags()
 
-    val outLine = if (ann contains lastPP.get)
-      "/* Output: " + ann(lastPP.get) + "*/\n"
-    else
+    val outLine = if (ann contains lastPP.get) {
+      "/* Output: " + formatProperty(params)(ann(lastPP.get)) + " */\n"
+    } else
       ""
     lines.mkString("", "\n", "\n") + outLine
   }
@@ -119,5 +128,5 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
    * @inheritdoc
    * The default implementation just reuse `mkString` with an empty `Null` annotation.
    */
-  override def toString = mkString(getAnnotation[Null])
+  override def toString = body.toString
 }

@@ -124,8 +124,7 @@ class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends 
     def assignField(dst: Int, f: SootField) =
       Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop)
 
-    def mkString(vars: IndexedSeq[String]) =
-      (prop mkString vars) :+ "vars: " :+ stack.toString
+    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) // :+ ("types: "+this.stack.toString)
 
     def union(that: Property) = {
       assert(stack == that.stack)

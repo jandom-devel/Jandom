@@ -115,4 +115,11 @@ public class SimpleTest {
         a = p.v;
 	}
 
+	static Pair class_parametric(A a) {
+		Pair p = new Pair();
+		p.v = a;
+		a= new A();
+		return p;
+	}
+
 }
