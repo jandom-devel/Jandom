@@ -136,6 +136,10 @@ class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends 
       Property(prop union that.prop, stack)
     }
 
+    def restrict(n: Int) = this
+
+    def connect(p: Property, commond: Int) = this
+
     def widening(that: Property) = this union that
 
     def narrowing(that: Property) = this intersection that

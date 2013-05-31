@@ -132,6 +132,20 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def narrowing(that: Property) = Property(prop widening that.prop, vars)
 
+    def restrict(n: Int) = Property(
+       (0 until n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delDimension(0) },
+        vars.drop(n)
+    )
+
+    def connect(p: Property, common: Int) = {
+      val newprop = prop.addDimension(p.size - common)
+      // TODO improve numerical properties API
+      val seq = (size-common until size) ++ (0 until size-common)
+      val newp = p.prop.addDimension(size-common).mapDimensions(seq)
+      val inters = (newprop intersection newp).remove_space_dimensions(prop.dimension - common - 1 until prop.dimension)
+      Property(newprop intersection newp, vars.drop(common) ++ p.vars.take(p.size-common))
+    }
+
     def isEmpty = prop.isEmpty
 
   /*  def isCompatibleWith(that: Property) =
@@ -141,5 +155,4 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) // :+ ("types: "+this.vars.toString)
   }
-
 }

@@ -94,13 +94,17 @@ class JVMSootSuite extends FunSuite {
         Some("i0 == 0 && i1==i1 && i2==i2") -> false -> "i0==0 && i1 - i2 == 0",
         Some("i0 == 0 && i1==i1 && i2==i2") -> true -> "i0==0 && i1 - i2 == 0 && p0 == i0 && p1 == i1"),
       "parametric_dynamic" ->
-        Seq(None -> false -> "r0==r0 && i0 + i1 - i2 == 0 && i3==i3"))
+        Seq(None -> false -> "r0==r0 && i0 + i1 - i2 == 0 && i3==i3") //,
+   /*   "parametric_caller" ->
+        Seq(None -> true -> "i0==i0") */
+        )
 
     for ((methodName, instances) <- jimpleNumericalTests; (((input, ifIo), propString), i) <- instances.zipWithIndex) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
       val params = new Parameters[JimpleMethod] {
         io = ifIo
         val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
+        // val Interpretation = new Top
         //debugWriter = new java.io.PrintWriter(System.err)
       }
       test(s"Jimple numerical analysis: ${methodName} ${if (i > 0) i + 1 else ""}") {

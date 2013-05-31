@@ -25,6 +25,7 @@ import it.unich.sci.jandom.narrowings.DefaultNarrowing
 import it.unich.sci.jandom.ppfactories.PPFactory
 import it.unich.sci.jandom.narrowings.Narrowing
 import it.unich.sci.jandom.widenings.Widening
+import it.unich.sci.jandom.targets.jvmsoot.Interpretation
 
 /**
  * This class is used to provide parameters for analyzers. Each instance of `Parameters` is
@@ -59,6 +60,11 @@ abstract class Parameters[Tgt <: Target[Tgt]]  {
    * This parameter determines whether results are saved for each program point or only for widening points.
    */
   var allPPResult = true
+
+  /**
+   * This parameter should be defined for inter-procedural analsysis.
+   */
+  var interpretation: Option[Interpretation[Tgt, domain.type]] = None
 
   /**
    * This parameter determines whether standard or local widening is used. At the moment, this is only supported

@@ -37,7 +37,10 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.UnitBlockGraph(body)
 
-  /**
+
+  protected def analyzeBlock(params: Parameters)(node: Block, initprop: params.Property): Seq[params.Property] = {
+
+     /**
    * Convert a `Value` into a LinearForm, if possible.
    * @param v the Value to convert.
    * @return the corresponding linear form, or `None` if `v` is not a linear form.
@@ -72,7 +75,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
    * @param v the Value to convert.
    * @return the corresponding linear condition, or `None` if `v` is not a linear condition.
    */
-  private def jimpleExprToLinearCond(v: Value): Option[LinearCond] = {
+  def jimpleExprToLinearCond(v: Value): Option[LinearCond] = {
     import AtomicCond.ComparisonOperators
     val newcond = v match {
       case v: ConditionExpr =>
@@ -109,7 +112,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
     newcond
   }
 
-  def analyzeCond[Property <: DomainBase#SootFrameProperty[Property]](v: Value, prop: Property): (Property, Property) = {
+  def analyzeCond(v: Value, prop: params.Property): (params.Property, params.Property) = {
     val lc = jimpleExprToLinearCond(v)
     lc match {
       case Some(lc) => prop.testLinearCondition(lc)
@@ -130,6 +133,25 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
     }
   }
 
+  def analyzeInvokeExpr(v: InvokeExpr, prop: params.Property): params.Property = {
+    val method = v.getMethod()
+    val (baseprop, implicitArgs) = v match {
+      case v: InstanceInvokeExpr =>
+        (analyzeExpr(v.getBase(), prop), 1)
+      case v: StaticInvokeExpr =>
+        (prop, 0)
+      case v: DynamicInvokeExpr =>
+        throw new IllegalArgumentException("Invoke dynamic not yet supported")
+    }
+    val callprop = v.getArgs().foldLeft(prop) { case (p, arg) => analyzeExpr(arg, p) }
+    val inputprop = callprop.restrict(v.getArgCount() + implicitArgs)
+    val exitprop = params.interpretation match  {
+      case Some(inte) => inte(method, inputprop)
+      case None => throw new IllegalArgumentException("Interprocedural analysis")
+    }
+    callprop.connect(exitprop, method.getParameterCount())
+  }
+
   /**
    * Analyze a `Value`.
    * @tparam Property the type of the abstract state
@@ -138,7 +160,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
    * @return the abstract end state. The last dimension of property corresponds to the
    * returned value.
    */
-  def analyzeExpr[Property <: DomainBase#SootFrameProperty[Property]](v: Value, prop: Property): Property = {
+  def analyzeExpr(v: Value, prop: params.Property): params.Property = {
     v match {
       case v: IntConstant =>
         prop.evalConstant(v.value)
@@ -181,14 +203,13 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
           case v: NegExpr => prop.evalNeg
         }
       case v: AnyNewExpr => prop.evalNew(v.getType())
-      case v: InvokeExpr => prop.evalNull
+      case v: InvokeExpr => analyzeInvokeExpr(v, prop)
       case v: InstanceOfExpr => prop.evalNull
       case v: CastExpr => prop.evalNull // TODO: this can be made more precise
       case v: InstanceFieldRef => prop.evalField(localMap(v.getBase().asInstanceOf[Local]), v.getField())
     }
   }
 
-  protected def analyzeBlock(params: Parameters)(node: Block, initprop: params.Property): Seq[params.Property] = {
     var exits = Seq[params.Property]()
     var currprop = initprop
     for (unit <- node.iterator()) unit match {
@@ -204,7 +225,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
       case unit: BreakpointStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: IdentityStmt =>
-        // ignore this instruction..
+      // ignore this instruction..
       case unit: EnterMonitorStmt =>
       case unit: ExitMonitorStmt =>
       case unit: GotoStmt =>

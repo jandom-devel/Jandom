@@ -68,11 +68,19 @@ public class SimpleTest {
 		return x+y;
 	}
 
+
 	int parametric_dynamic(int x, int y) {
 		classX = x;
 		classY = y;
 		sum = x + y;
 		return sum;
+	}
+
+	static int parametric_caller(int x, int y) {
+	   x = 3;
+	   y = 4;
+	   int z = parametric_static(x,y);
+	   return z;
 	}
 
 	@SuppressWarnings("unused")

@@ -349,6 +349,11 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
     (0 until n).foldLeft(this) { (prop, _) => prop.addDimension }
   }
 
+  def remove_space_dimensions(dims: Seq[Int]): Property = {
+	 val sortedDims = dims.sortWith({ _ > _})
+	 dims.foldLeft(this) { (p: Property, d: Int) => p.delDimension(d) }
+  }
+
   /**
    * Returns the string representation of the property. It calls `mkString` with the standard
    * variable names `v1` ... `vn`.
