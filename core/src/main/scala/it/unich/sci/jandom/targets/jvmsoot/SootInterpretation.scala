@@ -27,12 +27,36 @@ import it.unich.sci.jandom.targets.Target
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-trait Interpretation[Tgt <: Target[Tgt], Domain <: Tgt#DomainBase] {
-  def apply(method: SootMethod, input: Domain#Property): Domain#Property
+
+trait Interpretation[Tgt <: Target[Tgt]] {
+  def apply(params: Parameters[Tgt])(method: SootMethod, input: params.Property): params.Property
 }
-/*
-class TopSootInterpretation[Domain <: SootFrameDomain](val dom: Domain) extends Interpretation[SootCFG[_,_],Domain] {
+
+class TopSootInterpretation[Tgt <: SootCFG[Tgt, _]] extends Interpretation[Tgt] {
   import scala.collection.JavaConversions._
-  def apply(method: SootMethod, input: dom.Property) = dom.top(method.getReturnType() +: method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
+  def apply(params: Parameters[Tgt])(method: SootMethod, input: params.Property): params.Property =
+    params.domain.top(method.getReturnType() +: method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
 }
-*/
+
+// this only works for non recursive calls
+class JimpleInterpretation extends Interpretation[JimpleMethod] {
+    import scala.collection.JavaConversions._
+
+  val inte: scala.collection.mutable.HashMap[(SootMethod, AnyRef), (AnyRef, Boolean)] = scala.collection.mutable.HashMap()
+
+  def apply(params: Parameters[JimpleMethod])(method: SootMethod, input: params.Property): params.Property = {
+    if (inte contains (method, input)) inte(method, input) match {
+      case (output,true) => output.asInstanceOf[params.Property]
+      case (output, false) => throw new IllegalArgumentException("Recursive")
+    }
+    else {
+      val jmethod = new JimpleMethod(method)
+      val outFibers = method.getParameterTypes().asInstanceOf[java.util.List[Type]] :+ method.getReturnType()
+      inte((method, input)) = (params.domain.bottom(outFibers),false)
+      val ann = jmethod.analyzeFromInput(params)(input)
+      val output = jmethod.extractOutput(params)(ann)
+      inte((method, input)) = (output,true)
+      output
+    }
+  }
+}

@@ -94,17 +94,16 @@ class JVMSootSuite extends FunSuite {
         Some("i0 == 0 && i1==i1 && i2==i2") -> false -> "i0==0 && i1 - i2 == 0",
         Some("i0 == 0 && i1==i1 && i2==i2") -> true -> "i0==0 && i1 - i2 == 0 && p0 == i0 && p1 == i1"),
       "parametric_dynamic" ->
-        Seq(None -> false -> "r0==r0 && i0 + i1 - i2 == 0 && i3==i3") //,
-   /*   "parametric_caller" ->
-        Seq(None -> true -> "i0==i0") */
-        )
+        Seq(None -> false -> "r0==r0 && i0 + i1 - i2 == 0 && i3==i3"),
+      "parametric_caller" ->
+        Seq(None -> true -> "i0 == i0 && i1== i1 && i2==7 && b3 ==3 && b4 ==4 && i0 - p0 == 0 && i1 - p1 == 0"))
 
     for ((methodName, instances) <- jimpleNumericalTests; (((input, ifIo), propString), i) <- instances.zipWithIndex) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
       val params = new Parameters[JimpleMethod] {
-        io = ifIo
         val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
-        // val Interpretation = new Top
+        io = ifIo
+        interpretation = Some(new JimpleInterpretation)
         //debugWriter = new java.io.PrintWriter(System.err)
       }
       test(s"Jimple numerical analysis: ${methodName} ${if (i > 0) i + 1 else ""}") {
@@ -118,6 +117,7 @@ class JVMSootSuite extends FunSuite {
               method.analyzeFromInput(params)(params.domain(prop, IntType.v()))
           }
           val prop = parser.parseProperty(propString, params.domain.numdom).get
+          //println(method.mkString(params)(ann))
           assert(ann(method.lastPP.get).prop === prop)
         } finally {
           params.debugWriter.flush()
@@ -140,7 +140,7 @@ class JVMSootSuite extends FunSuite {
         UP(3, 8), UP(1, 6), UP(6, 8)),
       "classrefinement" -> Set(UP(0, 0), UP(1, 1), UP(5, 6), UP(2, 2), UP(0, 1), UP(2, 3), UP(6, 6), UP(4, 5), UP(3, 6), UP(3, 5), UP(2, 4), UP(3, 4),
         UP(2, 5), UP(4, 4), UP(5, 5), UP(3, 3)),
-      "class_parametric" -> Set(UP(0, 0), UP(0, 5), UP(1, 1), UP(1, 5), UP(2, 2), UP(0, 1), UP(0, 2), UP(3, 4), UP(1, 2), UP(2, 5),UP(4, 4),UP(5, 5),UP(3, 3)))
+      "class_parametric" -> Set(UP(0, 0), UP(0, 5), UP(1, 1), UP(1, 5), UP(2, 2), UP(0, 1), UP(0, 2), UP(3, 4), UP(1, 2), UP(2, 5), UP(4, 4), UP(5, 5), UP(3, 3)))
 
     for ((methodName, ps) <- jimplePairSharingTests) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
@@ -148,6 +148,7 @@ class JVMSootSuite extends FunSuite {
       val params = new Parameters[JimpleMethod] {
         val domain = new SootFramePairSharingDomain(classAnalysis)
         io = true
+        interpretation = Some(new TopSootInterpretation[JimpleMethod])
         //debugWriter = new java.io.PrintWriter(System.err)
       }
       test(s"Jimple object analysis: ${methodName}") {

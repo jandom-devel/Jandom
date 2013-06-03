@@ -61,6 +61,11 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
   private type Edge = (Node, Node)
 
   /**
+   * Returns the output property given an annotation.
+   */
+  def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property
+
+  /**
    * This method is provided by subclasses, and should be able to analyze a single `Node`.
    * @param params the parameters of the analysis
    * @param node the node to analyze

@@ -37,7 +37,6 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.UnitBlockGraph(body)
 
-
   protected def analyzeBlock(params: Parameters)(node: Block, initprop: params.Property): Seq[params.Property] = {
 
      /**
@@ -146,7 +145,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
     val callprop = v.getArgs().foldLeft(prop) { case (p, arg) => analyzeExpr(arg, p) }
     val inputprop = callprop.restrict(v.getArgCount() + implicitArgs)
     val exitprop = params.interpretation match  {
-      case Some(inte) => inte(method, inputprop)
+      case Some(inte) => inte(params)(method, inputprop)
       case None => throw new IllegalArgumentException("Interprocedural analysis")
     }
     callprop.connect(exitprop, method.getParameterCount())
@@ -235,14 +234,18 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
         exits :+= tbranch
         currprop = fbranch
       case unit: InvokeStmt =>
+        currprop = analyzeExpr(unit.getInvokeExpr(), currprop)
       case unit: LookupSwitchStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: NopStmt =>
       case unit: RetStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: ReturnStmt =>
-        // the successor of a return unit is the fake final node
-        exits :+= currprop
+        val exitProp = if (params.io)
+        	analyzeExpr(unit.getOp(), currprop).restrict(method.getParameterCount()+1)
+        else
+            currprop
+        exits :+= exitProp
       case unit: ReturnVoidStmt =>
         // the successor of a return unit is the fake final node
         exits :+= currprop

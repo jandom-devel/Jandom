@@ -40,9 +40,8 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     case x  => x
   }*/
 
-  def apply(prop: numdom.Property, tpe: Type) = Property(prop, Stack((for (i <- 0 until prop.dimension) yield tpe): _*))
-  def apply(prop: numdom.Property, tpes: Seq[Type]) = Property(prop, Stack(tpes: _*))
-
+  def apply(prop: numdom.Property, tpe: Type): Property = Property(prop, Stack((for (i <- 0 until prop.dimension) yield tpe): _*))
+  def apply(prop: numdom.Property, tpes: Seq[Type]): Property = apply(prop, Stack(tpes: _*))
 
   case class Property(val prop: numdom.Property, val vars: Stack[Type]) extends SootFrameProperty[Property] {
 
@@ -133,18 +132,12 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     def narrowing(that: Property) = Property(prop widening that.prop, vars)
 
     def restrict(n: Int) = Property(
-       (0 until n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delDimension(0) },
+       (0 until size-n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delDimension(0) },
         vars.drop(n)
     )
 
-    def connect(p: Property, common: Int) = {
-      val newprop = prop.addDimension(p.size - common)
-      // TODO improve numerical properties API
-      val seq = (size-common until size) ++ (0 until size-common)
-      val newp = p.prop.addDimension(size-common).mapDimensions(seq)
-      val inters = (newprop intersection newp).remove_space_dimensions(prop.dimension - common - 1 until prop.dimension)
-      Property(newprop intersection newp, vars.drop(common) ++ p.vars.take(p.size-common))
-    }
+    def connect(p: Property, common: Int) =
+      Property(prop.connect(p.prop, common), vars.drop(common) ++ p.vars)
 
     def isEmpty = prop.isEmpty
 

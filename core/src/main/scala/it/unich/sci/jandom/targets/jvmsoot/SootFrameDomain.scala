@@ -84,7 +84,7 @@ trait SootFrameDomain extends AbstractDomain {
     def testLinearCondition(lf: LinearCond): (Property, Property)
 
     def restrict(n: Int): Property
-    def connect(p: Property, commin: Int): Property
+    def connect(p: Property, common: Int): Property
 
     override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
 

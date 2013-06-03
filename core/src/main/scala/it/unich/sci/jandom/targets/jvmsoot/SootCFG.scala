@@ -54,6 +54,16 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   }
   lazy val localMap = locals.zipWithIndex.toMap
 
+  def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
+    val resultType = if (method.getReturnType() == VoidType.v()) Seq() else Seq(method.getReturnType())
+    var output = params.domain.bottom(method.getParameterTypes().asInstanceOf[java.util.List[Type]] ++ resultType)
+	for (node <- graph.getTails()) {
+		output = output union analyzeBlock(params)(node, ann(node)).last
+	}
+    println("output: ", output)
+    output
+  }
+
   /**
    * @inheritdoc
    * For the moment, I am assuming that the first locals are exactly the parameters
