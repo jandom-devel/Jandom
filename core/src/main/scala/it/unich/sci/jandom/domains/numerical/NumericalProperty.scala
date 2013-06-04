@@ -361,7 +361,6 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
     val newprop = addDimension(p.dimension - common)
     val seq = (dimension - common until newprop.dimension) ++ (0 until dimension - common)
     val newp = p.addDimension(dimension - common).mapDimensions(seq)
-    val inters = (newprop intersection newp).remove_space_dimensions(dimension - common - 1 until dimension)
     (newprop intersection newp).remove_space_dimensions(dimension - common to  dimension-1)
   }
 

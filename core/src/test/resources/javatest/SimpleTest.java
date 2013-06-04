@@ -83,6 +83,17 @@ public class SimpleTest {
 	   return z;
 	}
 
+	static int recursb(int x) {
+		return recursa(x+1);
+	}
+
+	static int recursa(int x) {
+		if (x<0)
+			return recursb(x);
+		else
+			return x;
+	}
+
 	@SuppressWarnings("unused")
 	static void mycast() {
 		short s1 = 103;

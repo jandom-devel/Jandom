@@ -60,7 +60,6 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
 	for (node <- graph.getTails()) {
 		output = output union analyzeBlock(params)(node, ann(node)).last
 	}
-    println("output: ", output)
     output
   }
 

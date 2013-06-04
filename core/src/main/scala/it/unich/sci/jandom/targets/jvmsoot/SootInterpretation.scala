@@ -22,6 +22,10 @@ import soot._
 import it.unich.sci.jandom.targets.Parameters
 import scala.collection.mutable.HashMap
 import it.unich.sci.jandom.targets.Target
+import soot.jimple.toolkits.callgraph.CHATransformer
+import soot.jimple.toolkits.callgraph.TopologicalOrderer
+import scala.collection.mutable.Queue
+import soot.jimple.toolkits.callgraph.Sources
 
 /**
  * @author Gianluca Amato <gamato@unich.it>
@@ -40,23 +44,81 @@ class TopSootInterpretation[Tgt <: SootCFG[Tgt, _]] extends Interpretation[Tgt] 
 
 // this only works for non recursive calls
 class JimpleInterpretation extends Interpretation[JimpleMethod] {
-    import scala.collection.JavaConversions._
+  import scala.collection.JavaConversions._
 
   val inte: scala.collection.mutable.HashMap[(SootMethod, AnyRef), (AnyRef, Boolean)] = scala.collection.mutable.HashMap()
 
   def apply(params: Parameters[JimpleMethod])(method: SootMethod, input: params.Property): params.Property = {
     if (inte contains (method, input)) inte(method, input) match {
-      case (output,true) => output.asInstanceOf[params.Property]
+      case (output, true) => output.asInstanceOf[params.Property]
       case (output, false) => throw new IllegalArgumentException("Recursive")
     }
     else {
       val jmethod = new JimpleMethod(method)
       val outFibers = method.getParameterTypes().asInstanceOf[java.util.List[Type]] :+ method.getReturnType()
-      inte((method, input)) = (params.domain.bottom(outFibers),false)
+      inte((method, input)) = (params.domain.bottom(outFibers), false)
       val ann = jmethod.analyzeFromInput(params)(input)
       val output = jmethod.extractOutput(params)(ann)
-      inte((method, input)) = (output,true)
+      inte((method, input)) = (output, true)
       output
     }
   }
+}
+
+class JimpleRecursiveInterpretation(scene: Scene) extends Interpretation[JimpleMethod] {
+  import scala.collection.JavaConversions._
+
+  val inte: scala.collection.mutable.HashMap[SootMethod, AnyRef] = scala.collection.mutable.HashMap()
+  val targets: scala.collection.mutable.HashMap[SootMethod, Option[JimpleMethod]] = scala.collection.mutable.HashMap()
+
+  def apply(params: Parameters[JimpleMethod])(method: SootMethod, input: params.Property): params.Property = {
+    if (inte contains method)
+      inte(method).asInstanceOf[params.Property]
+    else {
+      val bottom = params.domain.bottom(method.getReturnType() +: method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
+      inte(method) = bottom
+      bottom
+    }
+  }
+
+  def compute(params: Parameters[JimpleMethod])(method: SootMethod, input: params.Property) {
+    val l = new java.util.LinkedList[SootMethod]()
+    l.add(method)
+    scene.setEntryPoints(l)
+    CHATransformer.v().transform()
+    val cg = scene.getCallGraph()
+    val tpo = new TopologicalOrderer(cg)
+    tpo.go()
+
+    val order = tpo.order().reverse // it is enough to get the set of all the elements
+    if (order.isEmpty()) order.add(method)
+
+    for (m <- order; if !(targets contains m)) {
+      targets(m) = if (m.isConcrete()) Some(new JimpleMethod(m)) else None
+      val resultType = if (m.getReturnType() == VoidType.v()) Seq() else Seq(m.getReturnType())
+      inte(m) = params.domain.bottom(m.getParameterTypes().asInstanceOf[java.util.List[Type]] ++ resultType)
+    }
+
+    val worklist = scala.collection.mutable.Queue[SootMethod](order.toSeq: _*)
+    while (!worklist.isEmpty) {
+      val m = worklist.dequeue
+      val jmethod = targets(m)
+      val top = params.domain.top(m.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
+      val output = jmethod match {
+        case None => inte(m).asInstanceOf[params.Property]
+        case Some(jmethod) => {
+          val ann = jmethod.analyzeFromInput(params)(top)
+          jmethod.extractOutput(params)(  ann )
+        }
+      }
+      if (! (inte(m).asInstanceOf[params.Property] >= output)) {
+        inte(m) = inte(m).asInstanceOf[params.Property] widening output
+        val sources = new Sources(cg.edgesInto(m)).asInstanceOf[java.util.Iterator[SootMethod]]
+        worklist.enqueue(sources.toSeq: _*)
+      }
+    }
+  }
+
+  override def toString = inte.toString
+
 }

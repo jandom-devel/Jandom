@@ -241,14 +241,19 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
       case unit: RetStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: ReturnStmt =>
-        val exitProp = if (params.io)
-        	analyzeExpr(unit.getOp(), currprop).restrict(method.getParameterCount()+1)
-        else
+        val exitProp = if (params.io){
+        	val e1 = analyzeExpr(unit.getOp(), currprop)
+        	val e2 = e1.restrict(method.getParameterCount()+1)
+        	e2
+        } else
             currprop
         exits :+= exitProp
       case unit: ReturnVoidStmt =>
-        // the successor of a return unit is the fake final node
-        exits :+= currprop
+         val exitProp = if (params.io)
+        	currprop.restrict(method.getParameterCount())
+        else
+            currprop
+        exits :+= exitProp
       case unit: TableSwitchStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: ThrowStmt =>

@@ -35,6 +35,8 @@ import soot.baf.WordType
  *
  */
 class JVMSootSuite extends FunSuite {
+  import scala.collection.JavaConversions._
+
   val scene = Scene.v()
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
   c.setApplicationClass()
@@ -43,6 +45,7 @@ class JVMSootSuite extends FunSuite {
   bafTests()
   jimpleNumTests()
   jimplePairSharingTests()
+  jimpleInterProceduralNumTests()
 
   def bafTests() {
     val bafTests = Seq(
@@ -156,6 +159,38 @@ class JVMSootSuite extends FunSuite {
           val ann = method.analyze(params)
           //println(method.mkString(params)(ann))
           assert(ann(method.lastPP.get).prop === params.domain.dom.Property(ps, method.locals.size + method.body.getMethod().getParameterCount()))
+        } finally {
+          params.debugWriter.flush()
+        }
+      }
+    }
+  }
+
+  def jimpleInterProceduralNumTests() {
+    val jimpleNumericalTests = Seq(
+      "sequential" -> "0 == 0",
+      "parametric_dynamic" -> "i0 == i0 && i1 == i1 && i2 == i2",
+      "parametric_static" -> "i0 == i0 && i1 == i1 && i2 == i0 +i1",
+      "parametric_caller" -> "i0 == i0 && i1== i1 && i2==7",
+      "recursa" -> "-i0 + i1 >= 0 && i1 >= 0")
+
+    for ((methodName, propString) <- jimpleNumericalTests) {
+      val method = c.getMethodByName(methodName)
+      val jmethod = new JimpleMethod(method)
+      val inte = new JimpleRecursiveInterpretation(scene)
+      val params = new Parameters[JimpleMethod] {
+        val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
+        io = true
+        interpretation = Some(inte)
+      }
+      test(s"Jimple inter-procedural numerical analysis: ${methodName}") {
+        val env = Environment()
+        val parser = new NumericalPropertyParser(env)
+        val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes().asInstanceOf[java.util.List[Type]])
+        try {
+          inte.compute(params)(method, input)
+          val prop = parser.parseProperty(propString, params.domain.numdom).get
+          assert(inte(params)(method,input).prop === prop)
         } finally {
           params.debugWriter.flush()
         }
