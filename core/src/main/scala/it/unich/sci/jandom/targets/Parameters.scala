@@ -64,7 +64,7 @@ abstract class Parameters[Tgt <: Target[Tgt]]  {
   /**
    * This parameter should be defined for inter-procedural analsysis.
    */
-  var interpretation: Option[Interpretation[Tgt]] = None
+  var interpretation: Option[Interpretation[Tgt, this.type]] = None
 
   /**
    * This parameter determines whether standard or local widening is used. At the moment, this is only supported

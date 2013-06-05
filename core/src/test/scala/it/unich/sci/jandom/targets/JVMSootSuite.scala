@@ -108,7 +108,7 @@ class JVMSootSuite extends FunSuite {
       val params = new Parameters[JimpleMethod] {
         val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
         io = ifIo
-        interpretation = Some(new JimpleInterpretation)
+        interpretation = Some(new JimpleInterpretation(this))
         //debugWriter = new java.io.PrintWriter(System.err)
       }
       test(s"Jimple numerical analysis: ${methodName} ${if (i > 0) i + 1 else ""}") {
@@ -152,9 +152,10 @@ class JVMSootSuite extends FunSuite {
       val params = new Parameters[JimpleMethod] {
         val domain = new SootFramePairSharingDomain(classAnalysis)
         io = true
-        interpretation = Some(new TopSootInterpretation[JimpleMethod])
         //debugWriter = new java.io.PrintWriter(System.err)
       }
+      val inte = new TopSootInterpretation[JimpleMethod, params.type](params)
+      params.interpretation = Some(inte)
       test(s"Jimple object analysis: ${methodName}") {
         try {
           println(method)
@@ -170,26 +171,25 @@ class JVMSootSuite extends FunSuite {
 
   def jimpleInterProceduralPSTests() {
     val jimplePairSharingTests = Seq(
-      "sequential" -> PairSharingDomain(Set(),0),
-      "objcreation" -> PairSharingDomain(Set(),0),
-      "class_parametric" -> PairSharingDomain(Set(UP(0,0),UP(0,1), UP(1,1)), 2),
-      "pair_one" -> PairSharingDomain(Set(UP(0,0), UP(0,2), UP(1,1), UP(2,2)), 3)
-      )
+      "sequential" -> PairSharingDomain(Set(), 0),
+      "objcreation" -> PairSharingDomain(Set(), 0),
+      "class_parametric" -> PairSharingDomain(Set(UP(0, 0), UP(0, 1), UP(1, 1)), 2),
+      "pair_one" -> PairSharingDomain(Set(UP(0, 0), UP(0, 2), UP(1, 1), UP(2, 2)), 3))
 
     for ((methodName, prop) <- jimplePairSharingTests) {
       val method = c.getMethodByName(methodName)
       val jmethod = new JimpleMethod(method)
-      val inte = new JimpleRecursiveInterpretation(scene)
       val params = new Parameters[JimpleMethod] {
         val domain = new SootFramePairSharingDomain(classAnalysis)
         io = true
-        interpretation = Some(inte)
       }
+      val inte = new JimpleRecursiveInterpretation[params.type](scene, params)
+      params.interpretation = Some(inte)
       test(s"Jimple inter-procedural sharing analysis: ${methodName}") {
         val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes().asInstanceOf[java.util.List[Type]])
         try {
-          inte.compute(params)(method, input)
-          assert(inte(params)(method, input).prop === prop)
+          inte.compute(method, input)
+          assert(inte(method, input).prop === prop)
         } finally {
           params.debugWriter.flush()
         }
@@ -208,20 +208,20 @@ class JVMSootSuite extends FunSuite {
     for ((methodName, propString) <- jimpleNumericalTests) {
       val method = c.getMethodByName(methodName)
       val jmethod = new JimpleMethod(method)
-      val inte = new JimpleRecursiveInterpretation(scene)
       val params = new Parameters[JimpleMethod] {
         val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
         io = true
-        interpretation = Some(inte)
       }
+      val inte = new JimpleRecursiveInterpretation[params.type](scene, params)
+      params.interpretation = Some(inte)
       test(s"Jimple inter-procedural numerical analysis: ${methodName}") {
         val env = Environment()
         val parser = new NumericalPropertyParser(env)
         val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes().asInstanceOf[java.util.List[Type]])
         try {
-          inte.compute(params)(method, input)
+          inte.compute(method, input)
           val prop = parser.parseProperty(propString, params.domain.numdom).get
-          assert(inte(params)(method, input).prop === prop)
+          assert(inte(method, input).prop === prop)
         } finally {
           params.debugWriter.flush()
         }

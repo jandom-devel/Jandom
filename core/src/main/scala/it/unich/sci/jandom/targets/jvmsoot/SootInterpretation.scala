@@ -32,13 +32,14 @@ import soot.jimple.toolkits.callgraph.Sources
  *
  */
 
-trait Interpretation[Tgt <: Target[Tgt]] {
-  def apply(params: Parameters[Tgt])(method: SootMethod, input: params.Property): params.Property
+trait Interpretation[Tgt <: Target[Tgt], Params <: Parameters[Tgt]] {
+  val params: Params
+  def apply(method: SootMethod, input: params.Property): params.Property
 }
 
-class TopSootInterpretation[Tgt <: SootCFG[Tgt, _]] extends Interpretation[Tgt] {
+class TopSootInterpretation[Tgt <: SootCFG[Tgt, _], Params <: Parameters[Tgt]](val params: Params)  extends Interpretation[Tgt, Params] {
   import scala.collection.JavaConversions._
-  def apply(params: Parameters[Tgt])(method: SootMethod, input: params.Property): params.Property =
+  def apply(method: SootMethod, input: params.Property): params.Property =
     if (method.getReturnType() == VoidType.v())
       params.domain.top(method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
     else
@@ -46,14 +47,14 @@ class TopSootInterpretation[Tgt <: SootCFG[Tgt, _]] extends Interpretation[Tgt] 
 }
 
 // this only works for non recursive calls
-class JimpleInterpretation extends Interpretation[JimpleMethod] {
+class JimpleInterpretation[Params <: Parameters[JimpleMethod]](val params: Params) extends Interpretation[JimpleMethod, Params] {
   import scala.collection.JavaConversions._
 
-  val inte: scala.collection.mutable.HashMap[(SootMethod, AnyRef), (AnyRef, Boolean)] = scala.collection.mutable.HashMap()
+  val inte = scala.collection.mutable.HashMap[(SootMethod, params.Property), (params.Property, Boolean)]()
 
-  def apply(params: Parameters[JimpleMethod])(method: SootMethod, input: params.Property): params.Property = {
+  def apply(method: SootMethod, input: params.Property): params.Property = {
     if (inte contains (method, input)) inte(method, input) match {
-      case (output, true) => output.asInstanceOf[params.Property]
+      case (output, true) => output
       case (output, false) => throw new IllegalArgumentException("Recursive")
     }
     else {
@@ -68,15 +69,15 @@ class JimpleInterpretation extends Interpretation[JimpleMethod] {
   }
 }
 
-class JimpleRecursiveInterpretation(scene: Scene) extends Interpretation[JimpleMethod] {
+class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: Scene, val params: Params) extends Interpretation[JimpleMethod, Params] {
   import scala.collection.JavaConversions._
 
-  val inte: scala.collection.mutable.HashMap[SootMethod, AnyRef] = scala.collection.mutable.HashMap()
+  val inte = scala.collection.mutable.HashMap[SootMethod, params.Property]()
   val targets: scala.collection.mutable.HashMap[SootMethod, Option[JimpleMethod]] = scala.collection.mutable.HashMap()
 
-  def apply(params: Parameters[JimpleMethod])(method: SootMethod, input: params.Property): params.Property = {
+  def apply(method: SootMethod, input: params.Property): params.Property = {
     if (inte contains method)
-      inte(method).asInstanceOf[params.Property]
+      inte(method)
     else {
       val bottom = params.domain.bottom(method.getReturnType() +: method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
       inte(method) = bottom
@@ -84,7 +85,7 @@ class JimpleRecursiveInterpretation(scene: Scene) extends Interpretation[JimpleM
     }
   }
 
-  def compute(params: Parameters[JimpleMethod])(method: SootMethod, input: params.Property) {
+  def compute(method: SootMethod, input: params.Property) {
     val l = new java.util.LinkedList[SootMethod]()
     l.add(method)
     scene.setEntryPoints(l)
@@ -108,15 +109,15 @@ class JimpleRecursiveInterpretation(scene: Scene) extends Interpretation[JimpleM
       val jmethod = targets(m)
       val top = params.domain.top(m.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
       val output = jmethod match {
-        case None => inte(m).asInstanceOf[params.Property]
+        case None => inte(m)
         case Some(jmethod) => {
           val ann = jmethod.analyzeFromInput(params)(top)
           jmethod.extractOutput(params)(ann)
         }
       }
-      if (!(inte(m).asInstanceOf[params.Property] >= output)) {
+      if (!(inte(m) >= output)) {
         println(inte(m),output)
-        inte(m) = inte(m).asInstanceOf[params.Property] widening output
+        inte(m) = inte(m) widening output
         val sources = new Sources(cg.edgesInto(m)).asInstanceOf[java.util.Iterator[SootMethod]]
         worklist.enqueue(sources.toSeq: _*)
       }

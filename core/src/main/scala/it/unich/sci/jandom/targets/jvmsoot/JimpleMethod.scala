@@ -145,7 +145,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
     val callprop = v.getArgs().foldLeft(prop) { case (p, arg) => analyzeExpr(arg, p) }
     val inputprop = callprop.restrict(v.getArgCount() + implicitArgs)
     val exitprop = params.interpretation match  {
-      case Some(inte) => inte(params)(method, inputprop)
+      case Some(inte) => inte(method, inputprop)
       case None => throw new IllegalArgumentException("Interprocedural analysis")
     }
     callprop.connect(exitprop, method.getParameterCount())
