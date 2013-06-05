@@ -60,9 +60,9 @@ class PPLPropertySuite extends FunSuite {
       linearInequality(Array(0, 1, 1), -1).
       linearInequality(Array(0, 1, -1), -1)
     expectResult(Double.PositiveInfinity) { obj.maximize(Array(0, 0, 1), 0) }
-    expectResult( 1 ) { obj.maximize(Array(1, 1, 0), 0) }
-    expectResult( None ) { obj.frequency(Array(1, 0, 1), 0) }
-    expectResult( Some(0) ) { obj.frequency(Array(1, 0, 0), 0) }
+    expectResult(1) { obj.maximize(Array(1, 1, 0), 0) }
+    expectResult(None) { obj.frequency(Array(1, 0, 1), 0) }
+    expectResult(Some(0)) { obj.frequency(Array(1, 0, 0), 0) }
   }
 
   test("various operations") {
@@ -114,4 +114,18 @@ class PPLPropertySuite extends FunSuite {
     expectResult(obj3)(obj2.mapDimensions(Seq(-1, 0, 1)))
   }
 
+  test("connect") {
+    val obj1 = full.
+      linearAssignment(0, Array(0, 0, 1), 3).
+      linearInequality(Array(0, 0, 1),-10)
+    val obj2 = full.
+      linearAssignment(0, Array(0, 0, 0), 1).
+      linearAssignment(1, Array(0, 0, 0), 3).
+      linearInequality(Array(0, 1, 1), 0)
+    val obj3 = octDomain.full(4).
+      linearAssignment(0, Array(0, 0, 0, 0), 4).
+      linearAssignment(2, Array(0, 0, 0, 0), 3).
+      linearInequality(Array(0, 0, 1, 1), 0)
+    expectResult(obj3)(obj1.connect(obj2, 1))
+  }
 }
