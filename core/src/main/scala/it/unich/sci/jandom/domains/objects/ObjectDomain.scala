@@ -38,10 +38,13 @@ trait ObjectDomain extends AbstractDomain {
     def size: Int
     def addVariable: Property
     def delVariable(n: Int = size - 1): Property
+    def removeLowerVariables(newSize: Int): Property
+    def removeHigherVariables(newSize: Int): Property
     def assignNull(dst: Int = size - 1): Property
     def assignVariable(dst: Int, src: Int): Property
     def assignVariableToField(dst: Int, field: Int, src: Int): Property
     def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: UP[Int] => Boolean = { x => true }): Property
     def isNull(v: Int): Boolean
+    def connect(that: Property, common: Int): Property
   }
 }
