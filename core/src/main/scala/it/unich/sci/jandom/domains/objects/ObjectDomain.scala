@@ -29,6 +29,7 @@ import it.unich.sci.jandom.domains.AbstractDomain
  *
  */
 trait ObjectDomain extends AbstractDomain {
+
   type Property <: ObjectProperty[Property]
 
   def top(size: Int): Property

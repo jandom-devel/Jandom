@@ -40,12 +40,14 @@ class JVMSootSuite extends FunSuite {
   val scene = Scene.v()
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
   c.setApplicationClass()
+  val classAnalysis = new ClassReachableAnalysis(scene)
   val numdomain = PPLCPolyhedron
 
   bafTests()
   jimpleNumTests()
-  jimplePairSharingTests()
   jimpleInterProceduralNumTests()
+  jimplePairSharingTests()
+  jimpleInterProceduralPSTests()
 
   def bafTests() {
     val bafTests = Seq(
@@ -147,7 +149,6 @@ class JVMSootSuite extends FunSuite {
 
     for ((methodName, ps) <- jimplePairSharingTests) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
-      val classAnalysis = new ClassReachableAnalysis(scene)
       val params = new Parameters[JimpleMethod] {
         val domain = new SootFramePairSharingDomain(classAnalysis)
         io = true
@@ -156,9 +157,39 @@ class JVMSootSuite extends FunSuite {
       }
       test(s"Jimple object analysis: ${methodName}") {
         try {
+          println(method)
           val ann = method.analyze(params)
           //println(method.mkString(params)(ann))
           assert(ann(method.lastPP.get).prop === params.domain.dom.Property(ps, method.locals.size + method.body.getMethod().getParameterCount()))
+        } finally {
+          params.debugWriter.flush()
+        }
+      }
+    }
+  }
+
+  def jimpleInterProceduralPSTests() {
+    val jimplePairSharingTests = Seq(
+      "sequential" -> PairSharingDomain(Set(),0),
+      "objcreation" -> PairSharingDomain(Set(),0),
+      "class_parametric" -> PairSharingDomain(Set(UP(0,0),UP(0,1), UP(1,1)), 2),
+      "pair_one" -> PairSharingDomain(Set(UP(0,0), UP(0,2), UP(1,1), UP(2,2)), 3)
+      )
+
+    for ((methodName, prop) <- jimplePairSharingTests) {
+      val method = c.getMethodByName(methodName)
+      val jmethod = new JimpleMethod(method)
+      val inte = new JimpleRecursiveInterpretation(scene)
+      val params = new Parameters[JimpleMethod] {
+        val domain = new SootFramePairSharingDomain(classAnalysis)
+        io = true
+        interpretation = Some(inte)
+      }
+      test(s"Jimple inter-procedural sharing analysis: ${methodName}") {
+        val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes().asInstanceOf[java.util.List[Type]])
+        try {
+          inte.compute(params)(method, input)
+          assert(inte(params)(method, input).prop === prop)
         } finally {
           params.debugWriter.flush()
         }
@@ -190,7 +221,7 @@ class JVMSootSuite extends FunSuite {
         try {
           inte.compute(params)(method, input)
           val prop = parser.parseProperty(propString, params.domain.numdom).get
-          assert(inte(params)(method,input).prop === prop)
+          assert(inte(params)(method, input).prop === prop)
         } finally {
           params.debugWriter.flush()
         }

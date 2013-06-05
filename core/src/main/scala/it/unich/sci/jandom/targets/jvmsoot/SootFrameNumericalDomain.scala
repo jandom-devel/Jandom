@@ -133,11 +133,11 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def restrict(n: Int) = Property(
        (0 until size-n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delDimension(0) },
-        vars.drop(n)
+        vars.drop(size - n)
     )
 
     def connect(p: Property, common: Int) =
-      Property(prop.connect(p.prop, common), vars.drop(common) ++ p.vars)
+      Property(prop.connect(p.prop, common), p.vars ++ vars drop common)
 
     def isEmpty = prop.isEmpty
 

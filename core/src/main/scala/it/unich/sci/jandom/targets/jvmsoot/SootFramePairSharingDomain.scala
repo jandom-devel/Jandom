@@ -41,10 +41,10 @@ class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends 
   case class Property(val prop: dom.Property, val stack: Stack[Type]) extends SootFrameProperty[Property] {
 
     def removeBad = {
-      var currprop = prop
+      var currprop = dom.Property(prop.ps filter mayShare, stack.size)
       for (i <- 0 until stack.size)
         if (! stack(size- i -1).isInstanceOf[RefType])
-        	currprop.assignNull(i)
+        	currprop = currprop.assignNull(i)
       Property(currprop, stack)
     }
 
@@ -124,7 +124,7 @@ class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends 
     def assignField(dst: Int, f: SootField) =
       Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop)
 
-    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) // :+ ("types: "+this.stack.toString)
+    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ ("types: "+this.stack.toString)
 
     def union(that: Property) = {
       assert(stack == that.stack)
@@ -136,9 +136,9 @@ class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends 
       Property(prop union that.prop, stack)
     }
 
-    def restrict(n: Int) = this
+    def restrict(newSize: Int) = Property(prop removeHigherVariables newSize, stack drop (size - newSize))
 
-    def connect(p: Property, commond: Int) = this
+    def connect(p: Property, common: Int): Property = Property(prop.connect(p.prop, common), p.stack ++ stack drop common)
 
     def widening(that: Property) = this union that
 

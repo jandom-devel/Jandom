@@ -56,7 +56,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
 
   def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
     val resultType = if (method.getReturnType() == VoidType.v()) Seq() else Seq(method.getReturnType())
-    var output = params.domain.bottom(method.getParameterTypes().asInstanceOf[java.util.List[Type]] ++ resultType)
+    var output = params.domain.bottom(resultType ++ method.getParameterTypes().asInstanceOf[java.util.List[Type]])
 	for (node <- graph.getTails()) {
 		output = output union analyzeBlock(params)(node, ann(node)).last
 	}

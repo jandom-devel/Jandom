@@ -1,8 +1,10 @@
 package javatest;
 
-class A { }
+class A {
+}
 
-class B { }
+class B {
+}
 
 class ListA {
 	ListA next;
@@ -65,9 +67,8 @@ public class SimpleTest {
 	}
 
 	static int parametric_static(int x, int y) {
-		return x+y;
+		return x + y;
 	}
-
 
 	int parametric_dynamic(int x, int y) {
 		classX = x;
@@ -77,18 +78,18 @@ public class SimpleTest {
 	}
 
 	static int parametric_caller(int x, int y) {
-	   x = 3;
-	   y = 4;
-	   int z = parametric_static(x,y);
-	   return z;
+		x = 3;
+		y = 4;
+		int z = parametric_static(x, y);
+		return z;
 	}
 
 	static int recursb(int x) {
-		return recursa(x+1);
+		return recursa(x + 1);
 	}
 
 	static int recursa(int x) {
-		if (x<0)
+		if (x < 0)
 			return recursb(x);
 		else
 			return x;
@@ -98,7 +99,7 @@ public class SimpleTest {
 	static void mycast() {
 		short s1 = 103;
 		short s2 = 104;
-		byte z = (byte) (s1+s2);
+		byte z = (byte) (s1 + s2);
 		int i = s1 + s2;
 		long l = s1 + s2;
 		float f1 = s1;
@@ -111,7 +112,8 @@ public class SimpleTest {
 		int x = 0;
 		int y = 0;
 		int z = 0;
-		if (2*x < y) z = 1;
+		if (2 * x < y)
+			z = 1;
 	}
 
 	@SuppressWarnings("unused")
@@ -124,21 +126,27 @@ public class SimpleTest {
 		a2 = l.v;
 	}
 
-
 	@SuppressWarnings("unused")
 	static void classrefinement() {
 		A a = new A();
 		B b = new B();
 		Pair p = new Pair();
-        p.w = b;
-        a = p.v;
+		p.w = b;
+		a = p.v;
 	}
 
 	static Pair class_parametric(A a) {
 		Pair p = new Pair();
 		p.v = a;
-		a= new A();
+		a = new A();
 		return p;
+	}
+
+	static ListA pair_one(A a, B b) {
+		ListA l = new ListA();
+		l.v = a;
+		l.next = pair_one(a, b);
+		return l;
 	}
 
 }

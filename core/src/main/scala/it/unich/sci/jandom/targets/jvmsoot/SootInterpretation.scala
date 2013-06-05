@@ -39,7 +39,10 @@ trait Interpretation[Tgt <: Target[Tgt]] {
 class TopSootInterpretation[Tgt <: SootCFG[Tgt, _]] extends Interpretation[Tgt] {
   import scala.collection.JavaConversions._
   def apply(params: Parameters[Tgt])(method: SootMethod, input: params.Property): params.Property =
-    params.domain.top(method.getReturnType() +: method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
+    if (method.getReturnType() == VoidType.v())
+      params.domain.top(method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
+    else
+      params.domain.top(method.getReturnType() +: method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
 }
 
 // this only works for non recursive calls
@@ -96,7 +99,7 @@ class JimpleRecursiveInterpretation(scene: Scene) extends Interpretation[JimpleM
     for (m <- order; if !(targets contains m)) {
       targets(m) = if (m.isConcrete()) Some(new JimpleMethod(m)) else None
       val resultType = if (m.getReturnType() == VoidType.v()) Seq() else Seq(m.getReturnType())
-      inte(m) = params.domain.bottom(m.getParameterTypes().asInstanceOf[java.util.List[Type]] ++ resultType)
+      inte(m) = params.domain.bottom(resultType ++ m.getParameterTypes().asInstanceOf[java.util.List[Type]])
     }
 
     val worklist = scala.collection.mutable.Queue[SootMethod](order.toSeq: _*)
@@ -108,10 +111,11 @@ class JimpleRecursiveInterpretation(scene: Scene) extends Interpretation[JimpleM
         case None => inte(m).asInstanceOf[params.Property]
         case Some(jmethod) => {
           val ann = jmethod.analyzeFromInput(params)(top)
-          jmethod.extractOutput(params)(  ann )
+          jmethod.extractOutput(params)(ann)
         }
       }
-      if (! (inte(m).asInstanceOf[params.Property] >= output)) {
+      if (!(inte(m).asInstanceOf[params.Property] >= output)) {
+        println(inte(m),output)
         inte(m) = inte(m).asInstanceOf[params.Property] widening output
         val sources = new Sources(cg.edgesInto(m)).asInstanceOf[java.util.Iterator[SootMethod]]
         worklist.enqueue(sources.toSeq: _*)
