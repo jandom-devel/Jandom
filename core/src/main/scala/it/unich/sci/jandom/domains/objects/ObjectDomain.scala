@@ -38,6 +38,7 @@ trait ObjectDomain extends AbstractDomain {
     def size: Int
     def addVariable: Property
     def delVariable(n: Int = size - 1): Property
+    def removeRangeOfVariables(range: Range): Property
     def removeLowerVariables(newSize: Int): Property
     def removeHigherVariables(newSize: Int): Property
     def assignNull(dst: Int = size - 1): Property

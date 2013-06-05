@@ -18,6 +18,8 @@
 
 package it.unich.sci.jandom.domains.objects
 
+import scala.collection.immutable.Range
+
 /**
  * This is the implementation of the untypd part of PairSharing as in Spoto and Secci.
  * @author Gianluca Amato <gamato@unich.it>
@@ -54,6 +56,17 @@ object PairSharingDomain extends ObjectDomain {
         new Property(removeVariable(ps, n), size - 1)
       else
         new Property(removeVariable(renameVariable(renameVariable(ps, size, n), n, size - 1), size), size - 1)
+
+    def removeRangeOfVariables(range: Range) = {
+      assert(range.head >= 0 && range.last < size && range.last >= range.head)
+      val newps = for {
+        UP(l,r) <- ps
+        if !(range contains r) && !(range contains l)
+        l1 = if (l > range.last) l-range.size else l
+        r1 = if (r > range.last) r-range.size else r
+      } yield UP(l1,r1)
+      Property(newps, size - range.size)
+    }
 
     def removeLowerVariables(newSize: Int) = {
       assert(newSize >= 0 && newSize <= size)

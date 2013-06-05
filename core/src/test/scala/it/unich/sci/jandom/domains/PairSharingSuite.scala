@@ -103,6 +103,11 @@ class PairSharingSuite extends FunSuite {
     expectResult(ps2)(ps1.removeLowerVariables(2))
   }
 
+  test("removeRangeOfVariables") {
+    val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
+    expectResult( dom(Set(UP(0, 0), UP(1, 1)) ,2) ) (ps1.removeRangeOfVariables(1 to 2))
+  }
+
   test("connect: nullness of first property is definitive") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(0, 1), UP(0, 0), UP(1, 1), UP(2, 2), UP(1, 3), UP(3, 3)), 4)
@@ -129,6 +134,7 @@ class PairSharingSuite extends FunSuite {
     assert(!(ps3.ps contains UP(0, 2)))
     assert(!(ps3.ps contains UP(1, 2)))
   }
+
   test("connect: connecting two pairs from the first property trough a pair") {
     val ps1 = dom(Set(UP(0, 0), UP(1, 1), UP(2, 2), UP(0, 3), UP(1, 3), UP(2, 4), UP(3, 3), UP(4, 4)), 5)
     val ps2 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1)), 4)
