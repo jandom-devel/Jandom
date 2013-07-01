@@ -36,7 +36,7 @@ import parma_polyhedra_library._
  * @param pplobject is the PPL property we are encapsulating.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPLNativeProperty], private val pplobject: PPLNativeProperty)
+class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPLNativeProperty], val pplobject: PPLNativeProperty)
   extends NumericalProperty[PPLProperty[PPLNativeProperty]] {
 
   def widening(that: PPLProperty[PPLNativeProperty]): PPLProperty[PPLNativeProperty] = {
@@ -54,8 +54,8 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
    */
   def narrowing(that: PPLProperty[PPLNativeProperty]): PPLProperty[PPLNativeProperty] = {
     if (domain.supportsNarrowing) {
-      val newpplobject = domain.copyConstructor(pplobject)
-      domain.narrowing_assign(newpplobject, that.pplobject)
+      val newpplobject = domain.copyConstructor(that.pplobject)
+      domain.narrowing_assign(newpplobject, pplobject)
       new PPLProperty(domain, newpplobject)
     } else
       this
@@ -267,7 +267,6 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private val frequencyHandle = myClass.getMethod("frequency", classOf[Linear_Expression], classOf[Coefficient], classOf[Coefficient], classOf[Coefficient], classOf[Coefficient])
 
   private val narrowingAssignHandle = try {
-
     myClass.getMethod("CC76_narrowing_assign", otherClass)
   } catch {
     case _: Throwable => null
