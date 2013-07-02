@@ -20,21 +20,23 @@ package it.unich.sci.jandom.ui.gui
 
 import java.awt.event.{ InputEvent, KeyEvent }
 import java.io.File
-
+import java.nio.file._
+import java.nio.file.attribute.BasicFileAttributes
 import scala.collection.JavaConversions._
-import scala.swing.{Action, BorderPanel, BoxPanel, ComboBox, EditorPane, FileChooser, Label, MenuItem, Orientation, ScrollPane}
-import scala.swing.Dialog
-
+import scala.swing._
+import scala.swing.event.EditDone
+import scala.swing.event.SelectionChanged
 import it.unich.sci.jandom._
 import it.unich.sci.jandom.ppfactories.MemoizingFactory
 import it.unich.sci.jandom.targets.Parameters
-import it.unich.sci.jandom.targets.Target
-import it.unich.sci.jandom.targets.jvmasm._
 import it.unich.sci.jandom.targets.jvmsoot._
-
 import javax.swing.KeyStroke
 import soot.Scene
 import soot.SootMethod
+import javax.swing.JFileChooser
+import scala.swing.event.EditDone
+import scala.swing.event.SelectionEvent
+import scala.swing.event.ActionEvent
 
 /**
  * This is the pane used to select the class and method to analyze for
@@ -46,93 +48,140 @@ import soot.SootMethod
 class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   import frame.Mode._
 
-  /*
-   * The EditorPane which is part of the JVMEditorPane
-   */
+  private val sootScene: Scene = Scene.v()
   private val editorPane = new EditorPane
-  private val fileChooser = new FileChooser(new File("."))
-  private var methodComboBox: ComboBox[String] = new ComboBox(Seq())
-  private val methodSelector = new BoxPanel(Orientation.Horizontal) {
-    contents += new Label("Method: ") { tooltip = "Choose the method to analyze." }
-    contents += methodComboBox
-  }
-
-  /*
-   * The list of currently available methods
-   */
-  private var methodList = Seq[SootMethod]()
-
-  /*
-   * The method currently selected, or None if no method is selected.
-   */
-  private var method: Option[Target[_]] = None
-
   editorPane.editable = false
-  layout(new ScrollPane(editorPane)) = BorderPanel.Position.Center
-  layout(methodSelector) = BorderPanel.Position.North
+  private val classPathField = new TextField(new File("examples/Java").getCanonicalPath())
+  private val classComboBox = new ComboBox(Seq[String]())
+  private val methodComboBox = new ComboBox(Seq[SootMethod]())
+  private val radioBaf = new RadioButton("Baf")
+  radioBaf.tooltip = "Analysis of Java bytecode thorugh the Baf representation of the Soot library"
+  private val radioJimple = new RadioButton("Jimple")
+  radioJimple.tooltip = "Analysis of Java bytecode thorugh the Jimple representation of the Soot library"
+  private val typeGroup = new ButtonGroup(radioBaf, radioJimple)
+  typeGroup.select(radioJimple)
 
-  val methodSelectAction = new Action("Method Select") {
-    def apply() {
-      val methodName = methodComboBox.selection.item
-      val sootMethod = methodList.find(_.getName == methodName)
-      method = sootMethod flatMap { sootMethod =>
-        frame.mode match {
-        	case Baf => Some(new BafMethod(sootMethod))
-            case Jimple => Some(new JimpleMethod(sootMethod))
-        }
+  var method: Option[SootCFG[_, _]] = None
+
+  val controls = new GridBagPanel {
+    var c = new Constraints
+
+    c.weightx = 0
+    c.gridx = 0
+    c.gridy = 0
+    val cplabel = new Label("ClassPath: ")
+    cplabel.tooltip = "Choose the classpath of the program to analyze"
+    layout(cplabel) = c
+
+    c.gridy = 1
+    val clabel = new Label("Class: ")
+    clabel.tooltip = "Choose the class to analyze"
+    layout(clabel) = c
+
+    c.gridy = 2
+    val mlabel = new Label("Method: ")
+    mlabel.tooltip = "Choose the method to analyze"
+    layout(mlabel) = c
+
+    c.gridy = 3
+    val tlabel = new Label("IR type: ")
+    tlabel.tooltip = "Type of intermediate representation to use"
+    layout(tlabel) = c
+
+    c.fill = GridBagPanel.Fill.Horizontal
+    c.weightx = 80
+    c.gridx = 1
+    c.gridy = 0
+    layout(classPathField) = c
+
+    c.gridy = 1
+    layout(classComboBox) = c
+
+    c.gridy = 2
+    layout(methodComboBox) = c
+
+    c.gridy = 3
+    val boxPanel = new BoxPanel(Orientation.Horizontal) {
+      contents += radioBaf += radioJimple
+    }
+    layout(boxPanel) = c
+  }
+  layout(new ScrollPane(editorPane)) = BorderPanel.Position.Center
+  layout(controls) = BorderPanel.Position.North
+
+  listenTo(classPathField, classComboBox.selection, methodComboBox.selection, radioBaf, radioJimple)
+  reactions += {
+    case EditDone(`classPathField`) =>
+      sootScene.setSootClassPath(sootScene.defaultClassPath + ":" + classPathField.text)
+      val rootPath = Paths.get(classPathField.text)
+      val fileProcessor = new ClassFileVisitor(rootPath)
+      Files.walkFileTree(rootPath, fileProcessor)
+      // these two lines are a mess because Scala Swing does not play well with Java 1.7
+      val comboModel = ComboBox.newConstantModel(fileProcessor.classNameList).asInstanceOf[javax.swing.ComboBoxModel[String]]
+      classComboBox.peer.asInstanceOf[javax.swing.JComboBox[String]].setModel(comboModel)
+      publish(SelectionChanged(classComboBox))
+
+    case SelectionChanged(`classComboBox`) =>
+      val klass = sootScene.loadClassAndSupport(classComboBox.selection.item)
+      klass.setApplicationClass()
+      val methodList = klass.getMethods()
+      // these two lines are a mess because Scala Swing does not play well with Java 1.7
+      val comboModel = ComboBox.newConstantModel(methodList).asInstanceOf[javax.swing.ComboBoxModel[SootMethod]]
+      methodComboBox.peer.asInstanceOf[javax.swing.JComboBox[SootMethod]].setModel(comboModel)
+      publish(SelectionChanged(methodComboBox))
+
+    case SelectionChanged(`methodComboBox`) | ActionEvent(`radioBaf`) | ActionEvent(`radioJimple`) =>
+      val sootMethod = methodComboBox.selection.item
+      method = typeGroup.selected match {
+        case Some(`radioBaf`) => Some(new BafMethod(sootMethod))
+        case Some(`radioJimple`) => Some(new JimpleMethod(sootMethod))
+        case _ => None
       }
       editorPane.text = method match {
-        case Some(method) => method.toString
         case None => ""
+        case Some(m) => m.toString
       }
+  }
+
+  publish(EditDone(classPathField))
+
+  class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
+    private val privateClassNamesList = scala.collection.mutable.SortedSet[String]()
+    def classNameList = privateClassNamesList.toSeq
+    override def visitFile(aFile: Path, aAttrs: BasicFileAttributes): FileVisitResult = {
+      val relativePath = rootPath.relativize(aFile)
+      val className = (relativePath.head.toString /: relativePath.tail)(_ + "." + _.toString)
+      if (className endsWith ".class")
+        privateClassNamesList += className stripSuffix ".class"
+      else if (className endsWith ".java")
+        privateClassNamesList += className stripSuffix ".java"
+      FileVisitResult.CONTINUE;
     }
   }
 
-  val newAction = new Action("New") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK))
-    def apply() { editorPane.text = "" }
-  }
-
-  val openAction = new Action("Open...") {
+  val openAction = new Action("Change classpath...") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
     def apply() {
+      val fileChooser = new FileChooser(new File(classPathField.text))
+      fileChooser.title = "Select classpath"
+      fileChooser.fileSelectionMode = FileChooser.SelectionMode.DirectoriesOnly
       val returnVal = fileChooser.showOpenDialog(SootEditorPane.this)
       if (returnVal != FileChooser.Result.Approve) return ;
       val file = fileChooser.selectedFile
-      val fileName = file.getName
-      val (name, extension) = fileName.splitAt(fileName.lastIndexOf("."))
-
-      val scene = Scene.v()
-      scene.setSootClassPath(scene.defaultClassPath + ":" + file.getParent())
-      val c = scene.loadClass(name, 1)
-      c.setApplicationClass()
-
-      methodList = c.getMethods()
-      methodComboBox = new ComboBox(methodList map { _.getName })
-      methodComboBox.peer.setAction(methodSelectAction.peer)
-      methodSelector.contents(1) = methodComboBox
-      methodSelectAction()
-      // what follows does not work, probably for a scala bug..
-      // therefore, we cannot change the combobox  component
-      // val model = new DefaultComboBoxModel(methodList.toArray)
-      // methodComboBox.peer.setModel(model: ComboBoxModel[_])
+      classPathField.text = file.getPath()
+      publish(new EditDone(classPathField))
     }
   }
 
   def ensureSaved = true
-
-  def updateFrameTitle() {
-    val newTitle = softwareName + " - JVM"
-    frame.title = newTitle
-  }
 
   def analyze = {
     method match {
       case Some(method) =>
         try {
           val numericalDomain = frame.parametersPane.selectedNumericalDomain
-          frame.mode match {
-            case Baf =>
+          typeGroup.selected match {
+            case Some(`radioBaf`) =>
               val bafMethod = method.asInstanceOf[BafMethod]
               val params = new Parameters[BafMethod] { val domain = new SootFrameNumericalDomain(numericalDomain) }
               frame.parametersPane.setParameters(params)
@@ -140,35 +189,36 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               params.narrowingFactory = MemoizingFactory(bafMethod)(params.narrowingFactory)
               val ann = bafMethod.analyze(params)
               Some(bafMethod.mkString(params)(ann))
-            case Jimple =>
+            case Some(`radioJimple`) =>
               val jimpleMethod = method.asInstanceOf[JimpleMethod]
-              val params = new Parameters[JimpleMethod]{ val domain = new SootFrameNumericalDomain(numericalDomain) }
+              val params = new Parameters[JimpleMethod] { val domain = new SootFrameNumericalDomain(numericalDomain) }
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(jimpleMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(jimpleMethod)(params.narrowingFactory)
               val ann = jimpleMethod.analyze(params)
               Some(jimpleMethod.mkString(params)(ann))
+            case _ => None
           }
         } catch {
-          case e: UnsupportedSootUnitException  =>
-            println(e.getMessage)
+          case e: UnsupportedSootUnitException =>
             Dialog.showMessage(SootEditorPane.this, e.getMessage + " : " + e.unit, "Error in analysing bytecode", Dialog.Message.Error)
+            e.printStackTrace()
             None
           case e: Exception =>
             Dialog.showMessage(SootEditorPane.this, e.getMessage, "Error in parsing source code", Dialog.Message.Error)
             e.printStackTrace()
             None
         }
-      case None => None
+      case _ => None
     }
   }
 
-  val fileMenuItems = Seq(new MenuItem(newAction), new MenuItem(openAction))
+  val fileMenuItems = Seq(new MenuItem(openAction))
 
   val editMenuItems = Seq()
 
   def select = {
-    methodSelectAction()
-    updateFrameTitle()
+    val newTitle = softwareName + " - Soot"
+    frame.title = newTitle
   }
 }

@@ -29,13 +29,13 @@ class MainFrame extends Frame {
 
   object Mode extends Enumeration {
     type Mode = Value
-    val Random, Asm, Baf, Jimple = Value        
+    val Random, Asm, Soot = Value
   }
-  
+
   import Mode._
-  
+
   private var realMode: Mode = Mode.Random
-  
+
   val jandomEditorPane = new JandomEditorPane(this)
   val asmEditorPane = new ASMEditorPane(this)
   val sootEditorPane = new SootEditorPane(this)
@@ -47,7 +47,7 @@ class MainFrame extends Frame {
     pages += new TabbedPane.Page("Output", new ScrollPane(outputPane))
     pages += new TabbedPane.Page("Parameters", parametersPane)
   }
-  var buttonGroups: ButtonGroup = null  
+  var buttonGroups: ButtonGroup = null
 
   /**
    * This is the Action to invoke when user wants to quit the application
@@ -96,17 +96,10 @@ class MainFrame extends Frame {
     }
   }
 
-  val bafAction: Action = new Action("Baf") {
-    toolTip = "Analysis of Java bytecode thorugh the Baf representation of the Soot library"
-    def apply() {
-      mode = Baf
-    }
-  }
-
-  val jimpleAction: Action = new Action("Jimple") {
-    toolTip = "Analysis of Java bytecode thorugh the Jimple representation of the Soot library"
-    def apply() {
-      mode = Jimple
+  val sootAction: Action = new Action("Soot") {
+    toolTip = "Analysis of Java bytecode thorugh the Soot library"
+     def apply() {
+      mode = Soot
     }
   }
 
@@ -150,11 +143,10 @@ class MainFrame extends Frame {
     randomMode.action = randomAction
     val asmMode = new RadioMenuItem("")
     asmMode.action = asmAction
-    val bafMode = new RadioMenuItem("")
-    bafMode.action = bafAction
-    val jimpleMode = new RadioMenuItem("")
-    jimpleMode.action = jimpleAction 
-    buttonGroups = new ButtonGroup(randomMode, asmMode, bafMode, jimpleMode)
+    val sootMode = new RadioMenuItem("")
+    sootMode.action = sootAction
+
+    buttonGroups = new ButtonGroup(randomMode, asmMode, sootMode)
     menuBar = new MenuBar {
       contents += new Menu("File")
       contents += new Menu("Edit")
@@ -167,7 +159,7 @@ class MainFrame extends Frame {
         contents += new MenuItem(aboutAction)
       }
     }
-    bafMode.peer.doClick
+    sootMode.peer.doClick
   }
 
   /**
@@ -175,17 +167,16 @@ class MainFrame extends Frame {
    */
   override def closeOperation() {
     quitAction()
-  }  
-  
+  }
+
   def mode = realMode
-  
+
   def mode_= (m: Mode) {
     realMode = m
     currentEditorPane = m match {
       case Asm => asmEditorPane
-      case Baf => sootEditorPane
-      case Jimple => sootEditorPane
-      case Random => jandomEditorPane      
+      case Soot => sootEditorPane
+      case Random => jandomEditorPane
     }
     tabbedPane.pages(0).content = currentEditorPane
     // repaint is needed to avoid corruption in display
