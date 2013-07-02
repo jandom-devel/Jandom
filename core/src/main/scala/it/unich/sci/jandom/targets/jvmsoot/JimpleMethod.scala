@@ -39,7 +39,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
 
   protected def analyzeBlock(params: Parameters)(node: Block, initprop: params.Property): Seq[params.Property] = {
 
-     /**
+  /**
    * Convert a `Value` into a LinearForm, if possible.
    * @param v the Value to convert.
    * @return the corresponding linear form, or `None` if `v` is not a linear form.
@@ -224,9 +224,17 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
       case unit: BreakpointStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: IdentityStmt =>
-      // ignore this instruction..
+      // ignore this instruction...
       case unit: EnterMonitorStmt =>
+        unit.getOp() match {
+          case local: Local =>
+            currprop = currprop.enterMonitor(localMap(local))
+        }
       case unit: ExitMonitorStmt =>
+        unit.getOp() match {
+          case local: Local =>
+            currprop = currprop.exitMonitor(localMap(local))
+        }
       case unit: GotoStmt =>
         exits :+= currprop
       case unit: IfStmt =>

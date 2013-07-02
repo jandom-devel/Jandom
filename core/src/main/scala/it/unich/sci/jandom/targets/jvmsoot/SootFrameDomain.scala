@@ -86,6 +86,9 @@ trait SootFrameDomain extends AbstractDomain {
     def restrict(n: Int): Property
     def connect(p: Property, common: Int): Property
 
+    def enterMonitor(n: Int): Property
+    def exitMonitor(n: Int): Property
+
     override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
 
     def isTop = false

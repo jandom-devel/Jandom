@@ -139,6 +139,10 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     def connect(p: Property, common: Int) =
       Property(prop.connect(p.prop, common), p.vars ++ vars drop common)
 
+    def enterMonitor(n: Int): Property = this
+
+    def exitMonitor(n: Int): Property = this
+
     def isEmpty = prop.isEmpty
 
   /*  def isCompatibleWith(that: Property) =

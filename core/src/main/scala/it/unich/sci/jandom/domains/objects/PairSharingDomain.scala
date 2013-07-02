@@ -141,6 +141,10 @@ object PairSharingDomain extends ObjectDomain {
 
     def isNull(v: Int) = !(ps contains UP(v, v))
 
+    def testNull(v: Int) = new Property(removeVariable(ps,v), size)
+
+    def testNotNull(v: Int) = if (isNull(v)) bottom(size) else this
+
     def isTop = false
     def isBottom = false
     def isEmpty = false

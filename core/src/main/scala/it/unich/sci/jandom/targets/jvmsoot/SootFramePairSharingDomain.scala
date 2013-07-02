@@ -144,6 +144,10 @@ class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends 
 
     def narrowing(that: Property) = this intersection that
 
+    def enterMonitor(n: Int) = Property(prop.testNotNull(n), stack)
+
+    def exitMonitor(n: Int) = Property(prop.testNotNull(n), stack)
+
     def isEmpty = false
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
