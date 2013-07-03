@@ -9,4 +9,15 @@ EclipseKeys.configurations := Set(Compile, Test, Benchmark)
 
 // add resources to classpath. We need a plugin which allows to
 // exclude resource directories from compilation.
-EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
+EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
+
+// BuildInfo
+
+buildInfoSettings
+
+sourceGenerators in Compile <+= buildInfo
+
+buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, gitHeadCommitSHA)
+
+buildInfoPackage := "it.unich.sci.jandom"
+
