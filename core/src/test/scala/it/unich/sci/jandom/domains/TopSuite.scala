@@ -30,18 +30,21 @@ class TopSuite extends FunSpec {
 
   for (dom <- domains) {
     describe("The top domain " + dom.getClass().getSimpleName()) {
-      it("should have equal top and bottom elements") { assert(dom.top === dom.bottom) }
 
       val x = TopDomain.top
 
-      describe("Its unique element") {
+      it("should have equal top and bottom elements") {
+        assert(dom.top === dom.bottom)
+       }
+
+      describe("has an unique element which") {
         it("should be top") { assert(x.isTop) }
         it("should be bottom") { assert(x.isBottom) }
-        it("should be should not be empty") { assert(!x.isEmpty) }
+        it("should not be empty") { assert(!x.isEmpty) }
       }
 
-      describe("A binary operation on two elements") {
-        it("should give the same result as the input") {
+      describe("has binary operations which") {
+        it("should always return the same result as the input") {
           expectResult(x)(x widening x)
           expectResult(x)(x narrowing x)
           expectResult(x)(x union x)

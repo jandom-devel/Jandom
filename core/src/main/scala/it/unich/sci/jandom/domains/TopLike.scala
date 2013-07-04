@@ -19,36 +19,38 @@
 package it.unich.sci.jandom.domains
 
 /**
- * This trait is for those abstract properties which behaves as a top domain. A top domain
- * has a single element which is both top and bottom (but not empty). All the operations
- * give top as a result.
- * @author Gianluca Amato <gamato@unich.it>
- *
- */
-trait TopLike[Property <: TopLike[Property]] extends AbstractProperty[Property] {
-  this: Property =>
-
-  /**
-   * @inheritdoc
-   * Two top elements are either the same (up to referential equality) or are not comparable.
-   */
-  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
-    if (other eq this) Some(0) else None
-  def widening(that: Property) = this
-  def union(that: Property) = this
-  def narrowing(that: Property) = this
-  def intersection(that: Property) = this
-  def mkString(vars: IndexedSeq[String]): Seq[String] = Seq("top")
-  def isTop = true
-  def isBottom = true
-  def isEmpty = false
-}
-
-/**
  * This trait is for those abstract domains which behaves as a top domain, i.e.
- * domains endowed with a single top abstract element.
+ * domains endowed with a single abstract element, which is both top and bottom
+ * (but not empty). All the operations give top as a result.
+ * @author Gianluca Amato <gamato@unich.it>
  */
 trait TopDomainLike extends AbstractDomain with WithTop with WithBottom {
+
+  /**
+   * This is the base trait for all the top properties. Each real implementation of
+   * a top property may inherit from this trait, and extend it with the additional
+   * method it needs to implement.
+   * @author Gianluca Amato <gamato@unich.it>
+   */
+  protected trait TopLike[Property <: TopLike[Property]] extends AbstractProperty[Property] {
+    this: Property =>
+
+    /**
+     * @inheritdoc
+     * Two top elements are either the same (up to referential equality) or are not comparable.
+     */
+    def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
+      if (other eq this) Some(0) else None
+    def widening(that: Property) = this
+    def union(that: Property) = this
+    def narrowing(that: Property) = this
+    def intersection(that: Property) = this
+    def mkString(vars: IndexedSeq[String]): Seq[String] = Seq("top")
+    def isTop = true
+    def isBottom = true
+    def isEmpty = false
+  }
+
   type Property <: TopLike[Property]
   val top: Property
   lazy val bottom = top
