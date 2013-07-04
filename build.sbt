@@ -1,6 +1,8 @@
 // versions
 
-version in ThisBuild := "0.1.2"
+gitHeadCommitSHA in ThisBuild := Process("git rev-parse HEAD").lines.head
+
+version in ThisBuild := "0.1.2-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.10.1"
 

@@ -4,23 +4,28 @@ import sbt.Keys._
 object JandomBuild extends Build {
   lazy val Benchmark = config("benchmark") extend (Compile) describedAs ("Configuration for Benchmarks.")
 
-  lazy val root =
-    Project(id="root", base = file("."))
-    .aggregate(core,extended)
-    .configs(Benchmark)   // only needed so that we may refer the Benchmark config globally
+  val gitHeadCommitSHA = TaskKey[String]("git-head-commit-sha","current git commit SHA")
 
-  lazy val core =
-    Project(id = "Jandom", base = file("core"))
-    .configs(Benchmark)  // only needed so that we may refer the Benchmark config globally
+  lazy val root = (
+    Project("root", file("."))
+    aggregate(core,extended)
+    configs(Benchmark)   // only needed so that we may refer the Benchmark config globally
+  )
 
-  lazy val extended =
-    Project(id = "JandomExtended", base = file("extended"))
-    .dependsOn(core)
-    .configs(Benchmark)
-    .settings(
+  lazy val core = (
+    Project("Jandom", file("core"))
+    configs(Benchmark)  // only needed so that we may refer the Benchmark config globally
+  )
+
+  lazy val extended = (
+    Project("JandomExtended", file("extended"))
+    dependsOn(core)
+    configs(Benchmark)
+    settings( 
       Project.defaultSettings ++
       inConfig(Benchmark)(Defaults.testSettings) ++
       CaliperPlugin.benchmarkTasks :_*
      ) 
+   )
 }
 

@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,32 +25,36 @@ package it.unich.sci
  */
 package object jandom {
   /**
-   * This is the major version of Jandom. The API is considered to be stable within the same major version, but only
-   * from major_version 1 onwards. 
-   */
-  val majorVersion = 0
-  
-  /**
-   * This is the minor version of Jandom. An increase in minor version suggests the introduction of new backward 
-   * compatible features.
-   */
-  val minorVersion = 2
-  
-  /**
-   * This is the patchlevel of Jandom.
-   */
-  val patchlevelVersion = 2
-  
-  /**
-   * Suffix version
-   */
-  val suffixVersion = "git"
-  
-  /**
    * This is a string representation of Jandom's version
    */
-  val version = majorVersion + "." + minorVersion + "." + patchlevelVersion + "-" + suffixVersion
-  
+  val version = BuildInfo.version
+
+  private val versionRegEx = """(\d*)\.(\d*)\.(\d*)-(.*)""".r
+  private val versionRegEx(major, minor, patchlevel, suffix) = version
+
+  /**
+   * Major version
+   */
+  val majorVersion = major.toInt
+
+  /**
+   * Minor version. Two releases with the same minor version should
+   * be compatible.
+   */
+  val minorVerion = minor.toInt
+
+  /**
+   * Patch level
+   */
+  val patchlevelVersion = patchlevel.toInt
+
+  /**
+   * Suffix Version. This is empty for releases and should be a version system
+   * specific release number for development builds (such as commit number for
+   * for git)
+   */
+  val suffixVersion = suffix
+
   /**
    * This is the name of the software
    */
