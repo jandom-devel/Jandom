@@ -30,7 +30,6 @@ abstract class NumericalDomain extends AbstractDomain {
   /**
    * @inheritdoc
    * For numerical domains, these properties needs to be instances of [[it.unich.sci.jandom.domains.NumericalProperty]].
-   *
    */
   type Property <: NumericalProperty[Property]
 

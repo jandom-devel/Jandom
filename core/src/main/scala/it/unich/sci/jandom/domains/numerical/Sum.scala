@@ -21,8 +21,8 @@ package it.unich.sci.jandom.domains.numerical
 /**
  * This is the class which implements the sum of two abstract properties.
  * @todo This is only a stub.
- * @author Gianluca Amato
- * @author Francesca Scozzari
+ * @author Gianluca Amato <gamato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
  */
 class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](val p1: Prop1, val p2: Prop2)
   extends NumericalProperty[Sum[Prop1, Prop2]] {
@@ -37,78 +37,58 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
     new Sum(q1, q2)
   }
 
-  def widening(that: Property): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def widening(that: Property): Property = ???
 
-  def narrowing(that: Property): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def narrowing(that: Property): Property = ???
 
-  def intersection(that: Property): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def intersection(that: Property): Property = ???
 
-  def nonDeterministicAssignment(n: Int): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def nonDeterministicAssignment(n: Int): Property = ???
 
-  def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property = ???
 
-  def linearInequality(coeff: Array[Double], known: Double): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def linearInequality(coeff: Array[Double], known: Double): Property = ???
 
-  def linearDisequality(coeff: Array[Double], known: Double): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def linearDisequality(coeff: Array[Double], known: Double): Property = ???
 
-  def minimize(coeff: Array[Double], known: Double): Double =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def minimize(coeff: Array[Double], known: Double): Double = ???
 
-  def maximize(coeff: Array[Double], known: Double): Double =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def maximize(coeff: Array[Double], known: Double): Double = ???
 
-  def frequency(coeff: Array[Double], known: Double): Some[Double] =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def frequency(coeff: Array[Double], known: Double): Some[Double] = ???
 
-  def addDimension: Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def addDimension: Property = ???
 
-  def delDimension(n: Int): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def delDimension(n: Int): Property = ???
 
-  def mapDimensions(rho: Seq[Int]): Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def mapDimensions(rho: Seq[Int]): Property = ???
 
-  def dimension: Int =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def dimension: Int = ???
 
-  def isEmpty: Boolean =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def isEmpty: Boolean = ???
 
-  def isFull: Boolean =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def isFull: Boolean = ???
 
-  def empty: Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def empty: Property = ???
 
-  def full: Property =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def full: Property = ???
 
-  def mkString(vars: IndexedSeq[String]): Seq[String] =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def mkString(vars: IndexedSeq[String]): Seq[String] = ???
 
-  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
-    throw new IllegalAccessException("Unimplemented feature on Sum")
+  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = ???
 }
 
 /**
- * This is the class for the sum of abstract domains.
+ * This is the class for the sum of two abstract domains.
  * @todo This is only a stub.
- * @author Gianluca Amato
- * @author Francesca Scozzari
+ * @author Gianluca Amato <gamato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
  */
 class SumDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends NumericalDomain {
 
   type Property = Sum[dom1.Property, dom2.Property]
 
-  def full(n: Int) = throw new IllegalAccessException("Unimplemented feature on Sum")
+  def full(n: Int) = ???
 
-  def empty(n: Int) = throw new IllegalAccessException("Unimplemented feature on Sum")
+  def empty(n: Int) = ???
 }
