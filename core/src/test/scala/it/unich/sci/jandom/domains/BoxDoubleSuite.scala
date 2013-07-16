@@ -33,11 +33,20 @@ class BoxDoubleSuite extends FunSuite {
     intercept[IllegalArgumentException] { BoxDouble(Array(Double.PositiveInfinity, 2), Array(0, 2, 3)) }
   }
 
-  test("operations on boxes") {
+  test("lattice operation on boxes") {
     val i = BoxDouble(Array(1, 2), Array(5, 4))
     val j = BoxDouble(Array(0, 3), Array(3, 4))
     expectResult(BoxDouble(Array(0, 2), Array(5, 4))) { i union j }
     expectResult(BoxDouble(Array(1, 3), Array(3, 4))) { i intersection j }
+  }
+
+  test("widening and narrowing") {
+	val i = BoxDouble(Array(1, 2), Array(5, 4))
+    val j = BoxDouble(Array(0, 2), Array(3, 6))
+    val w = i widening j
+    expectResult(i)(BoxDouble.empty(2) widening i)
+    expectResult(BoxDouble(Array(Double.NegativeInfinity, 2), Array(5, Double.PositiveInfinity)))(w)
+    expectResult(w narrowing j)(i union j)
   }
 
   test("empty boxes") {
@@ -59,7 +68,7 @@ class BoxDoubleSuite extends FunSuite {
     expectResult(BoxDouble(Array(0, 0), Array(4, 4))) { j }
   }
 
-  test("disequality is supported") {
+  test("inequalities and disequalities") {
     val i = BoxDouble.full(2).linearInequality(Array(1, 0), 0)
     expectResult(i) { i.linearDisequality(Array(1, 0), 0) }
     val j = i.linearInequality(Array(-1, 0), 0)
@@ -100,7 +109,7 @@ class BoxDoubleSuite extends FunSuite {
     expectResult(h)(i.mapDimensions(Seq(-1, 0)))
   }
 
-  test("minimization/maximization") {
+  test("minimization, maximization and frequency") {
     val i = BoxDouble(Array(0, 0), Array(1, 2))
     expectResult(3)(i.maximize(Array(1, 1), 0))
     expectResult(0)(i.minimize(Array(1, 1), 0))
