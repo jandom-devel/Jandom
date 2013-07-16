@@ -18,24 +18,26 @@
 
 package it.unich.sci.jandom.domains
 
-import breeze.linalg.{DenseMatrix, DenseVector}
-import it.unich.sci.jandom.domains.numerical.Parallelotope
 import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.Parallelotope
+
+import breeze.linalg.{DenseMatrix, DenseVector}
 
 /**
  * This object is a collection of transformations between different abstract properties.
  * Each transformation is a map from the original to the target property.
+ * @todo evaluate whether it is a good choice to have this object for domain transformations
  */
 object DomainTransformations {
 
   val parallelotopeToBoxDouble =  (x: Parallelotope) => {
     val newPar = x.rotate(DenseMatrix.eye(x.dimension))
     BoxDouble(newPar.low.toArray,newPar.high.toArray)
-  } 
-  
+  }
+
   val boxDoubleToParallelotope =  (x: BoxDouble) => {
     Parallelotope(DenseVector(x.low),DenseMatrix.eye(x.dimension),DenseVector(x.high))
   }
-  
+
 }
 
