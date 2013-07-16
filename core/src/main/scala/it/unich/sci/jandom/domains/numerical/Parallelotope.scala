@@ -387,26 +387,34 @@ class Parallelotope(
    * @note Not yet implemented.
    * @throws $ILLEGAL
    */
-  def delDimension(n: Int): Parallelotope = {
-    throw new IllegalAccessException("Unimplemented feature")
-  }
+  def delDimension(n: Int): Parallelotope = ???
 
   /**
    * @inheritdoc
    * @note Not yet implemented.
    */
-  def mapDimensions(rho: Seq[Int]): Parallelotope = {
-    throw new IllegalAccessException("Unimplemented feature")
-  }
+  def mapDimensions(rho: Seq[Int]): Parallelotope = ???
 
-  // TODO: provide a better implementation
+  /**
+   * @inheritdoc
+   * @note The current implementation always returns -Infty
+   */
   def minimize(coeff: Array[Double], known: Double) = Double.NegativeInfinity
-
   // TODO: provide a better implementation
+
+  /**
+   * @inheritdoc
+   * @note The current implementation always returns +Infty
+   */
   def maximize(coeff: Array[Double], known: Double) = Double.PositiveInfinity
-
   // TODO: provide a better implementation
+
+  /**
+   * @inheritdoc
+   * @note The current implementation always returns None
+   */
   def frequency(coeff: Array[Double], known: Double) = None
+  // TODO: provide a better implementation
 
   def dimension = A.rows
 

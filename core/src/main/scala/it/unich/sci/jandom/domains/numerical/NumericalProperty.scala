@@ -169,7 +169,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
   def mkString(vars: IndexedSeq[String]): Seq[String]
 
   /*
-   * Now some concrete methods follow, which may be overriden in subclasses for
+   * Now some concrete methods, which may be overriden in subclasses for
    * optimization purpose.
    */
 
@@ -326,15 +326,20 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
 
   /**
    * Assignments of the kind vn = vn ^ vm.  The standard implementation calls
-   * nonDeterministicAssignment on vn
+   * nonDeterministicAssignment on vn.
    * @note $NOTEN
    */
   def variableXor(n: Int = dimension - 2, m: Int = dimension - 1) = {
     nonDeterministicAssignment(n)
   }
 
+  /**
+   * Assignments of the kind vn = - vn.
+   * @note NOTEN
+   * @param n the dimension we want to negate
+   * @return property with the negate dimension
+   */
   def variableNeg(n: Int = dimension - 1) = {
-    require(n >= 0 && n < dimension)
     val coeff = Array.fill(dimension)(0.0)
     coeff(n) = -1
     linearAssignment(n, coeff, 0)
@@ -342,12 +347,18 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
 
   /**
    * Add many undetermined dimensions.
-   * @param n number of dimensions to add.
+   * @param n number of dimensions to add
    */
   def addDimension(n: Int): Property = {
     require(n >= 0)
     (0 until n).foldLeft(this) { (prop, _) => prop.addDimension }
   }
+
+  /**
+   * Remove many dimensions at once
+   * @param dims the dimensions to remove
+   * @return the property without the required dimensions
+   */
 
   def remove_space_dimensions(dims: Seq[Int]): Property = {
     val sortedDims = dims.sortWith({ _ > _ })
@@ -355,7 +366,14 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
   }
 
   /**
-   * The connect method is used for intrerprocedural analysis.
+   * The connect method is used for inter-procedural analysis. It takes two properties
+   * such that the last `common` dimensions of `this` corresponds to the first `common`
+   * dimension of `p`. It embeds both properties on a common space, intersect and remove
+   * the dimensions which where private to `p`.
+   * @todo why not remove the private dimensions before connecting?
+   * @param p property to connect with `this`
+   * @param common number of common dimensions in `this` and `p`
+   * @return the connected properties, according to the description above
    */
   def connect(p: Property, common: Int) = {
     val newprop = addDimension(p.dimension - common)
