@@ -187,6 +187,8 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(bafMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(bafMethod)(params.narrowingFactory)
+              val inte = new TopSootInterpretation[BafMethod, params.type](params)
+              params.interpretation = Some(inte)
               val ann = bafMethod.analyze(params)
               Some(bafMethod.mkString(params)(ann))
             case Some(`radioJimple`) =>
@@ -195,6 +197,8 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(jimpleMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(jimpleMethod)(params.narrowingFactory)
+              val inte = new TopSootInterpretation[JimpleMethod, params.type](params)
+              params.interpretation = Some(inte)
               val ann = jimpleMethod.analyze(params)
               Some(jimpleMethod.mkString(params)(ann))
             case _ => None
