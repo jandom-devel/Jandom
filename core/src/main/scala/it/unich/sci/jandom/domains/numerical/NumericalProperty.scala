@@ -368,8 +368,8 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
   /**
    * The connect method is used for inter-procedural analysis. It takes two properties
    * such that the last `common` dimensions of `this` corresponds to the first `common`
-   * dimension of `p`. It embeds both properties on a common space, intersect and remove
-   * the dimensions which where private to `p`.
+   * dimension of `p`. It embeds both properties on a common space and intersect, then
+   * remove the common dimensions.
    * @todo why not remove the private dimensions before connecting?
    * @param p property to connect with `this`
    * @param common number of common dimensions in `this` and `p`
