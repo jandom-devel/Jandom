@@ -61,19 +61,22 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
   private type Edge = (Node, Node)
 
   /**
-   * Returns the output property given an annotation.
+   * Returns the output property embedded in an annotation. It essentially consider the union of the result of analyzing
+   * the tail nodes of the directed graph starting from their annotation.
+   * @param params the parameters used to generate the annotation
+   * @param ann the annotation
+   * @note The implementation is not very robust, since we are assuming a lot of thing on the result of analyzing
+   * a tail block. In particular, we are assuming that the last result of analyzeBlock is the "output"
+   * of the CFG, so be careful to preserve this property.
    */
-  def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property
+  def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property =
+    graph.getTails map { (node) => analyzeBlock(params)(node, ann(node)).last } reduce { _ union _ }
 
   /**
-   * This method is provided by subclasses, and should be able to analyze a single `Node`.
-   * @param params the parameters of the analysis
-   * @param node the node to analyze
-   * @param prop the ingoing property to the node
-   * @return a sequence of properties, one for each outgoing edge. The order of these properties should
-   * correspond to the order of edges in `graph`.
+   * This method adapt an input property (expressed typically only in terms of the input
+   * parameters) in a new property with additional information needed to carry on the analysis.
    */
-  protected def analyzeBlock(params: Parameters)(node: Node, prop: params.Property): Seq[params.Property]
+  protected def adaptProperty(params: Parameters)(input: params.Property): params.Property
 
   /**
    * This method returns the top property for a given node in the CFG
@@ -83,10 +86,15 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
   protected def topProperty(node: Node, params: Parameters): params.Property
 
   /**
-   * This method adapt an input property (expressed typically only in terms of the input
-   * parameters) in a new property with additional information needed to carry on the analysis.
+   * This method is provided by subclasses, and should be able to analyze a single `Node`.
+   * @param params the parameters of the analysis
+   * @param node the node to analyze
+   * @param prop the ingoing property to the node
+   * @return a sequence of properties, one for each outgoing edge. The order of these properties should
+   * correspond to the order of edges in `graph`. For the tails, the last element should be the value
+   * returned as the result of the CFG.
    */
-  protected def adaptProperty(params: Parameters)(input: params.Property): params.Property
+  protected def analyzeBlock(params: Parameters)(node: Node, prop: params.Property): Seq[params.Property]
 
   /**
    * Analyzes the target, starting from a given property.
@@ -113,9 +121,9 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
   }
 
   /**
-   * The analyzer.  At the moment, it implements a work-list based analysis.
+   * The analyzer. At the moment, it implements a work-list based analysis.
    */
-  def analyzeFromAnnotation(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): Annotation[ProgramPoint, params.Property]  = {
+  def analyzeFromAnnotation(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): Annotation[ProgramPoint, params.Property] = {
     val annEdge = HashMap[Edge, params.Property]()
     val taskList = Queue[ProgramPoint](graph.getHeads: _*)
 

@@ -18,39 +18,51 @@
 
 package it.unich.sci.jandom.targets.jvmsoot
 
-import soot._
-import it.unich.sci.jandom.targets.Parameters
-import scala.collection.mutable.HashMap
-import it.unich.sci.jandom.targets.Target
+import it.unich.sci.jandom.targets._
+
+import soot.SootMethod
+import soot.Scene
 import soot.jimple.toolkits.callgraph.CHATransformer
-import soot.jimple.toolkits.callgraph.TopologicalOrderer
-import scala.collection.mutable.Queue
 import soot.jimple.toolkits.callgraph.Sources
+import soot.jimple.toolkits.callgraph.TopologicalOrderer
 
 /**
- * @author Gianluca Amato <gamato@unich.it>
- *
+ * This is just a tag for interpretations which should be used in the analysis of Soot
+ * methods. The input in a Soot interpretation has the following format:
+ * - if the method is not static, the first dimension corresponds to `this`
+ * - each further dimension corresponds to a parameter in the order of declaration
+ * The output of a Soot interpretation has the same correspondence between dimensions
+ * and signature, with the addition of a last parameters corresponding to the return type
+ * if this is different from `void`.
  */
+trait SootInterpretation[Tgt <: SootCFG[Tgt,_], Params <: Parameters[Tgt]] extends Interpretation[Tgt, Params] {
 
-trait Interpretation[Tgt <: Target[Tgt], Params <: Parameters[Tgt]] {
-  val params: Params
-  def apply(method: SootMethod, input: params.Property): params.Property
+}
+/**
+ * A `TopSootInterpretation` always returns the top abstract element of the correct type for
+ * each input.
+ * @param params the parameters for the analysis
+ */
+class TopSootInterpretation[Tgt <: SootCFG[Tgt, _], Params <: Parameters[Tgt]](val params: Params) extends SootInterpretation[Tgt, Params] {
+  def apply(method: SootMethod, input: params.Property): params.Property = params.domain.top(SootCFG.outputTypes(method))
 }
 
-class TopSootInterpretation[Tgt <: SootCFG[Tgt, _], Params <: Parameters[Tgt]](val params: Params)  extends Interpretation[Tgt, Params] {
-  import scala.collection.JavaConversions._
-  def apply(method: SootMethod, input: params.Property): params.Property =
-    if (method.getReturnType() == VoidType.v())
-      params.domain.top(method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
-    else
-      params.domain.top(method.getReturnType() +: method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
-}
-
-// this only works for non recursive calls
-class JimpleInterpretation[Params <: Parameters[JimpleMethod]](val params: Params) extends Interpretation[JimpleMethod, Params] {
-  import scala.collection.JavaConversions._
-
-  val inte = scala.collection.mutable.HashMap[(SootMethod, params.Property), (params.Property, Boolean)]()
+/**
+ * A `JimpleInterpretation` tries to return the semantics of a method by recursively analyzing its body.
+ * It does not handle recursion, so it generates an exception if recursion is detected. It should only
+ * be used for testing purposes. It only supports the target `JimpleMethod` for now.
+ * @param params the parameters for the analysis
+ * @throw IllegalArgumentException if recursive definitions are detected
+ */
+class JimpleInterpretation[Params <: Parameters[JimpleMethod]](val params: Params) extends SootInterpretation[JimpleMethod, Params] {
+  /**
+   * It maps each pair `(method, input)` with the pair `(output,rec)`. The first time a pair `(method, input)`
+   * is encountered, the value `(bottom, false)` is put in `inte`. Then, the body of the method is analyzed.
+   * If during the analysis the pair `(method, input)` is required again, execution stops with an exception,
+   * otherwise `(output, true)` is saved into the map.
+   */
+  private val inte = scala.collection.mutable.HashMap[(SootMethod, params.Property), (params.Property, Boolean)]()
+  private val jmethodCache = scala.collection.mutable.HashMap[SootMethod, JimpleMethod]()
 
   def apply(method: SootMethod, input: params.Property): params.Property = {
     if (inte contains (method, input)) inte(method, input) match {
@@ -58,9 +70,8 @@ class JimpleInterpretation[Params <: Parameters[JimpleMethod]](val params: Param
       case (output, false) => throw new IllegalArgumentException("Recursive")
     }
     else {
-      val jmethod = new JimpleMethod(method)
-      val outFibers = method.getParameterTypes().asInstanceOf[java.util.List[Type]] :+ method.getReturnType()
-      inte((method, input)) = (params.domain.bottom(outFibers), false)
+      inte((method, input)) = (params.domain.bottom(SootCFG.outputTypes(method)), false)
+      val jmethod = jmethodCache.getOrElseUpdate(method, new JimpleMethod(method))
       val ann = jmethod.analyzeFromInput(params)(input)
       val output = jmethod.extractOutput(params)(ann)
       inte((method, input)) = (output, true)
@@ -69,17 +80,22 @@ class JimpleInterpretation[Params <: Parameters[JimpleMethod]](val params: Param
   }
 }
 
+/**
+ * A `JimpleRecursiveInterpretation` tries to return the semantics of methods by a summary based analysis.
+ * The semantics of all methods is initialized to top for every possible input, then methods are analyzed
+ * with a work-list based approach. Each method has a single possible input context, which is top.
+ */
 class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: Scene, val params: Params) extends Interpretation[JimpleMethod, Params] {
   import scala.collection.JavaConversions._
 
   val inte = scala.collection.mutable.HashMap[SootMethod, params.Property]()
-  val targets: scala.collection.mutable.HashMap[SootMethod, Option[JimpleMethod]] = scala.collection.mutable.HashMap()
+  val targets = scala.collection.mutable.HashMap[SootMethod, Option[JimpleMethod]]()
 
   def apply(method: SootMethod, input: params.Property): params.Property = {
     if (inte contains method)
       inte(method)
     else {
-      val bottom = params.domain.bottom(method.getReturnType() +: method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
+      val bottom = params.domain.bottom(SootCFG.outputTypes(method))
       inte(method) = bottom
       bottom
     }
@@ -94,20 +110,19 @@ class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: S
     val tpo = new TopologicalOrderer(cg)
     tpo.go()
 
-    val order = tpo.order().reverse // it is enough to get the set of all the elements
+    val order = tpo.order().reverse         // it is enough to get the set of all the elements
     if (order.isEmpty()) order.add(method)
 
     for (m <- order; if !(targets contains m)) {
       targets(m) = if (m.isConcrete()) Some(new JimpleMethod(m)) else None
-      val resultType = if (m.getReturnType() == VoidType.v()) Seq() else Seq(m.getReturnType())
-      inte(m) = params.domain.bottom(resultType ++ m.getParameterTypes().asInstanceOf[java.util.List[Type]])
+      inte(m) = params.domain.bottom(SootCFG.outputTypes(m))
     }
 
     val worklist = scala.collection.mutable.Queue[SootMethod](order.toSeq: _*)
     while (!worklist.isEmpty) {
       val m = worklist.dequeue
       val jmethod = targets(m)
-      val top = params.domain.top(m.getParameterTypes().toSeq.asInstanceOf[Seq[Type]])
+      val top = params.domain.top(SootCFG.inputTypes(m))
       val output = jmethod match {
         case None => inte(m)
         case Some(jmethod) => {
@@ -116,7 +131,6 @@ class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: S
         }
       }
       if (!(inte(m) >= output)) {
-        println(inte(m),output)
         inte(m) = inte(m) widening output
         val sources = new Sources(cg.edgesInto(m)).asInstanceOf[java.util.Iterator[SootMethod]]
         worklist.enqueue(sources.toSeq: _*)
@@ -125,5 +139,4 @@ class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: S
   }
 
   override def toString = inte.toString
-
 }

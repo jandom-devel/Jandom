@@ -34,6 +34,7 @@ import soot.toolkits.graph.PseudoTopologicalOrderer
  * This class is an ancestor for all the analyzers of JVM methods using the Soot library.
  * @tparam Node the type of the nodes for the control flow graph.
  * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
+ * @param method the method we want to analyze
  * @author Gianluca Amato <gamato@unich.it>
  */
 abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: SootMethod) extends ControlFlowGraph[Tgt, Node] {
@@ -42,7 +43,6 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   type DomainBase = SootFrameDomain
 
   val body: Body
-
   def locals = body.getLocals().toIndexedSeq
 
   // These are lazy values since body is not initialized when they are executed
@@ -54,31 +54,40 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   }
   lazy val localMap = locals.zipWithIndex.toMap
 
-  def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
-    val resultType = if (method.getReturnType() == VoidType.v()) Seq() else Seq(method.getReturnType())
-    var output = params.domain.bottom(resultType ++ method.getParameterTypes().asInstanceOf[java.util.List[Type]])
-	for (node <- graph.getTails()) {
-		output = output union analyzeBlock(params)(node, ann(node)).last
-	}
-    output
+  /**
+   * @inheritdoc
+   * At the moment, I am assuming that the first locals are exactly the parameters
+   * of the method. It essentially expands the input property adding new variables
+   * until exhausting locals. If the input/output analysis is active, it duplicates the
+   * input parameters.
+   */
+  protected def adaptProperty(params: Parameters)(input: params.Property): params.Property = {
+    assert(input.size <= body.getLocalCount(), s"Actual parameters <${input}> to method ${method} are more than the formal parameters")
+    var currprop = input
+    for (i <- input.size until body.getLocalCount()) currprop = currprop.evalNew(locals(i).getType())
+    if (params.io) {
+      for (i <- 0 until SootCFG.inputTypes(method).size) currprop = currprop.evalLocal(i)
+    }
+    currprop
   }
 
   /**
    * @inheritdoc
-   * For the moment, I am assuming that the first locals are exactly the parameters
-   * of the method.
+   * Extracts the output at the tails nodes and restrict to the only dimensions relevant for
+   * the semantics of the method.
    */
-  protected def adaptProperty(params: Parameters)(input: params.Property): params.Property = {
-    assert(input.size <= body.getLocalCount())
-    var currprop = input
-    for (i <- input.size until body.getLocalCount()) currprop = currprop.evalNew(locals(i).getType())
+  override def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
+    val tmp = super.extractOutput(params)(ann)
     if (params.io)
-      for (i <- 0 until method.getParameterCount()) currprop = currprop.evalLocal(i)
-    currprop
+      tmp.restrict(SootCFG.outputTypes(method).size)
+    else
+      throw new IllegalArgumentException("Only supported with I/O semantics")
   }
 
-  protected def topProperty(node: Node, params: Parameters): params.Property =
-    adaptProperty(params)(params.domain.top(method.getParameterTypes.asInstanceOf[java.util.List[Type]]))
+  protected def topProperty(node: Node, params: Parameters): params.Property = {
+    val inputParams = SootCFG.inputTypes(method)
+    adaptProperty(params)(params.domain.top(inputParams))
+  }
 
   def formatProperty(params: Parameters)(prop: params.Property) = {
     val localNames = locals map { _.getName() }
@@ -101,7 +110,6 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     // tag the method
     for ((node, prop) <- ann; unit = node.getHead; if unit != null)
       unit.addTag(new LoopInvariantTag("[ " + formatProperty(params)(prop) + " ]"))
-
 
     // generate output with tag
     Options.v().set_print_tags_in_output(true)
@@ -138,4 +146,37 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
    * The default implementation just reuse `mkString` with an empty `Null` annotation.
    */
   override def toString = body.toString
+}
+
+/**
+ * This is an helper object providing some helper methods on Soot. This is only a temporary workaround,
+ * and should be removed in the future.
+ */
+object SootCFG {
+  /**
+   * Returns the sequence of types to be returned by every interpretation of a SootMethod
+   */
+  def outputTypes(method: SootMethod) = {
+    import scala.collection.JavaConversions._
+    val returnTypes =
+      if (method.getReturnType() == VoidType.v())
+        Seq()
+      else
+        Seq(method.getReturnType())
+    inputTypes(method) ++ returnTypes
+  }
+
+  /**
+   * Returns the sequence of types required as input for a SootMethod
+   */
+  def inputTypes(method: SootMethod) = {
+    import scala.collection.JavaConversions._
+    val parameterTypes = method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]]
+    val thisTypes =
+      if (method.isStatic())
+        Seq()
+      else
+        Seq(method.getDeclaringClass().getType())
+    thisTypes ++ parameterTypes
+  }
 }

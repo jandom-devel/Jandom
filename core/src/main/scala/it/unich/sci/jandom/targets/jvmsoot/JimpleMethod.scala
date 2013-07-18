@@ -29,7 +29,7 @@ import soot.toolkits.graph._
  * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library. It is
  * based on the generic analyzer for control flow graphs.
  * @param method the method we want to analyze
- * @author Gianluca Amato
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](method) {
   import scala.collection.JavaConversions._
@@ -38,176 +38,199 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
   val graph = new soot.jandom.UnitBlockGraph(body)
 
   protected def analyzeBlock(params: Parameters)(node: Block, initprop: params.Property): Seq[params.Property] = {
-
-  /**
-   * Convert a `Value` into a LinearForm, if possible.
-   * @param v the Value to convert.
-   * @return the corresponding linear form, or `None` if `v` is not a linear form.
-   */
-  def jimpleExprToLinearForm(v: Value): Option[Array[Double]] = {
-    val a = Array.fill(size + 1)(0.0)
-    var c = 0.0
-    v match {
-      case v: IntConstant =>
-        a(0) = v.value
-      case v: Local =>
-        a(localMap(v) + 1) = 1
-      case v: BinopExpr =>
-        val res1 = jimpleExprToLinearForm(v.getOp1())
-        val res2 = jimpleExprToLinearForm(v.getOp2())
-        (res1, res2) match {
-          case Tuple2(Some(a1), Some(a2)) =>
-            v match {
-              case v: AddExpr =>
-                for (i <- 0 to size) a(i) = a1(i) + a2(i)
-              case _ =>
-                None
-            }
-          case _ => return None
-        }
+    /**
+     * Convert a `Value` into a LinearForm, if possible.
+     * @param v the Value to convert.
+     * @return the corresponding linear form, or `None` if `v` is not a linear form.
+     */
+    def jimpleExprToLinearForm(v: Value): Option[Array[Double]] = {
+      val a = Array.fill(size + 1)(0.0)
+      var c = 0.0
+      v match {
+        case v: IntConstant =>
+          a(0) = v.value
+        case v: Local =>
+          a(localMap(v) + 1) = 1
+        case v: BinopExpr =>
+          val res1 = jimpleExprToLinearForm(v.getOp1())
+          val res2 = jimpleExprToLinearForm(v.getOp2())
+          (res1, res2) match {
+            case Tuple2(Some(a1), Some(a2)) =>
+              v match {
+                case v: AddExpr =>
+                  for (i <- 0 to size) a(i) = a1(i) + a2(i)
+                case _ =>
+                  None
+              }
+            case _ => return None
+          }
+        case _ => return None
+      }
+      Some(a)
     }
-    Some(a)
-  }
 
-  /**
-   * Convert a `Value` into a LinearCond.
-   * @param v the Value to convert.
-   * @return the corresponding linear condition, or `None` if `v` is not a linear condition.
-   */
-  def jimpleExprToLinearCond(v: Value): Option[LinearCond] = {
-    import AtomicCond.ComparisonOperators
-    val newcond = v match {
-      case v: ConditionExpr =>
-        val res1 = jimpleExprToLinearForm(v.getOp1())
-        val res2 = jimpleExprToLinearForm(v.getOp2())
-        res1 flatMap { res1 =>
-          res2 flatMap { res2 =>
-            // TODO: this is terrible... we need it because the linear form / linear cond API should be rewritten
-            val lf = LinearForm(for (i <- 0 to size) yield res1(i) - res2(i))
-            v match {
-              case _: GtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GT))
-              case _: GeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GTE))
-              case _: LtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.LT))
-              case _: LeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.LTE))
-              case _: EqExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.EQ))
-              case _ => None
+    /**
+     * Convert a `Value` into a LinearCond.
+     * @param v the Value to convert.
+     * @return the corresponding linear condition, or `None` if `v` is not a linear condition.
+     */
+    def jimpleExprToLinearCond(v: Value): Option[LinearCond] = {
+      import AtomicCond.ComparisonOperators
+      val newcond = v match {
+        case v: ConditionExpr =>
+          val res1 = jimpleExprToLinearForm(v.getOp1())
+          val res2 = jimpleExprToLinearForm(v.getOp2())
+          res1 flatMap { res1 =>
+            res2 flatMap { res2 =>
+              // TODO: this is terrible... we need it because the linear form / linear cond API should be rewritten
+              val lf = LinearForm(for (i <- 0 to size) yield res1(i) - res2(i))
+              v match {
+                case _: GtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GT))
+                case _: GeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GTE))
+                case _: LtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.LT))
+                case _: LeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.LTE))
+                case _: EqExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.EQ))
+                case _ => None
+              }
             }
           }
-        }
-      case v: BinopExpr =>
-        val res1 = jimpleExprToLinearCond(v.getOp1())
-        val res2 = jimpleExprToLinearCond(v.getOp2())
-        res1 flatMap { res1 =>
-          res2 flatMap { res2 =>
-            v match {
-              case _: AndExpr => Some(AndCond(res1, res2))
-              case _: OrExpr => Some(OrCond(res1, res2))
-              case _ => None
+        case v: BinopExpr =>
+          val res1 = jimpleExprToLinearCond(v.getOp1())
+          val res2 = jimpleExprToLinearCond(v.getOp2())
+          res1 flatMap { res1 =>
+            res2 flatMap { res2 =>
+              v match {
+                case _: AndExpr => Some(AndCond(res1, res2))
+                case _: OrExpr => Some(OrCond(res1, res2))
+                case _ => None
+              }
             }
           }
-        }
-      case _ => None
+        case _ => None
+      }
+      newcond
     }
-    newcond
-  }
 
-  def analyzeCond(v: Value, prop: params.Property): (params.Property, params.Property) = {
-    val lc = jimpleExprToLinearCond(v)
-    lc match {
-      case Some(lc) => prop.testLinearCondition(lc)
-      case None =>
-        v match {
-          case v: ConditionExpr =>
-            val res1 = analyzeExpr(v.getOp1(), prop)
-            val res2 = analyzeExpr(v.getOp2(), res1)
-            v match {
-              case v: GtExpr => res2.testGt
-              case v: GeExpr => res2.testGe
-              case v: LtExpr => res2.testLt
-              case v: LeExpr => res2.testLe
-              case v: EqExpr => res2.testEq
-              case v: NeExpr => res2.testNe
-            }
-        }
+    /**
+     * Analyze a boolean expression in the guard of an If statement. It tries to convert v into a linear
+     * condition. If it does not succeed, analyzes it recursively.
+     * @param v the `Value` to analyze
+     * @param prop the abstract initial state
+     * @return the abstract end states. The first state is for the "then"-branch, the second
+     * state is for the "else"-branch.
+     */
+    def analyzeCond(v: Value, prop: params.Property): (params.Property, params.Property) = {
+      val lc = if (v.getType().isInstanceOf[PrimType])
+        jimpleExprToLinearCond(v)
+      else
+        None
+      lc match {
+        case Some(lc) =>
+          prop.testLinearCondition(lc)
+        case None =>
+          v match {
+            case v: ConditionExpr =>
+              val res1 = analyzeExpr(v.getOp1(), prop)
+              val res2 = analyzeExpr(v.getOp2(), res1)
+              v match {
+                case v: GtExpr => res2.testGt
+                case v: GeExpr => res2.testGe
+                case v: LtExpr => res2.testLt
+                case v: LeExpr => res2.testLe
+                case v: EqExpr => res2.testEq
+                case v: NeExpr => res2.testNe
+              }
+          }
+      }
     }
-  }
 
-  def analyzeInvokeExpr(v: InvokeExpr, prop: params.Property): params.Property = {
-    val method = v.getMethod()
-    val (baseprop, implicitArgs) = v match {
-      case v: InstanceInvokeExpr =>
-        (analyzeExpr(v.getBase(), prop), 1)
-      case v: StaticInvokeExpr =>
-        (prop, 0)
-      case v: DynamicInvokeExpr =>
-        throw new IllegalArgumentException("Invoke dynamic not yet supported")
+    /**
+     * Analyze an invocation in Jimple.
+     * @param v the invoke expression to analyze
+     * @param prop the abstract initial state
+     * @return the abstract end state. The last dimension of property corresponds to the
+     * returned value.
+     */
+    def analyzeInvokeExpr(v: InvokeExpr, prop: params.Property): params.Property = {
+      val method = v.getMethod()
+      val (baseprop, implicitArgs) = v match {
+        case v: InstanceInvokeExpr =>
+          (analyzeExpr(v.getBase(), prop), 1)
+        case v: StaticInvokeExpr =>
+          (prop, 0)
+        case v: DynamicInvokeExpr =>
+          throw new IllegalArgumentException("Invoke dynamic not yet supported")
+      }
+      val callprop = v.getArgs().foldLeft(baseprop) { case (p, arg) => analyzeExpr(arg, p) }
+      val inputprop = callprop.restrict(v.getArgCount() + implicitArgs)
+      val exitprop = params.interpretation match {
+        case Some(inte) => inte(method, inputprop)
+        case None => throw new IllegalArgumentException("Interprocedural analysis")
+      }
+      callprop.connect(exitprop, method.getParameterCount() + implicitArgs)
     }
-    val callprop = v.getArgs().foldLeft(prop) { case (p, arg) => analyzeExpr(arg, p) }
-    val inputprop = callprop.restrict(v.getArgCount() + implicitArgs)
-    val exitprop = params.interpretation match  {
-      case Some(inte) => inte(method, inputprop)
-      case None => throw new IllegalArgumentException("Interprocedural analysis")
+
+    /**
+     * Analyze an expression in Jimple.
+     * @param v the `Value` to analyze
+     * @param prop the abstract initial state
+     * @return the abstract end state
+     */
+    def analyzeExpr(v: Value, prop: params.Property): params.Property = {
+      v match {
+        case v: NullConstant =>
+          prop.evalNull
+        case v: StringConstant =>
+          prop.evalGlobal(v)
+        case v: IntConstant =>
+          prop.evalConstant(v.value)
+        case v: StaticFieldRef =>
+          prop.evalStaticField(v)
+        case v: Local =>
+          prop.evalLocal(localMap(v))
+        case v: BinopExpr =>
+          val res1 = analyzeExpr(v.getOp1(), prop)
+          val res2 = analyzeExpr(v.getOp2(), res1)
+          v match {
+            case v: AddExpr => res2.evalAdd
+            case v: SubExpr => res2.evalSub
+            case v: MulExpr => res2.evalMul
+            case v: DivExpr => res2.evalDiv
+            case v: RemExpr => res2.evalRem
+            case v: ShlExpr => res2.evalShl
+            case v: ShrExpr => res2.evalShr
+            case v: UshrExpr => res2.evalUshr
+
+            // bitwise expressions (not supported yet)
+            case v: AndExpr => res2.evalBinOp
+            case v: OrExpr => res2.evalBinOp
+            case v: XorExpr => res2.evalBinOp
+
+            // boolean expressions (not supported yet)
+            case v: CmpExpr => res2.evalBinOp
+            case v: CmpgExpr => res2.evalBinOp
+            case v: CmplExpr => res2.evalBinOp
+
+            case v: GtExpr => res2.evalGt
+            case v: GeExpr => res2.evalGe
+            case v: LtExpr => res2.evalLt
+            case v: LeExpr => res2.evalLe
+            case v: EqExpr => res2.evalEq
+            case v: NeExpr => res2.evalNe
+          }
+        case v: UnopExpr =>
+          val res = analyzeExpr(v.getOp(), prop)
+          v match {
+            case v: LengthExpr => prop.evalLength
+            case v: NegExpr => prop.evalNeg
+          }
+        case v: AnyNewExpr => prop.evalNew(v.getType())
+        case v: InvokeExpr => analyzeInvokeExpr(v, prop)
+        case v: InstanceOfExpr => prop.evalNull
+        case v: CastExpr => prop.evalNull // TODO: this can be made more precise
+        case v: InstanceFieldRef => prop.evalField(localMap(v.getBase().asInstanceOf[Local]), v.getField())
+      }
     }
-    callprop.connect(exitprop, method.getParameterCount())
-  }
-
-  /**
-   * Analyze a `Value`.
-   * @tparam Property the type of the abstract state
-   * @param v the `Value` to analyze
-   * @param prop the abstract initial state
-   * @return the abstract end state. The last dimension of property corresponds to the
-   * returned value.
-   */
-  def analyzeExpr(v: Value, prop: params.Property): params.Property = {
-    v match {
-      case v: IntConstant =>
-        prop.evalConstant(v.value)
-      case v: Local =>
-        prop.evalLocal(localMap(v))
-      case v: BinopExpr =>
-        val res1 = analyzeExpr(v.getOp1(), prop)
-        val res2 = analyzeExpr(v.getOp2(), res1)
-        v match {
-          case v: AddExpr => res2.evalAdd
-          case v: SubExpr => res2.evalSub
-          case v: MulExpr => res2.evalMul
-          case v: DivExpr => res2.evalDiv
-          case v: RemExpr => res2.evalRem
-          case v: ShlExpr => res2.evalShl
-          case v: ShrExpr => res2.evalShr
-          case v: UshrExpr => res2.evalUshr
-
-          // bitwise expressions (not supported yet)
-          case v: AndExpr => res2.evalBinOp
-          case v: OrExpr => res2.evalBinOp
-          case v: XorExpr => res2.evalBinOp
-
-          // boolean expressions (not supported yet)
-          case v: CmpExpr => res2.evalBinOp
-          case v: CmpgExpr => res2.evalBinOp
-          case v: CmplExpr => res2.evalBinOp
-
-          case v: GtExpr => res2.evalGt
-          case v: GeExpr => res2.evalGe
-          case v: LtExpr => res2.evalLt
-          case v: LeExpr => res2.evalLe
-          case v: EqExpr => res2.evalEq
-          case v: NeExpr => res2.evalNe
-        }
-      case v: UnopExpr =>
-        val res = analyzeExpr(v.getOp(), prop)
-        v match {
-          case v: LengthExpr => prop.evalLength
-          case v: NegExpr => prop.evalNeg
-        }
-      case v: AnyNewExpr => prop.evalNew(v.getType())
-      case v: InvokeExpr => analyzeInvokeExpr(v, prop)
-      case v: InstanceOfExpr => prop.evalNull
-      case v: CastExpr => prop.evalNull // TODO: this can be made more precise
-      case v: InstanceFieldRef => prop.evalField(localMap(v.getBase().asInstanceOf[Local]), v.getField())
-    }
-  }
 
     var exits = Seq[params.Property]()
     var currprop = initprop
@@ -242,26 +265,17 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
         exits :+= tbranch
         currprop = fbranch
       case unit: InvokeStmt =>
-        currprop = analyzeExpr(unit.getInvokeExpr(), currprop)
+        currprop = analyzeInvokeExpr(unit.getInvokeExpr(), currprop)
+        if (unit.getInvokeExpr().getType() != VoidType.v()) currprop = currprop.restrict(size - 1)
       case unit: LookupSwitchStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: NopStmt =>
       case unit: RetStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: ReturnStmt =>
-        val exitProp = if (params.io){
-        	val e1 = analyzeExpr(unit.getOp(), currprop)
-        	val e2 = e1.restrict(method.getParameterCount()+1)
-        	e2
-        } else
-            currprop
-        exits :+= exitProp
+        exits :+= analyzeExpr(unit.getOp(), currprop)
       case unit: ReturnVoidStmt =>
-         val exitProp = if (params.io)
-        	currprop.restrict(method.getParameterCount())
-        else
-            currprop
-        exits :+= exitProp
+        exits :+= currprop
       case unit: TableSwitchStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: ThrowStmt =>

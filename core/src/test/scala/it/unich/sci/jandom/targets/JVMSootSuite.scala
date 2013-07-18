@@ -122,7 +122,6 @@ class JVMSootSuite extends FunSuite {
               method.analyzeFromInput(params)(params.domain(prop, IntType.v()))
           }
           val prop = parser.parseProperty(propString, params.domain.numdom).get
-          //println(method.mkString(params)(ann))
           assert(ann(method.lastPP.get).prop === prop)
         } finally {
           params.debugWriter.flush()
@@ -158,9 +157,7 @@ class JVMSootSuite extends FunSuite {
       params.interpretation = Some(inte)
       test(s"Jimple object analysis: ${methodName}") {
         try {
-          println(method)
           val ann = method.analyze(params)
-          //println(method.mkString(params)(ann))
           assert(ann(method.lastPP.get).prop === params.domain.dom.Property(ps, method.locals.size + method.body.getMethod().getParameterCount()))
         } finally {
           params.debugWriter.flush()
@@ -200,7 +197,7 @@ class JVMSootSuite extends FunSuite {
   def jimpleInterProceduralNumTests() {
     val jimpleNumericalTests = Seq(
       "sequential" -> "0 == 0",
-      "parametric_dynamic" -> "i0 == i0 && i1 == i1 && i2 == i2",
+      "parametric_dynamic" -> "this==this && i0 == i0 && i1 == i1 && i2 == i2",
       "parametric_static" -> "i0 == i0 && i1 == i1 && i2 == i0 +i1",
       "parametric_caller" -> "i0 == i0 && i1== i1 && i2==7",
       "recursa" -> "-i0 + i1 >= 0 && i1 >= 0")
@@ -217,7 +214,7 @@ class JVMSootSuite extends FunSuite {
       test(s"Jimple inter-procedural numerical analysis: ${methodName}") {
         val env = Environment()
         val parser = new NumericalPropertyParser(env)
-        val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes().asInstanceOf[java.util.List[Type]])
+        val input = params.domain.top(SootCFG.inputTypes(c.getMethodByName(methodName)))
         try {
           inte.compute(method, input)
           val prop = parser.parseProperty(propString, params.domain.numdom).get
