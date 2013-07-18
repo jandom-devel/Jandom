@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 amato
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,63 +18,142 @@
 
 package it.unich.sci.jandom.targets.jvmsoot
 
-import scala.collection.immutable.BitSet
+import scala.annotation.elidable
+import scala.annotation.elidable._
 import scala.collection.immutable.Stack
+
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
+
 import soot._
 import soot.baf.WordType
+import soot.jimple.Constant
+import soot.jimple.StaticFieldRef
 
+/**
+ * This class implements an abstract frame for Soot where only numerical variables are considered.
+ * @param numdom the numerical domain to use for representing properties of numerical variables.
+ */
 class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDomain {
 
-  def top(vars: Seq[Type]) = Property(numdom.full(vars.size), Stack(vars: _*))
-  def bottom(vars: Seq[Type]) = Property(numdom.empty(vars.size), Stack(vars: _*))
-  def initial(vars: Seq[Type]) = top(vars)
+  def top(vars: Seq[Type]) = Property(numdom.full(vars.size), Stack(vars.reverse: _*))
 
-/*  private def canonicalType(tpe: Type) = tpe match {
-    case _ : BooleanType => IntType.v()
-    case _ : ByteType => IntType.v()
-    case _ : ShortType => IntType.v()
-    case x  => x
-  }*/
+  def bottom(vars: Seq[Type]) = Property(numdom.empty(vars.size), Stack(vars.reverse: _*))
 
-  def apply(prop: numdom.Property, tpe: Type): Property = Property(prop, Stack((for (i <- 0 until prop.dimension) yield tpe): _*))
-  def apply(prop: numdom.Property, tpes: Seq[Type]): Property = apply(prop, Stack(tpes: _*))
+  /**
+   * A simple helper method for the analogous constructor of abstract numerical frames.
+   */
+  def apply(prop: numdom.Property, types: Seq[Type]) = new Property(prop, Stack(types.reverse: _*))
 
+  /**
+   * A simple helper method for the analogous constructor of abstract numerical frames.
+   */
+  def apply(prop: numdom.Property, tpe: Type) = new Property(prop, tpe)
+
+  /*
+    private def canonicalType(tpe: Type) = tpe match {
+      case _ : BooleanType => IntType.v()
+      case _ : ByteType => IntType.v()
+      case _ : ShortType => IntType.v()
+      case x  => x
+    }
+  */
+
+  /**
+   * This class represents a single abstract frame.
+   * @param prop contains the numeric property giving informations on numerical variables. Dimensions are allocated also for
+   * non-numerical variables, but their value is undetermined
+   * @param vars the stack of variable types in the current frame. Note that stack position are numbered in the
+   * opposite way than frame variables, i.e., the frame variable `i` corresponds to stack position `size - 1 - i`.
+   */
   case class Property(val prop: numdom.Property, val vars: Stack[Type]) extends SootFrameProperty[Property] {
+
+    invariantCheck
+
+    /**
+     * An alternative constructor which returns an abstract frame where all variables are of the same type.
+     * @param prop the numerical property to use.
+     * @param tpe the common type of all frame variables.
+     */
+    def this(prop: numdom.Property, tpe: Type) = {
+      this(prop, Stack((for (i <- 0 until prop.dimension) yield tpe): _*))
+    }
+
+    /**
+     * This method check invariants on a numerical abstract frame.
+     */
+    @elidable(ASSERTION)
+    private def invariantCheck {
+      assert(prop.dimension == vars.size, "Numerical property and stack of types have different dimensions")
+      if (prop.isEmpty) return
+      for (i <- 0 until prop.dimension) vars(size - 1 - i) match {
+        case _: PrimType | _: WordType =>
+        case _ =>
+          // TODO: I should check that dimension i is unconstrained. For now I check that it is unbounded
+          val lf = Array.fill(prop.dimension)(0.0)
+          lf(i) = 1.0
+          assert(prop.minimize(lf, 0).isNegInfinity, "A non-numerical variable should be unconstrained")
+          assert(prop.maximize(lf, 0).isPosInfinity, "A non-numerical variable should be unconstrained")
+      }
+    }
 
     def size = prop.dimension
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
       other match {
-        case other: Property => prop tryCompareTo other.prop
+        case other: Property =>
+          assume(other.vars == vars,"The abstract frame have different variables")
+          prop tryCompareTo other.prop
         case _ => None
       }
 
+    /**
+     * Add a new undetermined frame variable.
+     * @param tpe the type of the new frame variable.
+     */
     private def addVariable(tpe: Type) = Property(prop.addDimension, vars.push(tpe))
+
+    /**
+     * Remove the top frame variable.
+     */
     private def delVariable = Property(prop.delDimension(), vars.pop)
 
     def evalConstant(const: Int) = Property(prop.addDimension.constantAssignment(size, const), vars.push(IntType.v()))
+
     def evalNull = addVariable(NullType.v())
+
     def evalNew(tpe: Type) = addVariable(tpe)
+
     def evalLocal(v: Int) = {
-      if (vars(v).isInstanceOf[PrimType] || vars(v).isInstanceOf[WordType])
-        Property(prop.addDimension.variableAssignment(size, v), vars.push(vars(v)))
+      if (vars(size - 1 - v).isInstanceOf[PrimType] || vars(size - 1 - v).isInstanceOf[WordType])
+        Property(prop.addDimension.variableAssignment(size, v), vars.push(vars(size - 1 - v)))
       else
-        addVariable(vars(v))
+        addVariable(vars(size - 1 - v))
     }
-    def evalField(v: Int, f: SootField) = addVariable(f.getType())
+
+    def evalField(v: Int, f: SootField) = {
+      assume(vars(size - 1 - v).isInstanceOf[RefType],"Expected RefType, got "+vars(size - 1 - v))
+      addVariable(f.getType())
+    }
+
+    def assignLocal(dst: Int, src: Int) = {
+      // TODO: I would like to put an assume, but I am not sure what to check
+      Property(prop.variableAssignment(dst, src), vars)
+    }
 
     def assignLocal(dst: Int) = {
-       if (vars(dst).isInstanceOf[PrimType] || vars(dst).isInstanceOf[WordType])
-        new Property(prop.variableAssignment(dst, size - 1).delDimension(), vars.pop)
-      else
+      if (vars(size - 1 - dst).isInstanceOf[PrimType] || vars(size - 1 - dst).isInstanceOf[WordType]) {
+        Property(prop.variableAssignment(dst, size - 1).delDimension(), vars.pop)
+      } else
         delVariable
     }
 
-    def assignField(dst: Int, f: SootField) = delVariable
+    def assignField(dst: Int, f: SootField) = {
+      assume(vars(size - 1 - dst).isInstanceOf[RefType],"Expected RefType, got "+vars(size - 1 - dst))
+      delVariable
+    }
 
     def evalAdd = Property(prop.variableAdd().delDimension(), vars.pop)
     def evalSub = Property(prop.variableSub().delDimension(), vars.pop)
@@ -96,11 +175,10 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     def evalEq = delVariable
     def evalNe = delVariable
 
-    def test = {
-      val dropped = delVariable
-      (dropped, dropped)
-    }
-
+    /**
+     * A generic test operation which depends on a comparison operator.
+     * @param op the comparison operator to use
+     */
     private def testComp(op: AtomicCond.ComparisonOperators.Value) = {
       import AtomicCond.ComparisonOperators._
       val coeffs = Array.fill(size + 1)(0.0)
@@ -120,8 +198,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     def testNe = testComp(AtomicCond.ComparisonOperators.NEQ)
 
     def testLinearCondition(lc: LinearCond) = (
-      Property(lc.analyze(prop), vars), Property(lc.opposite.analyze(prop),vars)
-    )
+      Property(lc.analyze(prop), vars), Property(lc.opposite.analyze(prop), vars))
 
     def union(that: Property) = Property(prop union that.prop, vars)
 
@@ -131,25 +208,37 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def narrowing(that: Property) = Property(prop widening that.prop, vars)
 
-    def restrict(n: Int) = Property(
-       (0 until size-n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delDimension(0) },
-        vars.drop(size - n)
-    )
+    def restrict(n: Int) = {
+      assume ( n >= 0 && n <= size,s"Trying to restrict to ${n} variables in the abstract frame {$this}")
+      Property((0 until size - n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delDimension(0) },
+      vars.dropRight(size - n))
+    }
 
-    def connect(p: Property, common: Int) =
-      Property(prop.connect(p.prop, common), p.vars ++ vars drop common)
+    def connect(p: Property, common: Int) = {
+      assume ( (vars.dropRight(size-common) zip p.vars.drop(p.size - common)) forall { case (tdst, tsrc) => compatibleTypes(tdst, tsrc) })
+      Property(prop.connect(p.prop, common), p.vars.dropRight(common) ++ vars.drop(common))
+    }
 
     def enterMonitor(n: Int): Property = this
 
     def exitMonitor(n: Int): Property = this
 
+    def evalGlobal(o: Constant): Property = addVariable(o.getType())
+
+    def evalStaticField(v: StaticFieldRef): Property = {
+      if (v.getType().isInstanceOf[PrimType])
+        Property(prop.addDimension.nonDeterministicAssignment(prop.dimension), vars.push(v.getType()))
+      else
+        addVariable(v.getType())
+    }
+
     def isEmpty = prop.isEmpty
 
-  /*  def isCompatibleWith(that: Property) =
+    /*  def isCompatibleWith(that: Property) =
     	prop == that.prop &&
     	vars.size == that.vars.size &&
     	(vars map canonicalType) == (that.vars map canonicalType)*/
 
-    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) // :+ ("types: "+this.vars.toString)
+    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ ("types: " + this.vars.reverse.mkString(","))
   }
 }

@@ -18,68 +18,122 @@
 
 package it.unich.sci.jandom.targets.jvmsoot
 
+import scala.annotation.elidable
+import scala.annotation.elidable._
 import scala.collection.immutable.Stack
+
+import it.unich.sci.jandom.domains.objects.PairSharingDomain
 import it.unich.sci.jandom.domains.objects.UP
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
+
 import soot._
-import it.unich.sci.jandom.domains.objects.PairSharingDomain
-import it.unich.sci.jandom.domains.objects.ObjectDomain
+import soot.jimple.Constant
+import soot.jimple.StaticFieldRef
 
 /**
- * A domain for pair sharing analysis, as described by Secci and Spoto.
+ * An abstract frame for pair sharing analysis, as described by Secci and Spoto. It depends from
+ * an analysis of class reachability which determines whether it is possible to reach a class
+ * B from a class A.
  * @author Gianluca Amato <gamato@unich.it>
+ * @param classAnalysis the analysis of class reachability
  */
 
 class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends SootFrameDomain {
 
   val dom = PairSharingDomain
 
-  def top(vars: Seq[Type]) = Property(dom.top(vars.size), Stack(vars: _*)).removeBad
-  def bottom(vars: Seq[Type]) = Property(dom.bottom(vars.size), Stack(vars: _*)).removeBad
-  def initial(vars: Seq[Type]) = bottom(vars)
+  def top(vars: Seq[Type]) = buildProperty(dom.top(vars.size), Stack(vars.reverse: _*))
 
-  case class Property(val prop: dom.Property, val stack: Stack[Type]) extends SootFrameProperty[Property] {
+  def bottom(vars: Seq[Type]) = buildProperty(dom.bottom(vars.size), Stack(vars.reverse: _*))
 
-    def removeBad = {
-      var currprop = dom.Property(prop.ps filter mayShare, stack.size)
-      for (i <- 0 until stack.size)
-        if (! stack(size- i -1).isInstanceOf[RefType])
-        	currprop = currprop.assignNull(i)
-      Property(currprop, stack)
+  /**
+   * Build a new pair sharing from a set of pair sharing properties,
+   * setting to null those variables which are not of reference type and
+   * removing pairs  which cannot share due to class reachability analysis.
+   */
+  private def buildProperty(prop: dom.Property, stack: Stack[Type]): Property = {
+    val mayShare = { p: UP[Int] =>
+      stack(stack.size - 1 - p._1) match {
+        case p1: RefType =>
+          stack(stack.size - 1 - p._2) match {
+            case p2: RefType => classAnalysis.mayShare(p1.getSootClass(), p2.getSootClass())
+            case _ => false
+          }
+        case _ => false
+      }
+    }
+    val currprop = dom.Property(prop.ps filter mayShare, stack.size)
+    Property(currprop, stack, Map())
+  }
+
+  /**
+   * This class represents a single abstract frame. It tries to support global variables, but it is a kind of hack.
+   * @param prop contains the pair sharing properties. Variables are allocated also for non-numerical variables, but the are forced
+   * to be definitively null.
+   * @param stack the stack of variable types in the current frame. Note that stack position are numbered in the
+   * opposite way than frame variables, i.e., the frame variable `i` corresponds to stack position `size - 1 - i`.
+   * @param globals a map from globals in the JVM to variable positions in `prop`. Used to support global variables.
+   */
+  case class Property(val prop: dom.Property, val stack: Stack[Type], val globals: Map[AnyRef, Int]) extends SootFrameProperty[Property] {
+
+    invariantCheck
+
+    /**
+     * Returns the SootClass of a given frame variable
+     */
+    private def classOfVar(i: Int): SootClass = stack(size - i - 1).asInstanceOf[RefType].getSootClass()
+
+    /**
+     * A map UP[Int] => Boolean. mayShare(UP(x,y)) is true if x and y may share according to the class
+     * reachability analysis in `classAnalysis`.
+     */
+    private val mayShare = { p: UP[Int] => classAnalysis.mayShare(classOfVar(p._1), classOfVar(p._2)) }
+
+    /**
+     * Remove the top frame variable.
+     */
+    private def delUntrackedVariable = Property(prop.delVariable(size - 1), stack.pop, globals)
+
+    /**
+     * Add a new variable of a type we do not want to track. This means, we set it to null.
+     * @param tpe the type of the variable.
+     */
+    private def addUntrackedVariable(tpe: Type) = Property(prop.addVariable.assignNull(size), stack.push(tpe), globals)
+
+    /**
+     * This method check invariants on a numerical abstract frame.
+     */
+    @elidable(ASSERTION)
+    private def invariantCheck {
+      assert(prop.size == stack.size, s"Sharing property <${prop}> and stack of types <${stack}> have different dimensions")
+      for (i <- 0 until stack.size) stack(size - 1 - i) match {
+        case _: RefType =>
+        case _ => assert(prop.isNull(i), "A non reference type should be null in the pair sharing component")
+      }
     }
 
     def size = stack.size
 
-    def classOfVar(i: Int): SootClass = stack(size-i-1).asInstanceOf[RefType].getSootClass()
-
-    val mayShare = { p: UP[Int] => classAnalysis.mayShare(classOfVar(p._1), classOfVar(p._2)) }
-
-    private def delUntrackedVariable =
-      Property(prop.delVariable(size - 1), stack.pop)
-
-    private def addUntrackedVariable(tpe: Type) =
-      Property(prop.addVariable.assignNull(size), stack.push(tpe))
-
     def evalConstant(c: Int) = addUntrackedVariable(IntType.v())
 
     def evalNull =
-      Property(prop.addVariable.assignNull(size), stack.push(NullType.v()))
+      Property(prop.addVariable.assignNull(size), stack.push(NullType.v()), globals)
 
     def evalNew(tpe: Type) =
       if (tpe.isInstanceOf[RefType])
-        Property(prop.addVariable, stack.push(tpe))
+        Property(prop.addVariable, stack.push(tpe), globals)
       else
         addUntrackedVariable(tpe)
 
     def evalLocal(v: Int) =
-      Property(prop.addVariable.assignVariable(size, v), stack.push(stack(size-1-v)))
+      Property(prop.addVariable.assignVariable(size, v), stack.push(stack(size - 1 - v)), globals)
 
     def evalLength = addUntrackedVariable(IntType.v())
 
-    def evalField(l: Int, f: SootField) = addUntrackedVariable(f.getType()).assignFieldToStackTop(l,f)
+    def evalField(l: Int, f: SootField) = addUntrackedVariable(f.getType()).assignFieldToStackTop(l, f)
 
     private def assignFieldToStackTop(src: Int, f: SootField) =
-      Property(prop.assignFieldToVariable(size - 1, src, f.getNumber(), mayShare), stack)
+      Property(prop.assignFieldToVariable(size - 1, src, f.getNumber(), mayShare), stack, globals)
 
     def evalAdd = delUntrackedVariable
     def evalSub = delUntrackedVariable
@@ -99,7 +153,7 @@ class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends 
     def evalEq = delUntrackedVariable
     def evalNe = delUntrackedVariable
 
-    def test = {
+    private def test = {
       val dropped = delUntrackedVariable
       (dropped, dropped)
     }
@@ -114,39 +168,58 @@ class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends 
     def evalLinearForm(lf: Array[Double]) = addUntrackedVariable(DoubleType.v())
     def testLinearCondition(lc: LinearCond) = (this, this)
 
+    def assignLocal(dst: Int, src: Int) =
+      if (stack(0).isInstanceOf[RefType])
+        Property(prop.assignVariable(dst, src), stack, globals)
+      else
+        this
+
     def assignLocal(dst: Int) = {
       if (stack(0).isInstanceOf[RefType])
-        Property(prop.assignVariable(dst, size - 1).delVariable(), stack.pop)
+        Property(prop.assignVariable(dst, size - 1).delVariable(), stack.pop, globals)
       else
-        Property(prop.delVariable(), stack.pop)
+        Property(prop.delVariable(), stack.pop, globals)
     }
 
     def assignField(dst: Int, f: SootField) =
-      Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop)
+      Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop, globals)
 
-    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ ("types: "+this.stack.toString)
+    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ ("types: " + this.stack.toString)
 
     def union(that: Property) = {
       assert(stack == that.stack)
-      Property(prop union that.prop, stack)
+      Property(prop union that.prop, stack, globals)
     }
 
     def intersection(that: Property) = {
       assert(stack == that.stack)
-      Property(prop union that.prop, stack)
+      Property(prop union that.prop, stack, globals)
     }
 
-    def restrict(newSize: Int) = Property(prop removeHigherVariables newSize, stack drop (size - newSize))
+    def restrict(newSize: Int) = Property(prop removeHigherVariables newSize, stack dropRight (size - newSize), globals)
 
-    def connect(p: Property, common: Int): Property = Property(prop.connect(p.prop, common), p.stack ++ stack drop common)
+    def connect(p: Property, common: Int): Property = Property(prop.connect(p.prop, common), p.stack.dropRight(common) ++ stack.drop(common), globals)
 
     def widening(that: Property) = this union that
 
     def narrowing(that: Property) = this intersection that
 
-    def enterMonitor(n: Int) = Property(prop.testNotNull(n), stack)
+    def enterMonitor(n: Int) = Property(prop.testNotNull(n), stack, globals)
 
-    def exitMonitor(n: Int) = Property(prop.testNotNull(n), stack)
+    def exitMonitor(n: Int) = Property(prop.testNotNull(n), stack, globals)
+
+    def evalGlobal(o: Constant) = {
+      val withGlobal = if (globals contains o) this else evalNew(o.getType())
+      val evaluatedGlobal = withGlobal.evalLocal(withGlobal.size - 1)
+      Property(evaluatedGlobal.prop, evaluatedGlobal.stack, globals + (o -> prop.size))
+    }
+
+    def evalStaticField(v: StaticFieldRef): Property = {
+      if (v.getType().isInstanceOf[RefType])
+        evalNew(v.getType())
+      else
+        this
+    }
 
     def isEmpty = false
 

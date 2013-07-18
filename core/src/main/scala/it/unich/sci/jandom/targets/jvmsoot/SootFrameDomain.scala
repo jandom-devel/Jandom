@@ -19,16 +19,16 @@
 package it.unich.sci.jandom.targets.jvmsoot
 
 import scala.collection.immutable.Stack
-
 import it.unich.sci.jandom.domains.AbstractDomain
 import it.unich.sci.jandom.domains.AbstractProperty
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
-
 import soot._
+import soot.jimple.Constant
+import soot.jimple.StaticFieldRef
 
 /**
  * This is the base trait domain for the analysis of methods using Soot. It represents
- * an abstract frame with locals and stack. It is used for both Baf and Jimple analysis,
+ * an abstract typed frame with locals and stack. It is used for both Baf and Jimple analysis,
  * although Jimple could be made faster by analyzing one statement at a time instead of
  * evaluating expressions compositionally.
  * @author Gianluca Amato <gamato@unich.it>
@@ -36,58 +36,264 @@ import soot._
 trait SootFrameDomain extends AbstractDomain {
   type Property <: SootFrameProperty[Property]
 
-  def initial(vars: Seq[Type]): Property
+  /**
+   * Returns the top abstract property relative to the fiber `vars`
+   */
   def top(vars: Seq[Type]): Property
+
+  /**
+   * Returns the bottom abstract property relative to the fiber `vars`
+   */
   def bottom(vars: Seq[Type]): Property
 
+  /**
+   * This trait represents a single abstract frame. It behaves like a stack, with numbered positions.
+   * Each position is numbered with its index (starting from the bottom, which as index 0).
+   * @tparam Property the target class of F-bounded polymporphism
+   */
   trait SootFrameProperty[Property <: SootFrameProperty[Property]] extends AbstractProperty[Property] {
     this: Property =>
 
+    /**
+     * Determines whether it is possible to assign a variable of type t2
+     * to a variable of type t1. It is only used in debugging assertions.
+     */
+    protected def compatibleTypes(t1: Type, t2: Type): Boolean =  {
+    	t1 == t2 ||
+    	(t1.isInstanceOf[PrimType] && t2.isInstanceOf[PrimType]) ||
+    	(t1.isInstanceOf[RefType] && t2.isInstanceOf[RefType])
+    }
+
+    /**
+     * Return the numbers of variables in the frame
+     */
     def size: Int
 
+    /**
+     * Push an integer constant into the frame
+     * @param c constant to push into the frame
+     */
     def evalConstant(c: Int): Property
+
+    /**
+     * Push a null constant into the frame
+     */
     def evalNull: Property
+
+    /**
+     * Push a new object into the frame
+     * @param tpe the type of the new object
+     */
     def evalNew(tpe: Type): Property
+
+    /**
+     * Evaluate  a frame variable `i` and push a copy into the frame
+     * @param i the frame variable to evaluate
+     */
     def evalLocal(i: Int): Property
+
+    /**
+     * Evaluate a field of a frame variable, and push a copy into the frame
+     * @param i the frame variable to evaluate
+     * @param f the field to evaluate withi `i`
+     */
     def evalField(i: Int, f: SootField): Property
 
+    /**
+     * Sums the two top element of the frame and replace them with the result
+     */
     def evalAdd: Property
+
+    /**
+     * Subtracts the top element of the frame from the element `size`-2 and replace them with the result.
+     */
     def evalSub: Property
+
+    /**
+     * Multiplies the two top element of the frame and replace them with the result.
+     */
     def evalMul: Property
+
+    /**
+     * Divides the element `size`-2 with the top element of the frame and replace both of them with the result.
+     */
     def evalDiv: Property
+
+    /**
+     * Computes the reminder of dividing the element `size`-2 with the top element, and replace them with the result.
+     */
     def evalRem: Property
+
+    /**
+     * Computes el(size-2) << el(size-1) and replace the two top elements of the stack with the result.
+     */
     def evalShl: Property
+
+    /**
+     * Computes el(size-2) >> el(size-1) and replace the two top elements of the stack with the result.
+     */
     def evalShr: Property
+
+    /**
+     * Computes el(size-2) >>> el(size-1) and replace the two top elements of the stack with the result.
+     */
     def evalUshr: Property
+
+    /**
+     * Computes the effect of a non-specified operations between el(size-2) and el(size-1), and replace
+     * the two top elements of the stack with the result.
+     */
     def evalBinOp: Property
+
+    /**
+     * Replace the top of the stack with its opposite.
+     */
     def evalNeg: Property
+
+    /**
+     * Replace the top of the stack (which should be an array object) with its length.
+     */
     def evalLength: Property
 
+    /**
+     * Returns the abstract frame obtained by restricting the current frame to the
+     * case when el(size-2) > el(size-1). Remove the the two top elements.
+     */
     def evalGt: Property
+
+    /**
+     * Returns the abstract frame obtained by restricting the current frame to the
+     * case when el(size-2) >= el(size-1). Remove the the two top elements.
+     */
     def evalGe: Property
+
+    /**
+     * Returns the abstract frame obtained by restricting the current frame to the
+     * case when el(size-2) < el(size-1). Remove the the two top elements.
+     */
     def evalLt: Property
+
+    /**
+     * Returns the abstract frame obtained by restricting the current frame to the
+     * case when el(size-2) <= el(size-1). Remove the the two top elements.
+     */
     def evalLe: Property
+
+    /**
+     * Returns the abstract frame obtained by restricting the current frame to the
+     * case when el(size-2) == el(size-1). Remove the the two top elements.
+     */
     def evalEq: Property
+
+    /**
+     * Returns the abstract frame obtained by restricting the current frame to the
+     * case when el(size-2) != el(size-1). Remove the the two top elements.
+     */
     def evalNe: Property
 
+    /**
+     * Assign to the variable frame `i` the value at the top of the frame, and pop it.
+     * @param i the frame variable to assign
+     */
     def assignLocal(i: Int): Property
+
+    /**
+     * Assign the variable `src` to the variable `dst`
+     * @param dst the target variable
+     * @param src the source variable
+     */
+    def assignLocal(dst: Int, src: Int): Property
+
+    /**
+     * Assign to  a field of the variable frame `i` the value at the top of the frame, and pop it.
+     * @param i the frame variable to assign
+     * @param f the field to assign
+     */
     def assignField(i: Int, f: SootField): Property
 
-    def test: (Property, Property)
+    /**
+     * Returns the result of testing whether el(size-2) > el(size-1) and pops the two top frame
+     * positions. The first element is the abstract frame for the "then"-branch, the second is for
+     * the "else"-branch.
+     */
     def testGt: (Property, Property)
+
+    /**
+     * Returns the result of testing whether el(size-2) >= el(size-1) and pops the two top frame
+     * positions. The first element is the abstract frame for the "then"-branch, the second is for
+     * the "else"-branch.
+     */
     def testGe: (Property, Property)
+
+    /**
+     * Returns the result of testing whether el(size-2) >= el(size-1) and pops the two top frame
+     * positions. The first element is the abstract frame for the "then"-branch, the second is for
+     * the "else"-branch.
+     */
     def testLt: (Property, Property)
+
+    /**
+     * Returns the result of testing whether el(size-2) >= el(size-1) and pops the two top frame
+     * positions. The first element is the abstract frame for the "then"-branch, the second is for
+     * the "else"-branch.
+     */
     def testLe: (Property, Property)
+
+    /**
+     * Returns the result of testing whether el(size-2) >= el(size-1) and pops the two top frame
+     * positions. The first element is the abstract frame for the "then"-branch, the second is for
+     * the "else"-branch.
+     */
     def testEq: (Property, Property)
+
+    /**
+     * Returns the result of testing whether el(size-2) >= el(size-1) and pops the two top frame
+     * positions. The first element is the abstract frame for the "then"-branch, the second is for
+     * the "else"-branch.
+     */
     def testNe: (Property, Property)
 
+    /**
+     * Returns the result of testing the frame w.r.t. a linear condition.
+     * @param lf the linear condition to use for testing.
+     */
     def testLinearCondition(lf: LinearCond): (Property, Property)
 
+    /**
+     * Returns the last `n` dimensions.
+     */
     def restrict(n: Int): Property
+
+    /**
+     * Connect `this` with `p`, keeping in consideration that the last `common` dimensions
+     * in `this` and the first `common` dimensions in `p` are the same. The common dimensions
+     * are removed after the connection is completed.
+     */
     def connect(p: Property, common: Int): Property
 
+    /**
+     * Evaluates the effect of entering a monitor.
+     * @param n the frame variable whose monitor is entered.
+     */
     def enterMonitor(n: Int): Property
+
+    /**
+     * Evaluates the effect of exiting a monitor.
+     * @param n the frame variable whose monitor is exited.
+     */
     def exitMonitor(n: Int): Property
+
+    /**
+     * Evaluates a global constant and put the result on the frame.
+     * @param o the constant to evaluate.
+     */
+    def evalGlobal(o: Constant): Property
+
+    /**
+     * Evaluate a static field and put the result on the frame.
+     * @param v the static field to evaluate.
+     */
+    def evalStaticField(v: StaticFieldRef): Property
 
     override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
 
