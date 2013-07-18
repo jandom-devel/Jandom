@@ -116,7 +116,7 @@ class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalP
     val val_d = new Coefficient(0)
     val result = pplpolyhedron.maximize(le, val_n, val_d, exact)
     if (!result)
-      Double.NegativeInfinity
+      Double.PositiveInfinity
     else
       (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
   }

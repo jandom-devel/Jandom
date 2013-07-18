@@ -109,7 +109,7 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
     val val_d = new Coefficient(0)
     val result = pplbox.maximize(le, val_n, val_d, exact)
     if (!result)
-      Double.NegativeInfinity
+      Double.PositiveInfinity
     else
       (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
   }
