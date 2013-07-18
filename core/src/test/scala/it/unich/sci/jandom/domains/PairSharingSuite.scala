@@ -108,47 +108,47 @@ class PairSharingSuite extends FunSuite {
     expectResult( dom(Set(UP(0, 0), UP(1, 1)) ,2) ) (ps1.removeRangeOfVariables(1 to 2))
   }
 
-  test("connect: nullness of first property is definitive") {
+  test("connectFull: nullness of first property is definitive") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(0, 1), UP(0, 0), UP(1, 1), UP(2, 2), UP(1, 3), UP(3, 3)), 4)
-    assert(ps1.connect(ps2, 2).isNull(2))
+    assert(ps1.connectFull(ps2, 2).isNull(2))
   }
 
-  test("connect: nullness of second property is definitive") {
+  test("connectFull: nullness of second property is definitive") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(0, 0), UP(2, 2)), 4)
-    assert(ps1.connect(ps2, 2).isNull(3))
+    assert(ps1.connectFull(ps2, 2).isNull(3))
   }
 
-  test("connect: connecting from first to second property") {
+  test("connectFull: connecting from first to second property") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(0, 1), UP(0, 0), UP(1, 1), UP(2, 2), UP(1, 3), UP(3, 3)), 4)
-    assert(ps1.connect(ps2, 2).ps contains UP(1, 5))
+    assert(ps1.connectFull(ps2, 2).ps contains UP(1, 5))
   }
 
-  test("connect: connecting two pairs from the first property trough a var") {
+  test("connectFull: connecting two pairs from the first property trough a var") {
     val ps1 = dom(Set(UP(0, 0), UP(1, 1), UP(2, 2), UP(0, 3), UP(1, 3), UP(2, 4), UP(3, 3), UP(4, 4)), 5)
     val ps2 = dom(Set(UP(0, 0)), 4)
-    val ps3 = ps1.connect(ps2, 2)
+    val ps3 = ps1.connectFull(ps2, 2)
     assert(ps3.ps contains UP(0, 1))
     assert(!(ps3.ps contains UP(0, 2)))
     assert(!(ps3.ps contains UP(1, 2)))
   }
 
-  test("connect: connecting two pairs from the first property trough a pair") {
+  test("connectFull: connecting two pairs from the first property trough a pair") {
     val ps1 = dom(Set(UP(0, 0), UP(1, 1), UP(2, 2), UP(0, 3), UP(1, 3), UP(2, 4), UP(3, 3), UP(4, 4)), 5)
     val ps2 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1)), 4)
-    val ps3 = ps1.connect(ps2, 2)
+    val ps3 = ps1.connectFull(ps2, 2)
     assert(ps3.ps contains UP(0, 1))
     assert(ps3.ps contains UP(0, 2))
     assert(ps3.ps contains UP(1, 2))
   }
 
-  test("connect: complex example 1") {
+  test("connectFull: complex example 1") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(0, 1), UP(0, 0), UP(1, 1), UP(2, 2), UP(1, 3), UP(3, 3)), 4)
     val ps3 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(1, 5), UP(3, 3), UP(3, 5), UP(4, 4), UP(5, 5)), 6)
-    expectResult(ps3)(ps1.connect(ps2, 2))
+    expectResult(ps3)(ps1.connectFull(ps2, 2))
   }
 
 }

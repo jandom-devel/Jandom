@@ -32,10 +32,23 @@ trait ObjectDomain extends AbstractDomain {
 
   type Property <: ObjectProperty[Property]
 
+  /**
+   * Returns the top element of the domain relative to the fiber `size`
+   */
   def top(size: Int): Property
+
+  /**
+   * Returns the top element of the domain relative to the fiber `size`
+   */
   def bottom(size: Int): Property
 
+  /**
+   * This trait represents single abstract element in an object domain.
+   */
   trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractProperty[Property] {
+    /**
+     * The fiber of the property.
+     */
     def size: Int
     def addVariable: Property
     def delVariable(n: Int = size - 1): Property

@@ -58,13 +58,13 @@ object PairSharingDomain extends ObjectDomain {
         new Property(removeVariable(renameVariable(renameVariable(ps, size, n), n, size - 1), size), size - 1)
 
     def removeRangeOfVariables(range: Range) = {
-      assert(range.head >= 0 && range.last < size && range.last >= range.head)
+      assert(range.isEmpty || (range.head >= 0 && range.last < size && range.last >= range.head))
       val newps = for {
-        UP(l,r) <- ps
+        UP(l, r) <- ps
         if !(range contains r) && !(range contains l)
-        l1 = if (l > range.last) l-range.size else l
-        r1 = if (r > range.last) r-range.size else r
-      } yield UP(l1,r1)
+        l1 = if (l > range.last) l - range.size else l
+        r1 = if (r > range.last) r - range.size else r
+      } yield UP(l1, r1)
       Property(newps, size - range.size)
     }
 
@@ -85,33 +85,40 @@ object PairSharingDomain extends ObjectDomain {
       if (newSize == size)
         this
       else
-        new Property(ps filter { case UP(l,r) => r < newSize }, newSize)
+        new Property(ps filter { case UP(l, r) => r < newSize }, newSize)
+    }
+
+    /**
+     * This is similar to connect, but do not remove the common properties.
+     */
+    def connectFull(that: Property, common: Int) = {
+      assert(common <= size && common <= that.size)
+      // index of the first common variable in the connected property
+      val firstCommonInThis = size - common
+      // remove all pairs in that involving a variable which is null in this. At the
+      // same time, translate index
+      val trimmedTranslatedThat = for {
+        pair @ UP(l, r) <- that.ps
+        if l >= common || !isNull(l + firstCommonInThis)
+        if r >= common || !isNull(r + firstCommonInThis)
+      } yield UP(l + firstCommonInThis, r + firstCommonInThis)
+      // remove from this those pairs which only relates to common variables
+      val trimmedThis = this.ps filter { case UP(l, r) => l < firstCommonInThis }
+      // join one ps of this with one ps of that
+      val j1 = for {
+        UP(l, r) <- trimmedThis
+        if r >= firstCommonInThis
+        UP(l1, r1) <- trimmedTranslatedThat
+        if r == l1
+      } yield UP(l, r1)
+      // join two ps of this
+      val j2 = for (UP(l, r) <- trimmedThis; if r >= firstCommonInThis; UP(l1, r1) <- j1; if r == r1) yield UP(l, l1)
+      Property(trimmedThis ++ j1 ++ j2 ++ trimmedTranslatedThat, size - common + that.size)
     }
 
     def connect(that: Property, common: Int) = {
-       assert(common <= size && common <= that.size)
-       // index of the first common variable in the connected property
-       val firstCommonInThis = size - common
-       // remove all pairs in that involving a variable which is null in this. At the
-       // same time, translate index
-       val trimmedTranslatedThat = for {
-           pair@UP(l,r) <- that.ps
-           if l >= common || ! isNull(l + firstCommonInThis)
-           if r >= common || ! isNull(r + firstCommonInThis)
-       } yield UP(l + firstCommonInThis, r + firstCommonInThis)
-       // remove from this those pairs which only relates to common variables
-       val trimmedThis = this.ps filter { case UP(l,r) => l < firstCommonInThis }
-       // join one ps of this with one ps of that
-       val j1 = for {
-         UP(l,r) <- trimmedThis
-         if r >= firstCommonInThis
-         UP(l1,r1) <- trimmedTranslatedThat
-         if r == l1
-       } yield UP(l,r1)
-       // join two ps of this
-       val j2 = for ( UP(l,r) <- trimmedThis; if r >= firstCommonInThis; UP(l1,r1) <- j1; if r == r1 ) yield UP(l,l1)
-       Property(trimmedThis ++ j1 ++ j2 ++ trimmedTranslatedThat, size - common + that.size)
-  }
+      connectFull(that, common).removeRangeOfVariables(size - common to size - 1)
+    }
 
     def assignNull(dst: Int) = new Property(removeVariable(ps, dst), size)
 
@@ -141,7 +148,7 @@ object PairSharingDomain extends ObjectDomain {
 
     def isNull(v: Int) = !(ps contains UP(v, v))
 
-    def testNull(v: Int) = new Property(removeVariable(ps,v), size)
+    def testNull(v: Int) = new Property(removeVariable(ps, v), size)
 
     def testNotNull(v: Int) = if (isNull(v)) bottom(size) else this
 
