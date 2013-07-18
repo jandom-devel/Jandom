@@ -104,8 +104,45 @@ object PPLPropertyMacros {
           val newpplbox2 = new Double_Box(pplbox)
           newpplbox1.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
           newpplbox2.refine_with_constraint(new Constraint(le, Relation_Symbol.GREATER_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
-          newpplbox1.upper_bound_assign_if_exact(newpplbox2)
+          newpplbox1.upper_bound_assign(newpplbox2)
           new PPLProperty(newpplbox1)
+        }
+
+        def minimize(coeff: Array[Double], known: Double) = {
+          val le = PPLUtils.toPPLLinearExpression(coeff, known)
+          val exact = new By_Reference[java.lang.Boolean](false)
+          val val_n = new Coefficient(0)
+          val val_d = new Coefficient(0)
+          val result = pplbox.minimize(le, val_n, val_d, exact)
+          if (!result)
+            Double.NegativeInfinity
+          else
+            (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
+        }
+
+        def maximize(coeff: Array[Double], known: Double) = {
+          val le = PPLUtils.toPPLLinearExpression(coeff, known)
+          val exact = new By_Reference[java.lang.Boolean](false)
+          val val_n = new Coefficient(0)
+          val val_d = new Coefficient(0)
+          val result = pplbox.maximize(le, val_n, val_d, exact)
+          if (!result)
+            Double.PositiveInfinity
+          else
+            (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
+        }
+
+        def frequency(coeff: Array[Double], known: Double) = {
+          val le = PPLUtils.toPPLLinearExpression(coeff, known)
+          val freq_n = new Coefficient(0)
+          val freq_d = new Coefficient(0)
+          val val_n = new Coefficient(0)
+          val val_d = new Coefficient(0)
+          val result = pplbox.frequency(le, freq_n, freq_d, val_n, val_d)
+          if (!result)
+            None
+          else
+            Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue())
         }
 
         def addDimension: PPLProperty = {
