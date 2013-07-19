@@ -39,6 +39,12 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
   }
 
   def reduce(x1: Prop1, x2: Prop2) = {
+    if(x1.isEmpty && x2.isEmpty)
+    	(x1,x2)
+    if(x1.isEmpty)
+	    new Product(x1,x2.empty)
+	if(x2.isEmpty)
+      new Product(x1.empty,x2)
     (x1,x2)
     // to be done.....
   }
@@ -58,42 +64,73 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
   def intersection(that: Property): Property = {
    	val q1 = p1 intersection that.p1
     val q2 = p2 intersection that.p2
-    new Product(q1, q2)
+    new Product(reduce(q1, q2))
   }
 
-  def nonDeterministicAssignment(n: Int): Property = ???
+  def nonDeterministicAssignment(n: Int): Property = {
+    val q1 = p1.nonDeterministicAssignment(n)
+    val q2 = p2.nonDeterministicAssignment(n)
+    new Product(reduce(q1,q2))
+  }
 
-  def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property = ???
+  def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property = {
+    val q1 = p1.linearAssignment(n, coeff, known)
+    val q2 = p2.linearAssignment(n, coeff, known)
+    new Product(reduce(q1,q2))
+  }
 
-  def linearInequality(coeff: Array[Double], known: Double): Property = ???
+  def linearInequality(coeff: Array[Double], known: Double): Property = {
+    val q1 = p1.linearInequality(coeff, known)
+    val q2 = p2.linearInequality(coeff, known)
+    new Product(reduce(q1,q2))
+  }
 
-  def linearDisequality(coeff: Array[Double], known: Double): Property = ???
+  def linearDisequality(coeff: Array[Double], known: Double): Property = {
+    val q1 = p1.linearDisequality(coeff, known)
+    val q2 = p2.linearDisequality(coeff, known)
+    new Product(reduce(q1,q2))
+  }
 
-  def minimize(coeff: Array[Double], known: Double): Double = ???
+  def minimize(coeff: Array[Double], known: Double): Double =
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
-  def maximize(coeff: Array[Double], known: Double): Double = ???
+  def maximize(coeff: Array[Double], known: Double): Double =
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
-  def frequency(coeff: Array[Double], known: Double): Some[Double] = ???
+  def frequency(coeff: Array[Double], known: Double): Some[Double] =
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
-  def addDimension: Property = ???
+  def addDimension: Property =
+    new Product(p1.addDimension, p2.addDimension)
 
-  def delDimension(n: Int): Property = ???
+  def delDimension(n: Int): Property =
+    new Product(p1.delDimension(n), p2.delDimension(n))
 
-  def mapDimensions(rho: Seq[Int]): Property = ???
+  def mapDimensions(rho: Seq[Int]): Property = {
+    val q1 = p1.mapDimensions(rho)
+    val q2 = p2.mapDimensions(rho)
+    new Product(reduce(q1,q2))
+  }
 
-  def dimension: Int = ???
+  def dimension: Int = p1.dimension
 
-  def isEmpty: Boolean = ???
+  def isEmpty: Boolean =
+  	p1.isEmpty && p2.isEmpty
 
-  def isFull: Boolean = ???
+  def isFull: Boolean =
+  	p1.isFull && p2.isFull
 
-  def empty: Property = ???
+  def empty: Property =
+    new Product(p1.empty, p2.empty)
 
-  def full: Property = ???
+  def full: Property =
+  	new Product(p1.full, p2.full)
 
-  def mkString(vars: IndexedSeq[String]): Seq[String] = ???
+  def mkString(vars: IndexedSeq[String]): Seq[String] =
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
-  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = ???
+  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
+    throw new IllegalAccessException("Unimplemented feature on Product")
 }
 
 /**
@@ -106,7 +143,9 @@ class ProductDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extend
 
   type Property = Product[dom1.Property, dom2.Property]
 
-  def full(n: Int) = ???
+  def full(n: Int) =
+    throw new IllegalAccessException("Unimplemented feature on Product")
 
-  def empty(n: Int) = ???
+  def empty(n: Int) =
+    throw new IllegalAccessException("Unimplemented feature on Product")
 }
