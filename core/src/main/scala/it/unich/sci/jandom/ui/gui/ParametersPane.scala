@@ -24,10 +24,8 @@ import scala.swing._
 import scala.swing.ListView.Renderer
 
 import it.unich.sci.jandom.narrowings.NoNarrowing
-import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
-import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
-import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
-import it.unich.sci.jandom.targets.{Parameters,Target}
+import it.unich.sci.jandom.ppfactories._
+import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.ui._
 import it.unich.sci.jandom.widenings.DefaultWidening
 
@@ -36,21 +34,22 @@ import javax.swing.SpinnerNumberModel
 
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)
-  val domainComboBox = addParameterEnumeration(0, NumericalDomains)
-  val wideningComboBox = addParameterEnumeration(1, WideningScopes)
-  val narrowingComboBox = addParameterEnumeration(2, NarrowingStrategies)
+  val numericalDomainComboBox = addParameterEnumeration(0, NumericalDomains)
+  val objectDomainComboBox = addParameterEnumeration(1, ObjectDomains)
+  val wideningComboBox = addParameterEnumeration(2, WideningScopes)
+  val narrowingComboBox = addParameterEnumeration(3, NarrowingStrategies)
   val delayModel = new SpinnerNumberModel(0, 0, Double.PositiveInfinity, 1)
   val delay = Component.wrap(new JSpinner(delayModel))
   val debug = new CheckBox("Debug")
 
-  layout(new Label("Widening Delay:")) = new Constraints(0, 3, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
-      GridBagConstraints.NONE, new Insets(0,0,5,5), 0, 0)
-  layout(delay) = new Constraints(1, 3, 1, 1, 0.0, 0.0, GridBagConstraints.WEST,
-      GridBagConstraints.HORIZONTAL, new Insets(0,0,5,0), 0, 0)
-  layout(debug) = new Constraints(0, 4, 2, 1, 0.0, 0.0, GridBagConstraints.BASELINE,
-      GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0)
-  layout(Swing.VGlue) = new Constraints(0, 5, 2, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
-      GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0)
+  layout(new Label("Widening Delay:")) = new Constraints(0, 4, 1, 1, 0.0, 0.0, GridBagConstraints.EAST,
+    GridBagConstraints.NONE, new Insets(0, 0, 5, 5), 0, 0)
+  layout(delay) = new Constraints(1, 4, 1, 1, 0.0, 0.0, GridBagConstraints.WEST,
+    GridBagConstraints.HORIZONTAL, new Insets(0, 0, 5, 0), 0, 0)
+  layout(debug) = new Constraints(0, 5, 2, 1, 0.0, 0.0, GridBagConstraints.BASELINE,
+    GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0)
+  layout(Swing.VGlue) = new Constraints(0, 6, 2, 1, 0.0, 1.0, GridBagConstraints.BASELINE,
+    GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0)
 
   object ParameterRenderer extends Renderer[ParameterValue[_]] {
     val r = implicitly[Renderer[String]]
@@ -78,16 +77,18 @@ class ParametersPane extends GridBagPanel {
     comboBox
   }
 
-  def selectedNumericalDomain = NumericalDomains.values(domainComboBox.selection.index).value
+  def selectedNumericalDomain = NumericalDomains.values(numericalDomainComboBox.selection.index).value
+
+  def selectedObjectDomain = ObjectDomains.values(objectDomainComboBox.selection.index).value
 
   def setParameters[T <: Target[T]](parameters: Parameters[T]) {
     parameters.wideningScope = WideningScopes.values(wideningComboBox.selection.index).value
     parameters.narrowingStrategy = NarrowingStrategies.values(narrowingComboBox.selection.index).value
     val delay = delayModel.getValue().asInstanceOf[Double].toInt
     if (delay != 0) {
-      parameters.wideningFactory = DelayedWideningFactory(DefaultWidening,delay)
+      parameters.wideningFactory = DelayedWideningFactory(DefaultWidening, delay)
     }
-    parameters.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)
+    parameters.narrowingFactory = DelayedNarrowingFactory(NoNarrowing, 2)
     if (debug.selected) parameters.debugWriter = new java.io.StringWriter
   }
 

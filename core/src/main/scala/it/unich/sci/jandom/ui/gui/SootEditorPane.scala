@@ -60,6 +60,12 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   radioJimple.tooltip = "Analysis of Java bytecode thorugh the Jimple representation of the Soot library"
   private val typeGroup = new ButtonGroup(radioBaf, radioJimple)
   typeGroup.select(radioJimple)
+  private val radioNumerical = new RadioButton("Numerical")
+  radioNumerical.tooltip = "Analysis of numerical properties"
+  private val radioObject = new RadioButton("Object")
+  radioObject.tooltip = "Analysis of object properties"
+  private val anGroup = new ButtonGroup(radioNumerical, radioObject)
+  anGroup.select(radioNumerical)
 
   var method: Option[SootCFG[_, _]] = None
 
@@ -83,11 +89,6 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
     mlabel.tooltip = "Choose the method to analyze"
     layout(mlabel) = c
 
-    c.gridy = 3
-    val tlabel = new Label("IR type: ")
-    tlabel.tooltip = "Type of intermediate representation to use"
-    layout(tlabel) = c
-
     c.fill = GridBagPanel.Fill.Horizontal
     c.weightx = 80
     c.gridx = 1
@@ -101,10 +102,24 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
     layout(methodComboBox) = c
 
     c.gridy = 3
-    val boxPanel = new BoxPanel(Orientation.Horizontal) {
-      contents += radioBaf += radioJimple
+    c.gridx = 0
+    c.gridwidth = 2
+    val horPanel = new BoxPanel(Orientation.Horizontal) {
+
+      val tlabel = new Label("IR type: ")
+      tlabel.tooltip = "Type of intermediate representation to use"
+
+      val anlabel = new Label("Analysis type: ")
+      anlabel.tooltip = "Choose the type of analysis to perform"
+
+      contents += Swing.HGlue += tlabel += radioBaf += radioJimple +=
+        Swing.HStrut(100) +=
+        anlabel += radioNumerical += radioObject +=
+        Swing.HGlue
+
     }
-    layout(boxPanel) = c
+    layout(horPanel)=c
+
   }
   layout(new ScrollPane(editorPane)) = BorderPanel.Position.Center
   layout(controls) = BorderPanel.Position.North
@@ -180,10 +195,16 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
       case Some(method) =>
         try {
           val numericalDomain = frame.parametersPane.selectedNumericalDomain
+          val objectDomain = frame.parametersPane.selectedObjectDomain
+          val klassAnalysis = new ClassReachableAnalysis(sootScene)
+          val sootDomain = if (anGroup.selected == Some(radioNumerical))
+            new SootFrameNumericalDomain(numericalDomain)
+          else
+            new SootFramePairSharingDomain(klassAnalysis)
           typeGroup.selected match {
             case Some(`radioBaf`) =>
               val bafMethod = method.asInstanceOf[BafMethod]
-              val params = new Parameters[BafMethod] { val domain = new SootFrameNumericalDomain(numericalDomain) }
+              val params = new Parameters[BafMethod] { val domain = sootDomain }
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(bafMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(bafMethod)(params.narrowingFactory)
@@ -193,7 +214,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               Some(bafMethod.mkString(params)(ann))
             case Some(`radioJimple`) =>
               val jimpleMethod = method.asInstanceOf[JimpleMethod]
-              val params = new Parameters[JimpleMethod] { val domain = new SootFrameNumericalDomain(numericalDomain) }
+              val params = new Parameters[JimpleMethod] { val domain = sootDomain }
               frame.parametersPane.setParameters(params)
               params.wideningFactory = MemoizingFactory(jimpleMethod)(params.wideningFactory)
               params.narrowingFactory = MemoizingFactory(jimpleMethod)(params.narrowingFactory)
