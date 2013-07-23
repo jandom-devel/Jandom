@@ -130,7 +130,7 @@ object PairSharingDomain extends ObjectDomain {
         new Property(removed ++ renameVariable(removed, dst, src) + UP(dst, src), size)
     }
 
-    def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: UP[Int] => Boolean) = {
+    def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: ShareFilter) = {
       val removed = removeVariable(ps, dst)
       if (isNull(src))
         new Property(removed, size)
@@ -145,6 +145,8 @@ object PairSharingDomain extends ObjectDomain {
         bottom(size)
       else
         new Property(starUnion(starUnion(ps + UP(dst, src), src), dst), size)
+
+    def filter(mayShare: ShareFilter) = new Property(ps filter mayShare, size)
 
     def isNull(v: Int) = !(ps contains UP(v, v))
 

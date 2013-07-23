@@ -46,6 +46,8 @@ trait ObjectDomain extends AbstractDomain {
    * This trait represents single abstract element in an object domain.
    */
   trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractProperty[Property] {
+    type ShareFilter = UP[Int] => Boolean
+
     /**
      * The fiber of the property.
      */
@@ -58,7 +60,8 @@ trait ObjectDomain extends AbstractDomain {
     def assignNull(dst: Int = size - 1): Property
     def assignVariable(dst: Int, src: Int): Property
     def assignVariableToField(dst: Int, field: Int, src: Int): Property
-    def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: UP[Int] => Boolean = { x => true }): Property
+    def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: ShareFilter = (_ => true)): Property
+    def filter(mayShare: ShareFilter): Property
     def isNull(v: Int): Boolean
     def testNull(v: Int): Property
     def testNotNull(v: Int): Property

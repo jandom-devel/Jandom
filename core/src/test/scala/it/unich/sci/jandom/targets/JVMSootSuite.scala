@@ -149,7 +149,7 @@ class JVMSootSuite extends FunSuite {
     for ((methodName, ps) <- jimplePairSharingTests) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
       val params = new Parameters[JimpleMethod] {
-        val domain = new SootFramePairSharingDomain(classAnalysis)
+        val domain = new SootFrameObjectDomain(PairSharingDomain,classAnalysis)
         io = true
         //debugWriter = new java.io.PrintWriter(System.err)
       }
@@ -158,7 +158,7 @@ class JVMSootSuite extends FunSuite {
       test(s"Jimple object analysis: ${methodName}") {
         try {
           val ann = method.analyze(params)
-          assert(ann(method.lastPP.get).prop === params.domain.dom.Property(ps, method.locals.size + method.body.getMethod().getParameterCount()))
+          assert(ann(method.lastPP.get).prop === PairSharingDomain.Property(ps, method.locals.size + method.body.getMethod().getParameterCount()))
         } finally {
           params.debugWriter.flush()
         }
@@ -177,7 +177,7 @@ class JVMSootSuite extends FunSuite {
       val method = c.getMethodByName(methodName)
       val jmethod = new JimpleMethod(method)
       val params = new Parameters[JimpleMethod] {
-        val domain = new SootFramePairSharingDomain(classAnalysis)
+        val domain = new SootFrameObjectDomain(PairSharingDomain,classAnalysis)
         io = true
       }
       val inte = new JimpleRecursiveInterpretation[params.type](scene, params)

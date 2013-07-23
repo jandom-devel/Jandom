@@ -21,35 +21,31 @@ package it.unich.sci.jandom.targets.jvmsoot
 import scala.annotation.elidable
 import scala.annotation.elidable._
 import scala.collection.immutable.Stack
-
 import it.unich.sci.jandom.domains.objects.PairSharingDomain
 import it.unich.sci.jandom.domains.objects.UP
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
-
 import soot._
 import soot.jimple.Constant
 import soot.jimple.StaticFieldRef
+import it.unich.sci.jandom.domains.objects.ObjectDomain
 
 /**
- * An abstract frame for pair sharing analysis, as described by Secci and Spoto. It depends from
- * an analysis of class reachability which determines whether it is possible to reach a class
- * B from a class A.
+ * An abstract frame for analysis of object properties. It depends on an analysis of class reachability
+ * which determines whether it is possible to reach a class B from a class A.
  * @author Gianluca Amato <gamato@unich.it>
+ * @param dom the basic object domain to use for the analysis
  * @param classAnalysis the analysis of class reachability
  */
 
-class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends SootFrameDomain {
-
-  val dom = PairSharingDomain
+class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachableAnalysis) extends SootFrameDomain {
 
   def top(vars: Seq[Type]) = buildProperty(dom.top(vars.size), Stack(vars.reverse: _*))
 
   def bottom(vars: Seq[Type]) = buildProperty(dom.bottom(vars.size), Stack(vars.reverse: _*))
 
   /**
-   * Build a new pair sharing from a set of pair sharing properties,
-   * setting to null those variables which are not of reference type and
-   * removing pairs  which cannot share due to class reachability analysis.
+   * Build a new object property, setting to null those variables which are not of reference
+   * type and removing pairs  which cannot share due to class reachability analysis.
    */
   private def buildProperty(prop: dom.Property, stack: Stack[Type]): Property = {
     val mayShare = { p: UP[Int] =>
@@ -62,7 +58,7 @@ class SootFramePairSharingDomain(classAnalysis: ClassReachableAnalysis) extends 
         case _ => false
       }
     }
-    val currprop = dom.Property(prop.ps filter mayShare, stack.size)
+    val currprop = prop filter mayShare
     Property(currprop, stack, Map())
   }
 
