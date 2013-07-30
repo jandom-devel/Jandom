@@ -43,7 +43,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
   protected def analyzeBlock(params: Parameters)(node: Block, initprop: params.Property): Seq[params.Property] = {
     var exits = Seq[params.Property]()
     var currprop = initprop
-
+// sono entrato
     def analyzeTargetArgInst(unit: TargetArgInst, prop: params.Property) = unit match {
       case _: GotoInst => (prop, prop)
       case _: IfCmpLtInst => prop.testLt
