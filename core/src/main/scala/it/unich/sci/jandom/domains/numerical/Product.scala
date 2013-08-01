@@ -126,8 +126,16 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
   def full: Property =
   	new Product(p1.full, p2.full)
 
-  def mkString(vars: IndexedSeq[String]): Seq[String] =
-    throw new IllegalAccessException("Unimplemented feature on Product")
+  def mkString(vars: IndexedSeq[String]): Seq[String] = {
+    if (isEmpty)
+      Seq("[void]")
+    else {
+      val s1 = p1.mkString(vars)
+      val s2 = p2.mkString(vars)
+      for (i <- 0 until dimension) yield "("+s1(i)+" , "+s2(i)+")"
+    }
+}
+
 
   def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
     throw new IllegalAccessException("Unimplemented feature on Product")
@@ -144,7 +152,7 @@ class ProductDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extend
   type Property = Product[dom1.Property, dom2.Property]
 
   def full(n: Int) =
-    throw new IllegalAccessException("Unimplemented feature on Product")
+    new Product(dom1.full(n), dom2.full(n))
 
   def empty(n: Int) =
     throw new IllegalAccessException("Unimplemented feature on Product")
