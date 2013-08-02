@@ -56,10 +56,10 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
   }
 
   def widening(that: Property): Property =
-    throw new IllegalAccessException("Unimplemented feature on Product")
+    new Product(this.p1 widening that.p1, this.p2 widening that.p2)
 
   def narrowing(that: Property): Property =
-    throw new IllegalAccessException("Unimplemented feature on Product")
+    new Product(this.p1 narrowing that.p1, this.p2 narrowing that.p2)
 
   def intersection(that: Property): Property = {
    	val q1 = p1 intersection that.p1
@@ -136,11 +136,18 @@ class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop
     }
 }
 
-
-  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
-    throw new IllegalAccessException("Unimplemented feature on Product")
+  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = {
+     other match {
+       case Product(_,_) =>
+       	val comp1 =  p1.tryCompareTo(other.p1)
+       	val comp2 =  p2.tryCompareTo(other.p2)
+       	if(comp1==comp2)
+       		comp1
+       		else
+        None
+     	}
 }
-
+}
 /**
  * This is the class for the product of abstract domains.
  * @todo This is only a stub.
