@@ -231,7 +231,7 @@ class Parallelotope(
     val result = that.rotate(A)
     for (i <- 0 to dimension - 1) {
       result.low(i) = result.low(i) min low(i)
-      result.low(i) = result.high(i) max high(i)
+      result.high(i) = result.high(i) max high(i)
     }
     return result
   }
@@ -248,7 +248,7 @@ class Parallelotope(
     val result = that.rotate(A)
     for (i <- 0 to dimension - 1) {
       result.low(i) = result.low(i) max low(i)
-      result.low(i) = result.high(i) min high(i)
+      result.high(i) = result.high(i) min high(i)
     }
     return result
   }
@@ -418,7 +418,7 @@ class Parallelotope(
 
   def dimension = A.rows
 
-  val isFull = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
+  def isFull = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
 
   def empty = Parallelotope.empty(dimension)
 
