@@ -475,7 +475,10 @@ final class Parallelotope (
    * of the linear form over the box.
    */
   def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
-    val vec = DenseVector(lf.homcoeffs: _*)
+    
+    val tcoeff = lf.homcoeffs
+    val coeff = tcoeff.padTo(dimension, 0.0).toArray
+    val vec = DenseVector(coeff)
     val newvec = A.t \ vec
     val newlf = lf.known +: newvec.valuesIterator.toSeq
     val (min,max) = domain.extremalsInBox(newvec, low, high)
