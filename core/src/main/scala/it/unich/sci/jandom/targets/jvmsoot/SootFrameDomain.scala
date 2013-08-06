@@ -24,6 +24,7 @@ import it.unich.sci.jandom.domains.AbstractProperty
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import soot._
 import soot.jimple.Constant
+import soot.jimple.FieldRef
 import soot.jimple.StaticFieldRef
 
 /**
@@ -73,7 +74,7 @@ trait SootFrameDomain extends AbstractDomain {
      * Push an integer constant into the frame
      * @param c constant to push into the frame
      */
-    def evalConstant(c: Int): Property
+    def evalConstant(c: Double): Property //era Int
 
     /**
      * Push a null constant into the frame
@@ -95,9 +96,9 @@ trait SootFrameDomain extends AbstractDomain {
     /**
      * Evaluate a field of a frame variable, and push a copy into the frame
      * @param i the frame variable to evaluate
-     * @param f the field to evaluate withi `i`
+     * @param f the field to evaluate within `i`
      */
-    def evalField(i: Int, f: SootField): Property
+    def evalField(i: Int=size-1, f: SootField): Property
 
     /**
      * Sums the two top element of the frame and replace them with the result
@@ -118,6 +119,11 @@ trait SootFrameDomain extends AbstractDomain {
      * Divides the element `size`-2 with the top element of the frame and replace both of them with the result.
      */
     def evalDiv: Property
+
+    /**
+     * Sum an integer constant to the frame variable 'i' and replace this last whit the result
+     */
+    def evalInc(i:Int, c:Double): Property = evalLocal(i).evalConstant(c).evalAdd
 
     /**
      * Computes the reminder of dividing the element `size`-2 with the top element, and replace them with the result.
@@ -209,7 +215,14 @@ trait SootFrameDomain extends AbstractDomain {
      * @param i the frame variable to assign
      * @param f the field to assign
      */
-    def assignField(i: Int, f: SootField): Property
+    def assignField(i: Int=size-1, f: SootField): Property
+
+    /**
+     * Assign to  a static field of the variable frame `i` the value at the top of the frame, and pop it.
+     * @param i the frame variable to assign
+     * @param f the field to assign
+     */
+   // def assignStaticField(i: Int=size-1, f: SootFieldRef): Property
 
     /**
      * Returns the result of testing whether el(size-2) > el(size-1) and pops the two top frame
@@ -275,13 +288,13 @@ trait SootFrameDomain extends AbstractDomain {
      * Evaluates the effect of entering a monitor.
      * @param n the frame variable whose monitor is entered.
      */
-    def enterMonitor(n: Int): Property
+    def enterMonitor(n: Int=size-1): Property
 
     /**
      * Evaluates the effect of exiting a monitor.
      * @param n the frame variable whose monitor is exited.
      */
-    def exitMonitor(n: Int): Property
+    def exitMonitor(n: Int=size-1): Property
 
     /**
      * Evaluates a global constant and put the result on the frame.
@@ -294,6 +307,18 @@ trait SootFrameDomain extends AbstractDomain {
      * @param v the static field to evaluate.
      */
     def evalStaticField(v: StaticFieldRef): Property
+
+    def evalDup1(): Property = evalLocal(size-1)
+
+    def evalDup1_x1(): Property = evalLocal(size-1)
+
+    def evalDup1_x2(): Property = evalLocal(size-1)
+
+    def evalDup2(): Property = evalLocal(size-2).evalLocal(size-2)
+
+    def evalDup2_x1(): Property = evalLocal(size-1)
+
+    def evalDup2_x2(): Property = evalLocal(size-1)
 
     override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
 

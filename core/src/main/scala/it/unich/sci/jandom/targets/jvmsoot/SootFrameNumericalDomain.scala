@@ -120,7 +120,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      */
     private def delVariable = Property(prop.delDimension(), vars.pop)
 
-    def evalConstant(const: Int) = Property(prop.addDimension.constantAssignment(size, const), vars.push(IntType.v()))
+    def evalConstant(const: Double) = Property(prop.addDimension.constantAssignment(size, const), vars.push(DoubleType.v()))
 
     def evalNull = addVariable(NullType.v())
 

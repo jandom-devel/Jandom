@@ -110,7 +110,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
 
     def size = stack.size
 
-    def evalConstant(c: Int) = addUntrackedVariable(IntType.v())
+    def evalConstant(c: Double) = addUntrackedVariable(DoubleType.v())
 
     def evalNull =
       Property(prop.addVariable.assignNull(size), stack.push(NullType.v()), globals)
