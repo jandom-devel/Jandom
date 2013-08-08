@@ -18,149 +18,170 @@
 
 package it.unich.sci.jandom.domains.numerical
 
-/**
- * This is the class which implements the product of two basic numerical properties. It is not a
- * real reduced product, but a cartesian product with some reduction given by transformation
- * funtions.
- * @todo This is only a stub.
- * @author Gianluca Amato <gamato@unich.it>
- * @author Francesca Scozzari <fscozzari@unich.it>
- *
- */
-class Product[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](val p1: Prop1, val p2: Prop2)
-  extends NumericalProperty[Product[Prop1, Prop2]] {
+import it.unich.sci.jandom.domains.DomainTransformation
 
-  require(p1.dimension == p2.dimension)
-
-  type Property = Product[Prop1, Prop2]
-
-  def this(pair:(Prop1,Prop2)) = {
-    this(pair._1,pair._2)
-  }
-
-  def reduce(x1: Prop1, x2: Prop2) = {
-    if(x1.isEmpty && x2.isEmpty)
-    	(x1,x2)
-    if(x1.isEmpty)
-	    new Product(x1,x2.empty)
-	if(x2.isEmpty)
-      new Product(x1.empty,x2)
-    (x1,x2)
-    // to be done.....
-  }
-
-  def union(that: Property): Property = {
-    val q1 = p1 union that.p1
-    val q2 = p2 union that.p2
-    new Product(reduce(q1, q2))
-  }
-
-  def widening(that: Property): Property =
-    new Product(this.p1 widening that.p1, this.p2 widening that.p2)
-
-  def narrowing(that: Property): Property =
-    new Product(this.p1 narrowing that.p1, this.p2 narrowing that.p2)
-
-  def intersection(that: Property): Property = {
-   	val q1 = p1 intersection that.p1
-    val q2 = p2 intersection that.p2
-    new Product(reduce(q1, q2))
-  }
-
-  def nonDeterministicAssignment(n: Int): Property = {
-    val q1 = p1.nonDeterministicAssignment(n)
-    val q2 = p2.nonDeterministicAssignment(n)
-    new Product(reduce(q1,q2))
-  }
-
-  def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property = {
-    val q1 = p1.linearAssignment(n, coeff, known)
-    val q2 = p2.linearAssignment(n, coeff, known)
-    new Product(reduce(q1,q2))
-  }
-
-  def linearInequality(coeff: Array[Double], known: Double): Property = {
-    val q1 = p1.linearInequality(coeff, known)
-    val q2 = p2.linearInequality(coeff, known)
-    new Product(reduce(q1,q2))
-  }
-
-  def linearDisequality(coeff: Array[Double], known: Double): Property = {
-    val q1 = p1.linearDisequality(coeff, known)
-    val q2 = p2.linearDisequality(coeff, known)
-    new Product(reduce(q1,q2))
-  }
-
-  def minimize(coeff: Array[Double], known: Double): Double =
-    throw new IllegalAccessException("Unimplemented feature on Product")
-
-  def maximize(coeff: Array[Double], known: Double): Double =
-    throw new IllegalAccessException("Unimplemented feature on Product")
-
-  def frequency(coeff: Array[Double], known: Double): Some[Double] =
-    throw new IllegalAccessException("Unimplemented feature on Product")
-
-  def addDimension: Property =
-    new Product(p1.addDimension, p2.addDimension)
-
-  def delDimension(n: Int): Property =
-    new Product(p1.delDimension(n), p2.delDimension(n))
-
-  def mapDimensions(rho: Seq[Int]): Property = {
-    val q1 = p1.mapDimensions(rho)
-    val q2 = p2.mapDimensions(rho)
-    new Product(reduce(q1,q2))
-  }
-
-  def dimension: Int = p1.dimension
-
-  def isEmpty: Boolean =
-  	p1.isEmpty && p2.isEmpty
-
-  def isFull: Boolean =
-  	p1.isFull && p2.isFull
-
-  def empty: Property =
-    new Product(p1.empty, p2.empty)
-
-  def full: Property =
-  	new Product(p1.full, p2.full)
-
-  def mkString(vars: IndexedSeq[String]): Seq[String] = {
-    if (isEmpty)
-      Seq("[void]")
-    else {
-      val s1 = p1.mkString(vars)
-      val s2 = p2.mkString(vars)
-      for (i <- 0 until dimension) yield "("+s1(i)+" , "+s2(i)+")"
-    }
-}
-
-  def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = {
-     other match {
-       case Product(_,_) =>
-       	val comp1 =  p1.tryCompareTo(other.p1)
-       	val comp2 =  p2.tryCompareTo(other.p2)
-       	if(comp1==comp2)
-       		comp1
-       		else
-        None
-     	}
-}
-}
 /**
  * This is the class for the product of abstract domains.
  * @todo This is only a stub.
  * @author Gianluca Amato <gamato@unich.it>
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
-class ProductDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends NumericalDomain {
+ abstract class ProductDomain extends NumericalDomain {
+  val dom1: NumericalDomain
+  val dom2: NumericalDomain
+  val dom1Todom2: DomainTransformation[dom1.Property, dom2.Property]
+  val dom2Todom1: DomainTransformation[dom2.Property, dom1.Property]
 
-  type Property = Product[dom1.Property, dom2.Property]
+  //  type Property = Product[dom1.Property, dom2.Property]
 
   def full(n: Int) =
-    new Product(dom1.full(n), dom2.full(n))
+    new Property(dom1.full(n), dom2.full(n))
 
   def empty(n: Int) =
     throw new IllegalAccessException("Unimplemented feature on Product")
+
+  /**
+   * This is the class which implements the product of two basic numerical properties. It is not a
+   * real reduced product, but a cartesian product with some reduction given by transformation
+   * funtions.
+   * @todo This is only a stub.
+   * @author Gianluca Amato <gamato@unich.it>
+   * @author Francesca Scozzari <fscozzari@unich.it>
+   *
+   */
+  class Property(val p1: dom1.Property, val p2: dom2.Property)
+    extends NumericalProperty[Property] {
+
+    //require(p1.dimension == p2.dimension)
+
+    /*
+  def this(pair:(dom1.Property,dom2.Property)) = {
+    this(pair._1,pair._2)
+  }
+*/
+
+    def reduce(x1: dom1.Property, x2: dom2.Property): Property = {
+      if (x1.isEmpty && x2.isEmpty)
+        new Property(x1, x2)
+      else if (x1.isEmpty)
+        new Property(x1, x2.empty)
+      else if (x2.isEmpty)
+        new Property(x1.empty, x2)
+      else {
+        val y1=x1.intersection(dom2Todom1.apply(x2))
+        val y2=x2.intersection(dom1Todom2.apply(x1))
+
+//        val z1=y1.intersection(dom2Todom1.apply(y2))
+//        val z2=y2.intersection(dom1Todom2.apply(y1))
+
+        new Property(y1, y2)
+      }
+      // to be done.....
+    }
+
+    def union(that: Property): Property = {
+      val q1 = p1 union that.p1
+      val q2 = p2 union that.p2
+      reduce(q1, q2)
+    }
+
+    def widening(that: Property): Property =
+      new Property(this.p1 widening that.p1, this.p2 widening that.p2)
+
+    def narrowing(that: Property): Property =
+      new Property(this.p1 narrowing that.p1, this.p2 narrowing that.p2)
+
+    def intersection(that: Property): Property = {
+      val q1 = p1 intersection that.p1
+      val q2 = p2 intersection that.p2
+      reduce(q1, q2)
+    }
+
+    def nonDeterministicAssignment(n: Int): Property = {
+      val q1 = p1.nonDeterministicAssignment(n)
+      val q2 = p2.nonDeterministicAssignment(n)
+      reduce(q1, q2)
+    }
+
+    def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property = {
+      val q1 = p1.linearAssignment(n, coeff, known)
+      val q2 = p2.linearAssignment(n, coeff, known)
+      reduce(q1, q2)
+    }
+
+    def linearInequality(coeff: Array[Double], known: Double): Property = {
+      val q1 = p1.linearInequality(coeff, known)
+      val q2 = p2.linearInequality(coeff, known)
+      reduce(q1, q2)
+    }
+
+    def linearDisequality(coeff: Array[Double], known: Double): Property = {
+      val q1 = p1.linearDisequality(coeff, known)
+      val q2 = p2.linearDisequality(coeff, known)
+      reduce(q1, q2)
+    }
+
+    def minimize(coeff: Array[Double], known: Double): Double =
+      throw new IllegalAccessException("Unimplemented feature on Product")
+
+    def maximize(coeff: Array[Double], known: Double): Double =
+      throw new IllegalAccessException("Unimplemented feature on Product")
+
+    def frequency(coeff: Array[Double], known: Double): Some[Double] =
+      throw new IllegalAccessException("Unimplemented feature on Product")
+
+    def addDimension: Property =
+      new Property(p1.addDimension, p2.addDimension)
+
+    def delDimension(n: Int): Property =
+      new Property(p1.delDimension(n), p2.delDimension(n))
+
+    def mapDimensions(rho: Seq[Int]): Property = {
+      val q1 = p1.mapDimensions(rho)
+      val q2 = p2.mapDimensions(rho)
+      reduce(q1, q2)
+    }
+
+    def dimension: Int = p1.dimension
+
+    def isEmpty: Boolean =
+      p1.isEmpty && p2.isEmpty
+
+    def isFull: Boolean =
+      p1.isFull && p2.isFull
+
+    def empty: Property =
+      new Property(p1.empty, p2.empty)
+
+    def full: Property =
+      new Property(p1.full, p2.full)
+
+    def mkString(vars: IndexedSeq[String]): Seq[String] = {
+      if (isEmpty)
+        Seq("[void]")
+      else {
+        val s1 = p1.mkString(vars)
+        val s2 = p2.mkString(vars)
+        for (i <- 0 until dimension) yield "(" + s1(i) + " , " + s2(i) + ")"
+      }
+    }
+
+    def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = {
+      other match {
+        case other: Property => {
+          val c1 = p1.tryCompareTo(other.p1)
+          val c2 = p2.tryCompareTo(other.p2)
+          if (c1 == 0)
+            c2
+          if (c2 == 0)
+            c1
+          if (c1 == c2)
+            c1
+          else
+            None
+        }
+        case _ => None
+      }
+    }
+  }
 }

@@ -344,7 +344,11 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
     if (isEmpty)
       Seq("[void]")
     else
-      for (i <- 0 until dimension) yield low(i) + " <= " + vars(i) + " <= " + high(i)
+      for (i <- 0 until dimension) yield {
+        if(low(i)<high(i))
+          low(i) + " <= " + vars(i) + " <= " + high(i)
+          else vars(i) + " = " + high(i)
+      }
   }
 
   val dimension: Int = low.length
