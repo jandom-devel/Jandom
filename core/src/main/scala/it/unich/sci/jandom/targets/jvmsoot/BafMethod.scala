@@ -194,7 +194,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case unit: FieldPutInst =>
       	currprop.evalField(f=unit.getField())
       case unit: IdentityInst =>
-        throw UnsupportedSootUnitException(unit)
+        currprop
       case unit: IfNonNullInst =>
       	throw UnsupportedSootUnitException(unit) //Da fare
       case unit: IfNullInst =>
@@ -212,7 +212,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case unit: InstanceOfInst =>
       	throw UnsupportedSootUnitException(unit)
       case unit: InstSwitch =>
-      	//CONTROLLARE
+        //controllare
         throw UnsupportedSootUnitException(unit)
       case unit: InterfaceInvokeInst =>
         throw UnsupportedSootUnitException(unit)
@@ -237,7 +237,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case unit: NewMultiArrayInst =>
         throw UnsupportedSootUnitException(unit)
       case unit: NopInst =>
-      	currprop //controllare
+      	currprop
       case unit: OrInst =>
         unit.getOpType() match{
           case i: PrimType => currprop.evalBinOp
@@ -250,7 +250,6 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
         throw UnsupportedSootUnitException(unit)
       case unit: PushInst =>
         unit.getConstant() match {
-          //NumericConstant
           case i: IntConstant=> currprop.evalConstant(i.value)
           case i: LongConstant => currprop.evalConstant(i.value)
           case i: FloatConstant => currprop.evalConstant(i.value)
@@ -299,8 +298,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
           case i: Type => throw UnsupportedSootUnitException(unit)
         }
       case unit: SwapInst =>
-        throw UnsupportedSootUnitException(unit)
-        //con mapDimension
+        currprop.evalSwap()
       case unit: TableSwitchInst =>
         throw UnsupportedSootUnitException(unit)
       case unit: TargetArgInst =>
@@ -324,6 +322,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
         }
       case unit: Inst =>
         throw UnsupportedSootUnitException(unit)
+
       	/**
       	case unit: PushInst =>
           unit.getConstant() match {

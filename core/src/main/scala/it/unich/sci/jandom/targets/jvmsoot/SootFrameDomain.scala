@@ -123,7 +123,7 @@ trait SootFrameDomain extends AbstractDomain {
     /**
      * Sum an integer constant to the frame variable 'i' and replace this last whit the result
      */
-    def evalInc(i:Int, c:Double): Property = evalLocal(i).evalConstant(c).evalAdd
+    def evalInc(i:Int, c:Double): Property = evalLocal(i).evalConstant(c).evalAdd.assignLocal(i)
 
     /**
      * Computes the reminder of dividing the element `size`-2 with the top element, and replace them with the result.
@@ -308,16 +308,39 @@ trait SootFrameDomain extends AbstractDomain {
      */
     def evalStaticField(v: StaticFieldRef): Property
 
+    /**
+     * Exchange the position of the top element of the frame with that situate in the position i.
+     */
+    def evalSwap(i: Int=size-2, j: Int=size-1): Property
+
+    /**
+     * Create a duplicate of the top element of the frame and insert it on the top of the frame
+     */
     def evalDup1(): Property = evalLocal(size-1)
 
-    def evalDup1_x1(): Property = evalLocal(size-1)
+    /**
+     * Create a duplicate of the top element of the frame and insert it two position under the top of the frame
+     */
+    def evalDup1_x1(): Property = evalSwap().evalLocal(size-2)
 
-    def evalDup1_x2(): Property = evalLocal(size-1)
+    /**
+     * Create a duplicate of the top element of the frame and insert it three position under the top of the frame
+     */
+    def evalDup1_x2(): Property = evalSwap().evalLocal(size-3)
 
+    /**
+     * Create two duplicate of the two top element of the frame and insert them on the top of the frame
+     */
     def evalDup2(): Property = evalLocal(size-2).evalLocal(size-2)
 
+    /**
+     * Create two duplicate of the two top element of the frame and insert them three position under the top of the frame
+     */
     def evalDup2_x1(): Property = evalLocal(size-1)
 
+    /**
+     * Create two duplicate of the two top element of the frame and insert them four position under the top of the frame
+     */
     def evalDup2_x2(): Property = evalLocal(size-1)
 
     override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")

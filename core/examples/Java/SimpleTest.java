@@ -118,7 +118,8 @@ class SimpleTest {
 		static void iswap(){
 			int x=3;
 			int y=4;
-			int z=(y+y)+x;
+			int a=2;
+			int z=((x+y)+a);
 		}
 		static void ifcmpeq(){
 			int x=15;

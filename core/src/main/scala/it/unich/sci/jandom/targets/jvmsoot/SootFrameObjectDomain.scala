@@ -217,6 +217,8 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
         this
     }
 
+    def evalSwap(i: Int, j: Int) = ???
+
     def isEmpty = false
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
