@@ -122,7 +122,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
         }
       case unit: Dup1Inst =>
         unit.getOp1Type() match {
-          case i: PrimType => currprop.evalLocal(size-1)
+          case i: PrimType => currprop.evalDup1
           case i: Type => throw UnsupportedSootUnitException(unit)
         }
       case unit: Dup2_x1Inst =>
@@ -175,8 +175,8 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
         }
       case unit: Dup2Inst =>
         unit.getOp1Type() match {
-          case i: LongType => currprop.evalLocal(size-1)
-          case i: DoubleType => currprop.evalLocal(size-1)
+          case i: LongType => currprop.evalDup1
+          case i: DoubleType => currprop.evalDup1
           case i: PrimType => unit.getOp2Type() match {
             case j: PrimType =>  currprop.evalDup2
             case j: Type =>  throw UnsupportedSootUnitException(unit)
@@ -198,7 +198,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case unit: IfNonNullInst =>
       	throw UnsupportedSootUnitException(unit) //Da fare
       case unit: IfNullInst =>
-        throw UnsupportedSootUnitException(unit) //Da fare
+        currprop.evalSwap()//throw UnsupportedSootUnitException(unit) //Da fare
       case unit: IncInst =>
         unit.getConstant() match {
           case i: IntConstant => currprop.evalInc(localMap(unit.getLocal), i.value)

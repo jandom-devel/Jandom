@@ -46,13 +46,14 @@ class SimpleTest {
 			z = 2;
 		z = z + 1;
 	}
-
+	
 		static void inewarray(){
 			int [] a = new int[8];
 		}
 		static void idup1(){
 			double a=1.0;
-			double b=a+a;
+			double b=2.0;
+			double c=b+b;
 		}
 		static void idup2(){
 			double a=1.0;

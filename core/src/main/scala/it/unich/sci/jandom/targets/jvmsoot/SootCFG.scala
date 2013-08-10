@@ -92,7 +92,8 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   def formatProperty(params: Parameters)(prop: params.Property) = {
     val localNames = locals map { _.getName() }
     val parameterNames = if (params.io) (for (i <- 0 until method.getParameterCount()) yield "@p" + i) else Seq()
-    val stackNames = for (i <- 0 until prop.size - method.getParameterCount() - body.getLocalCount()) yield "#s" + i
+    val stackPositions = prop.size - body.getLocalCount() - (if (params.io) method.getParameterCount() else 0)
+    val stackNames = for (i <- 0 until stackPositions) yield "#s" + i
     val names = localNames ++ parameterNames ++ stackNames
     prop.mkString(names).mkString(", ")
   }

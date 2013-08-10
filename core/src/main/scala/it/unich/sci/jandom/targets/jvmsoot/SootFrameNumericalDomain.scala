@@ -234,11 +234,10 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalSwap(i: Int, j:Int): Property = {
             //val seq = (0 until prop.dimension-3) :+  (prop.dimension-1) :+ (prop.dimension-2)
-            val seq = ((0 until i-1) :+ j) ++ ((i+1 until j-1) :+ i) ++ (j+1 until prop.dimension-1)
-    		val lastElement = vars.pop
-            val lastElement2 = vars.pop
-            vars.push(lastElement2).push(lastElement)
-            Property(prop.mapDimensions(seq),vars)
+            val seq = ((0 until i-1) :+ j) ++ ((i+1 until j-1) :+ i) ++ (j+1 until size-1)
+            val st1 = vars.updated(i, vars.apply(j))
+    		val st2 = st1.updated(j, vars.apply(i))
+            Property(prop.mapDimensions(seq), st2)
     }
 
     def isEmpty = prop.isEmpty
