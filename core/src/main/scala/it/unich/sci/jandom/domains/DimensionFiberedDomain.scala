@@ -19,13 +19,22 @@
 package it.unich.sci.jandom.domains
 
 /**
- * The base class for all abstract domains. An abstract domain is a collection of properties.
- *
+ * A `DimensionFiberedDomain` is a domain whose fibers are characterized by a natural
+ * number, which is the number of dimensions. Each property is endowed with operations
+ * to increase or decrease the number of dimensions.
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait AbstractDomain {
+
+trait DimensionFiberedDomain extends AbstractDomain {
+  type Property <: DimensionFiberedProperty[Property]
+
   /**
-   * The type of the properties associated to this abstract domain.
+   * Returns the top element of the given dimension
    */
-  type Property <: AbstractProperty[Property]
+  def top(dimensions: Int): Property
+
+  /**
+   * Returns the bottom element of the given dimension
+   */
+  def bottom(dimensions: Int): Property
 }

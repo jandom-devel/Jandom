@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom.domains.numerical
 
-import it.unich.sci.jandom.domains.AbstractProperty
+import it.unich.sci.jandom.domains.DimensionFiberedProperty
 
 /**
  * Base class for numerical properties and their operations. A concrete class `C` implementing a numerical
@@ -37,8 +37,10 @@ import it.unich.sci.jandom.domains.AbstractProperty
  * @define ILLEGAL IllegalArgumentException if parameters are not correct.
  */
 
-trait NumericalProperty[Property <: NumericalProperty[Property]] extends AbstractProperty[Property] {
+trait NumericalProperty[Property <: NumericalProperty[Property]] extends DimensionFiberedProperty[Property] {
+
   this: Property =>
+
   /**
    * Non deterministic assignment (also called `forget` operator).
    * @note $NOTEN

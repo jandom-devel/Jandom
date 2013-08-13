@@ -18,14 +18,14 @@
 
 package it.unich.sci.jandom.domains.numerical
 
-import it.unich.sci.jandom.domains.AbstractDomain
+import it.unich.sci.jandom.domains.DimensionFiberedDomain
 
 /**
  * Base class for numerical domains. It is the factory class for numerical
  * properties, i.e., instances of [[it.unich.sci.jandom.domains.NumericalProperty]].
  * @author Gianluca Amato <gamato@unich.it>
  */
-abstract class NumericalDomain extends AbstractDomain {
+abstract class NumericalDomain extends DimensionFiberedDomain {
 
   /**
    * @inheritdoc
@@ -48,4 +48,16 @@ abstract class NumericalDomain extends AbstractDomain {
    * @return the empty n-dimensional space.
    */
   def empty(n: Int): Property
+
+  /**
+   * @inheritdoc
+   * For numerical domains, `top` is an alias for `full`.
+   */
+  def top(dimension: Int) = full(dimension)
+
+  /**
+   * @inheritdoc
+   * For numerical domains, `bottom` is an alias for `empty`.
+   */
+  def bottom(dimension: Int) = empty(dimension)
 }

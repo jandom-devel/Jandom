@@ -19,10 +19,12 @@
 package it.unich.sci.jandom.domains
 
 /**
- * The is the top domain of type AbstractProperty.
+ * A `DimensionFiberedProperty` is an element of a `DimensionFiberedDomain`. Each dimension
+ * fibered property has a dimension (a natural number) which characterize its fiber. Moreover,
+ * there are many methods to add and remove dimensions.
  * @author Gianluca Amato <gamato@unich.it>
  */
-object TopDomain extends TopDomainLike {
-  class Property extends TopLike[Property]
-  val top = new Property()
+trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <: AbstractProperty[Property] {
+  def dimension: Int
+
 }

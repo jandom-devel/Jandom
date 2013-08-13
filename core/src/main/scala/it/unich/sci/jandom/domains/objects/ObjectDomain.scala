@@ -18,8 +18,8 @@
 
 package it.unich.sci.jandom.domains.objects
 
-import it.unich.sci.jandom.domains.AbstractProperty
-import it.unich.sci.jandom.domains.AbstractDomain
+import it.unich.sci.jandom.domains.DimensionFiberedDomain
+import it.unich.sci.jandom.domains.DimensionFiberedProperty
 
 /**
  * This trait represents a domain which handles objects and their relationship. May be used, for
@@ -28,29 +28,17 @@ import it.unich.sci.jandom.domains.AbstractDomain
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-trait ObjectDomain extends AbstractDomain {
+trait ObjectDomain extends DimensionFiberedDomain {
 
   type Property <: ObjectProperty[Property]
 
   /**
-   * Returns the top element of the domain relative to the fiber `size`
-   */
-  def top(size: Int): Property
-
-  /**
-   * Returns the top element of the domain relative to the fiber `size`
-   */
-  def bottom(size: Int): Property
-
-  /**
    * This trait represents single abstract element in an object domain.
    */
-  trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractProperty[Property] {
+  trait ObjectProperty[Property <: ObjectProperty[Property]] extends DimensionFiberedProperty[Property] {
     type ShareFilter = UP[Int] => Boolean
 
-    /**
-     * The fiber of the property.
-     */
+    def dimension = size
     def size: Int
     def addVariable: Property
     def delVariable(n: Int = size - 1): Property
