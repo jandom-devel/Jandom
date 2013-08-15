@@ -44,7 +44,7 @@ class BoxDoubleSuite extends FunSuite {
 	val i = BoxDouble(Array(1, 2), Array(5, 4))
     val j = BoxDouble(Array(0, 2), Array(3, 6))
     val w = i widening j
-    expectResult(i)(BoxDouble.empty(2) widening i)
+    expectResult(i)(BoxDouble.bottom(2) widening i)
     expectResult(BoxDouble(Array(Double.NegativeInfinity, 2), Array(5, Double.PositiveInfinity)))(w)
     expectResult(w narrowing j)(i union j)
   }
@@ -52,7 +52,7 @@ class BoxDoubleSuite extends FunSuite {
   test("empty boxes") {
     val i = BoxDouble(Array(-1, -2), Array(-4, 3))
     val j = BoxDouble(Array(0, 0), Array(5, 5))
-    expectResult(BoxDouble.empty(2)) { i }
+    expectResult(BoxDouble.bottom(2)) { i }
     expectResult(j) { i union j }
     expectResult(i) { i intersection j }
     expectResult(i) { i.linearAssignment(1, Array(1, 1), 1) }
@@ -62,18 +62,18 @@ class BoxDoubleSuite extends FunSuite {
   }
 
   test("linear inequations") {
-    val i = BoxDouble.full(2).linearInequality(Array(1, 0), -3)
+    val i = BoxDouble.top(2).linearInequality(Array(1, 0), -3)
     val j = BoxDouble(Array(0, 0), Array(5, 5)).linearInequality(Array(1, 1), -4)
     expectResult(BoxDouble(Array(Double.NegativeInfinity, Double.NegativeInfinity), Array(3, Double.PositiveInfinity))) { i }
     expectResult(BoxDouble(Array(0, 0), Array(4, 4))) { j }
   }
 
   test("inequalities and disequalities") {
-    val i = BoxDouble.full(2).linearInequality(Array(1, 0), 0)
+    val i = BoxDouble.top(2).linearInequality(Array(1, 0), 0)
     expectResult(i) { i.linearDisequality(Array(1, 0), 0) }
     val j = i.linearInequality(Array(-1, 0), 0)
-    expectResult(BoxDouble.empty(2)) { j.linearDisequality(Array(1, 0), 0) }
-    expectResult(BoxDouble.empty(2)) { j.linearDisequality(Array(0, 0), 0) }
+    expectResult(BoxDouble.bottom(2)) { j.linearDisequality(Array(1, 0), 0) }
+    expectResult(BoxDouble.bottom(2)) { j.linearDisequality(Array(0, 0), 0) }
     expectResult(j) { j.linearDisequality(Array(0, 0), 2) }
     expectResult(j) { j.linearDisequality(Array(1, 1), 2) }
     expectResult(j) { j.linearDisequality(Array(1, 0), 2) }

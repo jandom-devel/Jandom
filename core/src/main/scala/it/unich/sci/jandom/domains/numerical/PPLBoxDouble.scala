@@ -157,9 +157,9 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
 
   def isFull: Boolean = pplbox.is_universe
 
-  def empty() = PPLBoxDouble.empty(pplbox.space_dimension.toInt)
+  def empty() = PPLBoxDouble.bottom(pplbox.space_dimension.toInt)
 
-  def full() = PPLBoxDouble.full(pplbox.space_dimension.toInt)
+  def full() = PPLBoxDouble.top(pplbox.space_dimension.toInt)
 
   def tryCompareTo[B >: PPLBoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLBoxDouble =>
@@ -187,12 +187,12 @@ object PPLBoxDouble extends NumericalDomain {
 
   type Property = PPLBoxDouble
 
-  def full(n: Int): PPLBoxDouble = {
+  def top(n: Int): PPLBoxDouble = {
     val pplbox = new Double_Box(n, Degenerate_Element.UNIVERSE)
     new PPLBoxDouble(pplbox)
   }
 
-  def empty(n: Int): PPLBoxDouble = {
+  def bottom(n: Int): PPLBoxDouble = {
     val pplbox = new Double_Box(n, Degenerate_Element.EMPTY)
     new PPLBoxDouble(pplbox)
   }

@@ -64,12 +64,12 @@ class SLILProgramSuite extends FunSuite {
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Output
     program.analyze(params)
-    expectResult(BoxDouble.full(1)) { params.tag(0) }
+    expectResult(BoxDouble.top(1)) { params.tag(0) }
 
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Random
     program.analyze(params)
-    expectResult(BoxDouble.full(1)) { params.tag(0) }
+    expectResult(BoxDouble.top(1)) { params.tag(0) }
 
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.BackEdges

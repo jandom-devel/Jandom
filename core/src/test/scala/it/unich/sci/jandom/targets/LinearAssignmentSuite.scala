@@ -32,7 +32,7 @@ class LinearAssignmentSuite extends FunSuite {
   val env = Environment("v1","v2")
     
   test("simple linear form assignments") {
-    val d = BoxDouble.full(env.size)
+    val d = BoxDouble.top(env.size)
     val la1 = LinearAssignment( 0, LinearForm.fromCoefficient(0) )
     val d1 = la1.analyze(d)
     expectResult ( BoxDouble(Array(0,Double.NegativeInfinity), Array(0,Double.PositiveInfinity))) { d1 }

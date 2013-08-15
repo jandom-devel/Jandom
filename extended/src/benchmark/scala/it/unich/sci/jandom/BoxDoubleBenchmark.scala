@@ -85,7 +85,7 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
 
   def timeJandomNoPPLOptimized(reps: Int) {
     for (iter <- 1 to reps) {
-      var db = BoxDouble.empty(numvars)
+      var db = BoxDouble.bottom(numvars)
       for (i <- 1 to numpoints) {
         val point = Array.fill(numvars)(i.toDouble)
         db = db union BoxDouble(point)
@@ -96,9 +96,9 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
 
   def timeJandomNoPPL(reps: Int) {
     for (iter <- 1 to reps) {
-      var db = BoxDouble.empty(numvars)
+      var db = BoxDouble.bottom(numvars)
       val zero = Array.fill(numvars)(0.0)
-      val full = BoxDouble.full(numvars)
+      val full = BoxDouble.top(numvars)
       for (i <- 1 to numpoints) {
         val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, zero, i.toDouble) }            
         db = db union point
@@ -108,9 +108,9 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
   
   def timeJandomPPL(reps: Int) {
     for (iter <- 1 to reps) {
-      var db = PPLBoxDouble.empty(numvars)
+      var db = PPLBoxDouble.bottom(numvars)
       val zero = Array.fill(numvars)(0.0)
-      val full = PPLBoxDouble.full(numvars)
+      val full = PPLBoxDouble.top(numvars)
       for (i <- 1 to numpoints) {
         val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, zero, i.toDouble) }            
         db = db union point
@@ -121,9 +121,9 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
   def timeJandomPPLReflexive(reps: Int) {
     for (iter <- 1 to reps) {
       val domain = new PPLDomain[Octagonal_Shape_double]
-      var db = domain.empty(numvars)
+      var db = domain.bottom(numvars)
       val zero = Array.fill(numvars)(0.0)
-      val full = domain.full(numvars)
+      val full = domain.top(numvars)
       for (i <- 1 to numpoints) {
         val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, zero, i.toDouble) }            
         db = db union point
@@ -136,9 +136,9 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
       // we explicityl type domain in order to avoid generation
       // of existential types.
       val domain: NumericalDomain = PPLPropertyMacros[Double_Box]
-      var db = domain.empty(numvars)
+      var db = domain.bottom(numvars)
       val zero = Array.fill(numvars)(0.0)
-      val full = domain.full(numvars)
+      val full = domain.top(numvars)
       for (i <- 1 to numpoints) {
         val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, zero, i.toDouble) }            
         db = db union point

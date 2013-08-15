@@ -38,9 +38,9 @@ import soot.jimple.StaticFieldRef
  */
 class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDomain {
 
-  def top(vars: Seq[Type]) = Property(numdom.full(vars.size), Stack(vars.reverse: _*))
+  def top(vars: Seq[Type]) = Property(numdom.top(vars.size), Stack(vars.reverse: _*))
 
-  def bottom(vars: Seq[Type]) = Property(numdom.empty(vars.size), Stack(vars.reverse: _*))
+  def bottom(vars: Seq[Type]) = Property(numdom.bottom(vars.size), Stack(vars.reverse: _*))
 
   /**
    * A simple helper method for the analogous constructor of abstract numerical frames.

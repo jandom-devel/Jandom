@@ -164,9 +164,9 @@ class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalP
 
   def isFull(): Boolean = pplpolyhedron.is_universe
 
-  def empty = PPLCPolyhedron.empty(pplpolyhedron.space_dimension.toInt)
+  def empty = PPLCPolyhedron.bottom(pplpolyhedron.space_dimension.toInt)
 
-  def full = PPLCPolyhedron.full(pplpolyhedron.space_dimension.toInt)
+  def full = PPLCPolyhedron.top(pplpolyhedron.space_dimension.toInt)
 
   def tryCompareTo[B >: PPLCPolyhedron](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLCPolyhedron =>
@@ -194,12 +194,12 @@ object PPLCPolyhedron extends NumericalDomain {
 
   type Property = PPLCPolyhedron
 
-  def full(n: Int): PPLCPolyhedron = {
+  def top(n: Int): PPLCPolyhedron = {
     val pplpolyhedron = new C_Polyhedron(n, Degenerate_Element.UNIVERSE)
     new PPLCPolyhedron(pplpolyhedron)
   }
 
-  def empty(n: Int): PPLCPolyhedron = {
+  def bottom(n: Int): PPLCPolyhedron = {
     val pplpolyhedron = new C_Polyhedron(n, Degenerate_Element.EMPTY)
     new PPLCPolyhedron(pplpolyhedron)
   }

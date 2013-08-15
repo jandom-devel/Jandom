@@ -30,8 +30,8 @@ import parma_polyhedra_library.Double_Box
 class PPLMacroPropertySuite extends FunSuite {
   val octDomain: NumericalDomain = PPLPropertyMacros[Octagonal_Shape_double]
 
-  val full = octDomain.full(3)
-  val empty = octDomain.empty(3)
+  val full = octDomain.top(3)
+  val empty = octDomain.bottom(3)
 
   test("full should be full") {
     expectResult(true) { full.isFull }
@@ -90,8 +90,8 @@ class PPLMacroPropertySuite extends FunSuite {
 
   test("disequality is precise on boxes") {
     val boxDomain: NumericalDomain = PPLPropertyMacros[Double_Box]
-    val obj = boxDomain.full(3).linearAssignment(0, Array(0, 0, 0), 0)
-    expectResult(boxDomain.empty(3)) { obj.linearDisequality(Array(1, 0, 0), 0) }
+    val obj = boxDomain.top(3).linearAssignment(0, Array(0, 0, 0), 0)
+    expectResult(boxDomain.bottom(3)) { obj.linearDisequality(Array(1, 0, 0), 0) }
   }
 
   test("string conversion") {
@@ -104,14 +104,14 @@ class PPLMacroPropertySuite extends FunSuite {
   test("string conversion for high-dimensional spaces") {
     val a = Array.fill(33)(0.0)
     a(27) = 1.0
-    val obj3 = octDomain.full(33).linearInequality(a, 0)
+    val obj3 = octDomain.top(33).linearInequality(a, 0)
     expectResult("[ -v27 >= 0 ]") { obj3.toString }
   }
 
   test("map dimensions") {
     val obj = full.linearInequality(Array(1, 1, 0), 1).linearInequality(Array(1, 0, 0), 2)
     val obj2 = full.linearInequality(Array(1, 1, 0), 1).linearInequality(Array(0, 1, 0), 2)
-    val obj3 = octDomain.full(2).linearInequality(Array(1, 0), 2)
+    val obj3 = octDomain.top(2).linearInequality(Array(1, 0), 2)
 
     expectResult(obj)(obj.mapDimensions(Seq(0, 1, 2)))
     expectResult(obj2)(obj.mapDimensions(Seq(1, 0, 2)))
@@ -126,7 +126,7 @@ class PPLMacroPropertySuite extends FunSuite {
       linearAssignment(0, Array(0, 0, 0), 1).
       linearAssignment(1, Array(0, 0, 0), 3).
       linearInequality(Array(0, 1, 1), 0)
-    val obj3 = octDomain.full(4).
+    val obj3 = octDomain.top(4).
       linearAssignment(0, Array(0, 0, 0, 0), 4).
       linearAssignment(2, Array(0, 0, 0, 0), 3).
       linearInequality(Array(0, 0, 1, 1), 0)

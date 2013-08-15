@@ -32,32 +32,4 @@ abstract class NumericalDomain extends DimensionFiberedDomain {
    * For numerical domains, these properties needs to be instances of [[it.unich.sci.jandom.domains.NumericalProperty]].
    */
   type Property <: NumericalProperty[Property]
-
-  /**
-   * Create an abstract property representing the full n-dimensional space.
-   * @param n the dimension of the environment space.
-   * @note `n` should be positive.
-   * @return the full n-dimensional space.
-   */
-  def full(n: Int): Property
-
-  /**
-   * Create an abstract property representing the empty n-dimensional space.
-   * @param n the dimension of the environment space.
-   * @note `n` should be positive.
-   * @return the empty n-dimensional space.
-   */
-  def empty(n: Int): Property
-
-  /**
-   * @inheritdoc
-   * For numerical domains, `top` is an alias for `full`.
-   */
-  def top(dimension: Int) = full(dimension)
-
-  /**
-   * @inheritdoc
-   * For numerical domains, `bottom` is an alias for `empty`.
-   */
-  def bottom(dimension: Int) = empty(dimension)
 }

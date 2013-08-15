@@ -121,8 +121,8 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
 class JVMEnvFixedFrameDomain(val dom: NumericalDomain) extends JVMEnvDomain {
   type Property = JVMEnvFixedFrame[dom.Property]
 
-  def full(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.full(maxLocals))
+  def full(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.top(maxLocals))
 
-  def empty(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.empty(maxLocals))
+  def empty(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.bottom(maxLocals))
 
 }

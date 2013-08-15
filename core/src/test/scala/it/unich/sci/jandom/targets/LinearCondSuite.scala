@@ -35,7 +35,7 @@ class LinearCondSuite extends FunSuite {
   val lf2 = LinearForm(List(-6,1,0))
   val cond1 = AtomicCond(lf1,AtomicCond.ComparisonOperators.LTE)
   val cond2 = AtomicCond(lf2,AtomicCond.ComparisonOperators.GTE)
-  val full = BoxDouble.full(env.size) 
+  val full = BoxDouble.top(env.size) 
   
   test("atomic conditions") {   
     expectResult (  BoxDouble(Array(Double.NegativeInfinity,Double.NegativeInfinity), Array(3,Double.PositiveInfinity)) ) { cond1.analyze(full) } 

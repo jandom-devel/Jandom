@@ -20,69 +20,96 @@ package it.unich.sci.jandom.domains
 
 import org.scalatest.FunSuite
 import breeze.linalg._
-import it.unich.sci.jandom.domains.numerical.Parallelotope
+import it.unich.sci.jandom.domains.numerical._
 
 /**
- * Test suite for the parallelotope domain. Disabled at the moment due to non-functionin domain.
- * @author Gianluca Amato <g.amato@unich.it>
+ * Test suite for domain product.
+ * @author Francesca Scozzari <fscozzari@unich.it>
  *
  */
-class ParallelotopeSuite extends FunSuite {
+class ProductSuite extends FunSuite {
 
-  val box = Parallelotope(DenseVector(-1, -1), DenseMatrix.eye(2), DenseVector(1, 1))
-  val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
-  val empty = Parallelotope.bottom(2)
-  val full = Parallelotope.top(2)
+  val d1 = BoxDouble
+  val d2 = Parallelotope
+  val n=2
 
-  test("constructors should only work with compatible sizes of bounds and shapes") {
-    intercept[IllegalArgumentException] { Parallelotope(DenseVector(0, 2), DenseMatrix.eye(2), DenseVector(0, 2, 3)) }
+  val productDomain = new ProductDomain {
+    val dom1 = d1
+    val dom2 = d2
+  	val dom1Todom2 = implicitly[DomainTransformation[d1.Property, d2.Property]]
+  	val dom2Todom1 = implicitly[DomainTransformation[d2.Property, d1.Property]]
   }
 
-  test("constructors and extractors for non-trivial parallelotopes") {
-    expectResult(2) { box.dimension }
-    expectResult(false) { box.isEmpty }
-    expectResult(false) { box.isFull }
-  }
+  val empty = productDomain.bottom(n)
+  val full = productDomain.top(n)
 
-  test("constructors and extractors for full parallelotopes") {
-    expectResult(2) { full.dimension }
-    expectResult(false) { full.isEmpty }
-    expectResult(true) { full.isFull }
-  }
-
-  test("constructors and extractors for empty parallelotopes") {
-    expectResult(2) { empty.dimension }
+  test("constructors and extractors the empty pair") {
+    expectResult(n) { empty.dimension }
     expectResult(true) { empty.isEmpty }
     expectResult(false) { empty.isFull }
   }
 
-  test("comparison of parallelotopes") {
-    assert(empty < box)
-    assert(box < full)
-    assert(empty < full)
-    assert(diamond < box)
-    assert(diamond <= box)
-    assert(box > diamond)
-    assert(box >= diamond)
-    expectResult(Some(1)) { box.tryCompareTo(diamond) }
-    expectResult(Some(-1)) { diamond.tryCompareTo(box) }
-    assert(box == box)
-    expectResult(Some(0)) { box.tryCompareTo(box) }
-    val box2 = Parallelotope(DenseVector(-0.5, -0.5), DenseMatrix.eye(2), DenseVector(0.5, 0.5))
-    assert(box2 <= box)
-    assert(box >= box2)
-    assert(box2 < box)
-    assert(box > box2)
-    val box3 = Parallelotope(DenseVector(0, 0), DenseMatrix.eye(2), DenseVector(2, 2))
-    expectResult(None) { box.tryCompareTo(box3) }
+  test("constructors and extractors for the full pair") {
+    expectResult(n) { full.dimension }
+    expectResult(false) { full.isEmpty }
+    expectResult(true) { full.isFull }
   }
 
-  test("rotation of shapes") {
-    val m = DenseMatrix((1.0, 1.0), (-1.0, 1.0))
-    val protcalc = box.rotate(m)
-    val protdef = Parallelotope(DenseVector(-2, -2), m, DenseVector(2, 2))
-    expectResult(protdef) { protcalc }
+  /*
+  test("constructors should only work with compatible sizes") {
+    intercept[IllegalArgumentException] { Parallelotope(DenseVector(0, 2), DenseMatrix.eye(2), DenseVector(0, 2, 3)) }
   }
+  */
+
+  val p1= new productDomain.ProductProperty(BoxDouble.top(n), Parallelotope.top(n))
+  test("construct a full product") {
+    expectResult(true) {p1.isFull}
+    expectResult(false) {p1.isEmpty}
+
+  }
+
+  val box = BoxDouble(Array(1, 2), Array(5, 4))
+  val p2= new productDomain.ProductProperty(box, Parallelotope.top(n))
+ test("construct a full product") {
+    expectResult(false) {p1.isFull}
+    expectResult(false) {p1.isEmpty}
+  }
+
+
+  val boxEmpty =  BoxDouble.bottom(n)
+  val ptopeFull = Parallelotope.top(n)
+  val p3= new productDomain.ProductProperty(boxEmpty, ptopeFull)
+ test("construct an empty product") {
+    expectResult(false) {p1.isFull}
+    expectResult(true) {p1.isEmpty}
+  }
+
+     // assign v0 = 0
+  val x2 = full.linearAssignment(0, Array(0,0), 0)
+ test("assignment on product") {
+    expectResult(new productDomain.ProductProperty(
+        BoxDouble.top(n).linearAssignment(0, Array(0,0), 0),
+        ptopeFull.linearAssignment(0, Array(0,0), 0))) {x2}
+  }
+
+  test("dimension on product") {
+    expectResult(n+1) {x2.addVariable().dimension}
+  }
+
+
+/*
+
+  test("comparison of parallelotopes") {
+    assert(empty < v2)
+    assert(v2 < full)
+    assert(empty < full)
+
+    expectResult(Some(0)) { empty.tryCompareTo(empty) }
+    expectResult(Some(-1)) { full.tryCompareTo(empty) }
+    assert(v2 == v2)
+    expectResult(Some(0)) { v2.tryCompareTo(v2) }
+  }
+
 
   test("linear invertible assignment") {
     val li1 = Parallelotope(DenseVector(0, -1), DenseMatrix((1.0, -1.0), (0.0, 1.0)), DenseVector(2, 1))
@@ -164,5 +191,5 @@ class ParallelotopeSuite extends FunSuite {
     expectResult("[ empty ]") { empty.toString }
     expectResult("[ -Infinity <= v0 <= Infinity , -Infinity <= v1 <= Infinity ]") { full.toString }
   }
-
+*/
 }

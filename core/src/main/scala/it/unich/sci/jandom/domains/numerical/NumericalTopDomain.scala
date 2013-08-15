@@ -77,11 +77,11 @@ object NumericalTopDomain extends NumericalDomain {
     def mapDimensions(rho: Seq[Int]) = new Property(rho count { _ != -1 })
     def isEmpty = false
     def isFull = true
-    def empty = throw new UnsupportedOperationException()
+    def empty = this
     def full = this
     def mkString(vars: IndexedSeq[String]): Seq[String] = Seq("top")
   }
 
-  def full(n: Int) = Property(n)
-  def empty(n: Int) = Property(n)
+  def top(n: Int) = Property(n)
+  def bottom(n: Int) = Property(n)
 }

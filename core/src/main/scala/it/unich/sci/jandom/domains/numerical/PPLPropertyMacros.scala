@@ -179,9 +179,9 @@ object PPLPropertyMacros {
 
         def isFull: Boolean = pplbox.is_universe
 
-        def empty() = PPLProperty.empty(pplbox.space_dimension.toInt)
+        def empty() = PPLProperty.bottom(pplbox.space_dimension.toInt)
 
-        def full() = PPLProperty.full(pplbox.space_dimension.toInt)
+        def full() = PPLProperty.top(pplbox.space_dimension.toInt)
 
         def tryCompareTo[B >: PPLProperty](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
           case other: PPLProperty =>
@@ -223,12 +223,12 @@ object PPLPropertyMacros {
 
         type Property = PPLProperty
 
-        def full(n: Int): PPLProperty = {
+        def top(n: Int): PPLProperty = {
           val pplbox = new Double_Box(n, Degenerate_Element.UNIVERSE)
           new PPLProperty(pplbox)
         }
 
-        def empty(n: Int): PPLProperty = {
+        def bottom(n: Int): PPLProperty = {
           val pplbox = new Double_Box(n, Degenerate_Element.EMPTY)
           new PPLProperty(pplbox)
         }

@@ -88,7 +88,7 @@ class SumDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends Nu
 
   type Property = Sum[dom1.Property, dom2.Property]
 
-  def full(n: Int) = ???
+  def top(n: Int) = ???
 
-  def empty(n: Int) = ???
+  def bottom(n: Int) = ???
 }

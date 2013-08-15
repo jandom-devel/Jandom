@@ -174,9 +174,9 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
 
   def isFull: Boolean = domain.is_universe(pplobject)
 
-  def empty() = domain.empty(domain.space_dimension(pplobject).toInt)
+  def empty() = domain.bottom(domain.space_dimension(pplobject).toInt)
 
-  def full() = domain.full(domain.space_dimension(pplobject).toInt)
+  def full() = domain.top(domain.space_dimension(pplobject).toInt)
 
   def tryCompareTo[B >: PPLProperty[PPLNativeProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLProperty[_] =>
@@ -301,12 +301,12 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
    */
   val supportsNarrowing = narrowingAssignHandle != null
 
-  def full(n: Int): PPLProperty[PPLNativeProperty] = {
+  def top(n: Int): PPLProperty[PPLNativeProperty] = {
     val pplobject = constructor(n, Degenerate_Element.UNIVERSE)
     new PPLProperty[PPLNativeProperty](this, pplobject)
   }
 
-  def empty(n: Int): PPLProperty[PPLNativeProperty] = {
+  def bottom(n: Int): PPLProperty[PPLNativeProperty] = {
     val pplobject = constructor(n, Degenerate_Element.EMPTY)
     new PPLProperty[PPLNativeProperty](this, pplobject)
   }

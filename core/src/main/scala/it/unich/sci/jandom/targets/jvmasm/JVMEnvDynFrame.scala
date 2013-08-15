@@ -184,7 +184,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
 class JVMEnvDynFrameDomain(val dom: NumericalDomain) extends JVMEnvDomain {
   type Property = JVMEnvDynFrame[dom.Property]
 
-  def full(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.full(0))
+  def full(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.top(0))
 
-  def empty(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.empty(0))
+  def empty(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.bottom(0))
 }
