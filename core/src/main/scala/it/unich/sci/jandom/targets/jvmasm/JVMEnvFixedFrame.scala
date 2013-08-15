@@ -44,19 +44,19 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
   }
 
   def ipush(c: Int) {
-    property = property.addDimension.constantAssignment(property.dimension, c)
+    property = property.addVariable().constantAssignment(property.dimension, c)
   }
 
   def istore(v: Int) {
-    property = property.variableAssignment(v, property.dimension - 1).delDimension(property.dimension - 1)
+    property = property.variableAssignment(v, property.dimension - 1).delVariable(property.dimension - 1)
   }
 
   def iload(v: Int) {
-    property = property.addDimension.variableAssignment(property.dimension, v)
+    property = property.addVariable().variableAssignment(property.dimension, v)
   }
 
   def iadd() {
-    property = property.variableAdd(property.dimension - 2, property.dimension - 1).delDimension(property.dimension - 1)
+    property = property.variableAdd(property.dimension - 2, property.dimension - 1).delVariable(property.dimension - 1)
   }
 
   def iinc(v: Int, c: Int) {
@@ -73,7 +73,7 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
       // TODO we should optmized NEQ
       case _ => AtomicCond(lfn - lfm, op)
     }
-    property = condition.analyze(property).delDimension(property.dimension - 1).delDimension(property.dimension - 2)
+    property = condition.analyze(property).delVariable(property.dimension - 1).delVariable(property.dimension - 2)
   }
 
   def union(that: JVMEnvFixedFrame[NumProperty]): JVMEnvFixedFrame[NumProperty] =

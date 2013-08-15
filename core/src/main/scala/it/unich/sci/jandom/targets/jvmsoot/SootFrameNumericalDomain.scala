@@ -113,14 +113,14 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      * Add a new undetermined frame variable.
      * @param tpe the type of the new frame variable.
      */
-    private def addVariable(tpe: Type) = Property(prop.addDimension, vars.push(tpe))
+    private def addVariable(tpe: Type) = Property(prop.addVariable(), vars.push(tpe))
 
     /**
      * Remove the top frame variable.
      */
-    private def delVariable = Property(prop.delDimension(), vars.pop)
+    private def delVariable = Property(prop.delVariable(), vars.pop)
 
-    def evalConstant(const: Int) = Property(prop.addDimension.constantAssignment(size, const), vars.push(IntType.v()))
+    def evalConstant(const: Int) = Property(prop.addVariable().constantAssignment(size, const), vars.push(IntType.v()))
 
     def evalNull = addVariable(NullType.v())
 
@@ -128,7 +128,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalLocal(v: Int) = {
       if (vars(size - 1 - v).isInstanceOf[PrimType] || vars(size - 1 - v).isInstanceOf[WordType])
-        Property(prop.addDimension.variableAssignment(size, v), vars.push(vars(size - 1 - v)))
+        Property(prop.addVariable().variableAssignment(size, v), vars.push(vars(size - 1 - v)))
       else
         addVariable(vars(size - 1 - v))
     }
@@ -145,7 +145,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def assignLocal(dst: Int) = {
       if (vars(size - 1 - dst).isInstanceOf[PrimType] || vars(size - 1 - dst).isInstanceOf[WordType]) {
-        Property(prop.variableAssignment(dst, size - 1).delDimension(), vars.pop)
+        Property(prop.variableAssignment(dst, size - 1).delVariable(), vars.pop)
       } else
         delVariable
     }
@@ -155,17 +155,17 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
       delVariable
     }
 
-    def evalAdd = Property(prop.variableAdd().delDimension(), vars.pop)
-    def evalSub = Property(prop.variableSub().delDimension(), vars.pop)
-    def evalMul = Property(prop.variableMul().delDimension(), vars.pop)
-    def evalDiv = Property(prop.variableDiv().delDimension(), vars.pop)
-    def evalRem = Property(prop.variableRem().delDimension(), vars.pop)
-    def evalShl = Property(prop.variableShl().delDimension(), vars.pop)
-    def evalShr = Property(prop.variableShr().delDimension(), vars.pop)
-    def evalUshr = Property(prop.variableUshr().delDimension(), vars.pop)
+    def evalAdd = Property(prop.variableAdd().delVariable(), vars.pop)
+    def evalSub = Property(prop.variableSub().delVariable(), vars.pop)
+    def evalMul = Property(prop.variableMul().delVariable(), vars.pop)
+    def evalDiv = Property(prop.variableDiv().delVariable(), vars.pop)
+    def evalRem = Property(prop.variableRem().delVariable(), vars.pop)
+    def evalShl = Property(prop.variableShl().delVariable(), vars.pop)
+    def evalShr = Property(prop.variableShr().delVariable(), vars.pop)
+    def evalUshr = Property(prop.variableUshr().delVariable(), vars.pop)
 
-    def evalBinOp = Property(prop.delDimension().delDimension().addDimension, vars.pop)
-    def evalNeg = Property(prop.variableNeg().delDimension(), vars)
+    def evalBinOp = Property(prop.delVariable().delVariable().addVariable(), vars.pop)
+    def evalNeg = Property(prop.variableNeg().delVariable(), vars)
     def evalLength = addVariable(IntType.v())
 
     def evalGt = delVariable
@@ -185,8 +185,8 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
       coeffs(size - 1) = 1.0
       coeffs(size) = -1.0
       val lf = LinearForm(coeffs)
-      val tbranch = Property(AtomicCond(lf, op).analyze(prop).delDimension().delDimension(), vars.pop.pop)
-      val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delDimension().delDimension(), vars.pop.pop)
+      val tbranch = Property(AtomicCond(lf, op).analyze(prop).delVariable().delVariable(), vars.pop.pop)
+      val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), vars.pop.pop)
       (tbranch, fbranch)
     }
 
@@ -210,7 +210,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def restrict(n: Int) = {
       assume ( n >= 0 && n <= size,s"Trying to restrict to ${n} variables in the abstract frame {$this}")
-      Property((0 until size - n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delDimension(0) },
+      Property((0 until size - n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delVariable(0) },
       vars.dropRight(size - n))
     }
 
@@ -227,7 +227,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalStaticField(v: StaticFieldRef): Property = {
       if (v.getType().isInstanceOf[PrimType])
-        Property(prop.addDimension.nonDeterministicAssignment(prop.dimension), vars.push(v.getType()))
+        Property(prop.addVariable().nonDeterministicAssignment(prop.dimension), vars.push(v.getType()))
       else
         addVariable(v.getType())
     }

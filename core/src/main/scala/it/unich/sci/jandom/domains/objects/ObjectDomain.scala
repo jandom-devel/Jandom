@@ -36,16 +36,15 @@ trait ObjectDomain extends DimensionFiberedDomain {
    * This trait represents single abstract element in an object domain.
    */
   trait ObjectProperty[Property <: ObjectProperty[Property]] extends DimensionFiberedProperty[Property] {
+    this: Property =>
+
     type ShareFilter = UP[Int] => Boolean
 
-    def dimension = size
-    def size: Int
-    def addVariable: Property
-    def delVariable(n: Int = size - 1): Property
+    def addFreshVariable: Property
     def removeRangeOfVariables(range: Range): Property
     def removeLowerVariables(newSize: Int): Property
     def removeHigherVariables(newSize: Int): Property
-    def assignNull(dst: Int = size - 1): Property
+    def assignNull(dst: Int = dimension - 1): Property
     def assignVariable(dst: Int, src: Int): Property
     def assignVariableToField(dst: Int, field: Int, src: Int): Property
     def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: ShareFilter = (_ => true)): Property

@@ -103,18 +103,6 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
   def frequency(coeff: Array[Double], known: Double): Option[Double]
 
   /**
-   * Add a new undetermined dimension.
-   */
-  def addDimension: Property
-
-  /**
-   * Delete a given dimension.
-   * @param n the dimension to be suppressed.
-   * @note $NOTEN
-   */
-  def delDimension(n: Int = dimension - 1): Property
-
-  /**
    * Map dimensions according to a partial injective function.
    * @param rho partial injective function. Each dimension `i` is mapped to `rho(i)`. If `rho(i)` is
    * `-1`, then dimension i is removed.
@@ -348,26 +336,6 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
   }
 
   /**
-   * Add many undetermined dimensions.
-   * @param n number of dimensions to add
-   */
-  def addDimension(n: Int): Property = {
-    require(n >= 0)
-    (0 until n).foldLeft(this) { (prop, _) => prop.addDimension }
-  }
-
-  /**
-   * Remove many dimensions at once
-   * @param dims the dimensions to remove
-   * @return the property without the required dimensions
-   */
-
-  def remove_space_dimensions(dims: Seq[Int]): Property = {
-    val sortedDims = dims.sortWith({ _ > _ })
-    sortedDims.foldLeft(this) { (p: Property, d: Int) =>  p.delDimension(d) }
-  }
-
-  /**
    * The connect method is used for inter-procedural analysis. It takes two properties
    * such that the last `common` dimensions of `this` corresponds to the first `common`
    * dimension of `p`. It embeds both properties on a common space and intersect, then
@@ -378,10 +346,10 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @return the connected properties, according to the description above
    */
   def connect(p: Property, common: Int) = {
-    val newprop = addDimension(p.dimension - common)
+    val newprop = addVariables(p.dimension - common)
     val seq = (dimension - common until newprop.dimension) ++ (0 until dimension - common)
-    val newp = p.addDimension(dimension - common).mapDimensions(seq)
-    (newprop intersection newp).remove_space_dimensions(dimension - common to  dimension-1)
+    val newp = p.addVariables(dimension - common).mapDimensions(seq)
+    (newprop intersection newp).delVariables(dimension - common to  dimension-1)
   }
 
   /**

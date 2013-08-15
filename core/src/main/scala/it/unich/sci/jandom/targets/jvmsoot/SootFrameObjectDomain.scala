@@ -94,14 +94,14 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
      * Add a new variable of a type we do not want to track. This means, we set it to null.
      * @param tpe the type of the variable.
      */
-    private def addUntrackedVariable(tpe: Type) = Property(prop.addVariable.assignNull(size), stack.push(tpe), globals)
+    private def addUntrackedVariable(tpe: Type) = Property(prop.addFreshVariable.assignNull(size), stack.push(tpe), globals)
 
     /**
      * This method check invariants on a numerical abstract frame.
      */
     @elidable(ASSERTION)
     private def invariantCheck {
-      assert(prop.size == stack.size, s"Sharing property <${prop}> and stack of types <${stack}> have different dimensions")
+      assert(prop.dimension == stack.size, s"Sharing property <${prop}> and stack of types <${stack}> have different dimensions")
       for (i <- 0 until stack.size) stack(size - 1 - i) match {
         case _: RefType =>
         case _ => assert(prop.isNull(i), "A non reference type should be null in the pair sharing component")
@@ -113,16 +113,16 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def evalConstant(c: Int) = addUntrackedVariable(IntType.v())
 
     def evalNull =
-      Property(prop.addVariable.assignNull(size), stack.push(NullType.v()), globals)
+      Property(prop.addFreshVariable.assignNull(size), stack.push(NullType.v()), globals)
 
     def evalNew(tpe: Type) =
       if (tpe.isInstanceOf[RefType])
-        Property(prop.addVariable, stack.push(tpe), globals)
+        Property(prop.addFreshVariable, stack.push(tpe), globals)
       else
         addUntrackedVariable(tpe)
 
     def evalLocal(v: Int) =
-      Property(prop.addVariable.assignVariable(size, v), stack.push(stack(size - 1 - v)), globals)
+      Property(prop.addFreshVariable.assignVariable(size, v), stack.push(stack(size - 1 - v)), globals)
 
     def evalLength = addUntrackedVariable(IntType.v())
 
@@ -207,7 +207,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def evalGlobal(o: Constant) = {
       val withGlobal = if (globals contains o) this else evalNew(o.getType())
       val evaluatedGlobal = withGlobal.evalLocal(withGlobal.size - 1)
-      Property(evaluatedGlobal.prop, evaluatedGlobal.stack, globals + (o -> prop.size))
+      Property(evaluatedGlobal.prop, evaluatedGlobal.stack, globals + (o -> prop.dimension))
     }
 
     def evalStaticField(v: StaticFieldRef): Property = {

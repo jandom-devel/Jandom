@@ -180,8 +180,8 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
 
   def maximize(coeff: Array[Double], known: Double) = linearEvaluation(coeff, known)._2
 
-  def frequency(coeff: Array[Double], known: Double) =  {
-    val (min,max) = linearEvaluation(coeff, known)
+  def frequency(coeff: Array[Double], known: Double) = {
+    val (min, max) = linearEvaluation(coeff, known)
     if (min == max) Some(min) else None
   }
 
@@ -282,17 +282,29 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
       case 0 =>
         if (known == 0) empty else this
       case 1 =>
-        val dim = coeff.indexWhere( _ != 0)
+        val dim = coeff.indexWhere(_ != 0)
         if (low(dim) == known && high(dim) == known)
           empty
-          else
-            this
+        else
+          this
       case _ => this
     }
   }
 
+  /*
+  def addVariable(v: Int): BoxDouble = {
+    require(0 <= v && v <= dimension)
+    if (isEmpty)
+      BoxDouble.empty(dimension + 1)
+    else if (v == dimension)
+      new BoxDouble(low :+ Double.NegativeInfinity, high :+ Double.PositiveInfinity)
+    else
+      new BoxDouble((low.take(v) :+ Double.NegativeInfinity) ++ low.takeRight(dimension-v),
+  	                (high.take(v) :+ Double.PositiveInfinity) ++ high.takeRight(dimension-v))
+  }
+*/
 
-  def addDimension: BoxDouble =
+  def addVariable: BoxDouble =
     if (isEmpty)
       BoxDouble.empty(dimension + 1)
     else
@@ -304,7 +316,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  def delDimension(n: Int): BoxDouble = {
+  def delVariable(n: Int): BoxDouble = {
     require(n < low.length && n >= 0)
     val newlow = new Array[Double](dimension - 1)
     val newhigh = new Array[Double](dimension - 1)
@@ -328,7 +340,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
     // we do not check injectivity
     val newlow = new Array[Double](newdim)
     val newhigh = new Array[Double](newdim)
-    for ( (newi,i) <- rho.zipWithIndex ; if newi >= 0 ) {
+    for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {
       newlow(newi) = low(i)
       newhigh(newi) = high(i)
     }

@@ -27,19 +27,19 @@ import scala.collection.immutable.Range
  */
 object PairSharingDomain extends ObjectDomain {
 
-  def top(size: Int) = allPairs(0 until size, size)
-  def bottom(size: Int) = new Property(Set(), size)
-  def apply(ps: Set[UP[Int]], size: Int) = new Property(ps, size)
+  def top(dimension: Int) = allPairs(0 until dimension, dimension)
+  def bottom(dimension: Int) = new Property(Set(), dimension)
+  def apply(ps: Set[UP[Int]], dimension: Int) = new Property(ps, dimension)
 
-  def allPairs(vars: Set[Int], size: Int) =
-    apply(for (i <- vars; j <- vars) yield UP(i, j), size)
+  def allPairs(vars: Set[Int], dimension: Int) =
+    apply(for (i <- vars; j <- vars) yield UP(i, j), dimension)
 
   def allPairs(vars: Seq[Int], size: Int) = {
     val pairs = for (i <- 0 until vars.size; j <- i until vars.size) yield UP(vars(i), vars(j))
     apply(pairs.toSet, size)
   }
 
-  case class Property(val ps: Set[UP[Int]], val size: Int) extends ObjectProperty[Property] {
+  case class Property(val ps: Set[UP[Int]], val dimension: Int) extends ObjectProperty[Property] {
 
     private def renameVariable(ps: Set[UP[Int]], newvar: Int, oldvar: Int) = ps map { _.replace(newvar, oldvar) }
     private def removeVariable(ps: Set[UP[Int]], v: Int) = ps filterNot { _.contains(v) }
@@ -48,32 +48,46 @@ object PairSharingDomain extends ObjectDomain {
         UP(l, r) <- ps; if l == v || r == v; first = if (l == v) r else l;
         UP(l1, r1) <- ps; if l1 == v || r1 == v; second = if (l1 == v) r1 else l1
       ) yield UP(first, second)) ++ ps
+    private def shiftVariables(v: Int) = ps map { _.replace { x => if (x < v) v else v + 1 } }
 
-    def addVariable = new Property(ps + UP((size, size)), size + 1)
+    def addVariable() = {
+      val ps2 = for (UP(i, j) <- ps; if (i == j)) yield UP(i, dimension)
+      new Property(ps ++ ps2, dimension + 1)
+    }
+
+    /*
+    def addVariable(v: Int) = {
+      val ps2 = if (v < dimension) shiftVariables(v) else ps
+      val ps3 = for (UP(i, j) <- ps2; if (i == j)) yield UP(i, v)
+      new Property(ps2 ++ ps3, dimension + 1)
+    }
+    */
+
+    def addFreshVariable = new Property(ps + UP((dimension, dimension)), dimension + 1)
 
     def delVariable(n: Int) =
-      if (n == size - 1)
-        new Property(removeVariable(ps, n), size - 1)
+      if (n == dimension - 1)
+        new Property(removeVariable(ps, n), dimension - 1)
       else
-        new Property(removeVariable(renameVariable(renameVariable(ps, size, n), n, size - 1), size), size - 1)
+        new Property(removeVariable(renameVariable(renameVariable(ps, dimension, n), n, dimension - 1), dimension), dimension - 1)
 
     def removeRangeOfVariables(range: Range) = {
-      assert(range.isEmpty || (range.head >= 0 && range.last < size && range.last >= range.head))
+      assert(range.isEmpty || (range.head >= 0 && range.last < dimension && range.last >= range.head))
       val newps = for {
         UP(l, r) <- ps
         if !(range contains r) && !(range contains l)
         l1 = if (l > range.last) l - range.size else l
         r1 = if (r > range.last) r - range.size else r
       } yield UP(l1, r1)
-      Property(newps, size - range.size)
+      Property(newps, dimension - range.size)
     }
 
     def removeLowerVariables(newSize: Int) = {
-      assert(newSize >= 0 && newSize <= size)
-      if (newSize == size)
+      assert(newSize >= 0 && newSize <= dimension)
+      if (newSize == dimension)
         this
       else {
-        val firstVar = size - newSize
+        val firstVar = dimension - newSize
         val newps: Set[UP[Int]] = for (UP(l, r) <- ps; if l >= firstVar)
           yield UP(l - firstVar, r - firstVar)
         new Property(newps, newSize)
@@ -81,8 +95,8 @@ object PairSharingDomain extends ObjectDomain {
     }
 
     def removeHigherVariables(newSize: Int) = {
-      assert(newSize >= 0 && newSize <= size)
-      if (newSize == size)
+      assert(newSize >= 0 && newSize <= dimension)
+      if (newSize == dimension)
         this
       else
         new Property(ps filter { case UP(l, r) => r < newSize }, newSize)
@@ -92,9 +106,9 @@ object PairSharingDomain extends ObjectDomain {
      * This is similar to connect, but do not remove the common properties.
      */
     def connectFull(that: Property, common: Int) = {
-      assert(common <= size && common <= that.size)
+      assert(common <= dimension && common <= that.dimension)
       // index of the first common variable in the connected property
-      val firstCommonInThis = size - common
+      val firstCommonInThis = dimension - common
       // remove all pairs in that involving a variable which is null in this. At the
       // same time, translate index
       val trimmedTranslatedThat = for {
@@ -113,58 +127,58 @@ object PairSharingDomain extends ObjectDomain {
       } yield UP(l, r1)
       // join two ps of this
       val j2 = for (UP(l, r) <- trimmedThis; if r >= firstCommonInThis; UP(l1, r1) <- j1; if r == r1) yield UP(l, l1)
-      Property(trimmedThis ++ j1 ++ j2 ++ trimmedTranslatedThat, size - common + that.size)
+      Property(trimmedThis ++ j1 ++ j2 ++ trimmedTranslatedThat, dimension - common + that.dimension)
     }
 
     def connect(that: Property, common: Int) = {
-      connectFull(that, common).removeRangeOfVariables(size - common to size - 1)
+      connectFull(that, common).removeRangeOfVariables(dimension - common to dimension - 1)
     }
 
-    def assignNull(dst: Int) = new Property(removeVariable(ps, dst), size)
+    def assignNull(dst: Int) = new Property(removeVariable(ps, dst), dimension)
 
     def assignVariable(dst: Int, src: Int) = {
       val removed = removeVariable(ps, dst)
       if (isNull(src))
-        new Property(removed, size)
+        new Property(removed, dimension)
       else
-        new Property(removed ++ renameVariable(removed, dst, src) + UP(dst, src), size)
+        new Property(removed ++ renameVariable(removed, dst, src) + UP(dst, src), dimension)
     }
 
     def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: ShareFilter) = {
       val removed = removeVariable(ps, dst)
       if (isNull(src))
-        new Property(removed, size)
+        new Property(removed, dimension)
       else {
         val renamed = renameVariable(removed, dst, src) filter mayShare
-        new Property(removed ++ renamed + UP(dst, src), size)
+        new Property(removed ++ renamed + UP(dst, src), dimension)
       }
     }
 
     def assignVariableToField(dst: Int, field: Int, src: Int) =
       if (isNull(dst))
-        bottom(size)
+        bottom(dimension)
       else
-        new Property(starUnion(starUnion(ps + UP(dst, src), src), dst), size)
+        new Property(starUnion(starUnion(ps + UP(dst, src), src), dst), dimension)
 
-    def filter(mayShare: ShareFilter) = new Property(ps filter mayShare, size)
+    def filter(mayShare: ShareFilter) = new Property(ps filter mayShare, dimension)
 
     def isNull(v: Int) = !(ps contains UP(v, v))
 
-    def testNull(v: Int) = new Property(removeVariable(ps, v), size)
+    def testNull(v: Int) = new Property(removeVariable(ps, v), dimension)
 
-    def testNotNull(v: Int) = if (isNull(v)) bottom(size) else this
+    def testNotNull(v: Int) = if (isNull(v)) bottom(dimension) else this
 
     def isTop = false
     def isBottom = false
     def isEmpty = false
 
     def union(that: Property) = {
-      assert(size == that.size)
-      new Property(ps union that.ps, size)
+      assert(dimension == that.dimension)
+      new Property(ps union that.ps, dimension)
     }
     def intersection(that: Property) = {
-      assert(size == that.size)
-      new Property(ps intersect that.ps, size)
+      assert(dimension == that.dimension)
+      new Property(ps intersect that.ps, dimension)
     }
 
     def widening(that: Property) = union(that)
@@ -172,15 +186,15 @@ object PairSharingDomain extends ObjectDomain {
     def narrowing(that: Property) = narrowing(that)
 
     def mkString(vars: IndexedSeq[String]) = {
-      (ps.toSeq map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }) :+ s"dimension ${size}"
+      (ps.toSeq map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }) :+ s"dimension ${dimension}"
     }
 
-    override def toString = mkString(for (i <- 0 until size) yield i.toString).mkString(" ")
+    override def toString = mkString(for (i <- 0 until dimension) yield i.toString).mkString(" ")
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
       other match {
         case other: Property =>
-          if (size == other.size) {
+          if (dimension == other.dimension) {
             if (other.ps == ps)
               Some(0)
             else if (ps subsetOf other.ps)

@@ -93,11 +93,11 @@ class BoxDoubleSuite extends FunSuite {
     val i = BoxDouble(Array(0, 0), Array(1, 2))
     val j = BoxDouble(Array(0, 0, Double.NegativeInfinity), Array(1, 2, Double.PositiveInfinity))
     val h = BoxDouble(Array(0, Double.NegativeInfinity), Array(1, Double.PositiveInfinity))
-    expectResult(j)(i.addDimension)
-    expectResult(h)(j.delDimension(1))
-    expectResult(i)(j.delDimension(2))
-    intercept[IllegalArgumentException] { i.delDimension(-1) }
-    intercept[IllegalArgumentException] { i.delDimension(2) }
+    expectResult(j)(i.addVariable())
+    expectResult(h)(j.delVariable(1))
+    expectResult(i)(j.delVariable(2))
+    intercept[IllegalArgumentException] { i.delVariable(-1) }
+    intercept[IllegalArgumentException] { i.delVariable(2) }
   }
 
   test("dimensional maps") {

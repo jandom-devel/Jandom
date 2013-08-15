@@ -19,12 +19,45 @@
 package it.unich.sci.jandom.domains
 
 /**
- * A `DimensionFiberedProperty` is an element of a `DimensionFiberedDomain`. Each dimension
- * fibered property has a dimension (a natural number) which characterize its fiber. Moreover,
- * there are many methods to add and remove dimensions.
+ * A `DimensionFiberedProperty` is an element of a `DimensionFiberedDomain`. Each fiber is characterized by
+ * a natural number called `size`, which is the number of dimensions in the object. There are many methods
+ * to add and remove dimensions.
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <: AbstractProperty[Property] {
+  this: Property =>
+
+  /**
+   * Returns the dimension of the current object
+   */
   def dimension: Int
 
+  /**
+   * Add a new variable
+   */
+  def addVariable(): Property
+
+  /**
+   * Add m new variables
+   * @note `m` should be positive
+   */
+  def addVariables(m: Int): Property = {
+    require (m >= 0)
+    (0 until m).foldLeft(this) ( (p,i) => p.addVariable() )
+  }
+
+  /**
+   * Remove variable `v`
+   * @param v variable to remove
+   * @note `v` should be between 0 and `dimension`-1
+   */
+  def delVariable(v: Int = dimension - 1): Property
+
+  /**
+   * Remove variables in `vs`
+   * @note `vs` should contain integers between 0 and `dimension`-1 without repetitions.
+   */
+  def delVariables(vs: Seq[Int]): Property = {
+    vs.sortWith( _ > _ ).foldLeft(this) ( (p,i) => p.delVariable(i) )
+  }
 }

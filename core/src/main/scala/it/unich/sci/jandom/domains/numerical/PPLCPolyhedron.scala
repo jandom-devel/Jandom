@@ -134,13 +134,13 @@ class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalP
       Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue())
   }
 
-  def addDimension: PPLCPolyhedron = {
+  def addVariable: PPLCPolyhedron = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     newpplpolyhedron.add_space_dimensions_and_embed(1)
     new PPLCPolyhedron(newpplpolyhedron)
   }
 
-  def delDimension(n: Int): PPLCPolyhedron = {
+  def delVariable(n: Int): PPLCPolyhedron = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     val dims = new Variables_Set
     dims.add(new Variable(n))

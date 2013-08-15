@@ -89,12 +89,12 @@ class NumericalTopDomainSuite extends FunSpec {
 
       describe(s"has dimension changing operators which") {
         if (dim > 0) they("reduce size of an element") {
-            if (dim >= 2) expectResult(NumericalTopDomain.full(dim - 1))(x.delDimension(1))
-            expectResult(NumericalTopDomain.full(dim - 1))(x.delDimension())
+            if (dim >= 2) expectResult(NumericalTopDomain.full(dim - 1))(x.delVariable(1))
+            expectResult(NumericalTopDomain.full(dim - 1))(x.delVariable())
         }
         they("increase size of an element") {
-          expectResult(NumericalTopDomain.full(dim + 1))(x.addDimension)
-          expectResult(NumericalTopDomain.full(dim + 2))(x.addDimension(2))
+          expectResult(NumericalTopDomain.full(dim + 1))(x.addVariable)
+          expectResult(NumericalTopDomain.full(dim + 2))(x.addVariables(2))
         }
       }
     }

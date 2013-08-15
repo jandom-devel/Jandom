@@ -144,13 +144,13 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
       Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue())
   }
 
-  def addDimension = {
+  def addVariable = {
     val newpplobject = domain.copyConstructor(pplobject)
     domain.add_space_dimensions_and_embed(newpplobject, 1)
     new PPLProperty(domain, newpplobject)
   }
 
-  def delDimension(n: Int) = {
+  def delVariable(n: Int) = {
     val newpplobject = domain.copyConstructor(pplobject)
     val dims = new Variables_Set
     dims.add(new Variable(n))

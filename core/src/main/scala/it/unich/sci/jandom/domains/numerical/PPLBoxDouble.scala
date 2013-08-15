@@ -127,13 +127,13 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
       Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue())
   }
 
-  def addDimension: PPLBoxDouble = {
+  def addVariable: PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
     newpplbox.add_space_dimensions_and_embed(1)
     new PPLBoxDouble(newpplbox)
   }
 
-  def delDimension(n: Int): PPLBoxDouble = {
+  def delVariable(n: Int): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
     val dims = new Variables_Set
     dims.add(new Variable(n))

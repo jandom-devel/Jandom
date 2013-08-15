@@ -65,11 +65,11 @@ class PairSharingSuite extends FunSuite {
 
   test("Operations on variables") {
     val ps1 = dom.bottom(3)
-    val ps2 = ps1.addVariable
+    val ps2 = ps1.addFreshVariable
     assert(ps2 === dom(Set(UP(3, 3)), 4))
     val ps3 = ps2.assignNull()
     assert(ps3 === dom(Set(), 4))
-    val ps4 = ps3.addVariable.assignVariable(0, 4)
+    val ps4 = ps3.addFreshVariable.assignVariable(0, 4)
     assert(ps4 === dom(Set(UP(4, 4), UP(4, 0), UP(0, 0)), 5))
     val ps5 = ps4.delVariable()
     assert(ps5 === dom(Set(UP(0, 0)), 4))
@@ -81,14 +81,14 @@ class PairSharingSuite extends FunSuite {
 
   test("Operations on fields") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 3), UP(4, 4), UP(4, 5), UP(5, 5)), 6)
-    val ps2 = ps1.assignVariableToField(0, 1, ps1.size - 1).delVariable()
+    val ps2 = ps1.assignVariableToField(0, 1, ps1.dimension - 1).delVariable()
     assert(ps2 === dom(Set(UP(0, 0), UP(0, 1), UP(0, 4), UP(1, 1), UP(1, 4), UP(3, 3), UP(4, 4)), 5))
-    val ps3 = ps1.assignVariableToField(2, 1, ps1.size - 1)
+    val ps3 = ps1.assignVariableToField(2, 1, ps1.dimension - 1)
     assert(ps3 === dom.bottom(6))
     val ps4 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(2, 2)), 4)
-    val ps5 = ps4.assignVariableToField(0, 1, ps4.size - 1).delVariable()
+    val ps5 = ps4.assignVariableToField(0, 1, ps4.dimension - 1).delVariable()
     assert(ps5 == dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(2, 2)), 3))
-    assert(ps4.addVariable.assignFieldToVariable(3, 2, 1) == ps4.addVariable.assignVariable(3, 2))
+    assert(ps4.addFreshVariable.assignFieldToVariable(3, 2, 1) == ps4.addFreshVariable.assignVariable(3, 2))
   }
 
   test("removeHigherVariables") {

@@ -57,9 +57,9 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
 
   def frequency(coeff: Array[Double], known: Double): Some[Double] = ???
 
-  def addDimension: Property = ???
+  def addVariable: Property = ???
 
-  def delDimension(n: Int): Property = ???
+  def delVariable(n: Int): Property = ???
 
   def mapDimensions(rho: Seq[Int]): Property = ???
 
