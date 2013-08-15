@@ -5,18 +5,19 @@ import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.targets.slil._
 import it.unich.sci.jandom.domains.DomainTransformation._
 import it.unich.sci.jandom.domains._
+import it.unich.sci.jandom.domains.numerical._
 
 object testProduct {
   println("Welcome to the Scala worksheet")       //> Welcome to the Scala worksheet
  
   val d1 = BoxDouble                              //> d1  : it.unich.sci.jandom.domains.numerical.BoxDouble.type = it.unich.sci.ja
-                                                  //| ndom.domains.numerical.BoxDouble$@482ef8a9
- // val d1 = Parallelotope
+                                                  //| ndom.domains.numerical.BoxDouble$@41f1c748
+//val d1 = Parallelotope
   
   val d2 = Parallelotope                          //> d2  : it.unich.sci.jandom.domains.numerical.Parallelotope.type = it.unich.sc
-                                                  //| i.jandom.domains.numerical.Parallelotope$@fba3c49
+                                                  //| i.jandom.domains.numerical.Parallelotope$@1f8dbaa6
   val n=2                                         //> n  : Int = 2
-  
+
   val productDomain = new ProductDomain {
     val dom1 = d1
     val dom2 = d2
@@ -25,27 +26,60 @@ object testProduct {
   }                                               //> productDomain  : it.unich.sci.jandom.domains.numerical.ProductDomain{val dom
                                                   //| 1: it.unich.sci.jandom.domains.numerical.BoxDouble.type; val dom2: it.unich.
                                                   //| sci.jandom.domains.numerical.Parallelotope.type} = it.unich.sci.jandom.domai
-                                                  //| ns.numerical.testProduct$$anonfun$main$1$$anon$1@2af21f19
-  val v1 = productDomain.full(n)                  //> v1  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Proper
-                                                  //| ty = [ (-Infinity <= v0 <= Infinity , -Infinity <= v0 <= Infinity) , (-Infin
-                                                  //| ity <= v1 <= Infinity , -Infinity <= v1 <= Infinity) ]
-         
-   // assign v0 = 0
-  val v2 = v1.linearAssignment(0, Array(0,0), 0)  //> v2  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Proper
-                                                  //| ty = [ (v0 = 0.0 , v0 = 0.0) , (-Infinity <= v1 <= Infinity , -Infinity <= v
-                                                  //| 1 <= Infinity) ]
+                                                  //| ns.numerical.testProduct$$anonfun$main$1$$anon$1@7eea8370
+ productDomain.dom1Todom2                         //> res0: it.unich.sci.jandom.domains.DomainTransformation[it.unich.sci.jandom.d
+                                                  //| omains.numerical.testProduct.productDomain.dom1.Property,it.unich.sci.jandom
+                                                  //| .domains.numerical.testProduct.productDomain.dom2.Property] = <function1>
+ 
+  val p1= new productDomain.ProductProperty(BoxDouble.full(n), Parallelotope.full(n))
+                                                  //> p1  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Produc
+                                                  //| tProperty = [ (-Infinity <= v0 <= Infinity , -Infinity <= v0 <= Infinity) , 
+                                                  //| (-Infinity <= v1 <= Infinity , -Infinity <= v1 <= Infinity) ]
+  
+  val box = BoxDouble(Array(1, 2), Array(5, 4))   //> box  : it.unich.sci.jandom.domains.numerical.BoxDouble = [ 1.0 <= v0 <= 5.0 
+                                                  //| , 2.0 <= v1 <= 4.0 ]
+
+  val p2= new productDomain.ProductProperty(box, Parallelotope.full(n))
+                                                  //> p2  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Produc
+                                                  //| tProperty = [ (1.0 <= v0 <= 5.0 , -Infinity <= v0 <= Infinity) , (2.0 <= v1 
+                                                  //| <= 4.0 , -Infinity <= v1 <= Infinity) ]
+   
+  val boxEmpty =  BoxDouble.empty(n)              //> boxEmpty  : it.unich.sci.jandom.domains.numerical.BoxDouble = [ [void] ]
+  boxEmpty.isEmpty                                //> res1: Boolean = true
+  
+  val ptopeFull = Parallelotope.full(n)           //> ptopeFull  : it.unich.sci.jandom.domains.numerical.Parallelotope = [ -Infin
+                                                  //| ity <= v0 <= Infinity , -Infinity <= v1 <= Infinity ]
+  ptopeFull.isFull                                //> res2: Boolean = true
+  
+  
+  val p3= new productDomain.ProductProperty(boxEmpty, ptopeFull)
+                                                  //> p3  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Produ
+                                                  //| ctProperty = [ [voidProduct] ]
+                      
+ p3.isEmpty                                       //> res3: Boolean = true
+  val x1 = productDomain.full(n)                  //> x1  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Produ
+                                                  //| ctProperty = [ (-Infinity <= v0 <= Infinity , -Infinity <= v0 <= Infinity) 
+                                                  //| , (-Infinity <= v1 <= Infinity , -Infinity <= v1 <= Infinity) ]
+   // assign v0 = 1
+  val x2 = x1.linearAssignment(0, Array(0,0), 1)  //> x2  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Prope
+                                                  //| rty = [ (v0 = 1.0 , v0 = 1.0) , (-Infinity <= v1 <= Infinity , -Infinity <=
+                                                  //|  v1 <= Infinity) ]
               
    // assign v1 = v0
-  val v3 = v2.linearAssignment(1, Array(1,0), 0)  //> v3  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Proper
-                                                  //| ty = [ (v0 = 0.0 , v0 = 0.0) , (v1 = 0.0 , -v0+v1 = 0.0) ]
+  val x3 = x2.linearAssignment(1, Array(1,0), 0)  //> x3  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Prope
+                                                  //| rty = [ (v0 = 1.0 , v0 = 1.0) , (v1 = 1.0 , -v0+v1 = 0.0) ]
          
    // v2 = ?
-  val v4 = v3.addDimension                        //> v4  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Proper
-                                                  //| ty = [ (v0 = 0.0 , v0 = 0.0) , (v1 = 0.0 , -v0+v1 = 0.0) , (-Infinity <= v2 
-                                                  //| <= Infinity , -Infinity <= v2 <= Infinity) ]
+  val x4 = x3.addDimension                        //> x4  : it.unich.sci.jandom.domains.numerical.testProduct.productDomain.Prope
+                                                  //| rty = [ (v0 = 1.0 , v0 = 1.0) , (v1 = 1.0 , -v0+v1 = 0.0) , (-Infinity <= v
+                                                  //| 2 <= Infinity , -Infinity <= v2 <= Infinity) ]
   
-  val parser = RandomParser()                     //> parser  : it.unich.sci.jandom.parsers.RandomParser = it.unich.sci.jandom.par
-                                                  //| sers.RandomParser@58596d12
+  x4.minimize(Array(1,0,0), 1)                    //> res4: Double = 2.0
+  x4.p1.minimize(Array(1,0,0), 1)                 //> res5: Double = 2.0
+  x4.p2.minimize(Array(1,0,0), 1)                 //> res6: Double = -Infinity
+   
+  val parser = RandomParser()                     //> parser  : it.unich.sci.jandom.parsers.RandomParser = it.unich.sci.jandom.pa
+                                                  //| rsers.RandomParser@4188c3f4
   val program2 = "incr <- function () { j=1 i=1  while (i<10)  { i = i+1} j=i} "
                                                   //> program2  : String = "incr <- function () { j=1 i=1  while (i<10)  { i = i+
                                                   //| 1} j=i} "
@@ -59,7 +93,7 @@ val program = "f <- function() {x=1 y=1 while (y < 100) {y=y+y y=y+y x=x+x x=x+x
  val numericalDomain = productDomain              //> numericalDomain  : it.unich.sci.jandom.domains.numerical.ProductDomain{val 
                                                   //| dom1: it.unich.sci.jandom.domains.numerical.BoxDouble.type; val dom2: it.un
                                                   //| ich.sci.jandom.domains.numerical.Parallelotope.type} = it.unich.sci.jandom.
-                                                  //| domains.numerical.testProduct$$anonfun$main$1$$anon$1@2af21f19
+                                                  //| domains.numerical.testProduct$$anonfun$main$1$$anon$1@7eea8370
                  
  
   val params = new Parameters[SLILTarget] { val domain = numericalDomain }
@@ -67,14 +101,14 @@ val program = "f <- function() {x=1 y=1 while (y < 100) {y=y+y y=y+y x=x+x x=x+x
                                                   //| s.slil.SLILTarget]{val domain: it.unich.sci.jandom.domains.numerical.Produc
                                                   //| tDomain{val dom1: it.unich.sci.jandom.domains.numerical.BoxDouble.type; val
                                                   //|  dom2: it.unich.sci.jandom.domains.numerical.Parallelotope.type}} = it.unic
-                                                  //| h.sci.jandom.domains.numerical.testProduct$$anonfun$main$1$$anon$2@28af778e
+                                                  //| h.sci.jandom.domains.numerical.testProduct$$anonfun$main$1$$anon$2@25c66b53
                                                   //| 
   parser.parseProgram(program) match {
       case parser.Success(program, _) =>
        
       val  ann = program.analyze(params)
       Some(params.debugWriter.toString + program.mkString(ann))
- }                                                //> res0: Some[String] = Some(function () {
+ }                                                //> res7: Some[String] = Some(function () {
                                                   //|   [(-Infinity <= x <= Infinity , x = 1.0) , (-Infinity <= y <= Infinity , -
                                                   //| Infinity <= y <= Infinity)]
                                                   //|   x = 1
@@ -103,8 +137,6 @@ val program = "f <- function() {x=1 y=1 while (y < 100) {y=y+y y=y+y x=x+x x=x+x
                                                   //| }
                                                   //| )
                                          
-                               
-      
         
                 
 }

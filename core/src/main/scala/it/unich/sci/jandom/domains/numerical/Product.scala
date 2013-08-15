@@ -32,13 +32,14 @@ import it.unich.sci.jandom.domains.DomainTransformation
   val dom1Todom2: DomainTransformation[dom1.Property, dom2.Property]
   val dom2Todom1: DomainTransformation[dom2.Property, dom1.Property]
 
-  //  type Property = Product[dom1.Property, dom2.Property]
+  type Property = ProductProperty
 
   def full(n: Int) =
     new Property(dom1.full(n), dom2.full(n))
 
   def empty(n: Int) =
-    throw new IllegalAccessException("Unimplemented feature on Product")
+    new Property(dom1.empty(n), dom2.empty(n))
+
 
   /**
    * This is the class which implements the product of two basic numerical properties. It is not a
@@ -49,11 +50,20 @@ import it.unich.sci.jandom.domains.DomainTransformation
    * @author Francesca Scozzari <fscozzari@unich.it>
    *
    */
-  class Property(val p1: dom1.Property, val p2: dom2.Property)
-    extends NumericalProperty[Property] {
+  class ProductProperty(val p1: dom1.Property, val p2: dom2.Property)
+    extends NumericalProperty[ProductProperty] {
 
-    //require(p1.dimension == p2.dimension)
+    //type Property = ProductProperty
 
+    require(p1.dimension == p2.dimension)
+/*
+    def apply(x: dom1.Property, y: dom2.Property):Property = {
+    if(x.isEmpty || y.isEmpty)
+    	 empty
+    else
+    	new ProductProperty(x,y)
+  }
+*/
     /*
   def this(pair:(dom1.Property,dom2.Property)) = {
     this(pair._1,pair._2)
@@ -62,7 +72,7 @@ import it.unich.sci.jandom.domains.DomainTransformation
 
     def reduce(x1: dom1.Property, x2: dom2.Property): Property = {
       if (x1.isEmpty && x2.isEmpty)
-        new Property(x1, x2)
+        this
       else if (x1.isEmpty)
         new Property(x1, x2.empty)
       else if (x2.isEmpty)
@@ -85,9 +95,15 @@ import it.unich.sci.jandom.domains.DomainTransformation
       reduce(q1, q2)
     }
 
+    /*
+     * We do not reduce since it may prevent termination
+     */
     def widening(that: Property): Property =
       new Property(this.p1 widening that.p1, this.p2 widening that.p2)
 
+    /*
+     * We do not reduce since it may prevent termination
+     */
     def narrowing(that: Property): Property =
       new Property(this.p1 narrowing that.p1, this.p2 narrowing that.p2)
 
@@ -121,14 +137,22 @@ import it.unich.sci.jandom.domains.DomainTransformation
       reduce(q1, q2)
     }
 
-    def minimize(coeff: Array[Double], known: Double): Double =
-      throw new IllegalAccessException("Unimplemented feature on Product")
+    def minimize(coeff: Array[Double], known: Double): Double = {
+    	val q1=p1.minimize(coeff, known)
+    	val q2=p2.minimize(coeff, known)
+    	q1 max q2
+    }
 
-    def maximize(coeff: Array[Double], known: Double): Double =
-      throw new IllegalAccessException("Unimplemented feature on Product")
+    def maximize(coeff: Array[Double], known: Double): Double = {
+    	val q1=p1.maximize(coeff, known)
+    	val q2=p2.maximize(coeff, known)
+    	q1 min q2
+    }
 
-    def frequency(coeff: Array[Double], known: Double): Some[Double] =
-      throw new IllegalAccessException("Unimplemented feature on Product")
+    def frequency(coeff: Array[Double], known: Double): Option[Double] =
+   		if(p1.frequency(coeff, known) == p2.frequency(coeff, known))
+    		  p1.frequency(coeff, known)
+    		  else None
 
     def addDimension: Property =
       new Property(p1.addDimension, p2.addDimension)
@@ -145,20 +169,20 @@ import it.unich.sci.jandom.domains.DomainTransformation
     def dimension: Int = p1.dimension
 
     def isEmpty: Boolean =
-      p1.isEmpty && p2.isEmpty
+      p1.isEmpty || p2.isEmpty
 
     def isFull: Boolean =
       p1.isFull && p2.isFull
 
     def empty: Property =
-      new Property(p1.empty, p2.empty)
+      	ProductDomain.this.empty(dimension)
 
     def full: Property =
-      new Property(p1.full, p2.full)
+       	ProductDomain.this.full(dimension)
 
     def mkString(vars: IndexedSeq[String]): Seq[String] = {
       if (isEmpty)
-        Seq("[void]")
+        Seq("[voidProduct]")
       else {
         val s1 = p1.mkString(vars)
         val s2 = p2.mkString(vars)
@@ -173,13 +197,15 @@ import it.unich.sci.jandom.domains.DomainTransformation
           val c2 = p2.tryCompareTo(other.p2)
           if (c1 == 0)
             c2
-          if (c2 == 0)
+          else if (c2 == 0)
             c1
-          if (c1 == c2)
+          else if (c1 == c2)
             c1
           else
             None
         }
+ //       case other:dom1.Property => (p1.intersection(ProductDomain.this.dom2Todom1(p2))) tryCompareTo other
+ //       case other:dom2.Property => (p2.intersection(ProductDomain.this.dom1Todom2(p1))) tryCompareTo other
         case _ => None
       }
     }

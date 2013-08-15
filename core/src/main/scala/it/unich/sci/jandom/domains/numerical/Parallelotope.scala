@@ -487,6 +487,7 @@ class Parallelotope(
   def <=[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Boolean = {
     if (isEmpty) return (true)
     if (that.isEmpty) return (false)
+    if (that.isFull) return (true)
     val ptemp = this.rotate(that.A)
     (0 to ptemp.low.length - 1) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) }
   }
