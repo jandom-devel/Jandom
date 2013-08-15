@@ -280,11 +280,11 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
     val count = coeff.count(_ != 0)
     count match {
       case 0 =>
-        if (known == 0) empty else this
+        if (known == 0) bottom else this
       case 1 =>
         val dim = coeff.indexWhere(_ != 0)
         if (low(dim) == known && high(dim) == known)
-          empty
+          bottom
         else
           this
       case _ => this
@@ -365,13 +365,15 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
 
   val dimension: Int = low.length
 
-  def isEmpty: Boolean = (low, high).zipped.exists(_ > _)
+  def isEmpty = (low, high).zipped.exists(_ > _)
 
-  def isFull: Boolean = low.forall(_.isNegInfinity) && high.forall(_.isPosInfinity)
+  def isBottom = isEmpty
 
-  def empty = BoxDouble.bottom(low.length)
+  def isTop =  low.forall(_.isNegInfinity) && high.forall(_.isPosInfinity)
 
-  def full = BoxDouble.top(low.length)
+  def bottom = BoxDouble.bottom(low.length)
+
+  def top = BoxDouble.top(low.length)
 
   def tryCompareTo[B >: BoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: BoxDouble =>

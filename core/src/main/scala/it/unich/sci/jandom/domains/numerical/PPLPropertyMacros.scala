@@ -177,11 +177,13 @@ object PPLPropertyMacros {
 
         def isEmpty: Boolean = pplbox.is_empty
 
-        def isFull: Boolean = pplbox.is_universe
+        def isTop: Boolean = pplbox.is_universe
 
-        def empty() = PPLProperty.bottom(pplbox.space_dimension.toInt)
+        def isBottom = isEmpty
 
-        def full() = PPLProperty.top(pplbox.space_dimension.toInt)
+        def bottom = PPLProperty.bottom(pplbox.space_dimension.toInt)
+
+        def top = PPLProperty.top(pplbox.space_dimension.toInt)
 
         def tryCompareTo[B >: PPLProperty](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
           case other: PPLProperty =>

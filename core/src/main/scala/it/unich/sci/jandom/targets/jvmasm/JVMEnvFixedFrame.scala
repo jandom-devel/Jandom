@@ -40,7 +40,7 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
   override def clone: JVMEnvFixedFrame[NumProperty] = new JVMEnvFixedFrame(maxLocals, property)
 
   def empty {
-    property = property.empty
+    property = property.bottom
   }
 
   def ipush(c: Int) {
@@ -105,11 +105,15 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
   override def toString =
     mkString((0 until maxLocals) map { i => "i" + i }).mkString(",")
 
-  def isTop = false
+  def isTop = property.isTop
 
-  def isBottom = false
+  def isBottom = property.isBottom
 
   def isEmpty = property.isEmpty
+
+  def top = new JVMEnvFixedFrame(maxLocals, property.top)
+
+  def bottom = new JVMEnvFixedFrame(maxLocals, property.bottom)
 }
 
 /**

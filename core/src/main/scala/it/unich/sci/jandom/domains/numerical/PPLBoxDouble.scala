@@ -155,11 +155,13 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
 
   def isEmpty: Boolean = pplbox.is_empty
 
-  def isFull: Boolean = pplbox.is_universe
+  def isTop: Boolean = pplbox.is_universe
 
-  def empty() = PPLBoxDouble.bottom(pplbox.space_dimension.toInt)
+  def isBottom = isEmpty
 
-  def full() = PPLBoxDouble.top(pplbox.space_dimension.toInt)
+  def bottom = PPLBoxDouble.bottom(pplbox.space_dimension.toInt)
+
+  def top = PPLBoxDouble.top(pplbox.space_dimension.toInt)
 
   def tryCompareTo[B >: PPLBoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLBoxDouble =>

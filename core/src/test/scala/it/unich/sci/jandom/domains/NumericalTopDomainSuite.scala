@@ -40,9 +40,8 @@ class NumericalTopDomainSuite extends FunSpec {
       if (dim != 0) oneCoeffs(0) = 1
 
       describe(s"has an unique element which") {
-        it("should be full") { assert(x.isFull) }
-        it("should not be top") { assert(!x.isTop) }
-        it("should not be bottom") { assert(!x.isBottom) }
+        it("should be full") { assert(x.isTop) }
+        it("should be bottom") { assert(x.isBottom) }
         it("should not be empty") { assert(!x.isEmpty) }
         it(s"should have dimension $dim") { expectResult(dim) (x.dimension)}
       }

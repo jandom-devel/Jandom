@@ -46,13 +46,13 @@ class ProductSuite extends FunSuite {
   test("constructors and extractors the empty pair") {
     expectResult(n) { empty.dimension }
     expectResult(true) { empty.isEmpty }
-    expectResult(false) { empty.isFull }
+    expectResult(false) { empty.isTop }
   }
 
   test("constructors and extractors for the full pair") {
     expectResult(n) { full.dimension }
     expectResult(false) { full.isEmpty }
-    expectResult(true) { full.isFull }
+    expectResult(true) { full.isTop }
   }
 
   /*
@@ -63,7 +63,7 @@ class ProductSuite extends FunSuite {
 
   val p1= new productDomain.ProductProperty(BoxDouble.top(n), Parallelotope.top(n))
   test("construct a full product") {
-    expectResult(true) {p1.isFull}
+    expectResult(true) {p1.isTop}
     expectResult(false) {p1.isEmpty}
 
   }
@@ -71,7 +71,7 @@ class ProductSuite extends FunSuite {
   val box = BoxDouble(Array(1, 2), Array(5, 4))
   val p2= new productDomain.ProductProperty(box, Parallelotope.top(n))
  test("construct a full product") {
-    expectResult(false) {p1.isFull}
+    expectResult(false) {p1.isTop}
     expectResult(false) {p1.isEmpty}
   }
 
@@ -80,7 +80,7 @@ class ProductSuite extends FunSuite {
   val ptopeFull = Parallelotope.top(n)
   val p3= new productDomain.ProductProperty(boxEmpty, ptopeFull)
  test("construct an empty product") {
-    expectResult(false) {p1.isFull}
+    expectResult(false) {p1.isTop}
     expectResult(true) {p1.isEmpty}
   }
 

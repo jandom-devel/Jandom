@@ -110,46 +110,6 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
   def mapDimensions(rho: Seq[Int]): Property
 
   /**
-   * Returns the dimension of the environment space.
-   * @return the dimension of the environment space.
-   */
-  def dimension: Int
-
-  /**
-   * Test of emptiness
-   * @return whether the abstract object is empty.
-   */
-  def isEmpty: Boolean
-
-  /**
-   * Test for fullness.
-   * @return whether the abstract object represents the full environment space.
-   */
-  def isFull: Boolean
-
-  /**
-   * Returns an empty object with the same `dimension` as `this`.
-   */
-  def empty: Property
-
-  /**
-   * Returns a full object with the same `dimension` as `this`.
-   */
-  def full: Property
-
-  /**
-   * @inheritdoc
-   * Returns false since, if not otherwise specified, numerical domains have no top element.
-   */
-  def isTop = false
-
-  /**
-   * @inheritdoc
-   * Returns false since, if not otherwise specified, numerical domains have no bottom element.
-   */
-  def isBottom = false
-
-  /**
    * Returns a string representation of the property.
    * @param vars an array with the name of the variables
    * @return a sequence of strings. The idea is that each string is an atomic piece of information

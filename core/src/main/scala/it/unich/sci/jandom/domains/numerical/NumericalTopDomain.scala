@@ -76,9 +76,10 @@ object NumericalTopDomain extends NumericalDomain {
     def delVariable(n: Int) = { require(n < dimension); new Property(dimension - 1) }
     def mapDimensions(rho: Seq[Int]) = new Property(rho count { _ != -1 })
     def isEmpty = false
-    def isFull = true
-    def empty = this
-    def full = this
+    def isTop = true
+    def isBottom = true
+    def bottom = this
+    def top = this
     def mkString(vars: IndexedSeq[String]): Seq[String] = Seq("top")
   }
 

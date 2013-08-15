@@ -91,7 +91,18 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
 
   /**
    * Returns true if this an empty element, i.e. it represents unreachability. If
-   * `x.isEmpty` is true, the same happens for `x.isBottom`.
+   * `x.isEmpty` is true, the same happens for `x.isBottom`, but the opposite does
+   * not always hold.
    */
   def isEmpty: Boolean
+
+  /**
+   * Returns the top property on the same fiber as `this`
+   */
+  def top: Property
+
+  /**
+   * Returns the bottom property on the same fiber as `this`
+   */
+  def bottom: Property
 }

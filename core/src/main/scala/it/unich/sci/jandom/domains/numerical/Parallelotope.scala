@@ -266,7 +266,7 @@ class Parallelotope(
       result.high(i) = result.high(i) min high(i)
     }
     if( (0 until result.low.length) exists { i => (result.low(i) > result.high(i) ) })
-      empty
+      bottom
     else   new Parallelotope(false, result.low, result.A, result.high) //this is to normalize
   }
 
@@ -346,13 +346,13 @@ class Parallelotope(
    */
   def linearDisequality(coeff: Array[Double], known: Double): Parallelotope = {
     if (coeff.forall(_ == 0))
-      if (known == 0) empty else this
+      if (known == 0) bottom else this
     else {
       val row = (0 until dimension).find(A(_, ::).toDenseVector == DenseVector(coeff))
       row match {
         case None => this
         case Some(row) =>
-          if (low(row) == known && high(row) == known) empty else this
+          if (low(row) == known && high(row) == known) bottom else this
       }
     }
   }
@@ -450,11 +450,13 @@ class Parallelotope(
 
   def dimension = A.rows
 
-  def isFull = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
+  def isTop = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
 
-  def empty = Parallelotope.bottom(dimension)
+  def isBottom = isEmpty
 
-  def full = Parallelotope.top(dimension)
+  def bottom = Parallelotope.bottom(dimension)
+
+  def top = Parallelotope.top(dimension)
 
   def tryCompareTo[B >: Parallelotope](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = that match {
     case that: Parallelotope =>
@@ -500,7 +502,7 @@ class Parallelotope(
   def <=[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Boolean = {
     if (isEmpty) return (true)
     if (that.isEmpty) return (false)
-    if (that.isFull) return (true)
+    if (that.isTop) return (true)
     val ptemp = this.rotate(that.A)
     (0 to ptemp.low.length - 1) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) }
   }

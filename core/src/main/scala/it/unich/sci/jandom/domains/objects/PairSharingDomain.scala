@@ -156,7 +156,7 @@ object PairSharingDomain extends ObjectDomain {
 
     def assignVariableToField(dst: Int, field: Int, src: Int) =
       if (isNull(dst))
-        bottom(dimension)
+        bottom
       else
         new Property(starUnion(starUnion(ps + UP(dst, src), src), dst), dimension)
 
@@ -166,11 +166,17 @@ object PairSharingDomain extends ObjectDomain {
 
     def testNull(v: Int) = new Property(removeVariable(ps, v), dimension)
 
-    def testNotNull(v: Int) = if (isNull(v)) bottom(dimension) else this
+    def testNotNull(v: Int) = if (isNull(v)) bottom else this
 
-    def isTop = false
-    def isBottom = false
+    def isTop = ((0 until dimension) zip  (0 until dimension)) forall { case (i,j) => ps contains UP(i,j) }
+
+    def isBottom = ps.isEmpty
+
     def isEmpty = false
+
+    def top = PairSharingDomain.top(dimension)
+
+    def bottom = PairSharingDomain.bottom(dimension)
 
     def union(that: Property) = {
       assert(dimension == that.dimension)

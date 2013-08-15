@@ -34,7 +34,7 @@ class PPLMacroPropertySuite extends FunSuite {
   val empty = octDomain.bottom(3)
 
   test("full should be full") {
-    expectResult(true) { full.isFull }
+    expectResult(true) { full.isTop }
   }
 
   test("full should not be empty") {
@@ -46,7 +46,7 @@ class PPLMacroPropertySuite extends FunSuite {
   }
 
   test("empty should not be full") {
-    expectResult(false) { empty.isFull }
+    expectResult(false) { empty.isTop }
   }
 
   test("empty should be strictly less than full") {

@@ -232,7 +232,16 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
         addVariable(v.getType())
     }
 
+    def top = Property(prop.top, vars)
+
+    def bottom = Property(prop.bottom, vars)
+
+    def isTop = prop.isTop
+
+    def isBottom = prop.isBottom
+
     def isEmpty = prop.isEmpty
+
 
     /*  def isCompatibleWith(that: Property) =
     	prop == that.prop &&

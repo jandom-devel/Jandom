@@ -63,15 +63,17 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
 
   def mapDimensions(rho: Seq[Int]): Property = ???
 
-  def dimension: Int = ???
+  def dimension = ???
 
-  def isEmpty: Boolean = ???
+  def isTop = ???
 
-  def isFull: Boolean = ???
+  def isEmpty = ???
 
-  def empty: Property = ???
+  def isBottom = ???
 
-  def full: Property = ???
+  def bottom: Property = ???
+
+  def top: Property = ???
 
   def mkString(vars: IndexedSeq[String]): Seq[String] = ???
 

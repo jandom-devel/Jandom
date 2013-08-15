@@ -170,13 +170,15 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
 
   def dimension: Int = domain.space_dimension(pplobject).toInt
 
-  def isEmpty: Boolean = domain.is_empty(pplobject)
+  def isEmpty  = domain.is_empty(pplobject)
 
-  def isFull: Boolean = domain.is_universe(pplobject)
+  def isTop = domain.is_universe(pplobject)
 
-  def empty() = domain.bottom(domain.space_dimension(pplobject).toInt)
+  def isBottom = isEmpty
 
-  def full() = domain.top(domain.space_dimension(pplobject).toInt)
+  def bottom = domain.bottom(domain.space_dimension(pplobject).toInt)
+
+  def top = domain.top(domain.space_dimension(pplobject).toInt)
 
   def tryCompareTo[B >: PPLProperty[PPLNativeProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLProperty[_] =>

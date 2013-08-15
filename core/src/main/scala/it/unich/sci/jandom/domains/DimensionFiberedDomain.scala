@@ -24,6 +24,7 @@ package it.unich.sci.jandom.domains
  * to increase or decrease dimension (i.e., add or remove variables). It is similar
  * to the concept of cylindric algebra, but operations are defined only for elements
  * of the same dimension.
+ *
  * @author Gianluca Amato <gamato@unich.it>
  */
 

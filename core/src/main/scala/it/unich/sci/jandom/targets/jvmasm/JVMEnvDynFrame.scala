@@ -73,7 +73,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
   }
 
   def empty {
-    property = property.empty
+    property = property.bottom
   }
 
   def ipush(c: Int) {
@@ -168,11 +168,15 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
   override def toString =
     "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
 
-  def isTop = false
+  def isTop = property.isTop
 
-  def isBottom = false
+  def isBottom = isEmpty
 
   def isEmpty = property.isEmpty
+
+  def top = new JVMEnvDynFrame(frame, stack, property.top)
+
+  def bottom = new JVMEnvDynFrame(frame, stack, property.bottom)
 }
 
 /**

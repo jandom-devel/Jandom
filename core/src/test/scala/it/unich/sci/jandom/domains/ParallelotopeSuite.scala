@@ -41,19 +41,19 @@ class ParallelotopeSuite extends FunSuite {
   test("constructors and extractors for non-trivial parallelotopes") {
     expectResult(2) { box.dimension }
     expectResult(false) { box.isEmpty }
-    expectResult(false) { box.isFull }
+    expectResult(false) { box.isTop }
   }
 
   test("constructors and extractors for full parallelotopes") {
     expectResult(2) { full.dimension }
     expectResult(false) { full.isEmpty }
-    expectResult(true) { full.isFull }
+    expectResult(true) { full.isTop }
   }
 
   test("constructors and extractors for empty parallelotopes") {
     expectResult(2) { empty.dimension }
     expectResult(true) { empty.isEmpty }
-    expectResult(false) { empty.isFull }
+    expectResult(false) { empty.isTop }
   }
 
   test("comparison of parallelotopes") {

@@ -73,9 +73,9 @@ import it.unich.sci.jandom.domains.DomainTransformation
       if (x1.isEmpty && x2.isEmpty)
         this
       else if (x1.isEmpty)
-        new Property(x1, x2.empty)
+        new Property(x1, x2.bottom)
       else if (x2.isEmpty)
-        new Property(x1.empty, x2)
+        new Property(x1.bottom, x2)
       else {
         val y1=x1.intersection(dom2Todom1.apply(x2))
         val y2=x2.intersection(dom1Todom2.apply(x1))
@@ -167,16 +167,16 @@ import it.unich.sci.jandom.domains.DomainTransformation
 
     def dimension: Int = p1.dimension
 
-    def isEmpty: Boolean =
-      p1.isEmpty || p2.isEmpty
+    def isEmpty = p1.isEmpty || p2.isEmpty
 
-    def isFull: Boolean =
-      p1.isFull && p2.isFull
+    def isTop = p1.isTop && p2.isTop
 
-    def empty: Property =
+    def isBottom = ???
+
+    def bottom: Property =
       	ProductDomain.this.bottom(dimension)
 
-    def full: Property =
+    def top: Property =
        	ProductDomain.this.top(dimension)
 
     def mkString(vars: IndexedSeq[String]): Seq[String] = {

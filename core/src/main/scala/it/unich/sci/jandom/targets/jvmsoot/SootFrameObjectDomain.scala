@@ -217,7 +217,15 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
         this
     }
 
-    def isEmpty = false
+    def top = Property(prop.top, stack, globals)
+
+    def bottom = Property(prop.bottom, stack, globals)
+
+    def isTop = prop.isTop
+
+    def isBottom = prop.isBottom
+
+    def isEmpty = prop.isEmpty
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
       other match {

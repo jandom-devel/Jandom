@@ -296,8 +296,5 @@ trait SootFrameDomain extends AbstractDomain {
     def evalStaticField(v: StaticFieldRef): Property
 
     override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
-
-    def isTop = false
-    def isBottom = false
   }
 }
