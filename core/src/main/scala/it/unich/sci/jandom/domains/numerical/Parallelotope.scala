@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato, Francesca Scozzari
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -26,6 +26,8 @@ import scala.Array.canBuildFrom
  * using the Breeze Math library. It is not safe to use, since it does not implement rounding correctly.
  * Real domains should be implemented within $PPL or $APRON.
  * @author Gianluca Amato <g.amato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
+ *
  *
  * @constructor Builds a `Parallelotope`.
  * @param isEmpty is true if the parallelotope is empty. In this case, the other parameters are not relevant.
@@ -290,16 +292,18 @@ class Parallelotope(
       new Parallelotope(false, newlow, newA, newhigh)
     } else {
       val newP = nonDeterministicAssignment(n)
-      val Aprime = newP.A
+      val Aprime = newP.A.toDenseMatrix
       val j = ((0 to Aprime.rows - 1) find { Aprime(_, n) != 0 }).get
       for (s <- 0 to dimension - 1 if Aprime(s, n) != 0 && s != j)
         Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
       val ei = DenseVector.zeros[Double](dimension)
       ei(n) = 1
       Aprime(j, ::) := ei :- DenseVector(coeff)
-      newP.low(j) = known
-      newP.high(j) = known
-      return newP
+      val newlow = newP.low.toDenseVector
+      val newhigh = newP.high.toDenseVector
+      newlow(j) = known
+      newhigh(j) = known
+      return new Parallelotope(false, newlow, Aprime, newhigh)
     }
   }
 
