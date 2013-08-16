@@ -148,7 +148,7 @@ class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalP
     new PPLCPolyhedron(newpplpolyhedron)
   }
 
-  def mapDimensions(rho: Seq[Int]) = {
+  def mapVariables(rho: Seq[Int]) = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     val pf = new Partial_Function
     for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {

@@ -388,19 +388,6 @@ class Parallelotope(
     newhigh(r) = Double.PositiveInfinity
     new Parallelotope(false, newlow, newA, newhigh)
   }
-/*
-  def addVariable(v: Int): Parallelotope = {
-    val newA = DenseMatrix.zeros[Double](dimension+1, dimension+1)
-    for (i <- 0 until dimension; j <- 0 until dimension) {
-      val newi = if (i < v) i else i+1
-      val newj = if (j < v) j else j+1
-      newA(newi,newj) = A(i,j)
-    }
-    val newlow = DenseVector.vertcat(low(0 until v), DenseVector(Double.NegativeInfinity), low(v until dimension))
-    val newhigh = DenseVector.vertcat(high(0 until v), DenseVector(Double.PositiveInfinity), high(v until dimension))
-    new Parallelotope(false, newlow, newA, newhigh)
-  }
-*/
 
   def addVariable(): Parallelotope = {
     if(isEmpty)
@@ -425,7 +412,7 @@ class Parallelotope(
    * @inheritdoc
    * @note Not yet implemented.
    */
-  def mapDimensions(rho: Seq[Int]): Parallelotope = ???
+  def mapVariables(rho: Seq[Int]): Parallelotope = ???
 
   /**
    * @inheritdoc

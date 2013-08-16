@@ -20,9 +20,9 @@ package it.unich.sci.jandom.domains
 
 /**
  * A `DimensionFiberedDomain` is a domain whose fibers are characterized by a natural
- * number called dimension. Each property is endowed with operations
- * to increase or decrease dimension (i.e., add or remove variables). It is similar
- * to the concept of cylindric algebra, but operations are defined only for elements
+ * number called dimension, which counts the number of variables. Each property is endowed
+ * with operations to increase or decrease dimension (i.e., add or remove variables). It
+ * is similar to the concept of a cylindric algebra, but operations are defined only for elements
  * of the same dimension.
  *
  * @author Gianluca Amato <gamato@unich.it>
@@ -32,12 +32,12 @@ trait DimensionFiberedDomain extends AbstractDomain {
   type Property <: DimensionFiberedProperty[Property]
 
   /**
-   * Returns the top element of the given dimension
+   * Returns the top element of the given dimension.
    */
   def top(dimension: Int): Property
 
   /**
-   * Returns the bottom element of the given dimension
+   * Returns the bottom element of the given dimension.
    */
   def bottom(dimension: Int): Property
 }

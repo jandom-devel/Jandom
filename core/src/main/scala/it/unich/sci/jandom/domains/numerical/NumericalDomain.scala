@@ -21,15 +21,15 @@ package it.unich.sci.jandom.domains.numerical
 import it.unich.sci.jandom.domains.DimensionFiberedDomain
 
 /**
- * Base class for numerical domains. It is the factory class for numerical
- * properties, i.e., instances of [[it.unich.sci.jandom.domains.NumericalProperty]].
+ * Base class for numerical domains. The fiber of dimension `n` of a numerical domain
+ * is an abstraction of the powerset of R^n. Numerical properties are  instances of
+ * [[it.unich.sci.jandom.domains.NumericalProperty]].
  * @author Gianluca Amato <gamato@unich.it>
  */
 abstract class NumericalDomain extends DimensionFiberedDomain {
-
   /**
    * @inheritdoc
-   * For numerical domains, these properties needs to be instances of [[it.unich.sci.jandom.domains.NumericalProperty]].
+   * For numerical domains, properties needs to be instances of [[it.unich.sci.jandom.domains.NumericalProperty]].
    */
   type Property <: NumericalProperty[Property]
 }

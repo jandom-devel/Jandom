@@ -70,7 +70,7 @@ class ProductSuite extends FunSuite {
 
   val box = BoxDouble(Array(1, 2), Array(5, 4))
   val p2= new productDomain.ProductProperty(box, Parallelotope.top(n))
- test("construct a full product") {
+ test("construct a full product 2") {
     expectResult(false) {p1.isTop}
     expectResult(false) {p1.isEmpty}
   }

@@ -104,9 +104,9 @@ class BoxDoubleSuite extends FunSuite {
     val i = BoxDouble(Array(0, 0), Array(1, 2))
     val j = BoxDouble(Array(0, 0), Array(2, 1))
     val h = BoxDouble(Array(0), Array(2))
-    expectResult(j)(i.mapDimensions(Seq(1, 0)))
-    expectResult(i)(i.mapDimensions(Seq(0, 1)))
-    expectResult(h)(i.mapDimensions(Seq(-1, 0)))
+    expectResult(j)(i.mapVariables(Seq(1, 0)))
+    expectResult(i)(i.mapVariables(Seq(0, 1)))
+    expectResult(h)(i.mapVariables(Seq(-1, 0)))
   }
 
   test("minimization, maximization and frequency") {

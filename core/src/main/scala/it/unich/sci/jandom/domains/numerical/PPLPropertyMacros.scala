@@ -159,7 +159,7 @@ object PPLPropertyMacros {
           new PPLProperty(newpplbox)
         }
 
-        def mapDimensions(rho: Seq[Int]): PPLProperty = {
+        def mapVariables(rho: Seq[Int]): PPLProperty = {
           val newpplbox = new Double_Box(pplbox)
           val pf = new Partial_Function
           // The code we use in the reflexive implementation does not work in the macro implementation

@@ -20,22 +20,24 @@ package it.unich.sci.jandom.domains
 
 /**
  * The base class for all abstract properties, i.e. elements of abstract domains. Abstract
- * properties implements a set of poset-like operations, which are union/intersection
+ * properties implements a set of poset-like operations, such as union/intersection
  * (corresponding to meet/join) and widening/narrowing. Moreover, abstract properties are
- * partially ordered. Abstract properties use F-bounded polymorhpism to ensure type safety.
+ * partially ordered. Abstract properties use F-bounded polymorhpism to ensure type safety,
+ * hence a concrete class `C` implementing an abstract property should inherit from
+ * `AbstractProperty[C]`.
  *
  * Properties are partitioned in fibers. Binary operators are guaranteed to work when
- * both elements are part of the same fiber.
+ * both elements are part of the same fiber. Finally, properties are immutable.
  *
  * @tparam Property the real class we are endowing with the AbstractProperty quality.
- * @define NOTEDIMENSION `this` and `that` should generally be part of the same fiber.
+ * @define NOTEFIBER `this` and `that` should generally be part of the same fiber.
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait AbstractProperty[Property <: AbstractProperty[Property]] extends PartiallyOrdered[Property] {
   /**
    * The standard widening for two abstract properties.
    * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
-   * @note NOTEDIMENSION
+   * @note NOTEFIBER
    * @return the widening of the two abstract properties.
    */
   def widening(that: Property): Property
@@ -43,7 +45,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   /**
    * The standard widening for two abstract properties.
    * @param that the abstract object to be narrowed with `this`. `that` IS assumed to be smaller than `this`.
-   * @note NOTEDIMENSION
+   * @note NOTEFIBER
    * @return the narrowing of the two abstract properties.
    */
   def narrowing(that: Property): Property
@@ -52,7 +54,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
    * Compute an upper bound of two abstract properties. If it is possible and convenient, this should compute
    * the least upper bound, but it is not a requirement.
    * @param that the abstract object to join with `this`.
-   * @note NOTEDIMENSION
+   * @note NOTEFIBER
    * @return an upper bound of the two abstract properties.
    */
   def union(that: Property): Property
@@ -61,7 +63,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
    * Compute a lower bound of two abstract properties. If it is possible and convenient, this should compute
    * the greatest lower bound, but it is not a requirement.
    * @param that the abstract object to meet with `this`.
-   * @note NOTEDIMENSION
+   * @note NOTEFIBER
    * @return a lower bound of the two abstract properties.
    */
   def intersection(that: Property): Property
@@ -97,12 +99,12 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   def isEmpty: Boolean
 
   /**
-   * Returns the top property on the same fiber as `this`
+   * Returns the top property on the same fiber as `this`.
    */
   def top: Property
 
   /**
-   * Returns the bottom property on the same fiber as `this`
+   * Returns the bottom property on the same fiber as `this`.
    */
   def bottom: Property
 }

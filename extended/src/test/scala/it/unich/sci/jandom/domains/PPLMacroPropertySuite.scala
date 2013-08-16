@@ -113,9 +113,9 @@ class PPLMacroPropertySuite extends FunSuite {
     val obj2 = full.linearInequality(Array(1, 1, 0), 1).linearInequality(Array(0, 1, 0), 2)
     val obj3 = octDomain.top(2).linearInequality(Array(1, 0), 2)
 
-    expectResult(obj)(obj.mapDimensions(Seq(0, 1, 2)))
-    expectResult(obj2)(obj.mapDimensions(Seq(1, 0, 2)))
-    expectResult(obj3)(obj2.mapDimensions(Seq(-1, 0, 1)))
+    expectResult(obj)(obj.mapVariables(Seq(0, 1, 2)))
+    expectResult(obj2)(obj.mapVariables(Seq(1, 0, 2)))
+    expectResult(obj3)(obj2.mapVariables(Seq(-1, 0, 1)))
   }
 
   test("connect") {

@@ -63,6 +63,12 @@ class PairSharingSuite extends FunSuite {
     assert(dom.allPairs(Seq(0, 2), 3) === dom(Set(UP(0, 0), UP(0, 2), UP(2, 2)), 3))
   }
 
+  test("Operations on fibers") {
+    val ps1 = dom(Set(UP(0,0), UP(0,2), UP(2,2)), 3)
+    val ps2 = ps1.mapVariables(Seq(1,0,-1))
+    assert (ps2 === dom(Set(UP(1,1)), 2))
+  }
+
   test("Operations on variables") {
     val ps1 = dom.bottom(3)
     val ps2 = ps1.addFreshVariable
@@ -91,21 +97,21 @@ class PairSharingSuite extends FunSuite {
     assert(ps4.addFreshVariable.assignFieldToVariable(3, 2, 1) == ps4.addFreshVariable.assignVariable(3, 2))
   }
 
-  test("removeHigherVariables") {
+  test("Delete last variables") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1)), 2)
-    expectResult(ps2)(ps1.removeHigherVariables(2))
+    expectResult(ps2)(ps1.delVariables(2 until 4))
   }
 
-  test("removeLowerVariables") {
+  test("Delete first variables") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(1, 1)), 2)
-    expectResult(ps2)(ps1.removeLowerVariables(2))
+    expectResult(ps2)(ps1.delVariables(0 until 2))
   }
 
-  test("removeRangeOfVariables") {
+  test("Delete variables in the middle") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
-    expectResult( dom(Set(UP(0, 0), UP(1, 1)) ,2) ) (ps1.removeRangeOfVariables(1 to 2))
+    expectResult( dom(Set(UP(0, 0), UP(1, 1)) ,2) ) (ps1.delVariables(1 to 2))
   }
 
   test("connectFull: nullness of first property is definitive") {
@@ -150,5 +156,4 @@ class PairSharingSuite extends FunSuite {
     val ps3 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(1, 5), UP(3, 3), UP(3, 5), UP(4, 4), UP(5, 5)), 6)
     expectResult(ps3)(ps1.connectFull(ps2, 2))
   }
-
 }

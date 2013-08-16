@@ -55,52 +55,18 @@ object PairSharingDomain extends ObjectDomain {
       new Property(ps ++ ps2, dimension + 1)
     }
 
-    /*
-    def addVariable(v: Int) = {
-      val ps2 = if (v < dimension) shiftVariables(v) else ps
-      val ps3 = for (UP(i, j) <- ps2; if (i == j)) yield UP(i, v)
-      new Property(ps2 ++ ps3, dimension + 1)
-    }
-    */
-
-    def addFreshVariable = new Property(ps + UP((dimension, dimension)), dimension + 1)
-
     def delVariable(n: Int) =
       if (n == dimension - 1)
         new Property(removeVariable(ps, n), dimension - 1)
       else
         new Property(removeVariable(renameVariable(renameVariable(ps, dimension, n), n, dimension - 1), dimension), dimension - 1)
 
-    def removeRangeOfVariables(range: Range) = {
-      assert(range.isEmpty || (range.head >= 0 && range.last < dimension && range.last >= range.head))
-      val newps = for {
-        UP(l, r) <- ps
-        if !(range contains r) && !(range contains l)
-        l1 = if (l > range.last) l - range.size else l
-        r1 = if (r > range.last) r - range.size else r
-      } yield UP(l1, r1)
-      Property(newps, dimension - range.size)
+    def mapVariables(rho: Seq[Int]) = {
+        val ps2 = for ( UP(l, r) <- ps; if rho(l) != -1; if rho(r) != -1) yield UP(rho(l),rho(r))
+        new Property(ps2, dimension - rho.count { _ == -1 })
     }
 
-    def removeLowerVariables(newSize: Int) = {
-      assert(newSize >= 0 && newSize <= dimension)
-      if (newSize == dimension)
-        this
-      else {
-        val firstVar = dimension - newSize
-        val newps: Set[UP[Int]] = for (UP(l, r) <- ps; if l >= firstVar)
-          yield UP(l - firstVar, r - firstVar)
-        new Property(newps, newSize)
-      }
-    }
-
-    def removeHigherVariables(newSize: Int) = {
-      assert(newSize >= 0 && newSize <= dimension)
-      if (newSize == dimension)
-        this
-      else
-        new Property(ps filter { case UP(l, r) => r < newSize }, newSize)
-    }
+    def addFreshVariable = new Property(ps + UP((dimension, dimension)), dimension + 1)
 
     /**
      * This is similar to connect, but do not remove the common properties.
@@ -131,7 +97,7 @@ object PairSharingDomain extends ObjectDomain {
     }
 
     def connect(that: Property, common: Int) = {
-      connectFull(that, common).removeRangeOfVariables(dimension - common to dimension - 1)
+      connectFull(that, common).delVariables(dimension - common until dimension)
     }
 
     def assignNull(dst: Int) = new Property(removeVariable(ps, dst), dimension)
@@ -168,7 +134,7 @@ object PairSharingDomain extends ObjectDomain {
 
     def testNotNull(v: Int) = if (isNull(v)) bottom else this
 
-    def isTop = ((0 until dimension) zip  (0 until dimension)) forall { case (i,j) => ps contains UP(i,j) }
+    def isTop = ((0 until dimension) zip (0 until dimension)) forall { case (i, j) => ps contains UP(i, j) }
 
     def isBottom = ps.isEmpty
 

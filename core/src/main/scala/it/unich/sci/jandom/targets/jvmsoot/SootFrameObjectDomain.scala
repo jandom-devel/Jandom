@@ -192,7 +192,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
       Property(prop union that.prop, stack, globals)
     }
 
-    def restrict(newSize: Int) = Property(prop removeHigherVariables newSize, stack dropRight (size - newSize), globals)
+    def restrict(newSize: Int) = Property(prop delVariables (size-newSize until size), stack dropRight (size - newSize), globals)
 
     def connect(p: Property, common: Int): Property = Property(prop.connect(p.prop, common), p.stack.dropRight(common) ++ stack.drop(common), globals)
 

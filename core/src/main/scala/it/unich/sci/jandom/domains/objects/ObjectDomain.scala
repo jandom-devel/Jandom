@@ -22,9 +22,9 @@ import it.unich.sci.jandom.domains.DimensionFiberedDomain
 import it.unich.sci.jandom.domains.DimensionFiberedProperty
 
 /**
- * This trait represents a domain which handles objects and their relationship. May be used, for
- * example, for sharing analysis. This is only a draft, and will be probably improved along the
- * development of Jandom.
+ * This trait represents the interface for a domain which handles objects and their relationship.
+ * May be used, for example, for sharing analysis. This is only a draft, and will be probably improved
+ * along the development of Jandom.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
@@ -33,7 +33,7 @@ trait ObjectDomain extends DimensionFiberedDomain {
   type Property <: ObjectProperty[Property]
 
   /**
-   * This trait represents single abstract element in an object domain.
+   * This trait is the interface for abstract elements in an object domain.
    */
   trait ObjectProperty[Property <: ObjectProperty[Property]] extends DimensionFiberedProperty[Property] {
     this: Property =>
@@ -41,9 +41,6 @@ trait ObjectDomain extends DimensionFiberedDomain {
     type ShareFilter = UP[Int] => Boolean
 
     def addFreshVariable: Property
-    def removeRangeOfVariables(range: Range): Property
-    def removeLowerVariables(newSize: Int): Property
-    def removeHigherVariables(newSize: Int): Property
     def assignNull(dst: Int = dimension - 1): Property
     def assignVariable(dst: Int, src: Int): Property
     def assignVariableToField(dst: Int, field: Int, src: Int): Property

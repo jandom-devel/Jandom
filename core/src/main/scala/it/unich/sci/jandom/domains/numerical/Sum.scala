@@ -61,7 +61,7 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
 
   def delVariable(n: Int): Property = ???
 
-  def mapDimensions(rho: Seq[Int]): Property = ???
+  def mapVariables(rho: Seq[Int]): Property = ???
 
   def dimension = ???
 

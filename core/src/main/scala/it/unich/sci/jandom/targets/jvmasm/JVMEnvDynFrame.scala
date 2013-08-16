@@ -69,7 +69,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
         dimMap = dimMap :+ n
       }
     for ((o, n) <- (stack zip that.stack)) dimMap(o) = n
-    extractedProperty.mapDimensions(dimMap)
+    extractedProperty.mapVariables(dimMap)
   }
 
   def empty {

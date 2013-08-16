@@ -158,7 +158,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
     new PPLProperty(domain, newpplobject)
   }
 
-  def mapDimensions(rho: Seq[Int]) = {
+  def mapVariables(rho: Seq[Int]) = {
     val newpplobject = domain.copyConstructor(pplobject)
     val pf = new Partial_Function
     for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {

@@ -21,15 +21,12 @@ package it.unich.sci.jandom.domains.numerical
 import it.unich.sci.jandom.domains.DimensionFiberedProperty
 
 /**
- * Base class for numerical properties and their operations. A concrete class `C` implementing a numerical
- * property should inherit from `NumericalProperty[C]`. Note that binary operations only works between
- * compatible properties, i.e. properties over vector spaces of the same dimension. Numerical
- * properties are immutable.
- *
- * Most of the operations accepting dimensions as parameters have default value of `dimension-1` or `dimension-2`.
+ * Base class for numerical properties and their operations.
  *
  * @tparam Property the property type we attach to and provide numerical operations.
  * @author Gianluca Amato <gamato@unich.it>
+ * @note Most of the operations accepting variables as parameters, have default values of `dimension-1` or `dimension-2`.
+ *
  * @define PPL [[http://bugseng.com/products/ppl/ PPL]]
  * @define APRON [[http://apron.cri.ensmp.fr/library/ APRON]]
  * @define NOTEN `n` should be within `0` and `dimension-1`.
@@ -38,7 +35,6 @@ import it.unich.sci.jandom.domains.DimensionFiberedProperty
  */
 
 trait NumericalProperty[Property <: NumericalProperty[Property]] extends DimensionFiberedProperty[Property] {
-
   this: Property =>
 
   /**
@@ -101,13 +97,6 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @return `Some(c)` if such a value exists, `None` otherwise.
    */
   def frequency(coeff: Array[Double], known: Double): Option[Double]
-
-  /**
-   * Map dimensions according to a partial injective function.
-   * @param rho partial injective function. Each dimension `i` is mapped to `rho(i)`. If `rho(i)` is
-   * `-1`, then dimension i is removed.
-   */
-  def mapDimensions(rho: Seq[Int]): Property
 
   /**
    * Returns a string representation of the property.
@@ -308,7 +297,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
   def connect(p: Property, common: Int) = {
     val newprop = addVariables(p.dimension - common)
     val seq = (dimension - common until newprop.dimension) ++ (0 until dimension - common)
-    val newp = p.addVariables(dimension - common).mapDimensions(seq)
+    val newp = p.addVariables(dimension - common).mapVariables(seq)
     (newprop intersection newp).delVariables(dimension - common to  dimension-1)
   }
 

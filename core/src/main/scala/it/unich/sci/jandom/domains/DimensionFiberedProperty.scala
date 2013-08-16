@@ -28,17 +28,17 @@ trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <
   this: Property =>
 
   /**
-   * Returns the dimension of the current object
+   * Returns the dimension of the property.
    */
   def dimension: Int
 
   /**
-   * Add a new variable
+   * Add a new variable.
    */
   def addVariable(): Property
 
   /**
-   * Add m new variables
+   * Add `m` new variables.
    * @note `m` should be positive
    */
   def addVariables(m: Int): Property = {
@@ -47,17 +47,24 @@ trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <
   }
 
   /**
-   * Remove variable `v`
+   * Remove the variable `v`, appropriately projecting the property.
    * @param v variable to remove
    * @note `v` should be between 0 and `dimension`-1
    */
   def delVariable(v: Int = dimension - 1): Property
 
   /**
-   * Remove variables in `vs`
-   * @note `vs` should contain integers between 0 and `dimension`-1 without repetitions.
+   * Remove variables in the `vs` range.
+   * @param vs the range of variables to remove
    */
-  def delVariables(vs: Seq[Int]): Property = {
-    vs.sortWith( _ > _ ).foldLeft(this) ( (p,i) => p.delVariable(i) )
+  def delVariables(vs: Range): Property = {
+    vs.foldRight(this) ( (i,p) => p.delVariable(i) )
   }
+
+  /**
+   * Map variables according to a partial injective function.
+   * @param rho partial injective function. Each dimension `i` is mapped to `rho(i)`. If `rho(i)` is
+   * `-1`, then dimension i is removed
+   */
+  def mapVariables(rho: Seq[Int]): Property
 }

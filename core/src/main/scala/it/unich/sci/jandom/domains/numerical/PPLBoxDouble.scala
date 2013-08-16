@@ -141,7 +141,7 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
     new PPLBoxDouble(newpplbox)
   }
 
-  def mapDimensions(rho: Seq[Int]) = {
+  def mapVariables(rho: Seq[Int]) = {
     val newpplbox = new Double_Box(pplbox)
     val pf = new Partial_Function
     for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {

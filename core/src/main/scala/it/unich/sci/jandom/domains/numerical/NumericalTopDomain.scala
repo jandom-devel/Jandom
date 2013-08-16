@@ -74,7 +74,7 @@ object NumericalTopDomain extends NumericalDomain {
 
     def addVariable = new Property(dimension + 1)
     def delVariable(n: Int) = { require(n < dimension); new Property(dimension - 1) }
-    def mapDimensions(rho: Seq[Int]) = new Property(rho count { _ != -1 })
+    def mapVariables(rho: Seq[Int]) = new Property(rho count { _ != -1 })
     def isEmpty = false
     def isTop = true
     def isBottom = true

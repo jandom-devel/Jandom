@@ -159,9 +159,9 @@ import it.unich.sci.jandom.domains.DomainTransformation
     def delVariable(n: Int): Property =
       new Property(p1.delVariable(n), p2.delVariable(n))
 
-    def mapDimensions(rho: Seq[Int]): Property = {
-      val q1 = p1.mapDimensions(rho)
-      val q2 = p2.mapDimensions(rho)
+    def mapVariables(rho: Seq[Int]): Property = {
+      val q1 = p1.mapVariables(rho)
+      val q2 = p2.mapVariables(rho)
       reduce(q1, q2)
     }
 

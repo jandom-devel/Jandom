@@ -333,7 +333,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @note @inheritdoc
    * @throws IllegalArgumentException if parameters are not correct (but we do not check injectivity of `rho`)
    */
-  def mapDimensions(rho: Seq[Int]) = {
+  def mapVariables(rho: Seq[Int]) = {
     require(rho.length == dimension)
     val newdim = rho.count(_ >= 0)
     require(rho forall { i => i >= -1 && i < newdim })
