@@ -63,12 +63,6 @@ class PairSharingSuite extends FunSuite {
     assert(dom.allPairs(Seq(0, 2), 3) === dom(Set(UP(0, 0), UP(0, 2), UP(2, 2)), 3))
   }
 
-  test("Operations on fibers") {
-    val ps1 = dom(Set(UP(0,0), UP(0,2), UP(2,2)), 3)
-    val ps2 = ps1.mapVariables(Seq(1,0,-1))
-    assert (ps2 === dom(Set(UP(1,1)), 2))
-  }
-
   test("Operations on variables") {
     val ps1 = dom.bottom(3)
     val ps2 = ps1.addFreshVariable
@@ -112,6 +106,12 @@ class PairSharingSuite extends FunSuite {
   test("Delete variables in the middle") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
     expectResult( dom(Set(UP(0, 0), UP(1, 1)) ,2) ) (ps1.delVariables(1 to 2))
+  }
+
+  test("Map variables") {
+    val ps1 = dom(Set(UP(0,0), UP(0,2), UP(2,2)), 3)
+    val ps2 = ps1.mapVariables(Seq(1,0,-1))
+    assert (ps2 === dom(Set(UP(1,1)), 2))
   }
 
   test("connectFull: nullness of first property is definitive") {
