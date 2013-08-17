@@ -75,7 +75,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
    * which should be printed out together, while different strings may be also printed out
    * separately.
    */
-  def mkString(vars: IndexedSeq[String]): Seq[String]
+  def mkString(vars: Seq[String]): String
 
   /**
    * Returns true if this is the top element on the fiber. A top element

@@ -512,7 +512,7 @@ class Parallelotope(
     case _ => false
   }
 
-  def mkString(vars: IndexedSeq[String]): Seq[String] = {
+  def mkString(vars: Seq[String]): String = {
 
     /**
      * Returns a string representation of the linear form `lf`.
@@ -541,13 +541,15 @@ class Parallelotope(
     }
 
     if (isEmpty)
-      Seq("empty")
-    else
-      for (i <- 0 until dimension) yield {
+      "empty"
+    else {
+      val eqns = for (i <- 0 until dimension) yield {
         if (low(i) < high(i))
           low(i) + " <= " + lfToString(A.t(::, i)) + " <= " + high(i)
         else lfToString(A.t(::, i)) + " = " + high(i)
       }
+      eqns.mkString("[ "," , "," ]")
+    }
   }
 }
 

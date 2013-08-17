@@ -123,7 +123,7 @@ class BoxDoubleSuite extends FunSuite {
 
   test("string conversion") {
     val i = BoxDouble(Array(0, -1), Array(2, 3))
-    expectResult(Seq("0.0 <= x <= 2.0", "-1.0 <= y <= 3.0")) { i.mkString(IndexedSeq("x", "y")) }
+    expectResult("[ 0.0 <= x <= 2.0 , -1.0 <= y <= 3.0 ]") { i.mkString(Seq("x", "y")) }
     expectResult("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
   }
 }

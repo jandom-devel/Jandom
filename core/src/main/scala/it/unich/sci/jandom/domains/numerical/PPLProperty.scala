@@ -201,7 +201,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
 
   override def hashCode: Int = pplobject.hashCode
 
-  def mkString(vars: IndexedSeq[String]): Seq[String] = {
+  def mkString(vars: Seq[String]): String = {
     import collection.JavaConversions._
 
     val vs = new Variable_Stringifier {
@@ -211,7 +211,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPL
     val result = for (c <- domain.minimized_constraints(pplobject))
       yield c.toString
     Variable.setStringifier(null)
-    result
+    result.mkString("[ "," , "," ]")
   }
 }
 

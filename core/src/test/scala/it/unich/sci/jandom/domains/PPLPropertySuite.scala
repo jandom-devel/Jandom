@@ -97,7 +97,7 @@ class PPLPropertySuite extends FunSuite {
   test("string conversion") {
     val obj = full.linearInequality(Array(1, 1, 0), 1)
     val obj2 = obj.linearInequality(Array(1, 0, 0), 2)
-    expectResult(Seq("-x >= 2", "-x - y >= 1")) { obj2.mkString(IndexedSeq("x", "y", "z")).toSeq }
+    expectResult("[ -x >= 2 , -x - y >= 1 ]") { obj2.mkString(Seq("x", "y", "z")) }
     expectResult("[ -v0 >= 2 , -v0 - v1 >= 1 ]") { obj2.toString }
   }
 

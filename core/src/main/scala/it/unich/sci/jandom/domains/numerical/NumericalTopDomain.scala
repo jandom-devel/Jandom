@@ -80,7 +80,7 @@ object NumericalTopDomain extends NumericalDomain {
     def isBottom = true
     def bottom = this
     def top = this
-    def mkString(vars: IndexedSeq[String]): Seq[String] = Seq("top")
+    def mkString(vars: Seq[String]): String = "top"
   }
 
   def top(n: Int) = Property(n)

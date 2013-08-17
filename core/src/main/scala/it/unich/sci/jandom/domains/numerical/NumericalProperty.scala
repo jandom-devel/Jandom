@@ -25,7 +25,7 @@ import it.unich.sci.jandom.domains.DimensionFiberedProperty
  *
  * @tparam Property the property type we attach to and provide numerical operations.
  * @author Gianluca Amato <gamato@unich.it>
- * @note Most of the operations accepting variables as parameters, have default values of `dimension-1` or `dimension-2`.
+ * @note Most of the operations accepting variables as parameters have default values of `dimension-1` or `dimension-2`.
  *
  * @define PPL [[http://bugseng.com/products/ppl/ PPL]]
  * @define APRON [[http://apron.cri.ensmp.fr/library/ APRON]]
@@ -97,15 +97,6 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @return `Some(c)` if such a value exists, `None` otherwise.
    */
   def frequency(coeff: Array[Double], known: Double): Option[Double]
-
-  /**
-   * Returns a string representation of the property.
-   * @param vars an array with the name of the variables
-   * @return a sequence of strings. The idea is that each string is an atomic piece of information
-   * which should be printed out together, while different strings may be also printed out
-   * separately.
-   */
-  def mkString(vars: IndexedSeq[String]): Seq[String]
 
   /*
    * Now some concrete methods, which may be overriden in subclasses for
@@ -305,6 +296,6 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * Returns the string representation of the property. It calls `mkString` with the standard
    * variable names `v1` ... `vn`.
    */
-  override def toString: String = "[ " + (mkString(for (i <- 0 until dimension) yield "v" + i)).mkString(" , ") + " ]"
+  override def toString: String = mkString(for (i <- 0 until dimension) yield "v" + i)
 
 }

@@ -99,7 +99,7 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
     case _ => false
   }
 
-  def mkString(vars: IndexedSeq[String]) =
+  def mkString(vars: Seq[String]) =
     property.mkString(vars ++ ((maxLocals until property.dimension) map { i => "s" + i }))
 
   override def toString =

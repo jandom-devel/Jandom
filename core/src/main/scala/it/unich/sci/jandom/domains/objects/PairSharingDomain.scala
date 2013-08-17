@@ -157,8 +157,9 @@ object PairSharingDomain extends ObjectDomain {
 
     def narrowing(that: Property) = narrowing(that)
 
-    def mkString(vars: IndexedSeq[String]) = {
-      (ps.toSeq map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }) :+ s"dimension ${dimension}"
+    def mkString(vars: Seq[String]) = {
+      val pairs = ps.toSeq map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }
+      s"[ ${pairs.mkString(", ")} ] dimension ${dimension}"
     }
 
     override def toString = mkString(for (i <- 0 until dimension) yield i.toString).mkString(" ")

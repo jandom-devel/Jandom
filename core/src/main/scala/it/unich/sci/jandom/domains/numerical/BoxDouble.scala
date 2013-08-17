@@ -351,16 +351,18 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @inheritdoc
    * @throws $ILLEGAL
    */
-  def mkString(vars: IndexedSeq[String]): Seq[String] = {
+  def mkString(vars: Seq[String]): String = {
     require(vars.length >= dimension)
     if (isEmpty)
-      Seq("[void]")
-    else
-      for (i <- 0 until dimension) yield {
+      "empty"
+    else {
+      val bounds = for (i <- 0 until dimension) yield {
         if(low(i)<high(i))
           low(i) + " <= " + vars(i) + " <= " + high(i)
           else vars(i) + " = " + high(i)
       }
+      bounds.mkString("[ "," , "," ]")
+    }
   }
 
   val dimension: Int = low.length

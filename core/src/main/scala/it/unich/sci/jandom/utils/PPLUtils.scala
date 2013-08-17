@@ -40,7 +40,7 @@ private[jandom] object PPLUtils {
    * @param vars a sequence of variable names to replace for `A`, `B`, etc...
    * @result the output `pplout` converted in the `mkString` format
    */
-  def replaceOutputWithVars(pplout: String, vars: IndexedSeq[String]): Seq[String] = {
+  def replaceOutputWithVars(pplout: String, vars: Seq[String]): String = {
     var str = pplout
     for (i <- 0 until vars.length) {
       val letter = i % ('Z'-'A' + 1)
@@ -48,7 +48,7 @@ private[jandom] object PPLUtils {
       val pplvar = (letter+'A').toChar.toString + (if (number!=0) number + " " else " ")
       str = str.replaceAll(pplvar, Matcher.quoteReplacement(vars(i))+" ")
     }
-    str.split("[ ]*,[ ]*")
+    str
   }
 
   /**

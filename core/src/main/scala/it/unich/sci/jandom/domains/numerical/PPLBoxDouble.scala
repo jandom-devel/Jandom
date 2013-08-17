@@ -177,7 +177,7 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
 
   override def hashCode: Int = pplbox.hashCode
 
-  def mkString(vars: IndexedSeq[String]): Seq[String] =
+  def mkString(vars: Seq[String]): String =
     PPLUtils.replaceOutputWithVars(pplbox.toString, vars)
 }
 

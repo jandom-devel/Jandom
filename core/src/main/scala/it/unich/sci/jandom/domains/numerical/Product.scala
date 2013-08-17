@@ -179,14 +179,11 @@ import it.unich.sci.jandom.domains.DomainTransformation
     def top: Property =
        	ProductDomain.this.top(dimension)
 
-    def mkString(vars: IndexedSeq[String]): Seq[String] = {
+    def mkString(vars: Seq[String]): String = {
       if (isEmpty)
-        Seq("[voidProduct]")
-      else {
-        val s1 = p1.mkString(vars)
-        val s2 = p2.mkString(vars)
-        for (i <- 0 until dimension) yield "(" + s1(i) + " , " + s2(i) + ")"
-      }
+        "empty"
+      else
+        "<" + p1.mkString(vars) + " / " + p2.mkString(vars) + ">"
     }
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = {

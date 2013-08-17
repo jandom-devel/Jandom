@@ -75,7 +75,7 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
 
   def top: Property = ???
 
-  def mkString(vars: IndexedSeq[String]): Seq[String] = ???
+  def mkString(vars: Seq[String]) = ???
 
   def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = ???
 }

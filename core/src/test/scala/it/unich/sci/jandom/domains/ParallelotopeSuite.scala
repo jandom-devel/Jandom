@@ -160,8 +160,8 @@ class ParallelotopeSuite extends FunSuite {
   }
 
   test("string representation") {
-    expectResult(Seq("-1.0 <= x+y <= 1.0", "-1.0 <= x-y <= 1.0")) { diamond.mkString(IndexedSeq("x", "y")) }
-    expectResult("[ empty ]") { empty.toString }
+    expectResult("[ -1.0 <= x+y <= 1.0 , -1.0 <= x-y <= 1.0 ]") { diamond.mkString(IndexedSeq("x", "y")) }
+    expectResult("empty") { empty.toString }
     expectResult("[ -Infinity <= v0 <= Infinity , -Infinity <= v1 <= Infinity ]") { full.toString }
   }
 

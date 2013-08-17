@@ -184,7 +184,7 @@ class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalP
 
   override def hashCode: Int = pplpolyhedron.hashCode
 
-  def mkString(vars: IndexedSeq[String]): Seq[String] =
+  def mkString(vars: Seq[String]): String =
     PPLUtils.replaceOutputWithVars(pplpolyhedron.toString, vars)
 }
 

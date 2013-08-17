@@ -198,13 +198,8 @@ object PPLPropertyMacros {
         }
 
         override def hashCode: Int = pplbox.hashCode
-        /*
-        def mkString(vars: IndexedSeq[String]): Seq[String] =
-          PPLUtils.replaceOutputWithVars(pplbox.toString, vars)
-          *
-          */
 
-        def mkString(vars: IndexedSeq[String]): Seq[String] = {
+        def mkString(vars: Seq[String]): String = {
           import collection.JavaConversions._
 
           val vs = new Variable_Stringifier {
@@ -213,7 +208,7 @@ object PPLPropertyMacros {
           Variable.setStringifier(vs)
           val result = for (c <- pplbox.minimized_constraints) yield c.toString
           Variable.setStringifier(null)
-          result
+          result.mkString("[ "," , "," ]")
         }
       }
 
