@@ -292,15 +292,15 @@ class Parallelotope(
       new Parallelotope(false, newlow, newA, newhigh)
     } else {
       val newP = nonDeterministicAssignment(n)
-      val Aprime = newP.A.toDenseMatrix
+      val Aprime = newP.A.copy
       val j = ((0 to Aprime.rows - 1) find { Aprime(_, n) != 0 }).get
       for (s <- 0 to dimension - 1 if Aprime(s, n) != 0 && s != j)
         Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
       val ei = DenseVector.zeros[Double](dimension)
       ei(n) = 1
       Aprime(j, ::) := ei :- DenseVector(coeff)
-      val newlow = newP.low.toDenseVector
-      val newhigh = newP.high.toDenseVector
+      val newlow = newP.low.copy
+      val newhigh = newP.high.copy
       newlow(j) = known
       newhigh(j) = known
       return new Parallelotope(false, newlow, Aprime, newhigh)
@@ -646,8 +646,8 @@ object Parallelotope extends NumericalDomain {
       col match {
         case Some(col) =>
           row /= row(col)
-          pivots :+= (row, col)
-          indexes :+= i
+          pivots +:= (row, col)
+          indexes +:= i
         case None =>
       }
       i += 1
