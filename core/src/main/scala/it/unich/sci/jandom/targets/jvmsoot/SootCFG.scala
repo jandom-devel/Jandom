@@ -94,7 +94,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     val parameterNames = if (params.io) (for (i <- 0 until method.getParameterCount()) yield "@p" + i) else Seq()
     val stackNames = for (i <- 0 until prop.size - method.getParameterCount() - body.getLocalCount()) yield "#s" + i
     val names = localNames ++ parameterNames ++ stackNames
-    prop.mkString(names).mkString(", ")
+    prop.mkString(names)
   }
 
   /**
