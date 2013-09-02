@@ -29,6 +29,7 @@ import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
 import soot._
 import soot.baf.WordType
+import soot.baf.DoubleWordType
 import soot.jimple.Constant
 import soot.jimple.StaticFieldRef
 
@@ -89,7 +90,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
       assert(prop.dimension == vars.size, "Numerical property and stack of types have different dimensions")
       if (prop.isEmpty) return
       for (i <- 0 until prop.dimension) vars(size - 1 - i) match {
-        case _: PrimType | _: WordType =>
+        case _: PrimType | _: WordType | _: DoubleWordType =>
         case _ =>
           // TODO: I should check that dimension i is unconstrained. For now I check that it is unbounded
           val lf = Array.fill(prop.dimension)(0.0)
@@ -127,7 +128,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     def evalNew(tpe: Type) = addVariable(tpe)
 
     def evalLocal(v: Int) = {
-      if (vars(size - 1 - v).isInstanceOf[PrimType] || vars(size - 1 - v).isInstanceOf[WordType])
+      if (vars(size - 1 - v).isInstanceOf[PrimType] || vars(size - 1 - v).isInstanceOf[WordType] || vars(size - 1 - v).isInstanceOf[DoubleWordType])
         Property(prop.addDimension.variableAssignment(size, v), vars.push(vars(size - 1 - v)))
       else
         addVariable(vars(size - 1 - v))
@@ -144,7 +145,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     }
 
     def assignLocal(dst: Int) = {
-      if (vars(size - 1 - dst).isInstanceOf[PrimType] || vars(size - 1 - dst).isInstanceOf[WordType]) {
+      if (vars(size - 1 - dst).isInstanceOf[PrimType] || vars(size - 1 - dst).isInstanceOf[WordType] || vars(size - 1 - dst).isInstanceOf[DoubleWordType]) {
         Property(prop.variableAssignment(dst, size - 1).delDimension(), vars.pop)
       } else
         delVariable

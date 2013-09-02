@@ -47,29 +47,42 @@ class SimpleTest {
 		z = z + 1;
 	}
 	
+	static void iadd() {
+		//viene utilizzata la stessa variabile per z e z3
+		long x=35;
+		long y=45;
+		long z=x+y;
+		int x2=4;
+		int y2=3;
+		int z2= x2+y2;
+		double x3=4.5;
+		double y3=2.47;
+		double z3=x3+y3;
+		long h=z+15;
+	}
+	static void idiv(){
+		int x=15;
+		int y=20;
+		int z=x/y;
+	}
+	static void idup1(){
+		int a=1;
+		int b=2;
+		int c=3;
+		int d=4;
+		int e=d+d;
+	}
+		static void provafor(){
+			int x=5;
+			for (int i=0; i<10; i++){
+				x++;
+			}
+		}
 		static void inewarray(){
 			int [] a = new int[8];
 		}
-		static void idup1(){
-			double a=1.0;
-			double b=2.0;
-			double c=b+b;
-		}
-		static void idup2(){
-			double a=1.0;
-			double b=1.0;
-			double c=(a+a)+(b+b);
-		}
-		static void iadd() {
-			int x = 4;
-			int y = 3;
-			x = x + y;
-		}
-		static void fuoriadd() {
-			short x=9;
-			short y=8;
-			short z=(short)(x+y);
-		}
+		
+		
 		static void isub(){
 			int x=315;
 			int y=284;
@@ -80,11 +93,7 @@ class SimpleTest {
 			int y=20;
 			int z=x*y;
 		}
-		static void idiv(){
-			int x=15;
-			int y=20;
-			int z=x/y;
-		}
+		
 		static void ineg(){
 			int x=3;
 			int y=-x;
@@ -122,7 +131,7 @@ class SimpleTest {
 			int a=2;
 			int z=((x+y)+a);
 		}
-		static void ifcmpeq(){
+		static void ifcmpne(){
 			int x=15;
 			int y=0;
 			if (x==5){
@@ -132,7 +141,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void ifeq(){
+		static void ifne(){
 			int x=15;
 			int y=0;
 			if (x==0){
@@ -142,7 +151,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void ifcmpne(){
+		static void ifcmpeq(){
 			int x=15;
 			int y=0;
 			if (x!=5){
@@ -152,7 +161,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void ifne(){
+		static void ifeq(){
 			int x=15;
 			int y=0;
 			if (x!=0){
@@ -162,7 +171,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void ifcmplt(){
+		static void ifcmpge(){
 			int x=15;
 			int y=0;
 			if (x<5){
@@ -172,7 +181,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void iflt(){
+		static void ifge(){
 			int x=15;
 			int y=0;
 			if (x<0){
@@ -182,7 +191,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void ifcmpgt(){
+		static void ifcmple(){
 			int x=15;
 			int y=0;
 			if (x>5){
@@ -192,7 +201,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void ifgt(){
+		static void ifle(){
 			int x=15;
 			int y=0;
 			if (x>0){
@@ -202,7 +211,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void ifcmple(){
+		static void ifcmpgt(){
 			int x=15;
 			int y=0;
 			if (x<=5){
@@ -212,7 +221,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void ifle(){
+		static void ifgt(){
 			int x=15;
 			int y=0;
 			if (x<=0){
@@ -222,7 +231,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void ifcmpge(){
+		static void ifcmplt(){
 			int x=15;
 			int y=0;
 			if (x>=5){
@@ -232,7 +241,7 @@ class SimpleTest {
 				y=1;
 			}
 		}
-		static void ifge(){
+		static void iflt(){
 			int x=15;
 			int y=0;
 			if (x>=0){
@@ -273,8 +282,9 @@ class SimpleTest {
 			return false;
 		}
 		static double [] bubblesort(double[] k){
-			double b=100;
-			double t, tmp;
+			int b=100;
+			int t;
+			double tmp;
 			int j;
 			while (b>=1){
 				j=1;

@@ -222,7 +222,7 @@ trait SootFrameDomain extends AbstractDomain {
      * @param i the frame variable to assign
      * @param f the field to assign
      */
-   // def assignStaticField(i: Int=size-1, f: SootFieldRef): Property
+    //def assignStaticField(i: Int=size-1, f: SootFieldRef): Property
 
     /**
      * Returns the result of testing whether el(size-2) > el(size-1) and pops the two top frame
@@ -326,22 +326,22 @@ trait SootFrameDomain extends AbstractDomain {
     /**
      * Create a duplicate of the top element of the frame and insert it three position under the top of the frame
      */
-    def evalDup1_x2(): Property = evalSwap().evalLocal(size-3)
+    def evalDup1_x2(): Property = evalSwap(size-3,size-1).evalSwap().evalLocal(size-3)
 
     /**
      * Create two duplicate of the two top element of the frame and insert them on the top of the frame
      */
-    def evalDup2(): Property = evalLocal(size-2).evalLocal(size-2)
+    def evalDup2(): Property = evalLocal(size-2).evalLocal(size-1)
 
     /**
      * Create two duplicate of the two top element of the frame and insert them three position under the top of the frame
      */
-    def evalDup2_x1(): Property = evalLocal(size-1)
+    def evalDup2_x1(): Property = evalSwap(size-3,size-2).evalSwap().evalLocal(size-3).evalLocal(size-3)
 
     /**
      * Create two duplicate of the two top element of the frame and insert them four position under the top of the frame
      */
-    def evalDup2_x2(): Property = evalLocal(size-1)
+    def evalDup2_x2(): Property = evalSwap(size-4,size-2).evalSwap(size-3,size-1).evalLocal(size-4).evalLocal(size-4)
 
     override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
 

@@ -198,7 +198,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case unit: IfNonNullInst =>
       	throw UnsupportedSootUnitException(unit) //Da fare
       case unit: IfNullInst =>
-        currprop.evalSwap()//throw UnsupportedSootUnitException(unit) //Da fare
+        throw UnsupportedSootUnitException(unit) //Da fare
       case unit: IncInst =>
         unit.getConstant() match {
           case i: IntConstant => currprop.evalInc(localMap(unit.getLocal), i.value)
