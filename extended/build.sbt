@@ -1,12 +1,9 @@
 import AssemblyKeys._
+import EclipseKeys._
 
-// PPL options which cannot be specified at the build level (why?)
+classpathTransformerFactories += NativeLibTransformerFactory("/usr/local/lib/ppl/ppl_java.jar")
 
-unmanagedJars in Compile += file("/usr/local/lib/ppl/ppl_java.jar")
-
-EclipseKeys.classpathTransformerFactories += NativeLibTransformerFactory("/usr/local/lib/ppl/ppl_java.jar")
-
-// assembly plugin configuration
+// Assembly plugin configuration
 
 assemblySettings
 
@@ -19,6 +16,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   }
 }
 
-// cappi benchmarks
+// Cappi plugin configurations
 
-seq(cappiSettings:_*)
+cappiSettings
+
