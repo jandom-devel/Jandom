@@ -12,11 +12,7 @@ scalaVersion in ThisBuild := "2.10.2"
 
 executionEnvironment in ThisBuild := Some(EclipseExecutionEnvironment.JavaSE17)
 
-// The following settings are needed to correctly specify PPL native libraries at runtime
-
 fork in ThisBuild := true
-
-javaOptions in ThisBuild += "-Djava.library.path="+Process("ppl-config -l").lines.head+"/ppl"
 
 // This delegates the root run task to the run task in JandomCore
 

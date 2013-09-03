@@ -1,7 +1,4 @@
 import AssemblyKeys._
-import EclipseKeys._
-
-classpathTransformerFactories += NativeLibTransformerFactory("/usr/local/lib/ppl/ppl_java.jar")
 
 // Assembly plugin configuration
 

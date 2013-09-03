@@ -11,20 +11,19 @@ libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-swing" % scalaVersion.value
 )
 
+// PPL configuration
+
 val pplJar = Process("ppl-config -l").lines.head+"/ppl/ppl_java.jar"
 
 unmanagedJars in Compile += file(pplJar)
 
-// Eclipse
+// Eclipse plugin
 
-classpathTransformerFactories += NativeLibTransformerFactory(pplJar)
-
-// add resources to classpath. We need a plugin which allows to
-// exclude resource directories from compilation.
+// It would be nice to be able to exclude resource directories from compilation.
 
 createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
 
-// BuildInfo
+// BuildInfo plugin
 
 buildInfoSettings
 
