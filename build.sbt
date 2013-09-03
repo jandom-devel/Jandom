@@ -15,11 +15,10 @@ run <<= run in ("Jandom", Compile)
 libraryDependencies in ThisBuild  ++= Seq(
   "org.ow2.asm" % "asm-tree" % "4.1",
   "org.ow2.asm" % "asm-util" % "4.1",
-  "org.scalatest" %% "scalatest" % "1.9.1" % "test,benchmark",
+  "org.scalatest" %% "scalatest" % "1.9.1" % "test",
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
   "org.scalanlp" %% "breeze-math" % "0.4",
   "org.rogach" %% "scallop" % "0.9.4",
-  "com.google.caliper" % "caliper" % "0.5-rc1" % "benchmark",
   "soot" % "soot" % "2.5.0" from "http://www.sable.mcgill.ca/software/soot-2.5.0.jar"
 )
 
@@ -30,4 +29,3 @@ libraryDependencies in ThisBuild <+= scalaVersion { "org.scala-lang" % "scala-sw
 fork in ThisBuild := true
 
 javaOptions in ThisBuild += "-Djava.library.path=/usr/local/lib/ppl"
-

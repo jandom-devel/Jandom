@@ -10,16 +10,6 @@ EclipseKeys.classpathTransformerFactories += NativeLibTransformerFactory("/usr/l
 
 assemblySettings
 
-test in AssemblyKeys.assembly := {}  // skip tests in assembly
-
-// eclipse-sbt plugin configuration cannot be specified at the build level
-
-EclipseKeys.configurations := Set(Compile, Test, Benchmark)  
-
-// assembly plugin configuration
-
-assemblySettings
-
 test in assembly := {}
 
 mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => 
@@ -29,3 +19,6 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   }
 }
 
+// cappi benchmarks
+
+seq(cappiSettings:_*)
