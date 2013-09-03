@@ -60,13 +60,9 @@ class PPLPropertySuite extends FunSuite {
       linearInequality(Array(0, 1, 1), -1).
       linearInequality(Array(0, 1, -1), -1)
     expectResult(Double.PositiveInfinity) { obj.maximize(Array(0, 0, 1), 0) }
-
-    /*
-    commented until PPL is corrected
     expectResult(1) { obj.maximize(Array(1, 1, 0), 0) }
     expectResult(None) { obj.frequency(Array(1, 0, 1), 0) }
     expectResult(Some(0)) { obj.frequency(Array(1, 0, 0), 0) }
-     */
   }
 
   test("various operations") {
@@ -118,10 +114,17 @@ class PPLPropertySuite extends FunSuite {
     expectResult(obj3)(obj2.mapVariables(Seq(-1, 0, 1)))
   }
 
+  test("multiplication") {
+    val obj = full.linearInequality(Array(1, 1, 0), 1).linearInequality(Array(0, 1, 1), 2).linearAssignment(0, Array(0, 0, 0), 2.0)
+    expectResult( obj.linearAssignment(0, Array(0,0,2.0), 0) ) {  obj.variableMul(0, 2) }
+    expectResult( obj.linearAssignment(2, Array(0,0,2.0), 0) ) {  obj.variableMul(2, 0) }
+    assert ( obj.nonDeterministicAssignment(1) >= obj.variableMul(1,2) )
+  }
+
   test("connect") {
     val obj1 = full.
       linearAssignment(0, Array(0, 0, 1), 3).
-      linearInequality(Array(0, 0, 1),-10)
+      linearInequality(Array(0, 0, 1), -10)
     val obj2 = full.
       linearAssignment(0, Array(0, 0, 0), 1).
       linearAssignment(1, Array(0, 0, 0), 3).
