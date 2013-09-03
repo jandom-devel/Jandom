@@ -36,8 +36,7 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
   private val numvars = 100
   private val numpoints = 10
 
-  System.loadLibrary("ppl_java")
-  Parma_Polyhedra_Library.initialize_library()
+  PPLInitializer
 
   def timePPL(reps: Int) {
     for (iter <- 1 to reps) {

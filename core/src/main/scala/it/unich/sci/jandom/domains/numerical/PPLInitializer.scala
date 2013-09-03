@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,19 +19,27 @@
 package it.unich.sci.jandom.domains.numerical
 
 import parma_polyhedra_library.Parma_Polyhedra_Library
+import scala.util.Try
+import scala.sys.process.Process
 
 /**
  * This is an object whose only purpose is to initialize the PPL library.
- * 
- * It should be referred as a first statement by the initialization code of a 
+ *
+ * It should be referred as a first statement by the initialization code of a
  * [[it.unich.sci.jandom.domains.NumericalDomain]] which uses PPL.
  * @author Gianluca Amato <g.amato@unich.it>
  */
 
-private[jandom] object PPLInitializer {  
-  System.loadLibrary("ppl_java")
+private[jandom] object PPLInitializer {
+  try {
+    System.loadLibrary("ppl_java")
+  } catch {
+    case _: UnsatisfiedLinkError =>
+      val path = Process("ppl-config -l").lines.head
+      System.load(path + "/ppl/libppl_java.so")
+  }
   Parma_Polyhedra_Library.initialize_library()
-  
+
   override def finalize {
     Parma_Polyhedra_Library.finalize_library()
   }

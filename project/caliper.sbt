@@ -4,4 +4,3 @@ resolvers += Resolver.url(
       Resolver.ivyStylePatterns)
 
 addSbtPlugin("me.lessis" % "cappi" % "0.1.1")
-
