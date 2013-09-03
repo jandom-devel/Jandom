@@ -173,21 +173,22 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
     // TODO: use method "frequency" here when it works for PPL
     val coeff = Array.fill(dimension)(0.0)
     coeff(n) = 1
-    val c = minimize(coeff, 0)
-    if (c == maximize(coeff, 0)) {
-      coeff(n) = 0
-      coeff(m) = c
-      linearAssignment(n, coeff, 0)
-    } else {
-      coeff(n) = 0
-      coeff(m) = 1
-      val c = minimize(coeff, 0)
-      if (c == maximize(coeff, 0)) {
-        coeff(n) = c
-        coeff(m) = 0
+    frequency(coeff, 0) match {
+      case Some(c) =>
+        coeff(n) = 0
+        coeff(m) = c
         linearAssignment(n, coeff, 0)
-      } else
-        nonDeterministicAssignment(n)
+      case None =>
+        coeff(n) = 0
+        coeff(m) = 1
+        frequency(coeff, 0) match {
+          case Some(c) =>
+            coeff(n) = c
+            coeff(m) = 0
+            linearAssignment(n, coeff, 0)
+          case None =>
+            nonDeterministicAssignment(n)
+        }
     }
   }
 
@@ -289,7 +290,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
     val newprop = addVariables(p.dimension - common)
     val seq = (dimension - common until newprop.dimension) ++ (0 until dimension - common)
     val newp = p.addVariables(dimension - common).mapVariables(seq)
-    (newprop intersection newp).delVariables(dimension - common to  dimension-1)
+    (newprop intersection newp).delVariables(dimension - common to dimension - 1)
   }
 
   /**
