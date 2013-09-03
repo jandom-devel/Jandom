@@ -31,16 +31,26 @@ import scala.sys.process.Process
  */
 
 private[jandom] object PPLInitializer {
-  try {
+  /**
+   * isSuccessful is true when PPL native libraries may be loaded correctly
+   */
+  val isSuccessful = try {
     System.loadLibrary("ppl_java")
+    true
   } catch {
     case _: UnsatisfiedLinkError =>
-      val path = Process("ppl-config -l").lines.head
-      System.load(path + "/ppl/libppl_java.so")
+      try {
+        val path = Process("ppl-config -l").lines.head
+        System.load(path + "/ppl/libppl_java.so")
+        true
+      } catch {
+        case _: UnsatisfiedLinkError =>
+          false
+      }
   }
-  Parma_Polyhedra_Library.initialize_library()
+  if (isSuccessful) Parma_Polyhedra_Library.initialize_library()
 
   override def finalize {
-    Parma_Polyhedra_Library.finalize_library()
+    if (isSuccessful) Parma_Polyhedra_Library.finalize_library()
   }
 }

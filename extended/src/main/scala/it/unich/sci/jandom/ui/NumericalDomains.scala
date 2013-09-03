@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,25 +26,29 @@ import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.domains.numerical.PPLDomain
 import it.unich.sci.jandom.domains.numerical.Parallelotope
 import it.unich.sci.jandom.domains.numerical.PPLPropertyMacros
-
 import parma_polyhedra_library.C_Polyhedron
 import parma_polyhedra_library.Double_Box
 import parma_polyhedra_library.Octagonal_Shape_double
+import it.unich.sci.jandom.domains.numerical.PPLInitializer
 
 /**
  * The ParameterEnumeration for numerical domains.
  */
-object NumericalDomains extends ParameterEnumeration[NumericalDomain] {  
+object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
   val name = "Domain"
   val description = "The numerical domain to use for the analysis."
-  val values: Seq[ParameterValue[NumericalDomain]] = Seq(
+  private val standardDomains: Seq[ParameterValue[NumericalDomain]] = Seq(
     ParameterValue(BoxDouble, "BoxDouble", "This is a native Scala implementation of boxes. It is not safe " +
       "and should not be used."),
     ParameterValue(Parallelotope, "Parallelotope", "This is a native Scala implementation of parallelotopes. It is " +
-      "not safe and should not be used."),
-    ParameterValue(PPLPropertyMacros[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double (using macros)."),
+      "not safe and should not be used."))
+  private val pplDomains: Seq[ParameterValue[NumericalDomain]] = if (PPLInitializer.isSuccessful)
+    Seq(
+         ParameterValue(PPLPropertyMacros[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double (using macros)."),
     ParameterValue(PPLPropertyMacros[Octagonal_Shape_double], "PPL Octagonal_Shape_double", "PPL based implementation of Octagon over double (using macros)."),
-    ParameterValue(PPLPropertyMacros[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using macros).")
-    )
-  val default = values.last
+    ParameterValue(PPLPropertyMacros[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using macros)."))
+  else
+    Seq()
+  val values = standardDomains ++ pplDomains
+  val default = values.head
 }

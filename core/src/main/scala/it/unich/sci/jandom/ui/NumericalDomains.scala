@@ -21,10 +21,10 @@ import it.unich.sci.jandom.domains.numerical.BoxDouble
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.domains.numerical.PPLDomain
 import it.unich.sci.jandom.domains.numerical.Parallelotope
-
 import parma_polyhedra_library.C_Polyhedron
 import parma_polyhedra_library.Double_Box
 import parma_polyhedra_library.Octagonal_Shape_double
+import it.unich.sci.jandom.domains.numerical.PPLInitializer
 
 /**
  * The ParameterEnumeration for numerical domains.
@@ -32,13 +32,18 @@ import parma_polyhedra_library.Octagonal_Shape_double
 object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
   val name = "Domain"
   val description = "The numerical domain to use for the analysis."
-  val values: Seq[ParameterValue[NumericalDomain]] = Seq(
+  private val standardDomains: Seq[ParameterValue[NumericalDomain]] = Seq(
     ParameterValue(BoxDouble, "BoxDouble", "This is a native Scala implementation of boxes. It is not safe " +
       "and should not be used."),
     ParameterValue(Parallelotope, "Parallelotope", "This is a native Scala implementation of parallelotopes. It is " +
-      "not safe and should not be used."),
-    ParameterValue(new PPLDomain[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double (using reflection)."),
-    ParameterValue(new PPLDomain[Octagonal_Shape_double], "PPL Octagon_Shape_double", "PPL based implementation of Octagon over double (using reflection)."),
-    ParameterValue(new PPLDomain[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using reflection)."))
-  val default = values.last
+      "not safe and should not be used."))
+  private val pplDomains: Seq[ParameterValue[NumericalDomain]] = if (PPLInitializer.isSuccessful)
+    Seq(
+      ParameterValue(new PPLDomain[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double (using reflection)."),
+      ParameterValue(new PPLDomain[Octagonal_Shape_double], "PPL Octagon_Shape_double", "PPL based implementation of Octagon over double (using reflection)."),
+      ParameterValue(new PPLDomain[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using reflection)."))
+  else
+    Seq()
+  val values = standardDomains ++ pplDomains
+  val default = values.head
 }
