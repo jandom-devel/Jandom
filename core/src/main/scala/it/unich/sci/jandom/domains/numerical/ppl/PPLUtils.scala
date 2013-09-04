@@ -16,7 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.utils
+package it.unich.sci.jandom.domains.numerical.ppl
 
 import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Linear_Expression

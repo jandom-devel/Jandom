@@ -14,6 +14,17 @@ executionEnvironment in ThisBuild := Some(EclipseExecutionEnvironment.JavaSE17)
 
 fork in ThisBuild := true
 
+// PPL configuration
+
+pplJar in ThisBuild := { 
+  try { 
+    val pathName = Process("ppl-config -l").lines.head+"/ppl/ppl_java.jar"
+    if (file(pathName).exists) Some(pathName) else None
+  } catch {
+    case _ : Exception => None 
+  }
+}
+
 // This delegates the root run task to the run task in JandomCore
 
 run <<= run in ("Jandom", Compile)

@@ -16,12 +16,15 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains.numerical
+package it.unich.sci.jandom.domains.numerical.ppl
 
-import language.experimental.macros
 import scala.reflect.macros.Context
-import parma_polyhedra_library.Double_Box
+import scala.language.experimental.macros
 
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
+
+import parma_polyhedra_library._
 /**
  * This class containts macros for compile-time creation of PPL backed numerical properties.
  * The aim si similar to the clas [[it.unich.sci.jandom.domains.PPLProperty]], but while
@@ -44,7 +47,6 @@ object PPLPropertyMacros {
 
     val classes = reify {
       import parma_polyhedra_library._
-      import it.unich.sci.jandom.utils.PPLUtils
 
       /**
        * The domain for possibly opened box over doubles implemented within $PPL. This is essentially

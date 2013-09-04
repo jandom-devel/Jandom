@@ -18,7 +18,7 @@
 
 package it.unich.sci.jandom
 
-import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
+import it.unich.sci.jandom.domains.numerical.ppl.PPLCPolyhedron
 import it.unich.sci.jandom.narrowings.DefaultNarrowing
 import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
@@ -29,8 +29,6 @@ import it.unich.sci.jandom.targets.WideningScope
 import it.unich.sci.jandom.targets.lts.LTS
 import it.unich.sci.jandom.targets.slil.SLILTarget
 import it.unich.sci.jandom.widenings.DefaultWidening
-
-import parma_polyhedra_library.Parma_Polyhedra_Library
 
 /**
  * Example program using ''Jandom''.
@@ -58,7 +56,7 @@ object JandomExample extends App {
     val parsed = parsers.LPInvParser().parseProgram(source)
     if (parsed.successful) {
       val program = parsed.get
-      val params = new targets.Parameters[LTS] { val domain = PPLCPolyhedron }
+      val params = new targets.Parameters[LTS] { val domain = domains.numerical.BoxDouble }
       val x= DelayedWideningFactory[LTS](DefaultWidening, 2)
       params.wideningFactory = MemoizingFactory(program)(DelayedWideningFactory(DefaultWidening, 2))
       params.narrowingFactory = MemoizingFactory(program)(DelayedNarrowingFactory(DefaultNarrowing, 2))
@@ -69,6 +67,4 @@ object JandomExample extends App {
       println(parsed)
     }
   }
-  println("Jandom version: "+version)
-  println("PPL version: "+Parma_Polyhedra_Library.version);
 }

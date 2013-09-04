@@ -16,15 +16,16 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets
+package it.unich.sci.jandom.targets.ppl
 
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import org.scalatest.FunSuite
-
-import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
+import it.unich.sci.jandom.domains.numerical.ppl.PPLCPolyhedron
 import it.unich.sci.jandom.targets.jvmasm._
+import it.unich.sci.jandom.targets.Parameters
+import scala.collection.JavaConversions.asScalaBuffer
 
 class JVMASMSuite extends FunSuite {
   import scala.collection.JavaConversions.asScalaBuffer

@@ -16,10 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains.numerical
+package it.unich.sci.jandom.domains.numerical.ppl
 
-import it.unich.sci.jandom.utils.PPLUtils
-
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import parma_polyhedra_library._
 
 /**

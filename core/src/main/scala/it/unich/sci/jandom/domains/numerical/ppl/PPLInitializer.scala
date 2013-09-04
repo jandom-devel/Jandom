@@ -16,11 +16,12 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.domains.numerical
+package it.unich.sci.jandom.domains.numerical.ppl
 
-import parma_polyhedra_library.Parma_Polyhedra_Library
-import scala.util.Try
 import scala.sys.process.Process
+import it.unich.sci.jandom.ui.NumericalDomains
+import it.unich.sci.jandom.ui.ParameterValue
+import parma_polyhedra_library.Parma_Polyhedra_Library
 
 /**
  * This is an object whose only purpose is to initialize the PPL library.
@@ -32,7 +33,7 @@ import scala.sys.process.Process
 
 private[jandom] object PPLInitializer {
   /**
-   * isSuccessful is true when PPL native libraries may be loaded correctly
+   * isSuccessful is true when PPL native libraries may be loaded correctly.
    */
   val isSuccessful = try {
     System.loadLibrary("ppl_java")
@@ -48,6 +49,7 @@ private[jandom] object PPLInitializer {
           false
       }
   }
+
   if (isSuccessful) Parma_Polyhedra_Library.initialize_library()
 
   override def finalize {

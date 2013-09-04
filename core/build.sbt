@@ -11,11 +11,16 @@ libraryDependencies ++= Seq(
   "org.scala-lang" % "scala-swing" % scalaVersion.value
 )
 
-// PPL configuration
+unmanagedJars in Compile ++= (pplJar.value map file).toSeq
 
-val pplJar = Process("ppl-config -l").lines.head+"/ppl/ppl_java.jar"
+unmanagedSources in Compile := (unmanagedSources in Compile).value filter {
+  source => pplJar.value.isDefined || ! source.getParent.endsWith("ppl")
+}
 
-unmanagedJars in Compile += file(pplJar)
+unmanagedSources in Test := (unmanagedSources in Test).value filter {
+  source => pplJar.value.isDefined || ! source.getParent.endsWith("ppl")
+}
+
 
 // Eclipse plugin
 
@@ -26,8 +31,6 @@ createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreat
 // BuildInfo plugin
 
 buildInfoSettings
-
-val gitHeadCommitSHA = TaskKey[String]("git-head-commit-sha","current git commit SHA")
 
 gitHeadCommitSHA := Process("git rev-parse HEAD").lines.head
 

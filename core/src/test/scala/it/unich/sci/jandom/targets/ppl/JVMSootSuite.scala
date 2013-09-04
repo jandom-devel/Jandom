@@ -16,18 +16,19 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets
+package it.unich.sci.jandom.targets.ppl
 
-import scala.collection.immutable.BitSet
-import scala.collection.immutable.Stack
 import org.scalatest.FunSuite
-import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
+
+import it.unich.sci.jandom.domains.numerical.ppl.PPLCPolyhedron
+import it.unich.sci.jandom.domains.objects.PairSharingDomain
 import it.unich.sci.jandom.domains.objects.UP
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.Parameters
 import it.unich.sci.jandom.targets.jvmsoot._
+
 import soot._
-import it.unich.sci.jandom.domains.objects.PairSharingDomain
-import soot.baf.WordType
 
 /**
  * Simple test suite for the JVMSoot target.

@@ -16,13 +16,14 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets
+package it.unich.sci.jandom.targets.ppl
 
 import org.scalatest.FunSuite
-import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
-import it.unich.sci.jandom.targets.jvmsoot.SootFrameNumericalDomain
-import it.unich.sci.jandom.domains.numerical.BoxDouble
+
+import it.unich.sci.jandom.domains.numerical.ppl.PPLCPolyhedron
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
+import it.unich.sci.jandom.targets.Environment
+import it.unich.sci.jandom.targets.jvmsoot.SootFrameNumericalDomain
 
 /**
  * @author Gianluca Amato <gamato@unich.it>
