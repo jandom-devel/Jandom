@@ -13,14 +13,9 @@ libraryDependencies ++= Seq(
 
 unmanagedJars in Compile ++= (pplJar.value map file).toSeq
 
-unmanagedSources in Compile := (unmanagedSources in Compile).value filter {
-  source => pplJar.value.isDefined || ! source.getParent.endsWith("ppl")
-}
+unmanagedSourceDirectories in Compile ++= (pplJar.value map { _ => (sourceDirectory in Compile).value / "ppl" }).toSeq
 
-unmanagedSources in Test := (unmanagedSources in Test).value filter {
-  source => pplJar.value.isDefined || ! source.getParent.endsWith("ppl")
-}
-
+unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory in Test).value / "ppl" }).toSeq
 
 // Eclipse plugin
 

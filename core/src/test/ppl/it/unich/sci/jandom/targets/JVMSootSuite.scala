@@ -16,7 +16,7 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.ppl
+package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
 
@@ -24,8 +24,6 @@ import it.unich.sci.jandom.domains.numerical.ppl.PPLCPolyhedron
 import it.unich.sci.jandom.domains.objects.PairSharingDomain
 import it.unich.sci.jandom.domains.objects.UP
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
-import it.unich.sci.jandom.targets.Environment
-import it.unich.sci.jandom.targets.Parameters
 import it.unich.sci.jandom.targets.jvmsoot._
 
 import soot._

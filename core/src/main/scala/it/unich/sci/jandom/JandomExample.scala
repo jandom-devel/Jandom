@@ -18,7 +18,6 @@
 
 package it.unich.sci.jandom
 
-import it.unich.sci.jandom.domains.numerical.ppl.PPLCPolyhedron
 import it.unich.sci.jandom.narrowings.DefaultNarrowing
 import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 import it.unich.sci.jandom.ppfactories.DelayedWideningFactory

@@ -19,8 +19,9 @@
 package it.unich.sci.jandom.domains.numerical.ppl
 
 import com.google.caliper.SimpleBenchmark
+
 import it.unich.sci.jandom.domains.numerical._
-import it.unich.sci.jandom.domains.numerical.ppl._
+
 import parma_polyhedra_library._
 
 /**

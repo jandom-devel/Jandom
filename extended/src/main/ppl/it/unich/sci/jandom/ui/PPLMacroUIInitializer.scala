@@ -16,23 +16,22 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.ui.ppl
+package it.unich.sci.jandom.ui
 
 import it.unich.sci.jandom.domains.numerical.ppl.PPLInitializer
-import it.unich.sci.jandom.ui.NumericalDomains
-import it.unich.sci.jandom.ui.ParameterValue
-import it.unich.sci.jandom.domains.numerical.ppl.PPLDomain
+import it.unich.sci.jandom.domains.numerical.ppl.PPLPropertyMacros
+
 import parma_polyhedra_library._
 
 /**
- * This object register a list of PPL based numerical domains in [[it.unich.sci.jandom.ui.NumericalDomains]].
- * The registered domains use reflection.
+ * This object register a list of PPL based numerical domains  [[it.unich.sci.jandom.ui.NumericalDomains]].
+ * The registered domains are implemented through macros.
  * @author Gianluca Amato <gamato@unich.it>
  */
 
-private[ui] object PPLUIInitializer {
+private[ui] object PPLMacroUIInitializer {
   if (PPLInitializer.isSuccessful) NumericalDomains.values ++= Seq(
-    ParameterValue(new PPLDomain[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double (using reflection)."),
-    ParameterValue(new PPLDomain[Octagonal_Shape_double], "PPL Octagon_Shape_double", "PPL based implementation of Octagon over double (using reflection)."),
-    ParameterValue(new PPLDomain[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using reflection)."))
+    ParameterValue(PPLPropertyMacros[Double_Box], "PPL Double_Box", "PPL based implementation of boxes over double (using macros)."),
+    ParameterValue(PPLPropertyMacros[Octagonal_Shape_double], "PPL Octagonal_Shape_double", "PPL based implementation of Octagon over double (using macros)."),
+    ParameterValue(PPLPropertyMacros[C_Polyhedron], "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using macros)."))    
 }

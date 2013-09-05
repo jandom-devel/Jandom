@@ -18,7 +18,6 @@
 
 package it.unich.sci.jandom.ui.cli
 
-import it.unich.sci.jandom.domains.numerical.ppl.PPLCPolyhedron
 import it.unich.sci.jandom.narrowings.NoNarrowing
 import it.unich.sci.jandom.parsers.RandomParser
 import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory

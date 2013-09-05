@@ -16,16 +16,15 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.sci.jandom.targets.ppl
+package it.unich.sci.jandom.targets
 
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import org.scalatest.FunSuite
-import it.unich.sci.jandom.domains.numerical.ppl.PPLCPolyhedron
+
+import it.unich.sci.jandom.domains.numerical.BoxDouble
 import it.unich.sci.jandom.targets.jvmasm._
-import it.unich.sci.jandom.targets.Parameters
-import scala.collection.JavaConversions.asScalaBuffer
 
 class JVMASMSuite extends FunSuite {
   import scala.collection.JavaConversions.asScalaBuffer
@@ -38,7 +37,7 @@ class JVMASMSuite extends FunSuite {
     val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
     val method = new AsmMethod(methodList.find(_.name == "loop").get)
     val params = new Parameters[AsmMethod] {
-      val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)
+      val domain = new JVMEnvFixedFrameDomain(BoxDouble)
     }
     try {
       val ann = method.analyze(params)

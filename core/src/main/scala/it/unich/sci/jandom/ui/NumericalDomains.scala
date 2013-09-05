@@ -38,6 +38,6 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
   val default = values.head
 
   // Load objects PPLUIInitializer and PPLMacroUIInitializer if available
-  Try ( Class.forName("it.unich.sci.jandom.ui.ppl.PPLUIInitializer$") )
-  Try ( Class.forName("it.unich.sci.jandom.ui.ppl.PPLMacroUIInitializer$") )
+  Try ( Class.forName("it.unich.sci.jandom.ui.PPLUIInitializer$") )
+  Try ( Class.forName("it.unich.sci.jandom.ui.PPLMacroUIInitializer$") )
 }
