@@ -185,7 +185,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
         case v: IntConstant =>
           prop.evalConstant(v.value)
         case v: StaticFieldRef =>
-          prop.evalStaticField(v)
+          prop.evalStaticField(v.getField())
         case v: Local =>
           prop.evalLocal(localMap(v))
         case v: BinopExpr =>

@@ -59,6 +59,8 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case _: IfGeInst => prop.evalConstant(0).testGe
       case _: IfEqInst => prop.evalConstant(0).testEq
       case _: IfNeInst => prop.evalConstant(0).testNe
+      case _: IfNonNullInst => prop.evalNull.testNe
+      case _: IfNullInst => prop.evalNull.testEq
     }
 
     for (unit <- node.iterator())
@@ -190,15 +192,11 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case unit: ExitMonitorInst =>
         currprop.exitMonitor()
       case unit: FieldGetInst =>
-        currprop.assignField(f=unit.getField())
+        currprop.evalField(f=unit.getField())
       case unit: FieldPutInst =>
-      	currprop.evalField(f=unit.getField())
+        currprop.assignField(f=unit.getField())
       case unit: IdentityInst =>
         currprop
-      case unit: IfNonNullInst =>
-      	throw UnsupportedSootUnitException(unit) //Da fare
-      case unit: IfNullInst =>
-        throw UnsupportedSootUnitException(unit) //Da fare
       case unit: IncInst =>
         unit.getConstant() match {
           case i: IntConstant => currprop.evalInc(localMap(unit.getLocal), i.value)
@@ -210,10 +208,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case unit: InstanceCastInst =>
       	throw UnsupportedSootUnitException(unit)
       case unit: InstanceOfInst =>
-      	throw UnsupportedSootUnitException(unit)
-      case unit: InstSwitch =>
-        //controllare
-        throw UnsupportedSootUnitException(unit)
+      	currprop.evalInstance(unit.getCheckType())
       case unit: InterfaceInvokeInst =>
         throw UnsupportedSootUnitException(unit)
       case unit: LoadInst =>
@@ -244,16 +239,17 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
           case i: Type => throw UnsupportedSootUnitException(unit)
         }
       case unit: PopInst =>
-        //controllare
         currprop.restrict(unit.getWordCount())
       case unit: PrimitiveCastInst =>
-        throw UnsupportedSootUnitException(unit)
+        currprop
       case unit: PushInst =>
         unit.getConstant() match {
           case i: IntConstant=> currprop.evalConstant(i.value)
           case i: LongConstant => currprop.evalConstant(i.value)
           case i: FloatConstant => currprop.evalConstant(i.value)
           case i: DoubleConstant => currprop.evalConstant(i.value)
+          case i: NullConstant => currprop.evalNull
+          case i: StringConstant => currprop.evalConstant(i.value)
           case i: Constant => throw UnsupportedSootUnitException(unit)
         }
       case unit: RemInst =>
@@ -283,13 +279,11 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case unit: SpecialInvokeInst =>
         throw UnsupportedSootUnitException(unit)
       case unit: StaticGetInst =>
-        throw UnsupportedSootUnitException(unit)
-        //currprop.assignStaticField(f=unit.getFieldRef())
+         currprop.evalStaticField(unit.getField())
       case unit: StaticInvokeInst =>
         throw UnsupportedSootUnitException(unit)
       case unit: StaticPutInst =>
-        throw UnsupportedSootUnitException(unit)
-        //currprop.evalStaticField(unit.getFieldRef())
+        currprop.assignStaticField(f=unit.getField())
       case unit: StoreInst =>
         currprop.assignLocal(localMap(unit.getLocal()))
       case unit: SubInst =>
@@ -322,37 +316,6 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
         }
       case unit: Inst =>
         throw UnsupportedSootUnitException(unit)
-
-      	/**
-      	case unit: PushInst =>
-          unit.getConstant() match {
-            case i: IntConstant => currprop.evalConstant(i.value)
-          }
-        case unit: AddInst => currprop.evalAdd
-        case unit: MulInst => currprop.evalMul
-        case unit: SubInst => currprop.evalSub
-        case unit: DivInst => currprop.evalDiv
-        case unit: IncInst =>
-          unit.getConstant() match {
-            case i: IntConstant =>
-              val l = localMap(unit.getLocal())
-              // TODO: implement an inc method to speed up execution
-              currprop.evalLocal(l).evalConstant(i.value).evalAdd.assignLocal(l)
-          }
-        case unit: StoreInst =>
-          currprop.assignLocal(localMap(unit.getLocal))
-        case unit: LoadInst =>
-          currprop.evalLocal(localMap(unit.getLocal))
-        case unit: TargetArgInst =>
-          val (tbranch, fbranch) = analyzeTargetArgInst(unit, currprop)
-          exits :+= tbranch
-          fbranch
-        case unit: ReturnVoidInst =>
-          exits :+= currprop
-          currprop
-        case unit: Inst =>
-          throw UnsupportedSootUnitException(unit)
-        */
       }
     if (node.getTail.fallsThrough()) exits +:= currprop
     exits

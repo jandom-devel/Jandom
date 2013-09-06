@@ -267,7 +267,15 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * @note $NOTEN
    */
   def variableDiv(n: Int = dimension - 2, m: Int = dimension - 1) = {
-    nonDeterministicAssignment(n)
+    val coeff = Array.fill(dimension)(0.0)
+    coeff(m) = 1
+    val c = minimize(coeff, 0)
+      if (c == maximize(coeff, 0)&&c!=0) {
+        coeff(n) = 1/c
+        coeff(m) = 0
+        linearAssignment(n, coeff, 0)
+      } else
+        nonDeterministicAssignment(n)
   }
 
   /**

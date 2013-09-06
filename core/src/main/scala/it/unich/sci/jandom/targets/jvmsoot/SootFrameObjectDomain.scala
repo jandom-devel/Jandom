@@ -112,6 +112,8 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
 
     def evalConstant(c: Double) = addUntrackedVariable(DoubleType.v())
 
+    def evalConstant(c: String) = addUntrackedVariable(RefType.v(c.getClass().getName()))
+
     def evalNull =
       Property(prop.addVariable.assignNull(size), stack.push(NullType.v()), globals)
 
@@ -180,6 +182,9 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def assignField(dst: Int, f: SootField) =
       Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop, globals)
 
+    def assignStaticField(dst: Int, f:SootField)=
+      Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop, globals)
+
     def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ ("types: " + this.stack.toString)
 
     def union(that: Property) = {
@@ -210,11 +215,15 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
       Property(evaluatedGlobal.prop, evaluatedGlobal.stack, globals + (o -> prop.size))
     }
 
-    def evalStaticField(v: StaticFieldRef): Property = {
+    def evalStaticField(v: SootField): Property = {
       if (v.getType().isInstanceOf[RefType])
         evalNew(v.getType())
       else
         this
+    }
+
+    def evalInstance (t: Type): Property = {
+    	delUntrackedVariable
     }
 
     def evalSwap(i: Int, j: Int) = ???

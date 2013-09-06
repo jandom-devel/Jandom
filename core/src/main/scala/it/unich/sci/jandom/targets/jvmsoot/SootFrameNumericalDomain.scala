@@ -123,6 +123,8 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalConstant(const: Double) = Property(prop.addDimension.constantAssignment(size, const), vars.push(DoubleType.v()))
 
+    def evalConstant(const: String) = Property(prop.addDimension.nonDeterministicAssignment(size), vars.push(RefType.v(const.getClass().getName())))
+
     def evalNull = addVariable(NullType.v())
 
     def evalNew(tpe: Type) = addVariable(tpe)
@@ -136,7 +138,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalField(v: Int, f: SootField) = {
       assume(vars(size - 1 - v).isInstanceOf[RefType],"Expected RefType, got "+vars(size - 1 - v))
-      addVariable(f.getType())
+      delVariable.addVariable(f.getType())
     }
 
     def assignLocal(dst: Int, src: Int) = {
@@ -153,6 +155,16 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def assignField(dst: Int, f: SootField) = {
       assume(vars(size - 1 - dst).isInstanceOf[RefType],"Expected RefType, got "+vars(size - 1 - dst))
+      delVariable.delVariable
+    }
+
+    def assignStaticField(dst: Int, f: SootField) = {
+     // assume(vars(size - 1 - dst).isInstanceOf[RefType], "Expected RefType, got "+vars(size -1 - dst))
+      delVariable
+    }
+
+    def evalInstance (t: Type) = {
+      prop.nonDeterministicAssignment(size-1)
       delVariable
     }
 
@@ -226,7 +238,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalGlobal(o: Constant): Property = addVariable(o.getType())
 
-    def evalStaticField(v: StaticFieldRef): Property = {
+    def evalStaticField(v: SootField): Property = {
       if (v.getType().isInstanceOf[PrimType])
         Property(prop.addDimension.nonDeterministicAssignment(prop.dimension), vars.push(v.getType()))
       else

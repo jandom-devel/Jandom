@@ -2,6 +2,39 @@ import java.util.Random;
 import java.util.*;
 
 class SimpleTest {
+	static int aa=1;
+	int yy=4;
+	Integer zz=4;
+	static void stringa (){
+		String a="ciao";
+		String b=null;
+	}
+	static void isnotnull (){
+		String h="ciao";
+		int y;
+		if (h==null){
+			y=0;
+		}
+		else {
+			y=1;
+		}
+	}
+	static void isnull (){
+		String h=null;
+		int y;
+		if (h!=null){
+			y=0;
+		}
+		else {
+			y=1;
+		}
+	}
+	void putfield() {
+		yy = 3;
+	}
+	 void getfield(int i){
+		i= yy;
+	}
 	static void sequential() {
 		int x = 0;
 		int y = 10;
@@ -62,7 +95,7 @@ class SimpleTest {
 	}
 	static void idiv(){
 		int x=15;
-		int y=20;
+		int y=2;
 		int z=x/y;
 	}
 	static void idup1(){
@@ -71,6 +104,13 @@ class SimpleTest {
 		int c=3;
 		int d=4;
 		int e=d+d;
+	}
+	
+	static void getstaticfield(){
+		int c=aa+2;
+	}
+	static void putstaticfield(){
+		aa=4;
 	}
 		static void provafor(){
 			int x=5;

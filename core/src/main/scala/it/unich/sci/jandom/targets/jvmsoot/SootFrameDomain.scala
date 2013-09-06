@@ -71,10 +71,16 @@ trait SootFrameDomain extends AbstractDomain {
     def size: Int
 
     /**
-     * Push an integer constant into the frame
+     * Push a constant into the frame
      * @param c constant to push into the frame
      */
     def evalConstant(c: Double): Property //era Int
+
+    /**
+     * Push a constant into the frame
+     * @param c constant to push into the frame
+     */
+    def evalConstant(c: String): Property
 
     /**
      * Push a null constant into the frame
@@ -215,14 +221,14 @@ trait SootFrameDomain extends AbstractDomain {
      * @param i the frame variable to assign
      * @param f the field to assign
      */
-    def assignField(i: Int=size-1, f: SootField): Property
+    def assignField(i: Int=0, f: SootField): Property
 
     /**
      * Assign to  a static field of the variable frame `i` the value at the top of the frame, and pop it.
      * @param i the frame variable to assign
      * @param f the field to assign
      */
-    //def assignStaticField(i: Int=size-1, f: SootFieldRef): Property
+    def assignStaticField(i: Int=0, f: SootField): Property
 
     /**
      * Returns the result of testing whether el(size-2) > el(size-1) and pops the two top frame
@@ -306,7 +312,7 @@ trait SootFrameDomain extends AbstractDomain {
      * Evaluate a static field and put the result on the frame.
      * @param v the static field to evaluate.
      */
-    def evalStaticField(v: StaticFieldRef): Property
+    def evalStaticField(v: SootField): Property
 
     /**
      * Exchange the position of the top element of the frame with that situate in the position i.
@@ -342,6 +348,9 @@ trait SootFrameDomain extends AbstractDomain {
      * Create two duplicate of the two top element of the frame and insert them four position under the top of the frame
      */
     def evalDup2_x2(): Property = evalSwap(size-4,size-2).evalSwap(size-3,size-1).evalLocal(size-4).evalLocal(size-4)
+
+
+    def evalInstance(t: Type): Property
 
     override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
 
