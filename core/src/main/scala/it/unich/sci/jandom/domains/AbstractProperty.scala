@@ -20,19 +20,24 @@ package it.unich.sci.jandom.domains
 
 /**
  * The base class for all abstract properties, i.e. elements of abstract domains. Abstract
- * properties implements a set of poset-like operations, which are union/intersection
+ * properties implements a set of poset-like operations, such as union/intersection
  * (corresponding to meet/join) and widening/narrowing. Moreover, abstract properties are
- * partially ordered. Abstract properties use F-bounded polymorhpism to ensure type safety.
+ * partially ordered. Abstract properties use F-bounded polymorhpism to ensure type safety,
+ * hence a concrete class `C` implementing an abstract property should inherit from
+ * `AbstractProperty[C]`.
+ *
+ * Properties are partitioned in fibers. Binary operators are guaranteed to work when
+ * both elements are part of the same fiber. Finally, properties are immutable.
+ *
  * @tparam Property the real class we are endowing with the AbstractProperty quality.
- * @define NOTEDIMENSION Some domains have a notion of dimension for the abstract properties. In this case,
- * `this` and `that` should generally be of the same dimension.
+ * @define NOTEFIBER `this` and `that` should generally be part of the same fiber.
  * @author Gianluca Amato <gamato@unich.it>
  */
-abstract class AbstractProperty[Property <: AbstractProperty[Property]] extends PartiallyOrdered[Property] {
+trait AbstractProperty[Property <: AbstractProperty[Property]] extends PartiallyOrdered[Property] {
   /**
    * The standard widening for two abstract properties.
    * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
-   * @note NOTEDIMENSION
+   * @note NOTEFIBER
    * @return the widening of the two abstract properties.
    */
   def widening(that: Property): Property
@@ -40,7 +45,7 @@ abstract class AbstractProperty[Property <: AbstractProperty[Property]] extends 
   /**
    * The standard widening for two abstract properties.
    * @param that the abstract object to be narrowed with `this`. `that` IS assumed to be smaller than `this`.
-   * @note NOTEDIMENSION
+   * @note NOTEFIBER
    * @return the narrowing of the two abstract properties.
    */
   def narrowing(that: Property): Property
@@ -49,7 +54,7 @@ abstract class AbstractProperty[Property <: AbstractProperty[Property]] extends 
    * Compute an upper bound of two abstract properties. If it is possible and convenient, this should compute
    * the least upper bound, but it is not a requirement.
    * @param that the abstract object to join with `this`.
-   * @note NOTEDIMENSION
+   * @note NOTEFIBER
    * @return an upper bound of the two abstract properties.
    */
   def union(that: Property): Property
@@ -58,7 +63,7 @@ abstract class AbstractProperty[Property <: AbstractProperty[Property]] extends 
    * Compute a lower bound of two abstract properties. If it is possible and convenient, this should compute
    * the greatest lower bound, but it is not a requirement.
    * @param that the abstract object to meet with `this`.
-   * @note NOTEDIMENSION
+   * @note NOTEFIBER
    * @return a lower bound of the two abstract properties.
    */
   def intersection(that: Property): Property
@@ -70,27 +75,36 @@ abstract class AbstractProperty[Property <: AbstractProperty[Property]] extends 
    * which should be printed out together, while different strings may be also printed out
    * separately.
    */
-  def mkString(vars: IndexedSeq[String]): Seq[String]
+  def mkString(vars: Seq[String]): String
 
   /**
-   * Returns true if this is the top element of the domain. A top element
+   * Returns true if this is the top element on the fiber. A top element
    * is bigger than all the other elements, is neutral for intersection and
-   * narrowing, and is absorbing for widening and union. There is a single top
-   * element in a domain, up to equality.
+   * narrowing, and is absorbing for widening and union.
    */
   def isTop: Boolean
 
   /**
-   * Returns true if this is the bottom element of the domain. A bottom element
+   * Returns true if this is the bottom element of the fiber. A bottom element
    * is smaller than all the other elements, is neutral for union and widening
-   * and is absorbing for intersection and narrowing. There is a single bottom
-   * element in a domain, up to equality.
+   * and is absorbing for intersection and narrowing.
    */
   def isBottom: Boolean
 
   /**
-   * Returns true if this an empty element, i.e. it represents unreachability.
-   * If this is true, then `isBottom` is true also.
+   * Returns true if this an empty element, i.e. it represents unreachability. If
+   * `x.isEmpty` is true, the same happens for `x.isBottom`, but the opposite does
+   * not always hold.
    */
   def isEmpty: Boolean
+
+  /**
+   * Returns the top property on the same fiber as `this`.
+   */
+  def top: Property
+
+  /**
+   * Returns the bottom property on the same fiber as `this`.
+   */
+  def bottom: Property
 }

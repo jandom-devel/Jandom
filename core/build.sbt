@@ -1,19 +1,33 @@
-// PPL options which cannot be specified at the build level (why?)
+import EclipseKeys._
 
-unmanagedJars in Compile += file("/usr/local/lib/ppl/ppl_java.jar")
+libraryDependencies ++= Seq(
+  "org.ow2.asm" % "asm-tree" % "4.1",
+  "org.ow2.asm" % "asm-util" % "4.1",
+  "org.scalatest" %% "scalatest" % "1.9.1" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
+  "org.scalanlp" %% "breeze-math" % "0.4",
+  "org.rogach" %% "scallop" % "0.9.4",
+  "soot" % "soot" % "2.5.0" from "http://www.sable.mcgill.ca/software/soot-2.5.0.jar",
+  "org.scala-lang" % "scala-swing" % scalaVersion.value
+)
 
-EclipseKeys.classpathTransformerFactories += NativeLibTransformerFactory("/usr/local/lib/ppl/ppl_java.jar")
+unmanagedJars in Compile ++= (pplJar.value map file).toSeq
 
-// eclipse-sbt plugin configuration cannot be specified at the build level
-EclipseKeys.configurations := Set(Compile, Test, Benchmark)
+unmanagedSourceDirectories in Compile ++= (pplJar.value map { _ => (sourceDirectory in Compile).value / "ppl" }).toSeq
 
-// add resources to classpath. We need a plugin which allows to
-// exclude resource directories from compilation.
-EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
+unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory in Test).value / "ppl" }).toSeq
 
-// BuildInfo
+// Eclipse plugin
+
+// It would be nice to be able to exclude resource directories from compilation.
+
+createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
+
+// BuildInfo plugin
 
 buildInfoSettings
+
+gitHeadCommitSHA := Process("git rev-parse HEAD").lines.head
 
 sourceGenerators in Compile <+= buildInfo
 

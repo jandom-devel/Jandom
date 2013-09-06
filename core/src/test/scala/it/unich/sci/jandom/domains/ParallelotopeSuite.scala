@@ -31,8 +31,8 @@ class ParallelotopeSuite extends FunSuite {
 
   val box = Parallelotope(DenseVector(-1, -1), DenseMatrix.eye(2), DenseVector(1, 1))
   val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
-  val empty = Parallelotope.empty(2)
-  val full = Parallelotope.full(2)
+  val empty = Parallelotope.bottom(2)
+  val full = Parallelotope.top(2)
 
   test("constructors should only work with compatible sizes of bounds and shapes") {
     intercept[IllegalArgumentException] { Parallelotope(DenseVector(0, 2), DenseMatrix.eye(2), DenseVector(0, 2, 3)) }
@@ -41,19 +41,19 @@ class ParallelotopeSuite extends FunSuite {
   test("constructors and extractors for non-trivial parallelotopes") {
     expectResult(2) { box.dimension }
     expectResult(false) { box.isEmpty }
-    expectResult(false) { box.isFull }
+    expectResult(false) { box.isTop }
   }
 
   test("constructors and extractors for full parallelotopes") {
     expectResult(2) { full.dimension }
     expectResult(false) { full.isEmpty }
-    expectResult(true) { full.isFull }
+    expectResult(true) { full.isTop }
   }
 
   test("constructors and extractors for empty parallelotopes") {
     expectResult(2) { empty.dimension }
     expectResult(true) { empty.isEmpty }
-    expectResult(false) { empty.isFull }
+    expectResult(false) { empty.isTop }
   }
 
   test("comparison of parallelotopes") {
@@ -160,8 +160,8 @@ class ParallelotopeSuite extends FunSuite {
   }
 
   test("string representation") {
-    expectResult(Seq("-1.0 <= x+y <= 1.0", "-1.0 <= x-y <= 1.0")) { diamond.mkString(IndexedSeq("x", "y")) }
-    expectResult("[ empty ]") { empty.toString }
+    expectResult("[ -1.0 <= x+y <= 1.0 , -1.0 <= x-y <= 1.0 ]") { diamond.mkString(IndexedSeq("x", "y")) }
+    expectResult("empty") { empty.toString }
     expectResult("[ -Infinity <= v0 <= Infinity , -Infinity <= v1 <= Infinity ]") { full.toString }
   }
 

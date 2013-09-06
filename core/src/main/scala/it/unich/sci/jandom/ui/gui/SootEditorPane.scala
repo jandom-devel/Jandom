@@ -37,6 +37,7 @@ import javax.swing.JFileChooser
 import scala.swing.event.EditDone
 import scala.swing.event.SelectionEvent
 import scala.swing.event.ActionEvent
+import scala.util.Try
 
 /**
  * This is the pane used to select the class and method to analyze for
@@ -130,11 +131,14 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
       sootScene.setSootClassPath(sootScene.defaultClassPath + ":" + classPathField.text)
       val rootPath = Paths.get(classPathField.text)
       val fileProcessor = new ClassFileVisitor(rootPath)
-      Files.walkFileTree(rootPath, fileProcessor)
-      // these two lines are a mess because Scala Swing does not play well with Java 1.7
-      val comboModel = ComboBox.newConstantModel(fileProcessor.classNameList).asInstanceOf[javax.swing.ComboBoxModel[String]]
-      classComboBox.peer.asInstanceOf[javax.swing.JComboBox[String]].setModel(comboModel)
-      publish(SelectionChanged(classComboBox))
+      if (Try(Files.walkFileTree(rootPath, fileProcessor)).isSuccess) {
+        // these two lines are a mess because Scala Swing does not play well with Java 1.7
+        val comboModel = ComboBox.newConstantModel(fileProcessor.classNameList).asInstanceOf[javax.swing.ComboBoxModel[String]]
+        classComboBox.peer.asInstanceOf[javax.swing.JComboBox[String]].setModel(comboModel)
+        publish(SelectionChanged(classComboBox))
+        classPathField.foreground = java.awt.Color.black
+      } else
+        classPathField.foreground = java.awt.Color.red
 
     case SelectionChanged(`classComboBox`) =>
       val klass = sootScene.loadClassAndSupport(classComboBox.selection.item)

@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@ package it.unich.sci.jandom.targets
 import org.scalatest.FunSuite
 
 import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 import linearcondition._
 
@@ -31,17 +32,17 @@ import linearcondition._
  */
 class LinearCondSuite extends FunSuite {
   val env = Environment("x","y")
-  val lf1 = LinearForm(List(-3,1,0))
-  val lf2 = LinearForm(List(-6,1,0))
+  val lf1 = LinearForm(Seq(-3,1,0))
+  val lf2 = LinearForm(Seq(-6,1,0))
   val cond1 = AtomicCond(lf1,AtomicCond.ComparisonOperators.LTE)
   val cond2 = AtomicCond(lf2,AtomicCond.ComparisonOperators.GTE)
-  val full = BoxDouble.full(env.size) 
-  
-  test("atomic conditions") {   
-    expectResult (  BoxDouble(Array(Double.NegativeInfinity,Double.NegativeInfinity), Array(3,Double.PositiveInfinity)) ) { cond1.analyze(full) } 
-  }	
-  
-  test("and/or/not conditions") {      
+  val full = BoxDouble.top(env.size)
+
+  test("atomic conditions") {
+    expectResult (  BoxDouble(Array(Double.NegativeInfinity,Double.NegativeInfinity), Array(3,Double.PositiveInfinity)) ) { cond1.analyze(full) }
+  }
+
+  test("and/or/not conditions") {
     expectResult ( BoxDouble(Array(3,Double.NegativeInfinity),Array(6,Double.PositiveInfinity)) ) { OrCond(cond1,cond2).opposite.analyze(full) }
     expectResult ( BoxDouble(Array(3,Double.NegativeInfinity),Array(6,Double.PositiveInfinity)) ) { NotCond(OrCond(cond1,cond2)).analyze(full) }
   }

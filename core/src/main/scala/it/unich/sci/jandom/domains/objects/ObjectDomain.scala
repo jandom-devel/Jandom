@@ -18,46 +18,30 @@
 
 package it.unich.sci.jandom.domains.objects
 
-import it.unich.sci.jandom.domains.AbstractProperty
-import it.unich.sci.jandom.domains.AbstractDomain
+import it.unich.sci.jandom.domains.DimensionFiberedDomain
+import it.unich.sci.jandom.domains.DimensionFiberedProperty
 
 /**
- * This trait represents a domain which handles objects and their relationship. May be used, for
- * example, for sharing analysis. This is only a draft, and will be probably improved along the
- * development of Jandom.
+ * This trait represents the interface for a domain which handles objects and their relationship.
+ * May be used, for example, for sharing analysis. This is only a draft, and will be probably improved
+ * along the development of Jandom.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-trait ObjectDomain extends AbstractDomain {
+trait ObjectDomain extends DimensionFiberedDomain {
 
   type Property <: ObjectProperty[Property]
 
   /**
-   * Returns the top element of the domain relative to the fiber `size`
+   * This trait is the interface for abstract elements in an object domain.
    */
-  def top(size: Int): Property
+  trait ObjectProperty[Property <: ObjectProperty[Property]] extends DimensionFiberedProperty[Property] {
+    this: Property =>
 
-  /**
-   * Returns the top element of the domain relative to the fiber `size`
-   */
-  def bottom(size: Int): Property
-
-  /**
-   * This trait represents single abstract element in an object domain.
-   */
-  trait ObjectProperty[Property <: ObjectProperty[Property]] extends AbstractProperty[Property] {
     type ShareFilter = UP[Int] => Boolean
 
-    /**
-     * The fiber of the property.
-     */
-    def size: Int
-    def addVariable: Property
-    def delVariable(n: Int = size - 1): Property
-    def removeRangeOfVariables(range: Range): Property
-    def removeLowerVariables(newSize: Int): Property
-    def removeHigherVariables(newSize: Int): Property
-    def assignNull(dst: Int = size - 1): Property
+    def addFreshVariable: Property
+    def assignNull(dst: Int = dimension - 1): Property
     def assignVariable(dst: Int, src: Int): Property
     def assignVariableToField(dst: Int, field: Int, src: Int): Property
     def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: ShareFilter = (_ => true)): Property

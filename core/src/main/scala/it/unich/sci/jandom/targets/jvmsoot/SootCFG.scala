@@ -95,7 +95,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     val stackPositions = prop.size - body.getLocalCount() - (if (params.io) method.getParameterCount() else 0)
     val stackNames = for (i <- 0 until stackPositions) yield "#s" + i
     val names = localNames ++ parameterNames ++ stackNames
-    prop.mkString(names).mkString(", ")
+    prop.mkString(names)
   }
 
   /**

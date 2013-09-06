@@ -18,18 +18,15 @@
 
 package it.unich.sci.jandom.domains.numerical
 
-import it.unich.sci.jandom.domains.AbstractProperty
+import it.unich.sci.jandom.domains.DimensionFiberedProperty
 
 /**
- * Base class for numerical properties and their operations. A concrete class `C` implementing a numerical
- * property should inherit from `NumericalProperty[C]`. Note that binary operations only works between
- * compatible properties, i.e. properties over vector spaces of the same dimension. Numerical
- * properties are immutable.
- *
- * Most of the operations accepting dimensions as parameters have default value of `dimension-1` or `dimension-2`.
+ * Base class for numerical properties and their operations.
  *
  * @tparam Property the property type we attach to and provide numerical operations.
  * @author Gianluca Amato <gamato@unich.it>
+ * @note Most of the operations accepting variables as parameters have default values of `dimension-1` or `dimension-2`.
+ *
  * @define PPL [[http://bugseng.com/products/ppl/ PPL]]
  * @define APRON [[http://apron.cri.ensmp.fr/library/ APRON]]
  * @define NOTEN `n` should be within `0` and `dimension-1`.
@@ -37,8 +34,9 @@ import it.unich.sci.jandom.domains.AbstractProperty
  * @define ILLEGAL IllegalArgumentException if parameters are not correct.
  */
 
-trait NumericalProperty[Property <: NumericalProperty[Property]] extends AbstractProperty[Property] {
+trait NumericalProperty[Property <: NumericalProperty[Property]] extends DimensionFiberedProperty[Property] {
   this: Property =>
+
   /**
    * Non deterministic assignment (also called `forget` operator).
    * @note $NOTEN
@@ -93,80 +91,12 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
 
   /**
    * Given a linear form, determines if there is a value 'c' such that the  linear form
-   *  always evaluates to c in the numerical object.
+   * always evaluates to c in the numerical object.
    * @param coeff the homogeneous coefficients of the linear form.
    * @param known the in-homogeneous coefficient.
    * @return `Some(c)` if such a value exists, `None` otherwise.
    */
   def frequency(coeff: Array[Double], known: Double): Option[Double]
-
-  /**
-   * Add a new undetermined dimension.
-   */
-  def addDimension: Property
-
-  /**
-   * Delete a given dimension.
-   * @param n the dimension to be suppressed.
-   * @note $NOTEN
-   */
-  def delDimension(n: Int = dimension - 1): Property
-
-  /**
-   * Map dimensions according to a partial injective function.
-   * @param rho partial injective function. Each dimension `i` is mapped to `rho(i)`. If `rho(i)` is
-   * `-1`, then dimension i is removed.
-   */
-  def mapDimensions(rho: Seq[Int]): Property
-
-  /**
-   * Returns the dimension of the environment space.
-   * @return the dimension of the environment space.
-   */
-  def dimension: Int
-
-  /**
-   * Test of emptiness
-   * @return whether the abstract object is empty.
-   */
-  def isEmpty: Boolean
-
-  /**
-   * Test for fullness.
-   * @return whether the abstract object represents the full environment space.
-   */
-  def isFull: Boolean
-
-  /**
-   * Returns an empty object with the same `dimension` as `this`.
-   */
-  def empty: Property
-
-  /**
-   * Returns a full object with the same `dimension` as `this`.
-   */
-  def full: Property
-
-  /**
-   * @inheritdoc
-   * Returns false since, if not otherwise specified, numerical domains have no top element.
-   */
-  def isTop = false
-
-  /**
-   * @inheritdoc
-   * Returns false since, if not otherwise specified, numerical domains have no bottom element.
-   */
-  def isBottom = false
-
-  /**
-   * Returns a string representation of the property.
-   * @param vars an array with the name of the variables
-   * @return a sequence of strings. The idea is that each string is an atomic piece of information
-   * which should be printed out together, while different strings may be also printed out
-   * separately.
-   */
-  def mkString(vars: IndexedSeq[String]): Seq[String]
 
   /*
    * Now some concrete methods, which may be overriden in subclasses for
@@ -240,24 +170,24 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * @note $NOTEN
    */
   def variableMul(n: Int = dimension - 2, m: Int = dimension - 1) = {
-    // TODO: use method "frequency" here when it works for PPL
     val coeff = Array.fill(dimension)(0.0)
     coeff(n) = 1
-    val c = minimize(coeff, 0)
-    if (c == maximize(coeff, 0)) {
-      coeff(n) = 0
-      coeff(m) = c
-      linearAssignment(n, coeff, 0)
-    } else {
-      coeff(n) = 0
-      coeff(m) = 1
-      val c = minimize(coeff, 0)
-      if (c == maximize(coeff, 0)) {
-        coeff(n) = c
-        coeff(m) = 0
+    frequency(coeff, 0) match {
+      case Some(c) =>
+        coeff(n) = 0
+        coeff(m) = c
         linearAssignment(n, coeff, 0)
-      } else
-        nonDeterministicAssignment(n)
+      case None =>
+        coeff(n) = 0
+        coeff(m) = 1
+        frequency(coeff, 0) match {
+          case Some(c) =>
+            coeff(n) = c
+            coeff(m) = 0
+            linearAssignment(n, coeff, 0)
+          case None =>
+            nonDeterministicAssignment(n)
+        }
     }
   }
 
@@ -354,26 +284,6 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
   }
 
   /**
-   * Add many undetermined dimensions.
-   * @param n number of dimensions to add
-   */
-  def addDimension(n: Int): Property = {
-    require(n >= 0)
-    (0 until n).foldLeft(this) { (prop, _) => prop.addDimension }
-  }
-
-  /**
-   * Remove many dimensions at once
-   * @param dims the dimensions to remove
-   * @return the property without the required dimensions
-   */
-
-  def remove_space_dimensions(dims: Seq[Int]): Property = {
-    val sortedDims = dims.sortWith({ _ > _ })
-    sortedDims.foldLeft(this) { (p: Property, d: Int) =>  p.delDimension(d) }
-  }
-
-  /**
    * The connect method is used for inter-procedural analysis. It takes two properties
    * such that the last `common` dimensions of `this` corresponds to the first `common`
    * dimension of `p`. It embeds both properties on a common space and intersect, then
@@ -384,16 +294,16 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Abstrac
    * @return the connected properties, according to the description above
    */
   def connect(p: Property, common: Int) = {
-    val newprop = addDimension(p.dimension - common)
+    val newprop = addVariables(p.dimension - common)
     val seq = (dimension - common until newprop.dimension) ++ (0 until dimension - common)
-    val newp = p.addDimension(dimension - common).mapDimensions(seq)
-    (newprop intersection newp).remove_space_dimensions(dimension - common to  dimension-1)
+    val newp = p.addVariables(dimension - common).mapVariables(seq)
+    (newprop intersection newp).delVariables(dimension - common to dimension - 1)
   }
 
   /**
    * Returns the string representation of the property. It calls `mkString` with the standard
    * variable names `v1` ... `vn`.
    */
-  override def toString: String = "[ " + (mkString(for (i <- 0 until dimension) yield "v" + i)).mkString(" , ") + " ]"
+  override def toString: String = mkString(for (i <- 0 until dimension) yield "v" + i)
 
 }

@@ -19,8 +19,8 @@
 package it.unich.sci.jandom.targets.slil
 
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.targets.Annotation
-import it.unich.sci.jandom.targets.LinearForm
 
 import AnalysisPhase.AnalysisPhase
 
@@ -36,12 +36,12 @@ case class AssignStmt[T](variable: Int, linearForm: LinearForm[T])(implicit nume
   import AnalysisPhase._
 
   override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
-    val coefficients = linearForm.coefficients
+    val coefficients = linearForm.coeffs
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
   }
 
   override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec) =
     ppspec.indent(level) + ppspec.env(variable) + " = " + linearForm.mkString(ppspec.env.names) + '\n'
-    
+
   val numvars = linearForm.dimension
 }

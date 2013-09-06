@@ -33,16 +33,15 @@ class NumericalTopDomainSuite extends FunSpec {
 
     describe(s"The top numerical domain for dimension space $dim") {
 
-      val x = NumericalTopDomain.full(dim)
+      val x = NumericalTopDomain.top(dim)
 
       val zeroCoeffs = Array.fill(dim)(0.0)
       val oneCoeffs = Array.fill(dim)(0.0)
       if (dim != 0) oneCoeffs(0) = 1
 
       describe(s"has an unique element which") {
-        it("should be full") { assert(x.isFull) }
-        it("should not be top") { assert(!x.isTop) }
-        it("should not be bottom") { assert(!x.isBottom) }
+        it("should be full") { assert(x.isTop) }
+        it("should be bottom") { assert(x.isBottom) }
         it("should not be empty") { assert(!x.isEmpty) }
         it(s"should have dimension $dim") { expectResult(dim) (x.dimension)}
       }
@@ -89,12 +88,12 @@ class NumericalTopDomainSuite extends FunSpec {
 
       describe(s"has dimension changing operators which") {
         if (dim > 0) they("reduce size of an element") {
-            if (dim >= 2) expectResult(NumericalTopDomain.full(dim - 1))(x.delDimension(1))
-            expectResult(NumericalTopDomain.full(dim - 1))(x.delDimension())
+            if (dim >= 2) expectResult(NumericalTopDomain.top(dim - 1))(x.delVariable(1))
+            expectResult(NumericalTopDomain.top(dim - 1))(x.delVariable())
         }
         they("increase size of an element") {
-          expectResult(NumericalTopDomain.full(dim + 1))(x.addDimension)
-          expectResult(NumericalTopDomain.full(dim + 2))(x.addDimension(2))
+          expectResult(NumericalTopDomain.top(dim + 1))(x.addVariable)
+          expectResult(NumericalTopDomain.top(dim + 2))(x.addVariables(2))
         }
       }
     }

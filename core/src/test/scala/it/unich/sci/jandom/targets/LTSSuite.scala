@@ -21,6 +21,7 @@ package it.unich.sci.jandom.targets
 import org.scalatest.FunSuite
 
 import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 import linearcondition.{FalseCond,AtomicCond}
 import lts._
@@ -36,10 +37,10 @@ class LTSSuite extends FunSuite {
 	val l2 = Location("ciclo", List(FalseCond))
 	val t1 = Transition("init", l1, l2,
 	    guard = Nil,
-	    assignments = List(LinearAssignment(0,LinearForm.fromCoefficient(0))))
+	    assignments = List(LinearAssignment(0,0)))
 	val t2 = Transition("loop", l2, l2,
-	    guard = List(AtomicCond(LinearForm(List(-10,1)), AtomicCond.ComparisonOperators.LTE)),
-	    assignments = List(LinearAssignment(0,LinearForm(List(1,1)))))
+	    guard = List(AtomicCond(LinearForm(Seq(-10,1)), AtomicCond.ComparisonOperators.LTE)),
+	    assignments = List(LinearAssignment(0,LinearForm(Seq(1,1)))))
 	val lts = LTS(IndexedSeq(l1,l2), Seq(t1,t2), env)
 	val params = new Parameters[LTS] { val domain = BoxDouble }
     val ann = lts.analyze(params)

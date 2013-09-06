@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package it.unich.sci.jandom.parsers
 
 import scala.util.parsing.combinator.JavaTokenParsers
 
-import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.targets.linearcondition._
 
 /**

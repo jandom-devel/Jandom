@@ -180,8 +180,8 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
 
   def maximize(coeff: Array[Double], known: Double) = linearEvaluation(coeff, known)._2
 
-  def frequency(coeff: Array[Double], known: Double) =  {
-    val (min,max) = linearEvaluation(coeff, known)
+  def frequency(coeff: Array[Double], known: Double) = {
+    val (min, max) = linearEvaluation(coeff, known)
     if (min == max) Some(min) else None
   }
 
@@ -247,7 +247,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
     /* check if result is empty */
     val lfArgmin = linearArgmin(coeff)
     val lfMin = linearEvaluation(coeff, known)._1
-    if (lfMin > 0) return BoxDouble.empty(dimension)
+    if (lfMin > 0) return BoxDouble.bottom(dimension)
 
     val newlow = low.clone
     val newhigh = high.clone
@@ -280,21 +280,33 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
     val count = coeff.count(_ != 0)
     count match {
       case 0 =>
-        if (known == 0) empty else this
+        if (known == 0) bottom else this
       case 1 =>
-        val dim = coeff.indexWhere( _ != 0)
+        val dim = coeff.indexWhere(_ != 0)
         if (low(dim) == known && high(dim) == known)
-          empty
-          else
-            this
+          bottom
+        else
+          this
       case _ => this
     }
   }
 
-
-  def addDimension: BoxDouble =
+  /*
+  def addVariable(v: Int): BoxDouble = {
+    require(0 <= v && v <= dimension)
     if (isEmpty)
       BoxDouble.empty(dimension + 1)
+    else if (v == dimension)
+      new BoxDouble(low :+ Double.NegativeInfinity, high :+ Double.PositiveInfinity)
+    else
+      new BoxDouble((low.take(v) :+ Double.NegativeInfinity) ++ low.takeRight(dimension-v),
+  	                (high.take(v) :+ Double.PositiveInfinity) ++ high.takeRight(dimension-v))
+  }
+*/
+
+  def addVariable: BoxDouble =
+    if (isEmpty)
+      BoxDouble.bottom(dimension + 1)
     else
       new BoxDouble(low :+ Double.NegativeInfinity, high :+ Double.PositiveInfinity)
 
@@ -304,7 +316,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  def delDimension(n: Int): BoxDouble = {
+  def delVariable(n: Int): BoxDouble = {
     require(n < low.length && n >= 0)
     val newlow = new Array[Double](dimension - 1)
     val newhigh = new Array[Double](dimension - 1)
@@ -321,14 +333,14 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @note @inheritdoc
    * @throws IllegalArgumentException if parameters are not correct (but we do not check injectivity of `rho`)
    */
-  def mapDimensions(rho: Seq[Int]) = {
+  def mapVariables(rho: Seq[Int]) = {
     require(rho.length == dimension)
     val newdim = rho.count(_ >= 0)
     require(rho forall { i => i >= -1 && i < newdim })
     // we do not check injectivity
     val newlow = new Array[Double](newdim)
     val newhigh = new Array[Double](newdim)
-    for ( (newi,i) <- rho.zipWithIndex ; if newi >= 0 ) {
+    for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {
       newlow(newi) = low(i)
       newhigh(newi) = high(i)
     }
@@ -339,23 +351,31 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @inheritdoc
    * @throws $ILLEGAL
    */
-  def mkString(vars: IndexedSeq[String]): Seq[String] = {
+  def mkString(vars: Seq[String]): String = {
     require(vars.length >= dimension)
     if (isEmpty)
-      Seq("[void]")
-    else
-      for (i <- 0 until dimension) yield low(i) + " <= " + vars(i) + " <= " + high(i)
+      "empty"
+    else {
+      val bounds = for (i <- 0 until dimension) yield {
+        if(low(i)<high(i))
+          low(i) + " <= " + vars(i) + " <= " + high(i)
+          else vars(i) + " = " + high(i)
+      }
+      bounds.mkString("[ "," , "," ]")
+    }
   }
 
   val dimension: Int = low.length
 
-  def isEmpty: Boolean = (low, high).zipped.exists(_ > _)
+  def isEmpty = (low, high).zipped.exists(_ > _)
 
-  def isFull: Boolean = low.forall(_.isNegInfinity) && high.forall(_.isPosInfinity)
+  def isBottom = isEmpty
 
-  def empty = BoxDouble.empty(low.length)
+  def isTop =  low.forall(_.isNegInfinity) && high.forall(_.isPosInfinity)
 
-  def full = BoxDouble.full(low.length)
+  def bottom = BoxDouble.bottom(low.length)
+
+  def top = BoxDouble.top(low.length)
 
   def tryCompareTo[B >: BoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: BoxDouble =>
@@ -406,7 +426,7 @@ object BoxDouble extends NumericalDomain {
   def apply(low: Array[Double], high: Array[Double]): BoxDouble = {
     require(low.length == high.length)
     if ((low, high).zipped.exists(_ > _))
-      empty(low.length)
+      bottom(low.length)
     else
       new BoxDouble(low, high)
   }
@@ -421,7 +441,7 @@ object BoxDouble extends NumericalDomain {
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  def full(n: Int): BoxDouble = {
+  def top(n: Int): BoxDouble = {
     new BoxDouble(Array.fill(n)(Double.NegativeInfinity), Array.fill(n)(Double.PositiveInfinity))
   }
 
@@ -430,7 +450,7 @@ object BoxDouble extends NumericalDomain {
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  def empty(n: Int): BoxDouble = {
+  def bottom(n: Int): BoxDouble = {
     if (!(cacheEmpty isDefinedAt n))
       cacheEmpty += (n -> new BoxDouble(Array.fill(n)(Double.PositiveInfinity), Array.fill(n)(Double.NegativeInfinity)))
     cacheEmpty(n)

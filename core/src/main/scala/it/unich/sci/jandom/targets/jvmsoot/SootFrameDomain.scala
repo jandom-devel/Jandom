@@ -353,8 +353,5 @@ trait SootFrameDomain extends AbstractDomain {
     def evalInstance(t: Type): Property
 
     override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
-
-    def isTop = false
-    def isBottom = false
   }
 }

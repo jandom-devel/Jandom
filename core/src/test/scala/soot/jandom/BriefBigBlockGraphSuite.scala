@@ -37,14 +37,13 @@ class BriefBigBlockGraphSuite extends FunSpec {
     val body = c.getMethodByName("nested").retrieveActiveBody()
     val graph = new BriefBigBlockGraph(body)
     val expectedGraph = Seq(
-      (Seq(), Seq(4)),
-      (Seq(4), Seq(3)),
-      (Seq(3), Seq(3)),
-      (Seq(1,2), Seq(4,2)),
-      (Seq(0,3), Seq(5,1)),
-      (Seq(4), Seq()))
+      (Seq(), Seq(1)),
+      (Seq(0,3), Seq(2,4)),
+      (Seq(1,2), Seq(3,2)),
+      (Seq(2), Seq(1)),
+      (Seq(1), Seq()))
 
-    it("should have five nodes") { assert(graph.size() === 6) }
+    it("should have five nodes") { assert(graph.size() === expectedGraph.length ) }
     it("should be isomorphic to the expected graph") {
       for ( (block, (preds, succs)) <- graph zip expectedGraph) {
     	  assert ( (block.getPreds() map { _.getIndexInMethod() }) === preds)

@@ -18,6 +18,7 @@
 
 package it.unich.sci.jandom.targets.jvmsoot
 
+import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.targets._
 import it.unich.sci.jandom.targets.linearcondition._
 

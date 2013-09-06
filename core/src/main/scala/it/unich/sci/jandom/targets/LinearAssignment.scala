@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 package it.unich.sci.jandom.targets
 
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
  * This class represent an assignment of linear forms.
@@ -31,11 +32,11 @@ import it.unich.sci.jandom.domains.numerical.NumericalProperty
 
 case class LinearAssignment[T](variable: Int, linearForm: LinearForm[T]) (implicit numeric: Numeric[T])  {
   import numeric._
-  
-  override def toString = "v"+ variable + " := " + linearForm.toString  
-  
+
+  override def toString = "v"+ variable + " := " + linearForm.toString
+
   def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
-    val coefficients = linearForm.coefficients
+    val coefficients = linearForm.coeffs
     input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
   }
 }

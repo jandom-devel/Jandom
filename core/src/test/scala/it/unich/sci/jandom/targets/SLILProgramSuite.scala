@@ -21,6 +21,7 @@ package it.unich.sci.jandom.targets
 import org.scalatest.FunSuite
 
 import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.parsers.RandomParser
 
 import linearcondition.AtomicCond
@@ -36,9 +37,9 @@ class SLILProgramSuite extends FunSuite {
     val env = Environment("x")
     val program = SLILProgram(env, Seq(1),
       CompoundStmt(
-        AssignStmt(0, LinearForm.fromCoefficient(0)),
-        WhileStmt(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LT),
-          AssignStmt(0, LinearForm(List(1, 1))))))
+        AssignStmt(0, 0),
+        WhileStmt(AtomicCond(LinearForm(Seq(-10, 1)), AtomicCond.ComparisonOperators.LT),
+          AssignStmt(0, LinearForm(Seq(1, 1))))))
     val params = new Parameters[SLILTarget] { val domain = BoxDouble }
     val ann = program.analyze(params)
     expectResult(BoxDouble(Array(10), Array(11))) { ann((program.stmt, 2)) }
@@ -64,12 +65,12 @@ class SLILProgramSuite extends FunSuite {
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Output
     program.analyze(params)
-    expectResult(BoxDouble.full(1)) { params.tag(0) }
+    expectResult(BoxDouble.top(1)) { params.tag(0) }
 
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Random
     program.analyze(params)
-    expectResult(BoxDouble.full(1)) { params.tag(0) }
+    expectResult(BoxDouble.top(1)) { params.tag(0) }
 
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.BackEdges
@@ -80,7 +81,7 @@ class SLILProgramSuite extends FunSuite {
   test("statement without program") {
      val stmt: SLILTarget =
       CompoundStmt(
-        AssignStmt(0, LinearForm.fromCoefficient(0)),
+        AssignStmt(0, 0),
         WhileStmt(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LT),
           AssignStmt(0, LinearForm(List(1, 1)))))
      val params = new Parameters[SLILTarget] { val domain = BoxDouble }

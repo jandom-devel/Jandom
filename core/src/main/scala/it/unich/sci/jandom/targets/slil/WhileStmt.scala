@@ -57,7 +57,7 @@ case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
       if (lastBodyResult != null && phase != AscendingRestart)
         (lastBodyResult.asInstanceOf[params.Property], lastInvariant.asInstanceOf[params.Property])
       else
-        (input.empty, input.empty)
+        (input.bottom, input.bottom)
 
     // Keep the current phase in the variable currentPhase, and initialize
     // with the input parameter
