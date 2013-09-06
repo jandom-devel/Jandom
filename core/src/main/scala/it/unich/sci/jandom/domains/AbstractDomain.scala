@@ -19,42 +19,13 @@
 package it.unich.sci.jandom.domains
 
 /**
- * The base class for all abstract domains. An abstract domain is essentially a poset.
- * The elements of this posets are values of the type `Property`. Actually, with respect
- * to standard abstract interpretation theory, an abstract domain in Jandom could be
- * though of as "fibred": different fibers corresponds to slightly different concrete
- * domains.
- * @author Gianluca Amato <gamato@unich.it>
+ * The base class for all abstract domains. An abstract domain is a collection of properties.
  *
+ * @author Gianluca Amato <gamato@unich.it>
  */
-abstract class AbstractDomain {
+trait AbstractDomain {
   /**
-   * The type of the properties created by this abstract domain.
+   * The type of the properties associated to this abstract domain.
    */
   type Property <: AbstractProperty[Property]
-}
-
-/**
- * This trait is for domains endowed with a global top element.
- */
-trait WithTop {
-  this: AbstractDomain =>
-
-  /**
-   * The abstract top of the domain. We ensure that `top.isTop` is true.
-   * @author Gianluca Amato <gamato@unich.it>
-   */
-  val top: Property
-}
-
-/**
- * This trait is for domains endowed with a global bottom element.
- */
-trait WithBottom {
-  this: AbstractDomain =>
-
-  /**
-   * The abstract top of the domain. We ensure that `bottom.isBottom` is true.
-   */
-  val bottom: Property
 }

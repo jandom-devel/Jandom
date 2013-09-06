@@ -43,7 +43,7 @@ case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: 
   }
 
   override def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
-    val input = params.domain.full(env.size)
+    val input = params.domain.top(env.size)
     val ann = getAnnotation[params.Property]
     val output = params.narrowingStrategy match {
       case Separate =>

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato, Francesca Scozzari
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -26,6 +26,8 @@ import scala.Array.canBuildFrom
  * using the Breeze Math library. It is not safe to use, since it does not implement rounding correctly.
  * Real domains should be implemented within $PPL or $APRON.
  * @author Gianluca Amato <g.amato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
+ *
  *
  * @constructor Builds a `Parallelotope`.
  * @param isEmpty is true if the parallelotope is empty. In this case, the other parameters are not relevant.
@@ -45,7 +47,18 @@ class Parallelotope(
   private[domains] val high: DenseVector[Double])
   extends NumericalProperty[Parallelotope] {
 
-  require((low.length == A.rows) && (low.length == A.cols) && (low.length == high.length))
+  require((low.length == A.rows) && (low.length == A.cols) && normalized)
+
+  private def normalized: Boolean = {
+  //if( (0 until low.length-1) exists {i => low(i) == Double.PositiveInfinity })
+  //  print("--create-- ",low," ")
+    low.length == high.length && (
+      (0 until low.length-1) forall { i =>
+        !low(i).isPosInfinity &&
+          !high(i).isNegInfinity &&
+          (low(i) <= high(i) || isEmpty)
+      })
+  }
 
   /**
    * @inheritdoc
@@ -228,12 +241,14 @@ class Parallelotope(
    */
   def unionWeak(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
+    if (isEmpty) return that
+    if (that.isEmpty) return this
     val result = that.rotate(A)
     for (i <- 0 to dimension - 1) {
       result.low(i) = result.low(i) min low(i)
-      result.low(i) = result.high(i) max high(i)
+      result.high(i) = result.high(i) max high(i)
     }
-    return result
+    new Parallelotope(false, result.low, result.A, result.high) //this is to normalize
   }
 
   /**
@@ -245,12 +260,16 @@ class Parallelotope(
    */
   def intersectionWeak(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
+    if (isEmpty) return this
+    if (that.isEmpty) return that
     val result = that.rotate(A)
     for (i <- 0 to dimension - 1) {
       result.low(i) = result.low(i) max low(i)
-      result.low(i) = result.high(i) min high(i)
+      result.high(i) = result.high(i) min high(i)
     }
-    return result
+    if( (0 until result.low.length) exists { i => (result.low(i) > result.high(i) ) })
+      bottom
+    else   new Parallelotope(false, result.low, result.A, result.high) //this is to normalize
   }
 
   /**
@@ -273,16 +292,18 @@ class Parallelotope(
       new Parallelotope(false, newlow, newA, newhigh)
     } else {
       val newP = nonDeterministicAssignment(n)
-      val Aprime = newP.A
+      val Aprime = newP.A.copy
       val j = ((0 to Aprime.rows - 1) find { Aprime(_, n) != 0 }).get
       for (s <- 0 to dimension - 1 if Aprime(s, n) != 0 && s != j)
         Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
       val ei = DenseVector.zeros[Double](dimension)
       ei(n) = 1
       Aprime(j, ::) := ei :- DenseVector(coeff)
-      newP.low(j) = known
-      newP.high(j) = known
-      return newP
+      val newlow = newP.low.copy
+      val newhigh = newP.high.copy
+      newlow(j) = known
+      newhigh(j) = known
+      return new Parallelotope(false, newlow, Aprime, newhigh)
     }
   }
 
@@ -303,7 +324,7 @@ class Parallelotope(
         val newlow = low.copy
         val newhigh = high.copy
         val (minc, maxc) = Parallelotope.extremalsInBox(y, newlow, newhigh)
-        if (minc > -known) return Parallelotope.empty(dimension)
+        if (minc > -known) return Parallelotope.bottom(dimension)
         for (i <- 0 to dimension - 1) {
           if (y(i) > 0)
             newhigh(i) = high(i) min ((-known - minc + y(i) * low(i)) / y(i))
@@ -328,16 +349,16 @@ class Parallelotope(
    * @throws $ILLEGAL
    */
   def linearDisequality(coeff: Array[Double], known: Double): Parallelotope = {
-	 if (coeff.forall(_ == 0))
-	   if (known == 0) empty else this
-     else {
-       val row = (0 until dimension).find (A(_,::).toDenseVector == DenseVector(coeff))
-       row match {
-         case None => this
-         case Some(row) =>
-           if (low(row) == known && high(row) == known) empty else this
-       }
-     }
+    if (coeff.forall(_ == 0))
+      if (known == 0) bottom else this
+    else {
+      val row = (0 until dimension).find(A(_, ::).toDenseVector == DenseVector(coeff))
+      row match {
+        case None => this
+        case Some(row) =>
+          if (low(row) == known && high(row) == known) bottom else this
+      }
+    }
   }
 
   /**
@@ -372,7 +393,9 @@ class Parallelotope(
     new Parallelotope(false, newlow, newA, newhigh)
   }
 
-  def addDimension: Parallelotope = {
+  def addVariable(): Parallelotope = {
+    if(isEmpty)
+      return Parallelotope.bottom(A.rows+1)
     val e = DenseMatrix.zeros[Double](dimension + 1, 1)
     e(dimension, 0) = 1.0
     val newA = DenseMatrix.horzcat(DenseMatrix.vertcat(A, DenseMatrix.zeros[Double](1, dimension)), e)
@@ -387,13 +410,13 @@ class Parallelotope(
    * @note Not yet implemented.
    * @throws $ILLEGAL
    */
-  def delDimension(n: Int): Parallelotope = ???
+  def delVariable(n: Int): Parallelotope = ???
 
   /**
    * @inheritdoc
    * @note Not yet implemented.
    */
-  def mapDimensions(rho: Seq[Int]): Parallelotope = ???
+  def mapVariables(rho: Seq[Int]): Parallelotope = ???
 
   /**
    * @inheritdoc
@@ -418,11 +441,13 @@ class Parallelotope(
 
   def dimension = A.rows
 
-  val isFull = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
+  def isTop = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
 
-  def empty = Parallelotope.empty(dimension)
+  def isBottom = isEmpty
 
-  def full = Parallelotope.full(dimension)
+  def bottom = Parallelotope.bottom(dimension)
+
+  def top = Parallelotope.top(dimension)
 
   def tryCompareTo[B >: Parallelotope](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = that match {
     case that: Parallelotope =>
@@ -468,6 +493,7 @@ class Parallelotope(
   def <=[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Boolean = {
     if (isEmpty) return (true)
     if (that.isEmpty) return (false)
+    if (that.isTop) return (true)
     val ptemp = this.rotate(that.A)
     (0 to ptemp.low.length - 1) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) }
   }
@@ -486,7 +512,7 @@ class Parallelotope(
     case _ => false
   }
 
-  def mkString(vars: IndexedSeq[String]): Seq[String] = {
+  def mkString(vars: Seq[String]): String = {
 
     /**
      * Returns a string representation of the linear form `lf`.
@@ -515,9 +541,15 @@ class Parallelotope(
     }
 
     if (isEmpty)
-      Seq("empty")
-    else
-      for (i <- 0 until dimension) yield low(i) + " <= " + lfToString(A.t(::, i)) + " <= " + high(i)
+      "empty"
+    else {
+      val eqns = for (i <- 0 until dimension) yield {
+        if (low(i) < high(i))
+          low(i) + " <= " + lfToString(A.t(::, i)) + " <= " + high(i)
+        else lfToString(A.t(::, i)) + " = " + high(i)
+      }
+      eqns.mkString("[ "," , "," ]")
+    }
   }
 }
 
@@ -540,20 +572,12 @@ object Parallelotope extends NumericalDomain {
    * square or if `A` has not the same size of `low`.
    */
 
-  def apply(low: DenseVector[Double], A: DenseMatrix[Double], high: DenseVector[Double]) =
-    new Parallelotope(false, low, A, high)
+  def apply(low: DenseVector[Double], A: DenseMatrix[Double], high: DenseVector[Double]) = {
+    val isEmpty = (0 until low.size) exists { i => low(i) > high(i) }
+    val isEmpty2 = (0 until low.size) exists { i => low(i).isInfinite() && low(i) == high(i) }
 
-  /**
-   * @inheritdoc
-   * @note @inheritdoc
-   * @throws $ILLEGAL
-   */
+    new Parallelotope(isEmpty || isEmpty2, low, A, high)
 
-  def full(n: Int) = {
-    val low = DenseVector.fill(n)(Double.NegativeInfinity)
-    val high = DenseVector.fill(n)(Double.PositiveInfinity)
-    val A = DenseMatrix.eye[Double](n)
-    new Parallelotope(false, low, A, high)
   }
 
   /**
@@ -561,7 +585,20 @@ object Parallelotope extends NumericalDomain {
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  def empty(n: Int) = {
+  def top(n: Int) = {
+    val low = DenseVector.fill(n)(Double.NegativeInfinity)
+    val high = DenseVector.fill(n)(Double.PositiveInfinity)
+    val A = DenseMatrix.eye[Double](n)
+    new Parallelotope(false, low, A, high)
+    /* The full parallelotope of dimension 0 is not empty! */
+  }
+
+  /**
+   * @inheritdoc
+   * @note @inheritdoc
+   * @throws $ILLEGAL
+   */
+  def bottom(n: Int) = {
     val low = DenseVector.fill(n)(1.0)
     val high = DenseVector.fill(n)(0.0)
     val A = DenseMatrix.eye[Double](n)
@@ -609,8 +646,8 @@ object Parallelotope extends NumericalDomain {
       col match {
         case Some(col) =>
           row /= row(col)
-          pivots :+= (row, col)
-          indexes :+= i
+          pivots +:= (row, col)
+          indexes +:= i
         case None =>
       }
       i += 1

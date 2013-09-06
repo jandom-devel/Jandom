@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,9 @@ package it.unich.sci.jandom.parsers
 
 import org.scalatest.FunSuite
 
+import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.targets.Environment
 import it.unich.sci.jandom.targets.LinearAssignment
-import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.targets.linearcondition.FalseCond
 import it.unich.sci.jandom.targets.lts.LTS
@@ -41,9 +41,9 @@ class LPInvParserSuite extends FunSuite {
     val l2 = Location("ciclo", List(FalseCond))
     val t1 = Transition("init", l1, l2,
       guard = Nil,
-      assignments = List(LinearAssignment(0, LinearForm.fromCoefficient(0))))
+      assignments = List(LinearAssignment(0, 0)))
     val t2 = Transition("loop", l2, l2,
-      guard = List(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LTE)),
+      guard = List(AtomicCond(LinearForm(Seq(-10, 1)), AtomicCond.ComparisonOperators.LTE)),
       assignments = List(LinearAssignment(0, LinearForm(List(1, 1)))))
     val lts = LTS(IndexedSeq(l1, l2), Seq(t1, t2), env)
 
@@ -54,7 +54,7 @@ class LPInvParserSuite extends FunSuite {
 	  transition init start -> ciclo with Guard ()
 	    x := 0;
 	  transition loop ciclo -> ciclo with Guard ( x<=10 )
-	    x := x+1;	    	  
+	    x := x+1;
 	  end
 	  """
     expectResult(lts) { LPInvParser().parseProgram(ltsString).get }

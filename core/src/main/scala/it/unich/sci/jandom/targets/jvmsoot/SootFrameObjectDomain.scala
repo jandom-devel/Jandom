@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -94,14 +94,14 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
      * Add a new variable of a type we do not want to track. This means, we set it to null.
      * @param tpe the type of the variable.
      */
-    private def addUntrackedVariable(tpe: Type) = Property(prop.addVariable.assignNull(size), stack.push(tpe), globals)
+    private def addUntrackedVariable(tpe: Type) = Property(prop.addFreshVariable.assignNull(size), stack.push(tpe), globals)
 
     /**
      * This method check invariants on a numerical abstract frame.
      */
     @elidable(ASSERTION)
     private def invariantCheck {
-      assert(prop.size == stack.size, s"Sharing property <${prop}> and stack of types <${stack}> have different dimensions")
+      assert(prop.dimension == stack.size, s"Sharing property <${prop}> and stack of types <${stack}> have different dimensions")
       for (i <- 0 until stack.size) stack(size - 1 - i) match {
         case _: RefType =>
         case _ => assert(prop.isNull(i), "A non reference type should be null in the pair sharing component")
@@ -115,16 +115,16 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def evalConstant(c: String) = addUntrackedVariable(RefType.v(c.getClass().getName()))
 
     def evalNull =
-      Property(prop.addVariable.assignNull(size), stack.push(NullType.v()), globals)
+      Property(prop.addFreshVariable.assignNull(size), stack.push(NullType.v()), globals)
 
     def evalNew(tpe: Type) =
       if (tpe.isInstanceOf[RefType])
-        Property(prop.addVariable, stack.push(tpe), globals)
+        Property(prop.addFreshVariable, stack.push(tpe), globals)
       else
         addUntrackedVariable(tpe)
 
     def evalLocal(v: Int) =
-      Property(prop.addVariable.assignVariable(size, v), stack.push(stack(size - 1 - v)), globals)
+      Property(prop.addFreshVariable.assignVariable(size, v), stack.push(stack(size - 1 - v)), globals)
 
     def evalLength = addUntrackedVariable(IntType.v())
 
@@ -185,7 +185,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def assignStaticField(dst: Int, f:SootField)=
       Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop, globals)
 
-    def mkString(vars: IndexedSeq[String]) = prop.mkString(vars) :+ ("types: " + this.stack.toString)
+    def mkString(vars: Seq[String]) = prop.mkString(vars) + "types: " + this.stack.toString
 
     def union(that: Property) = {
       assert(stack == that.stack)
@@ -197,7 +197,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
       Property(prop union that.prop, stack, globals)
     }
 
-    def restrict(newSize: Int) = Property(prop removeHigherVariables newSize, stack dropRight (size - newSize), globals)
+    def restrict(newSize: Int) =  Property(prop delVariables (newSize until size), stack dropRight (size - newSize), globals)
 
     def connect(p: Property, common: Int): Property = Property(prop.connect(p.prop, common), p.stack.dropRight(common) ++ stack.drop(common), globals)
 
@@ -212,7 +212,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def evalGlobal(o: Constant) = {
       val withGlobal = if (globals contains o) this else evalNew(o.getType())
       val evaluatedGlobal = withGlobal.evalLocal(withGlobal.size - 1)
-      Property(evaluatedGlobal.prop, evaluatedGlobal.stack, globals + (o -> prop.size))
+      Property(evaluatedGlobal.prop, evaluatedGlobal.stack, globals + (o -> prop.dimension))
     }
 
     def evalStaticField(v: SootField): Property = {
@@ -228,7 +228,15 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
 
     def evalSwap(i: Int, j: Int) = ???
 
-    def isEmpty = false
+    def top = Property(prop.top, stack, globals)
+
+    def bottom = Property(prop.bottom, stack, globals)
+
+    def isTop = prop.isTop
+
+    def isBottom = prop.isBottom
+
+    def isEmpty = prop.isEmpty
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
       other match {

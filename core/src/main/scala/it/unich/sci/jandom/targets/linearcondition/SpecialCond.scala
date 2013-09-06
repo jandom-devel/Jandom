@@ -48,7 +48,7 @@ object TrueCond extends LinearCond {
  */
 object FalseCond extends LinearCond {
   val opposite = TrueCond
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input.empty
+  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = input.bottom
   override def mkString(vars: Seq[String]) = "FALSE"
   val dimension = 0
 }

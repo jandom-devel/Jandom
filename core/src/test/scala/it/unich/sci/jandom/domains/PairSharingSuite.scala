@@ -65,11 +65,11 @@ class PairSharingSuite extends FunSuite {
 
   test("Operations on variables") {
     val ps1 = dom.bottom(3)
-    val ps2 = ps1.addVariable
+    val ps2 = ps1.addFreshVariable
     assert(ps2 === dom(Set(UP(3, 3)), 4))
     val ps3 = ps2.assignNull()
     assert(ps3 === dom(Set(), 4))
-    val ps4 = ps3.addVariable.assignVariable(0, 4)
+    val ps4 = ps3.addFreshVariable.assignVariable(0, 4)
     assert(ps4 === dom(Set(UP(4, 4), UP(4, 0), UP(0, 0)), 5))
     val ps5 = ps4.delVariable()
     assert(ps5 === dom(Set(UP(0, 0)), 4))
@@ -81,31 +81,37 @@ class PairSharingSuite extends FunSuite {
 
   test("Operations on fields") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 3), UP(4, 4), UP(4, 5), UP(5, 5)), 6)
-    val ps2 = ps1.assignVariableToField(0, 1, ps1.size - 1).delVariable()
+    val ps2 = ps1.assignVariableToField(0, 1, ps1.dimension - 1).delVariable()
     assert(ps2 === dom(Set(UP(0, 0), UP(0, 1), UP(0, 4), UP(1, 1), UP(1, 4), UP(3, 3), UP(4, 4)), 5))
-    val ps3 = ps1.assignVariableToField(2, 1, ps1.size - 1)
+    val ps3 = ps1.assignVariableToField(2, 1, ps1.dimension - 1)
     assert(ps3 === dom.bottom(6))
     val ps4 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(2, 2)), 4)
-    val ps5 = ps4.assignVariableToField(0, 1, ps4.size - 1).delVariable()
+    val ps5 = ps4.assignVariableToField(0, 1, ps4.dimension - 1).delVariable()
     assert(ps5 == dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(2, 2)), 3))
-    assert(ps4.addVariable.assignFieldToVariable(3, 2, 1) == ps4.addVariable.assignVariable(3, 2))
+    assert(ps4.addFreshVariable.assignFieldToVariable(3, 2, 1) == ps4.addFreshVariable.assignVariable(3, 2))
   }
 
-  test("removeHigherVariables") {
+  test("Delete last variables") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1)), 2)
-    expectResult(ps2)(ps1.removeHigherVariables(2))
+    expectResult(ps2)(ps1.delVariables(2 until 4))
   }
 
-  test("removeLowerVariables") {
+  test("Delete first variables") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(1, 1)), 2)
-    expectResult(ps2)(ps1.removeLowerVariables(2))
+    expectResult(ps2)(ps1.delVariables(0 until 2))
   }
 
-  test("removeRangeOfVariables") {
+  test("Delete variables in the middle") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
-    expectResult( dom(Set(UP(0, 0), UP(1, 1)) ,2) ) (ps1.removeRangeOfVariables(1 to 2))
+    expectResult( dom(Set(UP(0, 0), UP(1, 1)) ,2) ) (ps1.delVariables(1 to 2))
+  }
+
+  test("Map variables") {
+    val ps1 = dom(Set(UP(0,0), UP(0,2), UP(2,2)), 3)
+    val ps2 = ps1.mapVariables(Seq(1,0,-1))
+    assert (ps2 === dom(Set(UP(1,1)), 2))
   }
 
   test("connectFull: nullness of first property is definitive") {
@@ -150,5 +156,4 @@ class PairSharingSuite extends FunSuite {
     val ps3 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(1, 5), UP(3, 3), UP(3, 5), UP(4, 4), UP(5, 5)), 6)
     expectResult(ps3)(ps1.connectFull(ps2, 2))
   }
-
 }

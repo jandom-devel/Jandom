@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,23 +21,24 @@ package it.unich.sci.jandom.targets
 import org.scalatest.FunSuite
 
 import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
-/** 
+/**
  * The Test Suite for the LinearAssignment class
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
 class LinearAssignmentSuite extends FunSuite {
-  
+
   val env = Environment("v1","v2")
-    
+
   test("simple linear form assignments") {
-    val d = BoxDouble.full(env.size)
-    val la1 = LinearAssignment( 0, LinearForm.fromCoefficient(0) )
+    val d = BoxDouble.top(env.size)
+    val la1 = LinearAssignment( 0, 0 )
     val d1 = la1.analyze(d)
     expectResult ( BoxDouble(Array(0,Double.NegativeInfinity), Array(0,Double.PositiveInfinity))) { d1 }
-    val la2 = LinearAssignment( 1, LinearForm.fromCoefficient(1) )
+    val la2 = LinearAssignment( 1, 1 )
     val d2 = la2.analyze(d1)
-    expectResult ( BoxDouble(Array(0,1), Array(0,1))) { d2 }    
-  }	
+    expectResult ( BoxDouble(Array(0,1), Array(0,1))) { d2 }
+  }
 }

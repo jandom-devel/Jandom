@@ -20,11 +20,12 @@ package it.unich.sci.jandom.targets.jvmasm
 
 import scala.collection.mutable.ArrayStack
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
-import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.widenings.Widening
 import it.unich.sci.jandom.narrowings.Narrowing
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import it.unich.sci.jandom.domains.numerical.LinearForm
+
 
 /**
  * This is an abstract JVM environment using a fixed frame and stack. At the moment, it only supports
@@ -40,23 +41,23 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
   override def clone: JVMEnvFixedFrame[NumProperty] = new JVMEnvFixedFrame(maxLocals, property)
 
   def empty {
-    property = property.empty
+    property = property.bottom
   }
 
   def ipush(c: Int) {
-    property = property.addDimension.constantAssignment(property.dimension, c)
+    property = property.addVariable().constantAssignment(property.dimension, c)
   }
 
   def istore(v: Int) {
-    property = property.variableAssignment(v, property.dimension - 1).delDimension(property.dimension - 1)
+    property = property.variableAssignment(v, property.dimension - 1).delVariable(property.dimension - 1)
   }
 
   def iload(v: Int) {
-    property = property.addDimension.variableAssignment(property.dimension, v)
+    property = property.addVariable().variableAssignment(property.dimension, v)
   }
 
   def iadd() {
-    property = property.variableAdd(property.dimension - 2, property.dimension - 1).delDimension(property.dimension - 1)
+    property = property.variableAdd(property.dimension - 2, property.dimension - 1).delVariable(property.dimension - 1)
   }
 
   def iinc(v: Int, c: Int) {
@@ -65,15 +66,15 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
 
   def if_icmp(op: AtomicCond.ComparisonOperators.Value) {
     import AtomicCond.ComparisonOperators._
-    val lfm = LinearForm.fromVar[Int](property.dimension - 1 + 1)
-    val lfn = LinearForm.fromVar[Int](property.dimension - 2 + 1)
+    val lfm = LinearForm.v[Int](property.dimension - 1)
+    val lfn = LinearForm.v[Int](property.dimension - 2)
     val condition = op match {
-      case LT => AtomicCond(lfn - lfm + LinearForm.fromCoefficient(1), LTE)
-      case GT => AtomicCond(lfn - lfm - LinearForm.fromCoefficient(1), GTE)
+      case LT => AtomicCond(lfn - lfm + 1, LTE)
+      case GT => AtomicCond(lfn - lfm - 1, GTE)
       // TODO we should optmized NEQ
       case _ => AtomicCond(lfn - lfm, op)
     }
-    property = condition.analyze(property).delDimension(property.dimension - 1).delDimension(property.dimension - 2)
+    property = condition.analyze(property).delVariable(property.dimension - 1).delVariable(property.dimension - 2)
   }
 
   def union(that: JVMEnvFixedFrame[NumProperty]): JVMEnvFixedFrame[NumProperty] =
@@ -99,17 +100,21 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
     case _ => false
   }
 
-  def mkString(vars: IndexedSeq[String]) =
+  def mkString(vars: Seq[String]) =
     property.mkString(vars ++ ((maxLocals until property.dimension) map { i => "s" + i }))
 
   override def toString =
     mkString((0 until maxLocals) map { i => "i" + i }).mkString(",")
 
-  def isTop = false
+  def isTop = property.isTop
 
-  def isBottom = false
+  def isBottom = property.isBottom
 
   def isEmpty = property.isEmpty
+
+  def top = new JVMEnvFixedFrame(maxLocals, property.top)
+
+  def bottom = new JVMEnvFixedFrame(maxLocals, property.bottom)
 }
 
 /**
@@ -121,8 +126,8 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
 class JVMEnvFixedFrameDomain(val dom: NumericalDomain) extends JVMEnvDomain {
   type Property = JVMEnvFixedFrame[dom.Property]
 
-  def full(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.full(maxLocals))
+  def full(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.top(maxLocals))
 
-  def empty(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.empty(maxLocals))
+  def empty(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.bottom(maxLocals))
 
 }

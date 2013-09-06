@@ -4,4 +4,6 @@ target/
 .cache
 .classpath
 .worksheet
+.history
 *.sc
+.settings/

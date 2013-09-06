@@ -57,23 +57,25 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
 
   def frequency(coeff: Array[Double], known: Double): Some[Double] = ???
 
-  def addDimension: Property = ???
+  def addVariable: Property = ???
 
-  def delDimension(n: Int): Property = ???
+  def delVariable(n: Int): Property = ???
 
-  def mapDimensions(rho: Seq[Int]): Property = ???
+  def mapVariables(rho: Seq[Int]): Property = ???
 
-  def dimension: Int = ???
+  def dimension = ???
 
-  def isEmpty: Boolean = ???
+  def isTop = ???
 
-  def isFull: Boolean = ???
+  def isEmpty = ???
 
-  def empty: Property = ???
+  def isBottom = ???
 
-  def full: Property = ???
+  def bottom: Property = ???
 
-  def mkString(vars: IndexedSeq[String]): Seq[String] = ???
+  def top: Property = ???
+
+  def mkString(vars: Seq[String]) = ???
 
   def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = ???
 }
@@ -88,7 +90,7 @@ class SumDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends Nu
 
   type Property = Sum[dom1.Property, dom2.Property]
 
-  def full(n: Int) = ???
+  def top(n: Int) = ???
 
-  def empty(n: Int) = ???
+  def bottom(n: Int) = ???
 }

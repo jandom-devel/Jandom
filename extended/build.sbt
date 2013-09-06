@@ -1,22 +1,10 @@
 import AssemblyKeys._
 
-// PPL options which cannot be specified at the build level (why?)
+unmanagedSourceDirectories in Compile ++= (pplJar.value map { _ => (sourceDirectory in Compile).value / "ppl" }).toSeq
 
-unmanagedJars in Compile += file("/usr/local/lib/ppl/ppl_java.jar")
+unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory in Test).value / "ppl" }).toSeq
 
-EclipseKeys.classpathTransformerFactories += NativeLibTransformerFactory("/usr/local/lib/ppl/ppl_java.jar")
-
-// assembly plugin configuration
-
-assemblySettings
-
-test in AssemblyKeys.assembly := {}  // skip tests in assembly
-
-// eclipse-sbt plugin configuration cannot be specified at the build level
-
-EclipseKeys.configurations := Set(Compile, Test, Benchmark)  
-
-// assembly plugin configuration
+// Assembly plugin configuration
 
 assemblySettings
 
@@ -28,4 +16,8 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
     case x => old(x)
   }
 }
+
+// Cappi plugin configurations
+
+cappiSettings
 

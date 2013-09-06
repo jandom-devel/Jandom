@@ -23,7 +23,7 @@ import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.domains.numerical.PPLCPolyhedron
+import it.unich.sci.jandom.domains.numerical.BoxDouble
 import it.unich.sci.jandom.targets.jvmasm._
 
 class JVMASMSuite extends FunSuite {
@@ -37,7 +37,7 @@ class JVMASMSuite extends FunSuite {
     val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
     val method = new AsmMethod(methodList.find(_.name == "loop").get)
     val params = new Parameters[AsmMethod] {
-      val domain = new JVMEnvFixedFrameDomain(PPLCPolyhedron)
+      val domain = new JVMEnvFixedFrameDomain(BoxDouble)
     }
     try {
       val ann = method.analyze(params)

@@ -72,16 +72,17 @@ object NumericalTopDomain extends NumericalDomain {
         Some(known)
     }
 
-    def addDimension = new Property(dimension + 1)
-    def delDimension(n: Int) = { require(n < dimension); new Property(dimension - 1) }
-    def mapDimensions(rho: Seq[Int]) = new Property(rho count { _ != -1 })
+    def addVariable = new Property(dimension + 1)
+    def delVariable(n: Int) = { require(n < dimension); new Property(dimension - 1) }
+    def mapVariables(rho: Seq[Int]) = new Property(rho count { _ != -1 })
     def isEmpty = false
-    def isFull = true
-    def empty = throw new UnsupportedOperationException()
-    def full = this
-    def mkString(vars: IndexedSeq[String]): Seq[String] = Seq("top")
+    def isTop = true
+    def isBottom = true
+    def bottom = this
+    def top = this
+    def mkString(vars: Seq[String]): String = "top"
   }
 
-  def full(n: Int) = Property(n)
-  def empty(n: Int) = Property(n)
+  def top(n: Int) = Property(n)
+  def bottom(n: Int) = Property(n)
 }

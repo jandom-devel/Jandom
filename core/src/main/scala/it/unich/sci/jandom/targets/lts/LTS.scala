@@ -69,11 +69,11 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
     val narrowings = locations map params.narrowingFactory
 
     // build an empty property.. it is used several times, so we speed execution
-    val empty = params.domain.empty(env.size)
+    val empty = params.domain.bottom(env.size)
 
     var current = locations map { _ => empty }
     var next = locations map { loc =>
-      (params.domain.full(env.size) /: loc.conditions) {
+      (params.domain.top(env.size) /: loc.conditions) {
         (prop, cond) => cond.analyze(prop)
       }
     }

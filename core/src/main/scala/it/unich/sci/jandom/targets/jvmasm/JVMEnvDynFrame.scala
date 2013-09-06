@@ -20,11 +20,11 @@ package it.unich.sci.jandom.targets.jvmasm
 import scala.collection.mutable.ArrayStack
 
 import it.unich.sci.jandom.narrowings.Narrowing
-import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.widenings.Widening
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
  * This is an abstract JVM environment using a dynamically expandable frame. At the moment, it only supports
@@ -51,7 +51,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
   private def delDimension(n: Int) {
     frame transform { j => if (j > n) j - 1 else j }
     stack transform { j => if (j > n) j - 1 else j }
-    property = property.delDimension(n)
+    property = property.delVariable(n)
   }
 
   /**
@@ -65,20 +65,20 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
       if (o != -1)
         dimMap(o) = n
       else if (o == -1 && n != -1) {
-        extractedProperty = extractedProperty.addDimension
+        extractedProperty = extractedProperty.addVariable()
         dimMap = dimMap :+ n
       }
     for ((o, n) <- (stack zip that.stack)) dimMap(o) = n
-    extractedProperty.mapDimensions(dimMap)
+    extractedProperty.mapVariables(dimMap)
   }
 
   def empty {
-    property = property.empty
+    property = property.bottom
   }
 
   def ipush(c: Int) {
     val newdim = property.dimension
-    property = property.addDimension.constantAssignment(newdim, c)
+    property = property.addVariable().constantAssignment(newdim, c)
     stack.push(newdim)
   }
 
@@ -91,7 +91,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
   def iload(v: Int) {
     val vn = frame(v)
     val newdim = property.dimension
-    property = property.addDimension.variableAssignment(newdim, vn)
+    property = property.addVariable().variableAssignment(newdim, vn)
     stack.push(newdim)
   }
 
@@ -111,11 +111,11 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
     import AtomicCond.ComparisonOperators._
     val vm = stack.pop
     val vn = stack.pop
-    val lfm = LinearForm.fromVar[Int](vm + 1)
-    val lfn = LinearForm.fromVar[Int](vn + 1)
+    val lfm = LinearForm.v[Int](vm)
+    val lfn = LinearForm.v[Int](vn)
     val condition = op match {
-      case LT => AtomicCond(lfn - lfm + LinearForm.fromCoefficient(1), LTE)
-      case GT => AtomicCond(lfn - lfm - LinearForm.fromCoefficient(1), GTE)
+      case LT => AtomicCond(lfn - lfm + 1, LTE)
+      case GT => AtomicCond(lfn - lfm - 1, GTE)
       // TODO optimize NEQ
       case _ => AtomicCond(lfn - lfm, op)
     }
@@ -146,14 +146,14 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
    * Convert a dynamic frame into a fixed frame
    */
   def toJVMEnvFixedFrame = {
-    val bigProp = property.addDimension(frame.length + stack.length)
+    val bigProp = property.addVariables(frame.length + stack.length)
     val framedProp = (0 until frame.length).foldLeft(bigProp) {
       (prop, i) => if (frame(i) != -1) prop.variableAssignment(property.dimension + i, frame(i)) else prop
     }
     val stackedProp = (0 until stack.length).foldLeft(framedProp) {
       (prop, i) => if (stack(i) != -1) prop.variableAssignment(property.dimension + frame.length +  i, stack(i)) else prop
     }
-    val finalProp = (0 until property.dimension).foldLeft(stackedProp) { (prop,_) => prop.delDimension(0)}
+    val finalProp = (0 until property.dimension).foldLeft(stackedProp) { (prop,_) => prop.delVariable(0)}
     new JVMEnvFixedFrame(frame.length, finalProp)
   }
 
@@ -162,17 +162,21 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
     case _ => false
   }
 
-  def mkString(vars: IndexedSeq[String]) =
-    Seq("Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property)
+  def mkString(vars: Seq[String]) =
+    "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
 
   override def toString =
     "Frame: " + frame.mkString("<", ",", ">") + " Stack: " + stack.mkString("<", ",", ">") + " Property: " + property
 
-  def isTop = false
+  def isTop = property.isTop
 
-  def isBottom = false
+  def isBottom = isEmpty
 
   def isEmpty = property.isEmpty
+
+  def top = new JVMEnvDynFrame(frame, stack, property.top)
+
+  def bottom = new JVMEnvDynFrame(frame, stack, property.bottom)
 }
 
 /**
@@ -184,7 +188,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
 class JVMEnvDynFrameDomain(val dom: NumericalDomain) extends JVMEnvDomain {
   type Property = JVMEnvDynFrame[dom.Property]
 
-  def full(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.full(0))
+  def full(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.top(0))
 
-  def empty(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.empty(0))
+  def empty(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.bottom(0))
 }
