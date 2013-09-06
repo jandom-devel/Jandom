@@ -20,11 +20,12 @@ package it.unich.sci.jandom.targets.jvmasm
 
 import scala.collection.mutable.ArrayStack
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
-import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.widenings.Widening
 import it.unich.sci.jandom.narrowings.Narrowing
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import it.unich.sci.jandom.domains.numerical.LinearForm
+
 
 /**
  * This is an abstract JVM environment using a fixed frame and stack. At the moment, it only supports
@@ -65,11 +66,11 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
 
   def if_icmp(op: AtomicCond.ComparisonOperators.Value) {
     import AtomicCond.ComparisonOperators._
-    val lfm = LinearForm.fromVar[Int](property.dimension - 1 + 1)
-    val lfn = LinearForm.fromVar[Int](property.dimension - 2 + 1)
+    val lfm = LinearForm.v[Int](property.dimension - 1)
+    val lfn = LinearForm.v[Int](property.dimension - 2)
     val condition = op match {
-      case LT => AtomicCond(lfn - lfm + LinearForm.fromCoefficient(1), LTE)
-      case GT => AtomicCond(lfn - lfm - LinearForm.fromCoefficient(1), GTE)
+      case LT => AtomicCond(lfn - lfm + 1, LTE)
+      case GT => AtomicCond(lfn - lfm - 1, GTE)
       // TODO we should optmized NEQ
       case _ => AtomicCond(lfn - lfm, op)
     }

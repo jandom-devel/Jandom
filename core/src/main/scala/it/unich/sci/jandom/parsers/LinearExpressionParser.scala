@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package it.unich.sci.jandom.parsers
 
 import scala.util.parsing.combinator.JavaTokenParsers
 
-import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
  * A trait for parsing integer linear expressions. To be inherited by real parsers. An implementation
@@ -41,20 +41,20 @@ trait LinearExpressionParser extends JavaTokenParsers {
    */
   private val term: Parser[LinearForm[Int]] =
     (opt(wholeNumber <~ "*") ~ variable) ^^ {
-      case Some(coeff) ~ v => LinearForm.fromCoefficientVar[Int](coeff.toInt, v + 1)
-      case None ~ v => LinearForm.fromVar[Int](v + 1)
+      case Some(coeff) ~ v => LinearForm(Seq(v -> coeff.toInt),0)
+      case None ~ v => LinearForm.v[Int](v)
     } |
-    wholeNumber ^^ { case coeff => LinearForm.fromCoefficient(coeff.toInt) }
+    wholeNumber ^^ { case coeff => coeff.toInt }
 
   private val term_with_operator: Parser[LinearForm[Int]] =
     "+" ~> term |
-    "-" ~> term ^^ { lf => -lf } 
-    
+    "-" ~> term ^^ { lf => -lf }
+
   /**
    * Parser for integer linear expressions
    */
   protected val linexpr: Parser[LinearForm[Int]] =
     (term_with_operator | term) ~ rep(term_with_operator) ^^ {
       case lf1 ~ lfarr => (lf1 /: lfarr) { (lfa, lfb) => lfa + lfb }
-    } 
+    }
 }

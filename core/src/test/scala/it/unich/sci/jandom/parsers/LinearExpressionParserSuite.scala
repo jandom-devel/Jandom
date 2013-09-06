@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@ package it.unich.sci.jandom.parsers
 import org.scalatest.FunSuite
 
 import it.unich.sci.jandom.targets.Environment
-import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
  * Test suite for LinearExpressionParser
@@ -40,11 +40,11 @@ class LinearExpressionParserSuite extends FunSuite {
     val expBuild = LinearForm(Seq(0, 3, 1, -1))
     expectResult(expBuild) { expParsed }
   }
-  
+
   test("unary minus") {
     val parser = new TempParser
     val expParsed = parser.parseExpr("- 2").get
     val expBuild = LinearForm(Seq(-2))
-    expectResult(expBuild) { expParsed } 
+    expectResult(expBuild) { expParsed }
   }
 }

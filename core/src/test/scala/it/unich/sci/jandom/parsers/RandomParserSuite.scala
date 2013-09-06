@@ -24,8 +24,8 @@ import java.io.FilenameFilter
 import org.scalatest.FunSuite
 import org.scalatest.prop.Checkers
 
+import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.targets.Environment
-import it.unich.sci.jandom.targets.LinearForm
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.targets.slil._
 
@@ -40,7 +40,7 @@ class RandomParserSuite extends FunSuite with Checkers {
       xyz <- function(x,y) x = 1
     """
     val env = Environment("x", "y")
-    val program = SLILProgram(env, Seq(0, 1), CompoundStmt(AssignStmt(0, new LinearForm(List(1, 0, 0)))))
+    val program = SLILProgram(env, Seq(0, 1), CompoundStmt(AssignStmt(0, LinearForm(Seq(1, 0, 0)))))
     val parsed = RandomParser().parseProgram(prog).get
     expectResult(program) { parsed }
   }
@@ -56,9 +56,9 @@ class RandomParserSuite extends FunSuite with Checkers {
     val env = Environment("x", "y")
     val program = SLILProgram(env, List(0),
       CompoundStmt(
-        AssignStmt(1, LinearForm.fromCoefficient[Int](0)),
-        WhileStmt(AtomicCond(new LinearForm(List(0, -1, 1)), AtomicCond.ComparisonOperators.LT),
-          CompoundStmt(AssignStmt(1, new LinearForm(List(1, 0, 1)))))))
+        AssignStmt(1, LinearForm(Seq(0 -> 1),0)),
+        WhileStmt(AtomicCond(LinearForm(Seq(0, -1, 1)), AtomicCond.ComparisonOperators.LT),
+          CompoundStmt(AssignStmt(1, LinearForm(List(1, 0, 1)))))))
     expectResult(program) { RandomParser().parseProgram(prog).get }
   }
 

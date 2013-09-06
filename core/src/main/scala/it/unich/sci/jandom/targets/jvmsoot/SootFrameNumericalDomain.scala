@@ -23,7 +23,7 @@ import scala.annotation.elidable._
 import scala.collection.immutable.Stack
 
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
-import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.targets.linearcondition.AtomicCond
 import it.unich.sci.jandom.targets.linearcondition.LinearCond
 
@@ -181,10 +181,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      */
     private def testComp(op: AtomicCond.ComparisonOperators.Value) = {
       import AtomicCond.ComparisonOperators._
-      val coeffs = Array.fill(size + 1)(0.0)
-      coeffs(size - 1) = 1.0
-      coeffs(size) = -1.0
-      val lf = LinearForm(coeffs)
+      val lf = LinearForm(Seq(size-1 -> -1, size-2 -> 1),0)
       val tbranch = Property(AtomicCond(lf, op).analyze(prop).delVariable().delVariable(), vars.pop.pop)
       val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), vars.pop.pop)
       (tbranch, fbranch)

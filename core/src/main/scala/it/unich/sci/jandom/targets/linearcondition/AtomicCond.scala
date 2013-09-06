@@ -19,7 +19,7 @@
 package it.unich.sci.jandom.targets.linearcondition
 
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
-import it.unich.sci.jandom.targets.LinearForm
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
  * The class for atomic conditions of the kind \vec c * \vec x <=> 0.
@@ -35,7 +35,7 @@ case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.V
    * This method returns the homogeneous coefficient of lf as an array of doubles... it is for internal use only,
    * and should be removed someday, since it does not allow linear forms over different fields.
    */
-  private def homcoeff(lf: LinearForm[T]) = lf.homcoeff.map { _.toDouble }.toArray
+  private def homcoeff(lf: LinearForm[T]) = lf.homcoeffs.map { _.toDouble }.toArray
 
   /**
    * This method returns the inhomogeneous as a double... it is for internal use only,

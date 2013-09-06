@@ -91,7 +91,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
 
   /**
    * Given a linear form, determines if there is a value 'c' such that the  linear form
-   *  always evaluates to c in the numerical object.
+   * always evaluates to c in the numerical object.
    * @param coeff the homogeneous coefficients of the linear form.
    * @param known the in-homogeneous coefficient.
    * @return `Some(c)` if such a value exists, `None` otherwise.
@@ -170,7 +170,6 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note $NOTEN
    */
   def variableMul(n: Int = dimension - 2, m: Int = dimension - 1) = {
-    // TODO: use method "frequency" here when it works for PPL
     val coeff = Array.fill(dimension)(0.0)
     coeff(n) = 1
     frequency(coeff, 0) match {
