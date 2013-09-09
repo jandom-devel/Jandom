@@ -53,7 +53,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note `coeff` should have at least `dimension` elements
    * @param known the in-homogeneous coefficient.
    */
-  def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property
+  def linearAssignment(n: Int, lf: LinearForm[Double]): Property
 
   /**
    * Intersection with the half-plane `{ x |  coeff*x+known <= 0 }`.
@@ -62,7 +62,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note `coeff` should have at least `dimension` elements
    * @param known the in-homogeneous coefficient.
    */
-  def linearInequality(coeff: Array[Double], known: Double): Property
+  def linearInequality(lf: LinearForm[Double]): Property
 
   /**
    * Intersection with the complements of a line `{ x |  coeff*x+known != 0 }`.
@@ -71,7 +71,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note `coeff` should have at least dimension elements
    * @param known the in-homogeneous coefficient.
    */
-  def linearDisequality(coeff: Array[Double], known: Double): Property
+  def linearDisequality(lf: LinearForm[Double]): Property
 
   /**
    * Determines an upper bound of a linear form in the numerical object.
@@ -79,7 +79,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @param known the in-homogeneous coefficient.
    * @return an upper bound of the linear form
    */
-  def minimize(coeff: Array[Double], known: Double): Double
+  def minimize(lf: LinearForm[Double]): Double
 
   /**
    * Determines a lower bound of a linear form in the numerical object.
@@ -87,7 +87,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @param known the in-homogeneous coefficient.
    * @return a lower bound of the linear form
    */
-  def maximize(coeff: Array[Double], known: Double): Double
+  def maximize(lf: LinearForm[Double]): Double
 
   /**
    * Given a linear form, determines if there is a value 'c' such that the  linear form
@@ -96,7 +96,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @param known the in-homogeneous coefficient.
    * @return `Some(c)` if such a value exists, `None` otherwise.
    */
-  def frequency(coeff: Array[Double], known: Double): Option[Double]
+  def frequency(lf: LinearForm[Double]): Option[Double]
 
   /*
    * Now some concrete methods, which may be overriden in subclasses for
@@ -109,19 +109,15 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note $NOTEN
    */
   def constantAssignment(n: Int = dimension - 1, c: Double) =
-    linearAssignment(n, Array.fill(dimension)(0.0), c)
+    linearAssignment(n, c)
 
   /**
    * Assignment of a variable to another variable.
    * @note $NOTEN
    * @note `source` should be within `0` and `dimension-1`.
    */
-  def variableAssignment(n: Int = dimension - 1, m: Int) = {
-    require(m < dimension)
-    val v = Array.fill(dimension)(0.0)
-    v(m) = 1
-    linearAssignment(n, v, 0)
-  }
+  def variableAssignment(n: Int = dimension - 1, m: Int) =
+    linearAssignment(n, LinearForm.v(m))
 
   /**
    * Assignments of the kind vn = vn + vm.  The standard implementation calls
@@ -129,13 +125,8 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note $NOTEN
    * @note `m` should be within `0` and `dimension-1`.
    */
-  def variableAdd(n: Int = dimension - 2, m: Int = dimension - 1) = {
-    require(n < dimension && m < dimension)
-    val v = Array.fill(dimension)(0.0)
-    v(n) = 1
-    v(m) = 1
-    linearAssignment(n, v, 0)
-  }
+  def variableAdd(n: Int = dimension - 2, m: Int = dimension - 1) =
+    linearAssignment(n, LinearForm(Seq(n->1, m->1),0))
 
   /**
    * Assignments of the kind vn = vn + vm.  The standard implementation calls
@@ -143,25 +134,16 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note $NOTEN
    * @note `m` should be within `0` and `dimension-1`.
    */
-  def variableSub(n: Int = dimension - 2, m: Int = dimension - 1) = {
-    require(n < dimension && m < dimension)
-    val v = Array.fill(dimension)(0.0)
-    v(n) = 1
-    v(m) = -1
-    linearAssignment(n, v, 0)
-  }
+  def variableSub(n: Int = dimension - 2, m: Int = dimension - 1) =
+    linearAssignment(n, LinearForm(Seq(n->1, m-> -1),0))
 
   /**
    * Assignments of the kind vn = vn + c.  The standard implementation calls
    * linearAssignment, but it may be overriden in subclasses to optimize speed.
    * @note $NOTEN
    */
-  def constantAdd(n: Int = dimension - 1, c: Double) = {
-    require(n < dimension)
-    val v = Array.fill(dimension)(0.0)
-    v(n) = 1
-    linearAssignment(n, v, c)
-  }
+  def constantAdd(n: Int = dimension - 1, c: Double) =
+    linearAssignment(n, LinearForm(Seq(n->1),c))
 
   /**
    * Assignments of the kind vn = vn * vm.  The standard implementation determined
@@ -170,24 +152,13 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note $NOTEN
    */
   def variableMul(n: Int = dimension - 2, m: Int = dimension - 1) = {
-    val coeff = Array.fill(dimension)(0.0)
-    coeff(n) = 1
-    frequency(coeff, 0) match {
-      case Some(c) =>
-        coeff(n) = 0
-        coeff(m) = c
-        linearAssignment(n, coeff, 0)
-      case None =>
-        coeff(n) = 0
-        coeff(m) = 1
-        frequency(coeff, 0) match {
-          case Some(c) =>
-            coeff(n) = c
-            coeff(m) = 0
-            linearAssignment(n, coeff, 0)
+    frequency(LinearForm.v(n)) match {
+      case Some(c) => linearAssignment(n, LinearForm(Seq(m -> c),0))
+      case None => frequency(LinearForm.v(m)) match {
+          case Some(c) => linearAssignment(n, LinearForm(Seq(n -> c),0))
           case None =>
             nonDeterministicAssignment(n)
-        }
+      }
     }
   }
 
@@ -197,15 +168,10 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note $NOTEN
    */
   def variableDiv(n: Int = dimension - 2, m: Int = dimension - 1) = {
-    val coeff = Array.fill(dimension)(0.0)
-    coeff(m) = 1
-    val c = minimize(coeff, 0)
-      if (c == maximize(coeff, 0)&&c!=0) {
-        coeff(n) = 1/c
-        coeff(m) = 0
-        linearAssignment(n, coeff, 0)
-      } else
-        nonDeterministicAssignment(n)
+    frequency(LinearForm.v(m)) match {
+      case Some(c) => if (c!=0) linearAssignment(n, LinearForm(Seq(n -> 1/c),0)) else bottom
+      case None =>  nonDeterministicAssignment(n)
+    }
   }
 
   /**
@@ -213,63 +179,56 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableRem(n: Int = dimension - 2, m: Int = dimension - 1) = {
+  def variableRem(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
-  }
 
   /**
    * Assignments of the kind vn = vn << vm.  The standard implementation calls
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableShl(n: Int = dimension - 2, m: Int = dimension - 1) = {
+  def variableShl(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
-  }
 
   /**
    * Assignments of the kind vn = vn >> vm.  The standard implementation calls
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableShr(n: Int = dimension - 2, m: Int = dimension - 1) = {
+  def variableShr(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
-  }
 
   /**
    * Assignments of the kind vn = vn >> vm for unsigned shift.  The standard implementation calls
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableUshr(n: Int = dimension - 2, m: Int = dimension - 1) = {
+  def variableUshr(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
-  }
 
   /**
    * Assignments of the kind vn = vn & vm.  The standard implementation calls
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableAnd(n: Int = dimension - 2, m: Int = dimension - 1) = {
+  def variableAnd(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
-  }
 
   /**
    * Assignments of the kind vn = vn | vm.  The standard implementation calls
    * nonDeterministicAssignment on vn
    * @note $NOTEN
    */
-  def variableOr(n: Int = dimension - 2, m: Int = dimension - 1) = {
+  def variableOr(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
-  }
 
   /**
    * Assignments of the kind vn = vn ^ vm.  The standard implementation calls
    * nonDeterministicAssignment on vn.
    * @note $NOTEN
    */
-  def variableXor(n: Int = dimension - 2, m: Int = dimension - 1) = {
+  def variableXor(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
-  }
 
   /**
    * Assignments of the kind vn = - vn.
@@ -277,11 +236,8 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @param n the dimension we want to negate
    * @return property with the negate dimension
    */
-  def variableNeg(n: Int = dimension - 1) = {
-    val coeff = Array.fill(dimension)(0.0)
-    coeff(n) = -1
-    linearAssignment(n, coeff, 0)
-  }
+  def variableNeg(n: Int = dimension - 1) =
+    linearAssignment(n, LinearForm(Seq(n -> -1), 0))
 
   /**
    * The connect method is used for inter-procedural analysis. It takes two properties

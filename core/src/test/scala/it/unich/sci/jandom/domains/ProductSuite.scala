@@ -79,14 +79,14 @@ class ProductSuite extends FunSuite {
   }
 
      // assign v0 = 0
-  val x2 = full.linearAssignment(0, Array(0,0), 0)
+  val x2 = full.linearAssignment(0, 0.0)
   test("assignment on product") {
     expectResult(true) {new productDomain.ProductProperty(
-        BoxDouble.top(2).linearAssignment(0, Array(0,0), 0),
-        ptopeFull.linearAssignment(0, Array(0,0), 0)) <=  x2}
+        BoxDouble.top(2).linearAssignment(0, 0.0),
+        ptopeFull.linearAssignment(0, 0.0)) <=  x2}
       expectResult(true) {new productDomain.ProductProperty(
-        BoxDouble.top(2).linearAssignment(0, Array(0,0), 0),
-        ptopeFull.linearAssignment(0, Array(0,0), 0)) >=  x2}
+        BoxDouble.top(2).linearAssignment(0, 0.0),
+        ptopeFull.linearAssignment(0, 0.0)) >=  x2}
   }
 
   test("dimension on product") {

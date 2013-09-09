@@ -87,7 +87,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * zero, then `x(i)*y(i)` is `0` independently from the value of `y(i)`.
    * @todo $ROUNDING
    */
-  private def dotprod_lo(x: Array[Double], y: Array[Double], remove: Int = -1): Double = {
+  private def dotprod_lo(x: Seq[Double], y: Seq[Double], remove: Int = -1): Double = {
     var sum: Double = 0
     for (i <- x.indices) if (i != remove) sum = add_lo(sum, mul_lo(x(i), y(i)))
     return sum;
@@ -98,7 +98,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * zero, then `x(i)*y(i)` is `0` independently from the value of `y(i)`.
    * @todo $ROUNDING
    */
-  private def dotprod_hi(x: Array[Double], y: Array[Double], remove: Int = -1): Double = {
+  private def dotprod_hi(x: Seq[Double], y: Seq[Double], remove: Int = -1): Double = {
     var sum: Double = 0
     for (i <- x.indices) if (i != remove) sum = add_hi(sum, mul_hi(x(i), y(i)))
     return sum;
@@ -160,53 +160,52 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @return a tuple with two components: the first component is the least value, the second component is the greatest value
    * of the linear form over the box.
    */
-  private def linearEvaluation(coeff: Array[Double], known: Double): Tuple2[Double, Double] = {
-    require(coeff.length <= dimension)
-    var newlow: Double = known
-    var newhigh: Double = known
-    for (i <- 0 to coeff.length - 1) {
-      if (coeff(i) < 0) {
-        newlow = add_lo(newlow, mul_lo(coeff(i), high(i)))
-        newhigh = add_hi(newhigh, mul_hi(coeff(i), low(i)))
+  private def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
+    require(lf.dimension <= dimension)
+    var newlow: Double = lf.known
+    var newhigh: Double = lf.known
+    val coeffs = lf.homcoeffs
+    for (i <- 0 until coeffs.length) {
+      if (coeffs(i) < 0) {
+        newlow = add_lo(newlow, mul_lo(coeffs(i), high(i)))
+        newhigh = add_hi(newhigh, mul_hi(coeffs(i), low(i)))
       } else {
-        newlow = add_lo(newlow, mul_lo(coeff(i), low(i)))
-        newhigh = add_hi(newhigh, mul_hi(coeff(i), high(i)))
+        newlow = add_lo(newlow, mul_lo(coeffs(i), low(i)))
+        newhigh = add_hi(newhigh, mul_hi(coeffs(i), high(i)))
       }
     }
     (newlow, newhigh)
   }
 
-  def minimize(coeff: Array[Double], known: Double) = linearEvaluation(coeff, known)._1
+  def minimize(lf: LinearForm[Double]) = linearEvaluation(lf)._1
 
-  def maximize(coeff: Array[Double], known: Double) = linearEvaluation(coeff, known)._2
+  def maximize(lf: LinearForm[Double]) = linearEvaluation(lf)._2
 
-  def frequency(coeff: Array[Double], known: Double) = {
-    val (min, max) = linearEvaluation(coeff, known)
+  def frequency(lf: LinearForm[Double]) = {
+    val (min, max) = linearEvaluation(lf)
     if (min == max) Some(min) else None
   }
 
   /**
-   * Compute the corner of the box which minimizes a linear form. We do not need the in-homogenous coefficients since it is not
-   * relevant for the computation.
+   * Compute the corner of the box which minimizes a linear form.
    * todo should be generalized to linear forms over arbitrary types.
    * @param coeff the homogeneous coefficients.
    * @return the coordinates of the point which minimizes the linear form.
    */
-  private def linearArgmin(coeff: Array[Double]): Array[Double] = {
-    require(coeff.length <= dimension)
-    (coeff.zipWithIndex) map { case (c, i) => if (c > 0) low(i) else high(i) }
+  private def linearArgmin(lf: LinearForm[Double]): Seq[Double] = {
+    require(lf.dimension <= dimension)
+    (lf.homcoeffs.zipWithIndex) map { case (c, i) => if (c > 0) low(i) else high(i) }
   }
 
   /**
-   * Compute the corner of the box which maximizes a linear form. We do not need the in-homogenous coefficients since it is not
-   * relevant for the computation.
+   * Compute the corner of the box which maximizes a linear form.
    * @todo should be generalized to linear forms over arbitrary types.
    * @param coeff the homogeneous coefficients
    * @return the coordinates of the point which maximizes the linear form
    */
-  private def linearArgmax(coeff: Array[Double]): Array[Double] = {
-    require(coeff.length <= dimension)
-    (coeff.zipWithIndex) map { case (c, i) => if (c < 0) low(i) else high(i) }
+  private def linearArgmax(lf: LinearForm[Double]): Seq[Double] = {
+    require(lf.dimension <= dimension)
+    (lf.homcoeffs.zipWithIndex) map { case (c, i) => if (c < 0) low(i) else high(i) }
   }
 
   /**
@@ -225,10 +224,10 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @todo @inheritdoc
    * @throws $ILLEGAL
    */
-  def linearAssignment(n: Int, coeff: Array[Double], known: Double): BoxDouble = {
-    require(n < low.length && n >= 0 && coeff.length <= dimension)
+  def linearAssignment(n: Int, lf: LinearForm[Double]): BoxDouble = {
+    require(n < low.length && n >= 0 && lf.dimension <= dimension)
     if (isEmpty) return this
-    val interval = linearEvaluation(coeff, known)
+    val interval = linearEvaluation(lf)
     new BoxDouble(low.updated(n, interval._1), high.updated(n, interval._2))
   }
 
@@ -238,33 +237,36 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @todo @inheritdoc
    * @throws $ILLEGAL
    */
-  def linearInequality(coeff: Array[Double], known: Double): BoxDouble = {
-    require(coeff.length <= dimension)
+  def linearInequality( lf: LinearForm[Double]): BoxDouble = {
+    require(lf.dimension <= dimension)
 
     /* if the box is empty the result is empty */
     if (isEmpty) return this
 
     /* check if result is empty */
-    val lfArgmin = linearArgmin(coeff)
-    val lfMin = linearEvaluation(coeff, known)._1
+    val lfArgmin = linearArgmin(lf)
+    val lfMin = linearEvaluation(lf)._1
     if (lfMin > 0) return BoxDouble.bottom(dimension)
 
     val newlow = low.clone
     val newhigh = high.clone
 
-    val infinities = (0 to (coeff.length - 1)) filter { i => lfArgmin(i).isInfinity && coeff(i) != 0 }
+    val coeffs = lf.homcoeffs
+    val known = lf.known
+
+    val infinities = (0 until coeffs.length) filter { i => lfArgmin(i).isInfinity && coeffs(i) != 0 }
     infinities.size match {
       case 0 =>
-        for (i <- 0 to (coeff.length - 1)) {
-          if (coeff(i) < 0) newlow(i) = low(i) max (lfArgmin(i) - lfMin / coeff(i))
-          if (coeff(i) > 0) newhigh(i) = high(i) min (lfArgmin(i) - lfMin / coeff(i))
+        for (i <- 0 until coeffs.length) {
+          if (coeffs(i) < 0) newlow(i) = low(i) max (lfArgmin(i) - lfMin / coeffs(i))
+          if (coeffs(i) > 0) newhigh(i) = high(i) min (lfArgmin(i) - lfMin / coeffs(i))
         }
       case 1 => {
         val posinf = infinities.head
-        if (coeff(posinf) < 0)
-          newlow(posinf) = low(posinf) max ((-dotprod_lo(coeff, lfArgmin, posinf) - known) / coeff(posinf))
+        if (coeffs(posinf) < 0)
+          newlow(posinf) = low(posinf) max ((-dotprod_lo(coeffs, lfArgmin, posinf) - known) / coeffs(posinf))
         else
-          newhigh(posinf) = high(posinf) min ((-dotprod_hi(coeff, lfArgmin, posinf) - known) / coeff(posinf))
+          newhigh(posinf) = high(posinf) min ((-dotprod_hi(coeffs, lfArgmin, posinf) - known) / coeffs(posinf))
       }
       case _ =>
     }
@@ -276,14 +278,14 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  def linearDisequality(coeff: Array[Double], known: Double): BoxDouble = {
-    val count = coeff.count(_ != 0)
+  def linearDisequality(lf: LinearForm[Double]): BoxDouble = {
+    val count = lf.homcoeffs.count(_ != 0)
     count match {
       case 0 =>
-        if (known == 0) bottom else this
+        if (lf.known == 0) bottom else this
       case 1 =>
-        val dim = coeff.indexWhere(_ != 0)
-        if (low(dim) == known && high(dim) == known)
+        val dim = lf.homcoeffs.indexWhere(_ != 0)
+        if (low(dim) == lf.known && high(dim) == lf.known)
           bottom
         else
           this

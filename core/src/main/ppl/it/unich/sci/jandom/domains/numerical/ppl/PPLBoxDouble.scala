@@ -20,6 +20,7 @@ package it.unich.sci.jandom.domains.numerical.ppl
 
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
+import it.unich.sci.jandom.domains.numerical.LinearForm
 import parma_polyhedra_library._
 
 /**
@@ -63,14 +64,14 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
     new PPLBoxDouble(newpplbox)
   }
 
-  def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLBoxDouble = {
+  def linearAssignment(n: Int, lf: LinearForm[Double]): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
-    newpplbox.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(coeff, known), new Coefficient(1))
+    newpplbox.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(lf), new Coefficient(1))
     new PPLBoxDouble(newpplbox)
   }
 
-  def linearInequality(coeff: Array[Double], known: Double): PPLBoxDouble = {
-    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+  def linearInequality(lf: LinearForm[Double]): PPLBoxDouble = {
+    val le = PPLUtils.toPPLLinearExpression(lf)
     val newpplbox = new Double_Box(pplbox)
     newpplbox.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
     new PPLBoxDouble(newpplbox)
@@ -80,8 +81,8 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
    * @inheritdoc
    * @note @inheritdoc
    */
-  def linearDisequality(coeff: Array[Double], known: Double): PPLBoxDouble = {
-    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+  def linearDisequality(lf: LinearForm[Double]): PPLBoxDouble = {
+    val le = PPLUtils.toPPLLinearExpression(lf)
     val newpplbox1 = new Double_Box(pplbox)
     val newpplbox2 = new Double_Box(pplbox)
     newpplbox1.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
@@ -90,8 +91,8 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
     new PPLBoxDouble(newpplbox1)
   }
 
-  def minimize(coeff: Array[Double], known: Double) = {
-    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+  def minimize(lf: LinearForm[Double]) = {
+    val le = PPLUtils.toPPLLinearExpression(lf)
     val exact = new By_Reference[java.lang.Boolean](false)
     val val_n = new Coefficient(0)
     val val_d = new Coefficient(0)
@@ -102,8 +103,8 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
       (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
   }
 
-  def maximize(coeff: Array[Double], known: Double) = {
-    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+  def maximize(lf: LinearForm[Double]) = {
+    val le = PPLUtils.toPPLLinearExpression(lf)
     val exact = new By_Reference[java.lang.Boolean](false)
     val val_n = new Coefficient(0)
     val val_d = new Coefficient(0)
@@ -114,8 +115,8 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
       (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
   }
 
-  def frequency(coeff: Array[Double], known: Double) = {
-    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+  def frequency(lf: LinearForm[Double]) = {
+    val le = PPLUtils.toPPLLinearExpression(lf)
     val freq_n = new Coefficient(0)
     val freq_d = new Coefficient(0)
     val val_n = new Coefficient(0)

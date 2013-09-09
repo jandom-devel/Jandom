@@ -24,6 +24,7 @@ import parma_polyhedra_library.Linear_Expression_Coefficient
 import parma_polyhedra_library.Linear_Expression_Variable
 import parma_polyhedra_library.Variable
 import java.util.regex.Matcher
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
  * This is a collection of methods used by the PPL-based numerical domains.
@@ -57,10 +58,10 @@ private[jandom] object PPLUtils {
    * @param coeff the homogeneous coefficients.
    * @param known the in-homogeneous coefficient.
    */
-  def toPPLLinearExpression(coeff:Array[Double], known:Double): Linear_Expression = {
-    var le : Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(known.toInt))
-	for (i <- 0 to (coeff.length - 1)) {
-	  le = le.sum ( (new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(coeff(i).toInt)) ))
+  def toPPLLinearExpression(lf: LinearForm[Double]): Linear_Expression = {
+    var le : Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(lf.known.toInt))
+	for (i <- 0 until lf.dimension) {
+	  le = le.sum ( (new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(lf.homcoeffs(i).toInt)) ))
 	}
     return le
   }

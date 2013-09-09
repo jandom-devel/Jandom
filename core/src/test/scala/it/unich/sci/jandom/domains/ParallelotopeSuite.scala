@@ -86,24 +86,24 @@ class ParallelotopeSuite extends FunSuite {
 
   test("linear invertible assignment") {
     val li1 = Parallelotope(DenseVector(0, -1), DenseMatrix((1.0, -1.0), (0.0, 1.0)), DenseVector(2, 1))
-    expectResult(li1) { box.linearAssignment(0, Array(1, 1), 1) }
+    expectResult(li1) { box.linearAssignment(0, Seq(1.0, 1, 1)) }
     val li2 = Parallelotope(DenseVector(1, -1), DenseMatrix((1.0, 0.0), (-1.0, 1.0)), DenseVector(1, 0))
     val li3 = Parallelotope(DenseVector(2, -2), DenseMatrix((1.0, 0.0), (-1.0, 1.0)), DenseVector(2, -1))
-    expectResult(li3) { li2.linearAssignment(0, Array(1, 0), 1) }
-    expectResult(li3) { li2.linearAssignment(0, Array(1), 1) }
+    expectResult(li3) { li2.linearAssignment(0, Seq(1.0, 1, 0)) }
+    expectResult(li3) { li2.linearAssignment(0, Seq(1.0, 1)) }
     val li4 = Parallelotope(DenseVector(-1, -2), DenseMatrix((1.0, 0.0), (-1.0, 1.0)), DenseVector(1, 2))
-    expectResult(li4) { box.linearAssignment(1, Array(1, 2), 0) }
-    assert(empty.linearAssignment(1, Array(1, 1), 0).isEmpty)
+    expectResult(li4) { box.linearAssignment(1, Seq(0.0, 1, 2)) }
+    assert(empty.linearAssignment(1, Seq(0.0, 1, 1)).isEmpty)
   }
 
   test("non-invertible linear assignment") {
     val ln1 = Parallelotope(DenseVector(2, -1), DenseMatrix((1.0, -1.0), (0.0, 1.0)), DenseVector(2, 1))
-    expectResult(ln1) { box.linearAssignment(0, Array(0, 1), 2) }
+    expectResult(ln1) { box.linearAssignment(0, Seq(2.0, 0, 1)) }
     val ln2 = Parallelotope(DenseVector(0, Double.NegativeInfinity), DenseMatrix((-1.0, 1.0), (0.0, 1.0)), DenseVector(0, Double.PositiveInfinity))
     val ln3 = Parallelotope(DenseVector(Double.NegativeInfinity, 0), DenseMatrix((1.0, -1.0), (0.0, 1.0)), DenseVector(Double.PositiveInfinity, 0))
-    expectResult(ln2) { ln3.linearAssignment(1, Array(1, 0), 0) }
-    expectResult(ln2) { ln3.linearAssignment(1, Array(1), 0) }
-    assert(empty.linearAssignment(1, Array(1, 0), 0).isEmpty)
+    expectResult(ln2) { ln3.linearAssignment(1, Seq(0.0, 1, 0)) }
+    expectResult(ln2) { ln3.linearAssignment(1, Seq(0.0, 1)) }
+    assert(empty.linearAssignment(1, Seq(0.0, 1, 0)).isEmpty)
   }
 
   test("non-deterministic assignment") {
@@ -124,18 +124,18 @@ class ParallelotopeSuite extends FunSuite {
 
   test("linear inequalities") {
     val li1 = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(0, 0))
-    expectResult(li1) { diamond.linearInequality(Array(2, 0), 1) }
-    expectResult(li1) { diamond.linearInequality(Array(2), 1) }
-    assert(empty.linearInequality(Array(1, 0), -1).isEmpty)
+    expectResult(li1) { diamond.linearInequality(Seq(1.0, 2, 0)) }
+    expectResult(li1) { diamond.linearInequality(Seq(1.0, 2)) }
+    assert(empty.linearInequality(Seq(-1.0, 1, 0)).isEmpty)
   }
 
   test("linear disequalities") {
     val li1 = Parallelotope(DenseVector(-1, 0), DenseMatrix((1.0, 1.0), (1.0, -2.0)), DenseVector(0, 0))
-    expectResult (li1) { li1.linearDisequality(Array(0,0), 1)}
-    expectResult (empty) { li1.linearDisequality(Array(0,0), 0)}
-    expectResult (li1) { li1.linearDisequality(Array(0,1), 1)}
-    expectResult (li1) { li1.linearDisequality(Array(1,-2), 0.5)}
-    expectResult (empty) { li1.linearDisequality(Array(1,-2), 0)}
+    expectResult (li1) { li1.linearDisequality(1.0)}
+    expectResult (empty) { li1.linearDisequality(0.0)}
+    expectResult (li1) { li1.linearDisequality(Seq(1.0, 0, 1))}
+    expectResult (li1) { li1.linearDisequality(Seq(0.5, 1, -2))}
+    expectResult (empty) { li1.linearDisequality(Seq(0.0, 1, -2))}
   }
 
   test("union") {

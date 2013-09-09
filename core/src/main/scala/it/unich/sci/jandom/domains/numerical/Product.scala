@@ -118,40 +118,42 @@ import it.unich.sci.jandom.domains.DomainTransformation
       reduce(q1, q2)
     }
 
-    def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property = {
-      val q1 = p1.linearAssignment(n, coeff, known)
-      val q2 = p2.linearAssignment(n, coeff, known)
+    def linearAssignment(n: Int, lf: LinearForm[Double]): Property = {
+      val q1 = p1.linearAssignment(n, lf)
+      val q2 = p2.linearAssignment(n, lf)
       reduce(q1, q2)
     }
 
-    def linearInequality(coeff: Array[Double], known: Double): Property = {
-      val q1 = p1.linearInequality(coeff, known)
-      val q2 = p2.linearInequality(coeff, known)
+    def linearInequality(lf: LinearForm[Double]): Property = {
+      val q1 = p1.linearInequality(lf)
+      val q2 = p2.linearInequality(lf)
       reduce(q1, q2)
     }
 
-    def linearDisequality(coeff: Array[Double], known: Double): Property = {
-      val q1 = p1.linearDisequality(coeff, known)
-      val q2 = p2.linearDisequality(coeff, known)
+    def linearDisequality(lf: LinearForm[Double]): Property = {
+      val q1 = p1.linearDisequality(lf)
+      val q2 = p2.linearDisequality(lf)
       reduce(q1, q2)
     }
 
-    def minimize(coeff: Array[Double], known: Double): Double = {
-    	val q1=p1.minimize(coeff, known)
-    	val q2=p2.minimize(coeff, known)
+    def minimize(lf: LinearForm[Double]): Double = {
+    	val q1=p1.minimize(lf)
+    	val q2=p2.minimize(lf)
     	q1 max q2
     }
 
-    def maximize(coeff: Array[Double], known: Double): Double = {
-    	val q1=p1.maximize(coeff, known)
-    	val q2=p2.maximize(coeff, known)
+    def maximize(lf: LinearForm[Double]): Double = {
+    	val q1=p1.maximize(lf)
+    	val q2=p2.maximize(lf)
     	q1 min q2
     }
 
-    def frequency(coeff: Array[Double], known: Double): Option[Double] =
-   		if(p1.frequency(coeff, known) == p2.frequency(coeff, known))
-    		  p1.frequency(coeff, known)
-    		  else None
+    def frequency(lf: LinearForm[Double]): Option[Double] = {
+    	p1.frequency(lf) match {
+    	  case v@ Some(c) => v
+    	  case None => p2.frequency(lf)
+    	}
+    }
 
     def addVariable: Property =
       new Property(p1.addVariable, p2.addVariable)

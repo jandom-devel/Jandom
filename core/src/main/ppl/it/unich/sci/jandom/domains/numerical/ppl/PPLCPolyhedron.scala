@@ -21,6 +21,7 @@ package it.unich.sci.jandom.domains.numerical.ppl
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.domains.numerical.NumericalProperty
 import parma_polyhedra_library._
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
  * The domain for not necessarily closed polyhedra implemented within $PPL. This is essentially
@@ -66,14 +67,14 @@ class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalP
     new PPLCPolyhedron(newpplpolyhedron)
   }
 
-  def linearAssignment(n: Int, coeff: Array[Double], known: Double): PPLCPolyhedron = {
+  def linearAssignment(n: Int, lf: LinearForm[Double]): PPLCPolyhedron = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
-    newpplpolyhedron.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(coeff, known), new Coefficient(1))
+    newpplpolyhedron.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(lf), new Coefficient(1))
     new PPLCPolyhedron(newpplpolyhedron)
   }
 
-  def linearInequality(coeff: Array[Double], known: Double): PPLCPolyhedron = {
-    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+  def linearInequality(lf: LinearForm[Double]): PPLCPolyhedron = {
+    val le = PPLUtils.toPPLLinearExpression(lf)
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     newpplpolyhedron.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
     new PPLCPolyhedron(newpplpolyhedron)
@@ -85,12 +86,12 @@ class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalP
    * @note The `C_Polyhedron` class in the PPL treat strict relational operators as non-strict ones. Hence,
    * this method simply returns `this`.
    */
-  def linearDisequality(coeff: Array[Double], known: Double): PPLCPolyhedron = {
+  def linearDisequality(lf: LinearForm[Double]): PPLCPolyhedron = {
     this
   }
 
-  def minimize(coeff: Array[Double], known: Double) = {
-    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+  def minimize(lf: LinearForm[Double]) = {
+    val le = PPLUtils.toPPLLinearExpression(lf)
     val exact = new By_Reference[java.lang.Boolean](false)
     val val_n = new Coefficient(0)
     val val_d = new Coefficient(0)
@@ -101,8 +102,8 @@ class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalP
       (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
   }
 
-  def maximize(coeff: Array[Double], known: Double) = {
-    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+  def maximize(lf: LinearForm[Double]) = {
+    val le = PPLUtils.toPPLLinearExpression(lf)
     val exact = new By_Reference[java.lang.Boolean](false)
     val val_n = new Coefficient(0)
     val val_d = new Coefficient(0)
@@ -113,8 +114,8 @@ class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalP
       (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
   }
 
-  def frequency(coeff: Array[Double], known: Double) = {
-    val le = PPLUtils.toPPLLinearExpression(coeff, known)
+  def frequency(lf: LinearForm[Double]) = {
+    val le = PPLUtils.toPPLLinearExpression(lf)
     val freq_n = new Coefficient(0)
     val freq_d = new Coefficient(0)
     val val_n = new Coefficient(0)

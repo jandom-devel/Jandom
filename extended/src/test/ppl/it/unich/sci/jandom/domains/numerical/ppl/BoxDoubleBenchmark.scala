@@ -96,7 +96,7 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
       val zero = Array.fill(numvars)(0.0)
       val full = BoxDouble.top(numvars)
       for (i <- 1 to numpoints) {
-        val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, zero, i.toDouble) }            
+        val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, i.toDouble) }            
         db = db union point
       }
     }
@@ -105,10 +105,9 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
   def timeJandomPPL(reps: Int) {
     for (iter <- 1 to reps) {
       var db = PPLBoxDouble.bottom(numvars)
-      val zero = Array.fill(numvars)(0.0)
       val full = PPLBoxDouble.top(numvars)
       for (i <- 1 to numpoints) {
-        val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, zero, i.toDouble) }            
+        val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, i.toDouble) }            
         db = db union point
       }
     }
@@ -118,10 +117,9 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
     for (iter <- 1 to reps) {
       val domain = new PPLDomain[Octagonal_Shape_double]
       var db = domain.bottom(numvars)
-      val zero = Array.fill(numvars)(0.0)
       val full = domain.top(numvars)
       for (i <- 1 to numpoints) {
-        val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, zero, i.toDouble) }            
+        val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, i.toDouble) }            
         db = db union point
       }
     }
@@ -136,7 +134,7 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
       val zero = Array.fill(numvars)(0.0)
       val full = domain.top(numvars)
       for (i <- 1 to numpoints) {
-        val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, zero, i.toDouble) }            
+        val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, i.toDouble) }            
         db = db union point
       }
     }

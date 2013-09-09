@@ -77,6 +77,11 @@ trait LinearForm[T] {
   def *(other: LinearForm[T]): Option[LinearForm[T]]
 
   /**
+   * Returns a linear form over doubles
+   */
+  def toDouble: LinearForm[Double]
+
+  /**
    * Returns the textual representation of a linear form.
    * @param vars symbolic names of variables in the linear form
    */
@@ -99,7 +104,7 @@ object LinearForm {
    * Builds a linear form given the coefficients.
    * @param coeffs the coefficient of the linear form
    */
-  def apply[T: Numeric](coeffs: Seq[T]) = DenseLinearForm(coeffs)
+  implicit def apply[T: Numeric](coeffs: Seq[T]) = DenseLinearForm(coeffs)
 
   /**
    * Builds a linear form given the non-null coefficients and constant term
@@ -107,7 +112,7 @@ object LinearForm {
    * in the pairs should be increasing.
    * @param known the constant term of the linear form.
    */
-  def apply[T: Numeric](pairs: Seq[(Int,T)], known: T) = DenseLinearForm(pairs, known)
+  implicit def apply[T: Numeric](pairs: Seq[(Int,T)], known: T) = DenseLinearForm(pairs, known)
 
   /**
    * Builds a constant linear form.

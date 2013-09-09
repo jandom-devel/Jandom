@@ -40,36 +40,35 @@ object NumericalTopDomain extends NumericalDomain {
     def narrowing(that: Property) = { require(that.dimension == dimension); this }
     def intersection(that: Property) = { require(that.dimension == dimension); this }
     def nonDeterministicAssignment(n: Int) = { require(n < dimension); this }
-    def linearAssignment(n: Int, coeff: Array[Double], known: Double) = {
-      require(n < dimension)
-      require(coeff.length >= dimension)
+    def linearAssignment(n: Int, lf: LinearForm[Double]) = {
+      require(n < dimension && lf.dimension <= dimension)
       this
     }
-    def linearInequality(coeff: Array[Double], known: Double) = { require(coeff.length >= dimension); this }
-    def linearDisequality(coeff: Array[Double], known: Double) = { require(coeff.length >= dimension); this }
+    def linearInequality(lf: LinearForm[Double]) = { require(lf.dimension <= dimension); this }
+    def linearDisequality(lf: LinearForm[Double]) = { require(lf.dimension <= dimension); this }
 
-    def minimize(coeff: Array[Double], known: Double) = {
-      require(coeff.length >= dimension)
-      if (coeff.exists(_ != 0))
+    def minimize(lf: LinearForm[Double]) = {
+      require(lf.dimension <= dimension)
+      if (lf.homcoeffs.exists(_ != 0))
         Double.NegativeInfinity
       else
-        known
+        lf.known
     }
 
-    def maximize(coeff: Array[Double], known: Double) = {
-      require(coeff.length >= dimension)
-      if (coeff.exists(_ != 0))
+    def maximize(lf: LinearForm[Double]) = {
+      require(lf.dimension <= dimension)
+      if (lf.homcoeffs.exists(_ != 0))
         Double.PositiveInfinity
       else
-        known
+        lf.known
     }
 
-    def frequency(coeff: Array[Double], known: Double) = {
-      require(coeff.length >= dimension)
-      if (coeff.exists(_ != 0))
+    def frequency(lf: LinearForm[Double]) = {
+      require(lf.dimension <= dimension)
+      if (lf.homcoeffs.exists(_ != 0))
         None
       else
-        Some(known)
+        Some(lf.known)
     }
 
     def addVariable = new Property(dimension + 1)

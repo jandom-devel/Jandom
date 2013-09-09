@@ -31,25 +31,13 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
 case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.Value) (implicit numeric: Numeric[T]) extends LinearCond {
   import numeric._;
 
-  /**
-   * This method returns the homogeneous coefficient of lf as an array of doubles... it is for internal use only,
-   * and should be removed someday, since it does not allow linear forms over different fields.
-   */
-  private def homcoeff(lf: LinearForm[T]) = lf.homcoeffs.map { _.toDouble }.toArray
-
-  /**
-   * This method returns the inhomogeneous as a double... it is for internal use only,
-   * and should be removed someday, since it does not allow linear forms over different fields.
-   */
-  private def known(lf: LinearForm[T]) = lf.known.toDouble
-
   override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = op match {
-    case AtomicCond.ComparisonOperators.LTE => input.linearInequality( homcoeff(lf), known(lf) )
-    case AtomicCond.ComparisonOperators.LT => input.linearInequality( homcoeff(lf), known(lf) )
-    case AtomicCond.ComparisonOperators.GTE => input.linearInequality( homcoeff(-lf), known(-lf) )
-    case AtomicCond.ComparisonOperators.GT => input.linearInequality( homcoeff(-lf), known(-lf) )
-    case AtomicCond.ComparisonOperators.NEQ => input.linearDisequality( homcoeff(lf), known(lf) )
-    case AtomicCond.ComparisonOperators.EQ => input.linearInequality( homcoeff(lf), known(lf) ).linearInequality( homcoeff(-lf), known(-lf) )
+    case AtomicCond.ComparisonOperators.LTE => input.linearInequality( lf.toDouble )
+    case AtomicCond.ComparisonOperators.LT => input.linearInequality( lf.toDouble )
+    case AtomicCond.ComparisonOperators.GTE => input.linearInequality( -lf.toDouble )
+    case AtomicCond.ComparisonOperators.GT => input.linearInequality( -lf.toDouble )
+    case AtomicCond.ComparisonOperators.NEQ => input.linearDisequality( lf.toDouble )
+    case AtomicCond.ComparisonOperators.EQ => input.linearInequality( lf.toDouble ).linearInequality( -lf.toDouble )
   }
 
   lazy val opposite = new AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op))

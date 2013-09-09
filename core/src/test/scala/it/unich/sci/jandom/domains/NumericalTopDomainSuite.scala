@@ -20,6 +20,7 @@ package it.unich.sci.jandom.domains
 
 import it.unich.sci.jandom.domains.numerical.NumericalTopDomain
 import org.scalatest.FunSpec
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
  * @author Gianluca Amato <gamato@unich.it>
@@ -35,10 +36,6 @@ class NumericalTopDomainSuite extends FunSpec {
 
       val x = NumericalTopDomain.top(dim)
 
-      val zeroCoeffs = Array.fill(dim)(0.0)
-      val oneCoeffs = Array.fill(dim)(0.0)
-      if (dim != 0) oneCoeffs(0) = 1
-
       describe(s"has an unique element which") {
         it("should be full") { assert(x.isTop) }
         it("should be bottom") { assert(x.isBottom) }
@@ -53,36 +50,36 @@ class NumericalTopDomainSuite extends FunSpec {
           expectResult(x)(x union x)
           expectResult(x)(x intersection x)
           if (dim != 0) expectResult(x)(x.nonDeterministicAssignment(0))
-          if (dim != 0) expectResult(x)(x.linearAssignment(0, Array.fill(dim)(0), 1))
-          expectResult(x)(x.linearInequality(Array.fill(dim)(0), 0))
-          expectResult(x)(x.linearDisequality(Array.fill(dim)(0), 0))
+          if (dim != 0) expectResult(x)(x.linearAssignment(0, 1.0))
+          expectResult(x)(x.linearInequality(0.0))
+          expectResult(x)(x.linearDisequality(0.0))
         }
       }
 
       describe(s"has a minimization operator which") {
-        if (dim != 0) it("should return -Inf for not null linear forms") {
-          expectResult(Double.NegativeInfinity)(x.minimize(oneCoeffs, 3))
+        if (dim != 0) it("should return -Inf for not constant linear forms") {
+          expectResult(Double.NegativeInfinity)(x.minimize(LinearForm(Seq(0 -> 1), 3)))
         }
-        it("should return the known coefficient for null linear forms") {
-          expectResult(3)(x.minimize(zeroCoeffs, 3))
+        it("should return the known coefficient for constant linear forms") {
+          expectResult(3)(x.minimize(3.0))
         }
       }
 
       describe(s"has a maximization operator which") {
-        if (dim != 0) it("should return +Inf for not null linear forms") {
-          expectResult(Double.PositiveInfinity)(x.maximize(oneCoeffs, 3))
+        if (dim != 0) it("should return +Inf for not constants linear forms") {
+          expectResult(Double.PositiveInfinity)(x.maximize(LinearForm(Seq(0 -> 1), 3)))
         }
         it("should return the known coefficient for null linear forms") {
-          expectResult(3)(x.maximize(zeroCoeffs, 3))
+          expectResult(3)(x.maximize(3.0))
         }
       }
 
       describe(s"has a frequency operator which") {
         if (dim != 0) it("should return None for not null linear forms") {
-          expectResult(None)(x.frequency(oneCoeffs, 3))
+          expectResult(None)(x.frequency(LinearForm(Seq(0 -> 1), 3)))
         }
         it("should return the known coefficient for null linear forms") {
-          expectResult(Some(3))(x.frequency(zeroCoeffs, 3))
+          expectResult(Some(3))(x.frequency(3.0))
         }
       }
 

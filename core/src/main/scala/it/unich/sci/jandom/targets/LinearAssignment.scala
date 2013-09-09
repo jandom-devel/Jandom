@@ -35,8 +35,6 @@ case class LinearAssignment[T](variable: Int, linearForm: LinearForm[T]) (implic
 
   override def toString = "v"+ variable + " := " + linearForm.toString
 
-  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
-    val coefficients = linearForm.coeffs
-    input.linearAssignment(variable, (coefficients.tail map (x => x.toDouble())).toArray, coefficients.head.toDouble)
-  }
+  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property =
+    input.linearAssignment(variable, linearForm.toDouble)
 }

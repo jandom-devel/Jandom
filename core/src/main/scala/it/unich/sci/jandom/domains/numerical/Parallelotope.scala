@@ -278,8 +278,10 @@ class Parallelotope(
    * @todo @inheritdoc
    * @throws $ILLEGAL
    */
-  def linearAssignment(n: Int, tcoeff: Array[Double], known: Double): Parallelotope = {
-    require(n <= dimension && tcoeff.length <= dimension)
+  def linearAssignment(n: Int, lf: LinearForm[Double]): Parallelotope = {
+    require(n <= dimension && lf.dimension <= dimension)
+    val tcoeff = lf.homcoeffs
+    val known = lf.known
     if (isEmpty) return this
     val coeff = tcoeff.padTo(dimension, 0.0).toArray
     if (coeff(n) != 0) {
@@ -313,19 +315,21 @@ class Parallelotope(
    * @todo @inheritdoc
    * @throws ILLEGAL
    */
-  def linearInequality(tcoeff: Array[Double], known: Double): Parallelotope = {
-    require(tcoeff.length <= dimension)
+  def linearInequality(lf: LinearForm[Double]): Parallelotope = {
+    require(lf.dimension <= dimension)
+    val tcoeff = lf.homcoeffs
+    val known = lf.known
     val coeff = tcoeff.padTo(dimension, 0.0).toArray
     if (isEmpty) return this
     val y = A.t \ DenseVector(coeff)
-    val j = (0 to dimension - 1) find { i => y(i) != 0 && low(i).isInfinity && high(i).isInfinity }
+    val j = (0 until dimension) find { i => y(i) != 0 && low(i).isInfinity && high(i).isInfinity }
     j match {
       case None => {
         val newlow = low.copy
         val newhigh = high.copy
         val (minc, maxc) = Parallelotope.extremalsInBox(y, newlow, newhigh)
         if (minc > -known) return Parallelotope.bottom(dimension)
-        for (i <- 0 to dimension - 1) {
+        for (i <- 0 until dimension) {
           if (y(i) > 0)
             newhigh(i) = high(i) min ((-known - minc + y(i) * low(i)) / y(i))
           else if (y(i) < 0)
@@ -348,11 +352,13 @@ class Parallelotope(
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  def linearDisequality(coeff: Array[Double], known: Double): Parallelotope = {
-    if (coeff.forall(_ == 0))
+  def linearDisequality(lf: LinearForm[Double]): Parallelotope = {
+    val tcoeff = lf.homcoeffs
+    val known = lf.known
+    if (tcoeff.forall(_ == 0))
       if (known == 0) bottom else this
     else {
-      val row = (0 until dimension).find(A(_, ::).toDenseVector == DenseVector(coeff))
+      val row = (0 until dimension).find(A(_, ::).toDenseVector == DenseVector(tcoeff: _*))
       row match {
         case None => this
         case Some(row) =>
@@ -422,21 +428,21 @@ class Parallelotope(
    * @inheritdoc
    * @note The current implementation always returns -Infty
    */
-  def minimize(coeff: Array[Double], known: Double) = Double.NegativeInfinity
+  def minimize(lf: LinearForm[Double]) = Double.NegativeInfinity
   // TODO: provide a better implementation
 
   /**
    * @inheritdoc
    * @note The current implementation always returns +Infty
    */
-  def maximize(coeff: Array[Double], known: Double) = Double.PositiveInfinity
+  def maximize(lf: LinearForm[Double]) = Double.PositiveInfinity
   // TODO: provide a better implementation
 
   /**
    * @inheritdoc
    * @note The current implementation always returns None
    */
-  def frequency(coeff: Array[Double], known: Double) = None
+  def frequency(lf: LinearForm[Double]) = None
   // TODO: provide a better implementation
 
   def dimension = A.rows

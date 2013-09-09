@@ -45,17 +45,17 @@ class Sum[Prop1 <: NumericalProperty[Prop1], Prop2 <: NumericalProperty[Prop2]](
 
   def nonDeterministicAssignment(n: Int): Property = ???
 
-  def linearAssignment(n: Int, coeff: Array[Double], known: Double): Property = ???
+  def linearAssignment(n: Int, lf: LinearForm[Double]): Property = ???
 
-  def linearInequality(coeff: Array[Double], known: Double): Property = ???
+  def linearInequality(lf: LinearForm[Double]): Property = ???
 
-  def linearDisequality(coeff: Array[Double], known: Double): Property = ???
+  def linearDisequality(lf: LinearForm[Double]): Property = ???
 
-  def minimize(coeff: Array[Double], known: Double): Double = ???
+  def minimize(lf: LinearForm[Double]): Double = ???
 
-  def maximize(coeff: Array[Double], known: Double): Double = ???
+  def maximize(lf: LinearForm[Double]): Double = ???
 
-  def frequency(coeff: Array[Double], known: Double): Some[Double] = ???
+  def frequency(lf: LinearForm[Double]): Some[Double] = ???
 
   def addVariable: Property = ???
 

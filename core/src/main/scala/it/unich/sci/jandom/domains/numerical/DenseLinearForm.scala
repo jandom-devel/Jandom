@@ -81,6 +81,8 @@ class DenseLinearForm[T](val coeffs: Seq[T])(implicit numeric: Numeric[T]) exten
     else None
   }
 
+  def toDouble: LinearForm[Double] = new DenseLinearForm(coeffs map { _.toDouble })
+
   /**
    * Returns the textual representation of a linear form.
    * @param vars symbolic names of variables in the linear form

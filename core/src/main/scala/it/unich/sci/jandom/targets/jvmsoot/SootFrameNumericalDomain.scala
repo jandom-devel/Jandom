@@ -93,10 +93,8 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
         case _: PrimType | _: WordType | _: DoubleWordType =>
         case _ =>
           // TODO: I should check that dimension i is unconstrained. For now I check that it is unbounded
-          val lf = Array.fill(prop.dimension)(0.0)
-          lf(i) = 1.0
-          assert(prop.minimize(lf, 0).isNegInfinity, "A non-numerical variable should be unconstrained")
-          assert(prop.maximize(lf, 0).isPosInfinity, "A non-numerical variable should be unconstrained")
+          assert(prop.minimize(LinearForm.v(i)).isNegInfinity, "A non-numerical variable should be unconstrained")
+          assert(prop.maximize(LinearForm.v(i)).isPosInfinity, "A non-numerical variable should be unconstrained")
       }
     }
 
