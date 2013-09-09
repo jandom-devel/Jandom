@@ -122,7 +122,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note `m` should be within `0` and `dimension-1`.
    */
   def variableAdd(n: Int = dimension - 2, m: Int = dimension - 1) =
-    linearAssignment(n, LinearForm(0, n->1.0, m->1.0))
+    linearAssignment(n, LinearForm.v[Double](n) + LinearForm.v[Double](m))
 
   /**
    * Assignments of the kind `vn = vn - vm`.
@@ -131,7 +131,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note `m` should be within `0` and `dimension-1`.
    */
   def variableSub(n: Int = dimension - 2, m: Int = dimension - 1) =
-    linearAssignment(n, LinearForm(0, n->1.0, m-> -1.0))
+    linearAssignment(n,  LinearForm.v[Double](n) - LinearForm.v[Double](m))
 
   /**
    * Assignments of the kind `vn = vn + c`.
@@ -139,7 +139,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note $NOTEN
    */
   def constantAdd(n: Int = dimension - 1, c: Double) =
-    linearAssignment(n, LinearForm(c, n->1.0))
+    linearAssignment(n, LinearForm(c, n -> 1.0))
 
   /**
    * Assignments of the kind `vn = vn * vm`.  The standard implementation determines
@@ -149,11 +149,10 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    */
   def variableMul(n: Int = dimension - 2, m: Int = dimension - 1) = {
     frequency(LinearForm.v(n)) match {
-      case Some(c) => linearAssignment(n, LinearForm(0, m->c))
+      case Some(c) => linearAssignment(n, LinearForm(0, m -> c))
       case None => frequency(LinearForm.v(m)) match {
-          case Some(c) => linearAssignment(n, LinearForm(0, n->c))
-          case None =>
-            nonDeterministicAssignment(n)
+        case Some(c) => linearAssignment(n, LinearForm(0, n -> c))
+        case None => nonDeterministicAssignment(n)
       }
     }
   }
@@ -166,8 +165,8 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    */
   def variableDiv(n: Int = dimension - 2, m: Int = dimension - 1) = {
     frequency(LinearForm.v(m)) match {
-      case Some(c) => if (c!=0) linearAssignment(n, LinearForm(0, n->1/c)) else bottom
-      case None =>  nonDeterministicAssignment(n)
+      case Some(c) => if (c != 0) linearAssignment(n, LinearForm(0, n -> 1 / c)) else bottom
+      case None => nonDeterministicAssignment(n)
     }
   }
 

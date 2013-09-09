@@ -193,7 +193,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      */
     private def testComp(op: AtomicCond.ComparisonOperators.Value) = {
       import AtomicCond.ComparisonOperators._
-      val lf = LinearForm(0, size-1 -> -1, size-2 -> 1)
+      val lf = LinearForm(0, size-2 -> 1, size-1 -> -1)
       val tbranch = Property(AtomicCond(lf, op).analyze(prop).delVariable().delVariable(), vars.pop.pop)
       val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), vars.pop.pop)
       (tbranch, fbranch)
