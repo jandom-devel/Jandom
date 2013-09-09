@@ -50,10 +50,10 @@ class Parallelotope(
   require((low.length == A.rows) && (low.length == A.cols) && normalized)
 
   private def normalized: Boolean = {
-  //if( (0 until low.length-1) exists {i => low(i) == Double.PositiveInfinity })
-  //  print("--create-- ",low," ")
+    //if( (0 until low.length-1) exists {i => low(i) == Double.PositiveInfinity })
+    //  print("--create-- ",low," ")
     low.length == high.length && (
-      (0 until low.length-1) forall { i =>
+      (0 until low.length - 1) forall { i =>
         !low(i).isPosInfinity &&
           !high(i).isNegInfinity &&
           (low(i) <= high(i) || isEmpty)
@@ -267,9 +267,9 @@ class Parallelotope(
       result.low(i) = result.low(i) max low(i)
       result.high(i) = result.high(i) min high(i)
     }
-    if( (0 until result.low.length) exists { i => (result.low(i) > result.high(i) ) })
+    if ((0 until result.low.length) exists { i => (result.low(i) > result.high(i)) })
       bottom
-    else   new Parallelotope(false, result.low, result.A, result.high) //this is to normalize
+    else new Parallelotope(false, result.low, result.A, result.high) //this is to normalize
   }
 
   /**
@@ -400,50 +400,72 @@ class Parallelotope(
   }
 
   def addVariable(): Parallelotope = {
-    if(isEmpty)
-      return Parallelotope.bottom(A.rows+1)
-    val e = DenseMatrix.zeros[Double](dimension + 1, 1)
-    e(dimension, 0) = 1.0
-    val newA = DenseMatrix.horzcat(DenseMatrix.vertcat(A, DenseMatrix.zeros[Double](1, dimension)), e)
-    val newlow = DenseVector.vertcat(low, DenseVector(Double.NegativeInfinity))
-    val newhigh = DenseVector.vertcat(high, DenseVector(Double.PositiveInfinity))
-    new Parallelotope(false, newlow, newA, newhigh)
+    if (isEmpty)
+      Parallelotope.bottom(A.rows + 1)
+    else {
+      val e = DenseMatrix.zeros[Double](dimension + 1, 1)
+      e(dimension, 0) = 1.0
+      val newA = DenseMatrix.horzcat(DenseMatrix.vertcat(A, DenseMatrix.zeros[Double](1, dimension)), e)
+      val newlow = DenseVector.vertcat(low, DenseVector(Double.NegativeInfinity))
+      val newhigh = DenseVector.vertcat(high, DenseVector(Double.PositiveInfinity))
+      new Parallelotope(false, newlow, newA, newhigh)
+    }
   }
 
   /**
    * @inheritdoc
    * @note @inheritdoc
-   * @note Not yet implemented.
    * @throws $ILLEGAL
    */
-  def delVariable(n: Int): Parallelotope = ???
+  def delVariable(n: Int): Parallelotope = {
+    if (isEmpty)
+      Parallelotope.bottom(A.rows - 1)
+    else {
+      val slice = (0 until n) ++ (n + 1 until dimension)
+      val newA = A(slice, slice).toDenseMatrix
+      val newlow = low(slice).toDenseVector
+      val newhigh = high(slice).toDenseVector
+      new Parallelotope(false, newlow, newA, newhigh)
+    }
+  }
 
   /**
    * @inheritdoc
-   * @note Not yet implemented.
    */
-  def mapVariables(rho: Seq[Int]): Parallelotope = ???
+  def mapVariables(rho: Seq[Int]): Parallelotope = {
+    if (isEmpty)
+      this
+    else {
+      val slice = for (i <- 0 until dimension; j = rho.indexOf(i); if j != -1) yield j
+      val newA = A(slice, slice).toDenseMatrix
+      val newlow = low(slice).toDenseVector
+      val newhigh = high(slice).toDenseVector
+      new Parallelotope(false, newlow, newA, newhigh)
+    }
+  }
 
   /**
-   * @inheritdoc
-   * @note The current implementation always returns -Infty
+   * Compute the minimum and maximum value of a linear form in a parallelotope.
+   * @todo should be generalized to linear forms over arbitrary types.
+   * @return a tuple with two components: the first component is the least value, the second component is the greatest value
+   * of the linear form over the box.
    */
-  def minimize(lf: LinearForm[Double]) = Double.NegativeInfinity
-  // TODO: provide a better implementation
+  def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
+    val box = BoxDouble(low.toArray, high.toArray)
+    val vec = DenseVector(lf.homcoeffs: _*)
+    val newvec = A.t \ vec
+    val newlf = lf.known +: newvec.valuesIterator.toSeq
+    box.linearEvaluation(LinearForm(newlf: _*))
+  }
 
-  /**
-   * @inheritdoc
-   * @note The current implementation always returns +Infty
-   */
-  def maximize(lf: LinearForm[Double]) = Double.PositiveInfinity
-  // TODO: provide a better implementation
+  def minimize(lf: LinearForm[Double]) = linearEvaluation(lf)._1
 
-  /**
-   * @inheritdoc
-   * @note The current implementation always returns None
-   */
-  def frequency(lf: LinearForm[Double]) = None
-  // TODO: provide a better implementation
+  def maximize(lf: LinearForm[Double]) = linearEvaluation(lf)._2
+
+  def frequency(lf: LinearForm[Double]) = {
+    val (min, max) = linearEvaluation(lf)
+    if (min == max) Some(min) else None
+  }
 
   def dimension = A.rows
 
@@ -554,7 +576,7 @@ class Parallelotope(
           low(i) + " <= " + lfToString(A.t(::, i)) + " <= " + high(i)
         else lfToString(A.t(::, i)) + " = " + high(i)
       }
-      eqns.mkString("[ "," , "," ]")
+      eqns.mkString("[ ", " , ", " ]")
     }
   }
 }

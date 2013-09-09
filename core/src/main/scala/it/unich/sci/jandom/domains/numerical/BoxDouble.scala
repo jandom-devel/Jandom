@@ -161,7 +161,7 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
    * @return a tuple with two components: the first component is the least value, the second component is the greatest value
    * of the linear form over the box.
    */
-  private def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
+  def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
     require(lf.dimension <= dimension)
     var newlow: Double = lf.known
     var newhigh: Double = lf.known

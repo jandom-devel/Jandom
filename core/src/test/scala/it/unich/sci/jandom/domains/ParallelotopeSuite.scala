@@ -160,6 +160,36 @@ class ParallelotopeSuite extends FunSuite {
     expectResult(u11) { u10 union u11 }
   }
 
+  test("minimization, maximization and frequency") {
+    val i = Parallelotope(DenseVector(-4, -1, 0), DenseMatrix((-1.0, 3.0, 0.0), (0.0, 1.0, 0.0),(-1.0, -1.0, 1.0)), DenseVector(4, 2, 0))
+    expectResult(12)(i.maximize(LinearForm(0, 1, 1, 0)))
+    expectResult(-8)(i.minimize(LinearForm(0, 1, 1, 0)))
+    expectResult(None)(i.frequency(LinearForm(0, 1, 1, 0)))
+    expectResult(Some(0))(i.frequency(LinearForm(0, -1, -1, 1)))
+  }
+
+
+  test("dimensional variation") {
+    val i = diamond
+    val j = Parallelotope(DenseVector(-1, -1, Double.NegativeInfinity), DenseMatrix((1.0, 1.0, 0.0),
+        (1.0, -1.0, 0.0), (0.0, 0.0, 1.0)), DenseVector(1, 1, Double.PositiveInfinity))
+    val h = Parallelotope(DenseVector(-1,  Double.NegativeInfinity), DenseMatrix((1.0, 0.0),
+         (0.0, 1.0)), DenseVector(1, Double.PositiveInfinity))
+    expectResult(j)(i.addVariable())
+    expectResult(h)(j.delVariable(0))
+    expectResult(h)(j.delVariable(1))
+    expectResult(i)(j.delVariable(2))
+  }
+
+  test("dimensional maps") {
+    val i = diamond
+    val h = Parallelotope(DenseVector(-1), DenseMatrix((1.0)), DenseVector(1))
+    expectResult(diamond) (diamond.mapVariables(Seq(1, 0)))
+    expectResult(diamond)(i.mapVariables(Seq(0, 1)))
+    expectResult(h)(i.mapVariables(Seq(-1, 0)))
+    expectResult(diamond) (diamond.addVariable.mapVariables(Seq(1,0,-1)))
+  }
+
   test("string representation") {
     expectResult("[ -1.0 <= x+y <= 1.0 , -1.0 <= x-y <= 1.0 ]") { diamond.mkString(Seq("x", "y")) }
     expectResult("empty") { empty.toString }
