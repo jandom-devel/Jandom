@@ -22,6 +22,7 @@ package it.unich.sci.jandom.domains
  * A `DimensionFiberedProperty` is an element of a `DimensionFiberedDomain`. Each fiber is characterized by
  * a natural number called `size`, which is the number of dimensions in the object. There are many methods
  * to add and remove dimensions.
+ * @tparam Property the real class we are endowing with the DimensionFiberedProperty quality.
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <: AbstractProperty[Property] {
@@ -67,4 +68,16 @@ trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <
    * `-1`, then dimension i is removed
    */
   def mapVariables(rho: Seq[Int]): Property
+
+  /**
+   * Returns a string representation of the abstract property.
+   * @param vars an array with the name of the variables in the environment
+   */
+  def mkString(vars: Seq[String]): String
+
+  /**
+   * Returns the string representation of the property. It calls `mkString` with the standard
+   * variable names `v1` ... `vn`.
+   */
+  override def toString: String = mkString(for (i <- 0 until dimension) yield "v" + i)
 }

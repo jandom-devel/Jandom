@@ -23,15 +23,18 @@ import it.unich.sci.jandom.domains.DimensionFiberedProperty
 /**
  * Base class for numerical properties and their operations.
  *
- * @tparam Property the property type we attach to and provide numerical operations.
- * @author Gianluca Amato <gamato@unich.it>
+ * @tparam Property the real class we are endowing with the NumericalProperty quality.
  * @note Most of the operations accepting variables as parameters have default values of `dimension-1` or `dimension-2`.
  *
+ * @define STDINST The standard implementation uses `linearAssignment`, but may be overriden in subclasses for greater efficiency.
+ * @define NDAINST The standard implementation uses `nonDeterministicAssignment`.
  * @define PPL [[http://bugseng.com/products/ppl/ PPL]]
  * @define APRON [[http://apron.cri.ensmp.fr/library/ APRON]]
  * @define NOTEN `n` should be within `0` and `dimension-1`.
  * @define TODOGEN it should be generalized to linear forms over arbitrary types.
  * @define ILLEGAL IllegalArgumentException if parameters are not correct.
+ *
+ * @author Gianluca Amato <gamato@unich.it>
  */
 
 trait NumericalProperty[Property <: NumericalProperty[Property]] extends DimensionFiberedProperty[Property] {
@@ -45,55 +48,47 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
   def nonDeterministicAssignment(n: Int = dimension - 1): Property
 
   /**
-   * Linear assignment over an abstract object of the form `x(n) = x*coeff+known`.
+   * Linear assignment `xn := lf`.
    * @todo $TODOGEN
-   * @param n the variable to be reassigned.
-   * @param coeff the homogeneous coefficients.
+   * @param n the variable to be assigned.
+   * @param lf the linear form determining the assignment.
    * @note $NOTEN
-   * @note `coeff` should have at least `dimension` elements
-   * @param known the in-homogeneous coefficient.
    */
   def linearAssignment(n: Int, lf: LinearForm[Double]): Property
 
   /**
-   * Intersection with the half-plane `{ x |  coeff*x+known <= 0 }`.
+   * Intersection with the half-plane `lf <= 0`.
    * @todo $TODOGEN
-   * @param coeff the homogeneous coefficients.
-   * @note `coeff` should have at least `dimension` elements
-   * @param known the in-homogeneous coefficient.
    */
   def linearInequality(lf: LinearForm[Double]): Property
 
   /**
-   * Intersection with the complements of a line `{ x |  coeff*x+known != 0 }`.
+   * Intersection with `lf != 0`.
    * @todo $TODOGEN
-   * @param coeff the homogeneous coefficients.
-   * @note `coeff` should have at least dimension elements
-   * @param known the in-homogeneous coefficient.
    */
   def linearDisequality(lf: LinearForm[Double]): Property
 
   /**
-   * Determines an upper bound of a linear form in the numerical object.
-   * @param coeff the homogeneous coefficients of the linear form.
-   * @param known the in-homogeneous coefficient.
-   * @return an upper bound of the linear form
+   * Determines a lower bound of a linear form in the numerical object.
+   * @todo $TODOGEN
+   * @return a lower bound of the linear form. It is not guaranteed to be the
+   * greatest lower bound  It is -∞ when the linear form is unbounded.
    */
   def minimize(lf: LinearForm[Double]): Double
 
   /**
-   * Determines a lower bound of a linear form in the numerical object.
-   * @param coeff the homogeneous coefficients of the linear form.
-   * @param known the in-homogeneous coefficient.
-   * @return a lower bound of the linear form
+   * Determines an upper bound of a linear form in the numerical object.
+   * @todo $TODOGEN
+   * @return an upper bound of the linear form. It is not guaranteed to be the
+   * least upper bound  It is +∞ when the linear form is unbounded.
    */
   def maximize(lf: LinearForm[Double]): Double
 
   /**
    * Given a linear form, determines if there is a value 'c' such that the  linear form
-   * always evaluates to c in the numerical object.
-   * @param coeff the homogeneous coefficients of the linear form.
-   * @param known the in-homogeneous coefficient.
+   * always evaluates to c in the numerical object. The name comes from the PPL method
+   * with the same name.
+   * @todo $TODOGEN
    * @return `Some(c)` if such a value exists, `None` otherwise.
    */
   def frequency(lf: LinearForm[Double]): Option[Double]
@@ -104,24 +99,25 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    */
 
   /**
-   * Constant assignment to a variable. The standard implementation calls
-   * linearAssignment, but it may be overriden in subclasses to optimize speed.
+   * Constant assignment to a variable `vn := c`.
+   * @note $STDINST
    * @note $NOTEN
    */
   def constantAssignment(n: Int = dimension - 1, c: Double) =
     linearAssignment(n, c)
 
   /**
-   * Assignment of a variable to another variable.
+   * Assignment of a variable to another variable `vn := vm`.
+   * @note $STDINST
    * @note $NOTEN
-   * @note `source` should be within `0` and `dimension-1`.
+   * @note `m` should be within `0` and `dimension-1`.
    */
   def variableAssignment(n: Int = dimension - 1, m: Int) =
     linearAssignment(n, LinearForm.v(m))
 
   /**
-   * Assignments of the kind vn = vn + vm.  The standard implementation calls
-   * linearAssignment, but it may be overriden in subclasses to optimize speed.
+   * Assignment of the kind `vn = vn + vm`.
+   * @note $STDINST
    * @note $NOTEN
    * @note `m` should be within `0` and `dimension-1`.
    */
@@ -129,8 +125,8 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
     linearAssignment(n, LinearForm(Seq(n->1, m->1),0))
 
   /**
-   * Assignments of the kind vn = vn + vm.  The standard implementation calls
-   * linearAssignment, but it may be overriden in subclasses to optimize speed.
+   * Assignments of the kind `vn = vn - vm`.
+   * @note $STDINST
    * @note $NOTEN
    * @note `m` should be within `0` and `dimension-1`.
    */
@@ -138,16 +134,16 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
     linearAssignment(n, LinearForm(Seq(n->1, m-> -1),0))
 
   /**
-   * Assignments of the kind vn = vn + c.  The standard implementation calls
-   * linearAssignment, but it may be overriden in subclasses to optimize speed.
+   * Assignments of the kind `vn = vn + c`.
+   * @note $STDINST
    * @note $NOTEN
    */
   def constantAdd(n: Int = dimension - 1, c: Double) =
     linearAssignment(n, LinearForm(Seq(n->1),c))
 
   /**
-   * Assignments of the kind vn = vn * vm.  The standard implementation determined
-   * whether vn or vm is a constant, and use linearAssignment in such a case.
+   * Assignments of the kind `vn = vn * vm`.  The standard implementation determines
+   * whether `vn` or `vm` is a constant, and use linearAssignment in such a case.
    * Otherwise, it resorts to a non deterministic assignment.
    * @note $NOTEN
    */
@@ -163,8 +159,9 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
   }
 
   /**
-   * Assignments of the kind vn = vn / vm.  The standard implementation calls
-   * nonDeterministicAssignment on vn
+   * Assignments of the kind `vn = vn / vm`.  The standard implementation calls determines
+   * whether is a constant, and use linearAssignment in such a case. Otherwise, it
+   * resorts to a non deterministic assignment.
    * @note $NOTEN
    */
   def variableDiv(n: Int = dimension - 2, m: Int = dimension - 1) = {
@@ -175,66 +172,65 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
   }
 
   /**
-   * Assignments of the kind vn = vn % vm.  The standard implementation calls
-   * nonDeterministicAssignment on vn
+   * Assignments of the kind `vn = vn % vm`.
+   * @note $NDAINST
    * @note $NOTEN
    */
   def variableRem(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
 
   /**
-   * Assignments of the kind vn = vn << vm.  The standard implementation calls
-   * nonDeterministicAssignment on vn
+   * Assignments of the kind `vn = vn << vm`.
+   * @note $NDAINST
    * @note $NOTEN
    */
   def variableShl(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
 
   /**
-   * Assignments of the kind vn = vn >> vm.  The standard implementation calls
-   * nonDeterministicAssignment on vn
+   * Assignments of the kind `vn = vn >> vm`.
+   * @note $NDAINST
    * @note $NOTEN
    */
   def variableShr(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
 
   /**
-   * Assignments of the kind vn = vn >> vm for unsigned shift.  The standard implementation calls
-   * nonDeterministicAssignment on vn
+   * Assignments of the kind `vn = vn >> vm` for unsigned shift.
+   * @note $NDAINST
    * @note $NOTEN
    */
   def variableUshr(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
 
   /**
-   * Assignments of the kind vn = vn & vm.  The standard implementation calls
-   * nonDeterministicAssignment on vn
+   * Assignments of the kind `vn = vn & vm`.
+   * @note $NDAINST
    * @note $NOTEN
    */
   def variableAnd(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
 
   /**
-   * Assignments of the kind vn = vn | vm.  The standard implementation calls
-   * nonDeterministicAssignment on vn
+   * Assignments of the kind `vn = vn | vm`.
+   * @note $NDAINST
    * @note $NOTEN
    */
   def variableOr(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
 
   /**
-   * Assignments of the kind vn = vn ^ vm.  The standard implementation calls
-   * nonDeterministicAssignment on vn.
+   * Assignments of the kind `vn = vn ^ vm`.
+   * @note $NDAINST
    * @note $NOTEN
    */
   def variableXor(n: Int = dimension - 2, m: Int = dimension - 1) =
     nonDeterministicAssignment(n)
 
   /**
-   * Assignments of the kind vn = - vn.
-   * @note NOTEN
-   * @param n the dimension we want to negate
-   * @return property with the negate dimension
+   * Assignments of the kind `vn = - vn`.
+   * @note $STDINST
+   * @note $NOTEN
    */
   def variableNeg(n: Int = dimension - 1) =
     linearAssignment(n, LinearForm(Seq(n -> -1), 0))
@@ -245,21 +241,13 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * dimension of `p`. It embeds both properties on a common space and intersect, then
    * remove the common dimensions.
    * @todo why not remove the private dimensions before connecting?
-   * @param p property to connect with `this`
    * @param common number of common dimensions in `this` and `p`
    * @return the connected properties, according to the description above
    */
-  def connect(p: Property, common: Int) = {
-    val newprop = addVariables(p.dimension - common)
+  def connect(other: Property, common: Int) = {
+    val newprop = addVariables(other.dimension - common)
     val seq = (dimension - common until newprop.dimension) ++ (0 until dimension - common)
-    val newp = p.addVariables(dimension - common).mapVariables(seq)
+    val newp = other.addVariables(dimension - common).mapVariables(seq)
     (newprop intersection newp).delVariables(dimension - common to dimension - 1)
   }
-
-  /**
-   * Returns the string representation of the property. It calls `mkString` with the standard
-   * variable names `v1` ... `vn`.
-   */
-  override def toString: String = mkString(for (i <- 0 until dimension) yield "v" + i)
-
 }

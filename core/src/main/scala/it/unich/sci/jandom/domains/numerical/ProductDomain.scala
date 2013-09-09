@@ -21,18 +21,35 @@ package it.unich.sci.jandom.domains.numerical
 import it.unich.sci.jandom.domains.DomainTransformation
 
 /**
- * This is the class for the product of abstract domains.
- * @todo This is only a stub.
+ * This class implements the reduced product of two abstract domains. It is not a
+ * real reduced product, but a cartesian product with some reduction given by transformation
+ * funtions.
+ * @note Due to the bug [[https://issues.scala-lang.org/browse/SI-5712 SI-5712] in Scala 2.10, we had to
+ * declare `ProductDomain` an abstract domain. Instatiate it with appropriate values for `dom1`, `dom2`,
+ * `dom1Todom2` and `dom2Todom1`.
  * @author Gianluca Amato <gamato@unich.it>
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
  abstract class ProductDomain extends NumericalDomain {
+  /**
+   * First numerical domain
+   */
   val dom1: NumericalDomain
-  val dom2: NumericalDomain
-  val dom1Todom2: DomainTransformation[dom1.Property, dom2.Property]
-  val dom2Todom1: DomainTransformation[dom2.Property, dom1.Property]
 
-  type Property = ProductProperty
+  /**
+   * Second numerical domain
+   */
+  val dom2: NumericalDomain
+
+  /**
+   * A transformation from first to second domain.
+   */
+  val dom1Todom2: DomainTransformation[dom1.Property, dom2.Property]
+
+  /**
+   * A transformation from second to first domain
+   */
+  val dom2Todom1: DomainTransformation[dom2.Property, dom1.Property]
 
   def top(n: Int) =
     new Property(dom1.top(n), dom2.top(n))
@@ -40,34 +57,14 @@ import it.unich.sci.jandom.domains.DomainTransformation
   def bottom(n: Int) =
     new Property(dom1.bottom(n), dom2.bottom(n))
 
-
   /**
-   * This is the class which implements the product of two basic numerical properties. It is not a
-   * real reduced product, but a cartesian product with some reduction given by transformation
-   * funtions.
+   * This class represents the reduced product of two base numerical properties.
    * @author Gianluca Amato <gamato@unich.it>
    * @author Francesca Scozzari <fscozzari@unich.it>
-   *
    */
-  class ProductProperty(val p1: dom1.Property, val p2: dom2.Property)
-    extends NumericalProperty[ProductProperty] {
-
-    //type Property = ProductProperty
+  class Property(val p1: dom1.Property, val p2: dom2.Property) extends NumericalProperty[Property] {
 
     require(p1.dimension == p2.dimension)
-/*
-    def apply(x: dom1.Property, y: dom2.Property):Property = {
-    if(x.isEmpty || y.isEmpty)
-    	 empty
-    else
-    	new ProductProperty(x,y)
-  }
-*/
-    /*
-  def this(pair:(dom1.Property,dom2.Property)) = {
-    this(pair._1,pair._2)
-  }
-*/
 
     def reduce(x1: dom1.Property, x2: dom2.Property): Property = {
       if (x1.isEmpty && x2.isEmpty)
@@ -80,12 +77,8 @@ import it.unich.sci.jandom.domains.DomainTransformation
         val y1=x1.intersection(dom2Todom1.apply(x2))
         val y2=x2.intersection(dom1Todom2.apply(x1))
 
-//        val z1=y1.intersection(dom2Todom1.apply(y2))
-//        val z2=y2.intersection(dom1Todom2.apply(y1))
-
         new Property(y1, y2)
       }
-      // to be done.....
     }
 
     def union(that: Property): Property = {
@@ -94,16 +87,12 @@ import it.unich.sci.jandom.domains.DomainTransformation
       reduce(q1, q2)
     }
 
-    /*
-     * We do not reduce since it may prevent termination
-     */
     def widening(that: Property): Property =
+      // We do not reduce since it may prevent termination
       new Property(this.p1 widening that.p1, this.p2 widening that.p2)
 
-    /*
-     * We do not reduce since it may prevent termination
-     */
     def narrowing(that: Property): Property =
+      // We do not reduce since it may prevent termination
       new Property(this.p1 narrowing that.p1, this.p2 narrowing that.p2)
 
     def intersection(that: Property): Property = {
@@ -173,19 +162,19 @@ import it.unich.sci.jandom.domains.DomainTransformation
 
     def isTop = p1.isTop && p2.isTop
 
-    def isBottom = ???
+    def isBottom = isEmpty || (p1.isBottom && p2.isBottom)
 
-    def bottom: Property =
-      	ProductDomain.this.bottom(dimension)
+    def bottom: Property = ProductDomain.this.bottom(dimension)
 
-    def top: Property =
-       	ProductDomain.this.top(dimension)
+    def top: Property = ProductDomain.this.top(dimension)
 
     def mkString(vars: Seq[String]): String = {
       if (isEmpty)
         "empty"
+      else if (isTop)
+        "full"
       else
-        "<" + p1.mkString(vars) + " / " + p2.mkString(vars) + ">"
+        p1.mkString(vars) + " / " + p2.mkString(vars)
     }
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = {
@@ -193,22 +182,17 @@ import it.unich.sci.jandom.domains.DomainTransformation
         case other: Property => {
           val c1 = p1.tryCompareTo(other.p1)
           val c2 = p2.tryCompareTo(other.p2)
-          if (c1 == 0)
+          if (c1 == Some(0))
             c2
-          else if (c2 == 0)
+          else if (c2 == Some(0))
             c1
           else if (c1 == c2)
             c1
           else
             None
         }
- //       case other:dom1.Property => (p1.intersection(ProductDomain.this.dom2Todom1(p2))) tryCompareTo other
- //       case other:dom2.Property => (p2.intersection(ProductDomain.this.dom1Todom2(p1))) tryCompareTo other
         case _ => None
       }
     }
   }
-
 }
-
-

@@ -56,14 +56,14 @@ class ProductSuite extends FunSuite {
     expectResult(true) { full.isTop }
   }
 
-  val p1= new productDomain.ProductProperty(BoxDouble.top(n), Parallelotope.top(n))
+  val p1= new productDomain.Property(BoxDouble.top(n), Parallelotope.top(n))
   test("construct a full pair") {
     expectResult(true) {p1.isTop}
     expectResult(false) {p1.isEmpty}
   }
 
   val box = BoxDouble(Array(1, 2), Array(5, 4))
-  val p2= new productDomain.ProductProperty(box, Parallelotope.top(n))
+  val p2= new productDomain.Property(box, Parallelotope.top(n))
  test("construct a non-empty non-full pair") {
     expectResult(false) {p2.isTop}
     expectResult(false) {p2.isEmpty}
@@ -72,7 +72,7 @@ class ProductSuite extends FunSuite {
 
   val boxEmpty =  BoxDouble.bottom(n)
   val ptopeFull = Parallelotope.top(n)
-  val p3= new productDomain.ProductProperty(boxEmpty, ptopeFull)
+  val p3= new productDomain.Property(boxEmpty, ptopeFull)
  test("construct an empty product") {
     expectResult(false) {p3.isTop}
     expectResult(true) {p3.isEmpty}
@@ -81,10 +81,10 @@ class ProductSuite extends FunSuite {
      // assign v0 = 0
   val x2 = full.linearAssignment(0, 0.0)
   test("assignment on product") {
-    expectResult(true) {new productDomain.ProductProperty(
+    expectResult(true) {new productDomain.Property(
         BoxDouble.top(2).linearAssignment(0, 0.0),
         ptopeFull.linearAssignment(0, 0.0)) <=  x2}
-      expectResult(true) {new productDomain.ProductProperty(
+      expectResult(true) {new productDomain.Property(
         BoxDouble.top(2).linearAssignment(0, 0.0),
         ptopeFull.linearAssignment(0, 0.0)) >=  x2}
   }

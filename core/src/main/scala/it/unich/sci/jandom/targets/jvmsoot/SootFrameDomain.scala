@@ -59,10 +59,10 @@ trait SootFrameDomain extends AbstractDomain {
      * Determines whether it is possible to assign a variable of type t2
      * to a variable of type t1. It is only used in debugging assertions.
      */
-    protected def compatibleTypes(t1: Type, t2: Type): Boolean =  {
-    	t1 == t2 ||
-    	(t1.isInstanceOf[PrimType] && t2.isInstanceOf[PrimType]) ||
-    	(t1.isInstanceOf[RefType] && t2.isInstanceOf[RefType])
+    protected def compatibleTypes(t1: Type, t2: Type): Boolean = {
+      t1 == t2 ||
+        (t1.isInstanceOf[PrimType] && t2.isInstanceOf[PrimType]) ||
+        (t1.isInstanceOf[RefType] && t2.isInstanceOf[RefType])
     }
 
     /**
@@ -104,7 +104,7 @@ trait SootFrameDomain extends AbstractDomain {
      * @param i the frame variable to evaluate
      * @param f the field to evaluate within `i`
      */
-    def evalField(i: Int=size-1, f: SootField): Property
+    def evalField(i: Int = size - 1, f: SootField): Property
 
     /**
      * Sums the two top element of the frame and replace them with the result
@@ -129,7 +129,7 @@ trait SootFrameDomain extends AbstractDomain {
     /**
      * Sum an integer constant to the frame variable 'i' and replace this last whit the result
      */
-    def evalInc(i:Int, c:Double): Property = evalLocal(i).evalConstant(c).evalAdd.assignLocal(i)
+    def evalInc(i: Int, c: Double): Property = evalLocal(i).evalConstant(c).evalAdd.assignLocal(i)
 
     /**
      * Computes the reminder of dividing the element `size`-2 with the top element, and replace them with the result.
@@ -221,14 +221,14 @@ trait SootFrameDomain extends AbstractDomain {
      * @param i the frame variable to assign
      * @param f the field to assign
      */
-    def assignField(i: Int=0, f: SootField): Property
+    def assignField(i: Int = 0, f: SootField): Property
 
     /**
      * Assign to  a static field of the variable frame `i` the value at the top of the frame, and pop it.
      * @param i the frame variable to assign
      * @param f the field to assign
      */
-    def assignStaticField(i: Int=0, f: SootField): Property
+    def assignStaticField(i: Int = 0, f: SootField): Property
 
     /**
      * Returns the result of testing whether el(size-2) > el(size-1) and pops the two top frame
@@ -294,13 +294,13 @@ trait SootFrameDomain extends AbstractDomain {
      * Evaluates the effect of entering a monitor.
      * @param n the frame variable whose monitor is entered.
      */
-    def enterMonitor(n: Int=size-1): Property
+    def enterMonitor(n: Int = size - 1): Property
 
     /**
      * Evaluates the effect of exiting a monitor.
      * @param n the frame variable whose monitor is exited.
      */
-    def exitMonitor(n: Int=size-1): Property
+    def exitMonitor(n: Int = size - 1): Property
 
     /**
      * Evaluates a global constant and put the result on the frame.
@@ -317,41 +317,53 @@ trait SootFrameDomain extends AbstractDomain {
     /**
      * Exchange the position of the top element of the frame with that situate in the position i.
      */
-    def evalSwap(i: Int=size-2, j: Int=size-1): Property
+    def evalSwap(i: Int = size - 2, j: Int = size - 1): Property
 
     /**
      * Create a duplicate of the top element of the frame and insert it on the top of the frame
      */
-    def evalDup1(): Property = evalLocal(size-1)
+    def evalDup1(): Property = evalLocal(size - 1)
 
     /**
      * Create a duplicate of the top element of the frame and insert it two position under the top of the frame
      */
-    def evalDup1_x1(): Property = evalSwap().evalLocal(size-2)
+    def evalDup1_x1(): Property = evalSwap().evalLocal(size - 2)
 
     /**
      * Create a duplicate of the top element of the frame and insert it three position under the top of the frame
      */
-    def evalDup1_x2(): Property = evalSwap(size-3,size-1).evalSwap().evalLocal(size-3)
+    def evalDup1_x2(): Property = evalSwap(size - 3, size - 1).evalSwap().evalLocal(size - 3)
 
     /**
      * Create two duplicate of the two top element of the frame and insert them on the top of the frame
      */
-    def evalDup2(): Property = evalLocal(size-2).evalLocal(size-1)
+    def evalDup2(): Property = evalLocal(size - 2).evalLocal(size - 1)
 
     /**
      * Create two duplicate of the two top element of the frame and insert them three position under the top of the frame
      */
-    def evalDup2_x1(): Property = evalSwap(size-3,size-2).evalSwap().evalLocal(size-3).evalLocal(size-3)
+    def evalDup2_x1(): Property = evalSwap(size - 3, size - 2).evalSwap().evalLocal(size - 3).evalLocal(size - 3)
 
     /**
      * Create two duplicate of the two top element of the frame and insert them four position under the top of the frame
      */
-    def evalDup2_x2(): Property = evalSwap(size-4,size-2).evalSwap(size-3,size-1).evalLocal(size-4).evalLocal(size-4)
-
+    def evalDup2_x2(): Property = evalSwap(size - 4, size - 2).evalSwap(size - 3, size - 1).evalLocal(size - 4).evalLocal(size - 4)
 
     def evalInstance(t: Type): Property
 
+    /**
+     * Returns a string representation of the abstract property.
+     * @param vars an array with the name of the variables in the environment
+     * @return a sequence of strings. The idea is that each string is an atomic piece of information
+     * which should be printed out together, while different strings may be also printed out
+     * separately.
+     */
+    def mkString(vars: Seq[String]): String
+
+    /**
+     * Returns the string representation of the property. It calls `mkString` with the standard
+     * variable names `v1` ... `vn`.
+     */
     override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
   }
 }
