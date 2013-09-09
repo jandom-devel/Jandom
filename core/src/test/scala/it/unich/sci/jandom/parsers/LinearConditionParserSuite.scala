@@ -39,8 +39,8 @@ class LinearConditionParserSuite extends FunSuite {
 
   test("linear condition parser") {
     val expParsed = parser.parseExpr("3*x+y-z==0 && x<=z").get
-    val exp1Build = LinearForm(Seq(0, 3, 1, -1))
-    val exp2Build = LinearForm(Seq(0, 1, 0, -1))
+    val exp1Build = LinearForm(0, 3, 1, -1)
+    val exp2Build = LinearForm(0, 1, 0, -1)
     val expCond = AndCond(AtomicCond(exp1Build, AtomicCond.ComparisonOperators.EQ), AtomicCond(exp2Build, AtomicCond.ComparisonOperators.LTE))
     expectResult(expCond) { expParsed }
   }

@@ -48,36 +48,33 @@ class DenseLinearForm[T](val coeffs: Seq[T])(implicit numeric: Numeric[T]) exten
     case _ => false
   }
 
-  /**
-   * Returns a LinearForm whose elements are the negations of the original one.
-   */
   def unary_-(): LinearForm[T] = new DenseLinearForm(coeffs map (x => -x))
 
-  /**
-   * Addition of linear forms
-   */
   def +(that: LinearForm[T]): LinearForm[T] = {
     new DenseLinearForm(coeffs.zipAll(that.coeffs, zero, zero) map (pair => pair._1 + pair._2))
   }
 
-  /**
-   * Subtraction of linear forms.
-   */
   def -(that: LinearForm[T]): LinearForm[T] = this + (-that)
 
-  /**
-   * Multiplication of a scalar and a linear form.
-   */
   def *(coeff: T): LinearForm[T] = new DenseLinearForm(coeffs map (_ * coeff))
 
-  /**
-   * Multiplication of linear forms.
-   */
   def *(that: LinearForm[T]): Option[LinearForm[T]] = {
     if (coeffs.tails forall { _ == 0 })
       Some(new DenseLinearForm(that.coeffs map (_ * coeffs(0))))
     else if (that.coeffs.tails forall { _ == 0 })
       Some(new DenseLinearForm(coeffs map (_ * that.coeffs(0))))
+    else None
+  }
+
+  def /(coeff: T): LinearForm[T] = {
+    val f = numeric.asInstanceOf[Fractional[T]]
+    new DenseLinearForm(coeffs map (f.div(_, coeff)))
+  }
+
+  def /(that: LinearForm[T]): Option[LinearForm[T]] = {
+    val f = numeric.asInstanceOf[Fractional[T]]
+    if ((that.homcoeffs forall { _ == 0 }) && that.known != 0)
+      Some(new DenseLinearForm(coeffs map (f.div(_,that.known))))
     else None
   }
 
@@ -133,7 +130,7 @@ object DenseLinearForm {
    * in the pairs should be increasing.
    * @param known the constant term of the linear form.
    */
-  def apply[T](pairs: Seq[(Int,T)], known: T)(implicit numeric: Numeric[T]) = {
+  def apply[T](known: T, pairs: Seq[(Int,T)])(implicit numeric: Numeric[T]) = {
     def pairsToCoeffs: (Seq[(Int,T)], Int) => List[T]  = { (pairs, n) =>
       if (pairs.isEmpty)
         Nil
@@ -149,14 +146,8 @@ object DenseLinearForm {
   }
 
   /**
-   * Builds a constant dense linear form.
-   * @param known the constant term
-   */
-  implicit def apply[T: Numeric](known: T) = new DenseLinearForm(Seq(known))
-
-  /**
    * Builds the dense linear form vi
    * @param i index of the variable vi
    */
-  def v[T](i: Int)(implicit numeric: Numeric[T]) = DenseLinearForm(Seq(i -> numeric.one),numeric.zero)
+  def v[T](i: Int)(implicit numeric: Numeric[T]) = DenseLinearForm(numeric.zero, Seq(i -> numeric.one))
 }

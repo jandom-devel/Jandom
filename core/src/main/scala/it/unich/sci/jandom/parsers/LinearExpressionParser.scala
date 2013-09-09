@@ -41,7 +41,7 @@ trait LinearExpressionParser extends JavaTokenParsers {
    */
   private val term: Parser[LinearForm[Int]] =
     (opt(wholeNumber <~ "*") ~ variable) ^^ {
-      case Some(coeff) ~ v => LinearForm(Seq(v -> coeff.toInt),0)
+      case Some(coeff) ~ v => LinearForm(0, v -> coeff.toInt)
       case None ~ v => LinearForm.v[Int](v)
     } |
     wholeNumber ^^ { case coeff => coeff.toInt }

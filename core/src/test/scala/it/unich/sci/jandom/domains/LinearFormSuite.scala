@@ -30,9 +30,9 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
 class LinearFormSuite extends FunSuite {
 
   test("LinearForm companion object standard constructor") {
-    val lf = LinearForm(List(1,2,-1))
+    val lf = LinearForm(1,2,-1)
     expectResult("1+2*v0-v1") { lf.toString }
-    val lf2 = LinearForm(List(1,0,3))
+    val lf2 = LinearForm(1,0,3)
     expectResult("1+3*v1") { lf2.toString }
   }
 
@@ -42,23 +42,23 @@ class LinearFormSuite extends FunSuite {
   }
 
   test("LinearForm companion object sparse constructor") {
-    val lf1 = LinearForm(Seq(0,0,2))
-    val lf2 = LinearForm(Seq(1 -> 2),0)
+    val lf1 = LinearForm(0,0,2)
+    val lf2 = LinearForm(0, 1 -> 2)
     expectResult(lf1) { lf2 }
   }
 
   test("LinearForm companion addition") {
-    val lf1 = LinearForm(List(1,2,-1))
-    val lf2 = LinearForm(List(1,0,3))
-    val lf3 = LinearForm(List(2,2,2))
+    val lf1 = LinearForm(1,2,-1)
+    val lf2 = LinearForm(1,0,3)
+    val lf3 = LinearForm(2,2,2)
   	expectResult(lf3) { lf1+lf2 }
   }
 
   test("Equality") {
-    val lf1 = LinearForm(Seq(1,0,3))
-    val lf2 = LinearForm(IndexedSeq(1,0,3))
+    val lf1 = LinearForm(1,0,3)
+    val lf2 = LinearForm(1,0,3)
     expectResult(lf1) { lf2 }
-    val lf3 = LinearForm(Seq(1,0,1))
+    val lf3 = LinearForm(1,0,1)
     expectResult(false) (lf1 == lf3)
   }
 }

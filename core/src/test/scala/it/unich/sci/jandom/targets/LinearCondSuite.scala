@@ -32,8 +32,8 @@ import linearcondition._
  */
 class LinearCondSuite extends FunSuite {
   val env = Environment("x","y")
-  val lf1 = LinearForm(Seq(-3,1,0))
-  val lf2 = LinearForm(Seq(-6,1,0))
+  val lf1 = LinearForm(-3,1,0)
+  val lf2 = LinearForm(-6,1,0)
   val cond1 = AtomicCond(lf1,AtomicCond.ComparisonOperators.LTE)
   val cond2 = AtomicCond(lf2,AtomicCond.ComparisonOperators.GTE)
   val full = BoxDouble.top(env.size)

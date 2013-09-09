@@ -77,6 +77,19 @@ trait LinearForm[T] {
   def *(other: LinearForm[T]): Option[LinearForm[T]]
 
   /**
+   * Divides a linear form by a scalar.
+   * This requires `T` to be a fractional type.
+   */
+  def /(coeff: T): LinearForm[T]
+
+  /**
+   * Divides two linear forms if the second one is a scalar. Returns
+   * `None` otherwise.
+   *  This requires `T` to be a fractional type.
+   */
+  def /(other: LinearForm[T]): Option[LinearForm[T]]
+
+  /**
    * Returns a linear form over doubles
    */
   def toDouble: LinearForm[Double]
@@ -102,27 +115,28 @@ object LinearForm {
 
   /**
    * Builds a linear form given the coefficients.
-   * @param coeffs the coefficient of the linear form
+   * @param coeffs the coefficient of the linear form. The first coefficient
+   * is the constant term.
    */
-  implicit def apply[T: Numeric](coeffs: Seq[T]) = DenseLinearForm(coeffs)
+  def apply[T: Numeric](coeffs: T*) = DenseLinearForm(coeffs)
 
   /**
-   * Builds a linear form given the non-null coefficients and constant term
-   * @param pairs the index and value of non-zero homogeneous coefficients. The indexes
-   * in the pairs should be increasing.
+   * Builds a linear form given the non-null coefficients and constant term. Each pair
+   * contains (i,ci) corresponds to the term ci*vi. To ease the use of the LinearForm
+   * object, the first pair is in the parameter `firstpair`, while the remaining
+   * pairs are in the `restpair` parameter.
    * @param known the constant term of the linear form.
    */
-  implicit def apply[T: Numeric](pairs: Seq[(Int,T)], known: T) = DenseLinearForm(pairs, known)
+  def apply[T: Numeric](known: T, firstpair: (Int,T), restpairs: (Int,T)*) = DenseLinearForm(known,firstpair +: restpairs)
 
   /**
-   * Builds a constant linear form.
-   * @param known the constant term
-   */
-  implicit def apply[T: Numeric](known: T) = DenseLinearForm(known)
-
-  /**
-   * Builds the linear form vi
+   * Builds the linear form `vi`
    * @param i index of the variable vi
    */
   def v[T: Numeric](i: Int) = DenseLinearForm.v(i: Int)
+
+  /**
+   * Builds the constant linear form `c`
+   */
+  implicit def c[T: Numeric](known: T) = DenseLinearForm(Seq(known))
 }

@@ -38,8 +38,8 @@ class SLILProgramSuite extends FunSuite {
     val program = SLILProgram(env, Seq(1),
       CompoundStmt(
         AssignStmt(0, 0),
-        WhileStmt(AtomicCond(LinearForm(Seq(-10, 1)), AtomicCond.ComparisonOperators.LT),
-          AssignStmt(0, LinearForm(Seq(1, 1))))))
+        WhileStmt(AtomicCond(LinearForm(-10, 1), AtomicCond.ComparisonOperators.LT),
+          AssignStmt(0, LinearForm(1, 1)))))
     val params = new Parameters[SLILTarget] { val domain = BoxDouble }
     val ann = program.analyze(params)
     expectResult(BoxDouble(Array(10), Array(11))) { ann((program.stmt, 2)) }
@@ -82,8 +82,8 @@ class SLILProgramSuite extends FunSuite {
      val stmt: SLILTarget =
       CompoundStmt(
         AssignStmt(0, 0),
-        WhileStmt(AtomicCond(LinearForm(List(-10, 1)), AtomicCond.ComparisonOperators.LT),
-          AssignStmt(0, LinearForm(List(1, 1)))))
+        WhileStmt(AtomicCond(LinearForm(-10, 1), AtomicCond.ComparisonOperators.LT),
+          AssignStmt(0, LinearForm(1, 1))))
      val params = new Parameters[SLILTarget] { val domain = BoxDouble }
      val ann = stmt.analyze(params)
      expectResult(BoxDouble(Array(10), Array(11))) { ann((stmt, 2)) }
