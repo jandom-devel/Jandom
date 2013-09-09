@@ -128,7 +128,6 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     def evalNew(tpe: Type) = addVariable(tpe)
 
     def evalLocal(v: Int) = {
-
       if (vars(size - 1 - v).isInstanceOf[PrimType] || vars(size - 1 - v).isInstanceOf[WordType] || vars(size - 1 - v).isInstanceOf[DoubleWordType])
         Property(prop.addVariable().variableAssignment(size, v), vars.push(vars(size - 1 - v)))
       else
@@ -137,7 +136,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalField(v: Int, f: SootField) = {
       assume(vars(size - 1 - v).isInstanceOf[RefType],"Expected RefType, got "+vars(size - 1 - v))
-      delVariable.addVariable(f.getType())
+      addVariable(f.getType())
     }
 
     def assignLocal(dst: Int, src: Int) = {
@@ -154,7 +153,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def assignField(dst: Int, f: SootField) = {
       assume(vars(size - 1 - dst).isInstanceOf[RefType],"Expected RefType, got "+vars(size - 1 - dst))
-      delVariable.delVariable
+      delVariable
     }
 
     def assignStaticField(dst: Int, f: SootField) = {
