@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -23,35 +23,47 @@ import org.scalatest.FunSuite
 import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
- * The Test Suite for the LinearForm class
+ * The test suite for the LinearForm class
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 
 class LinearFormSuite extends FunSuite {
 
-  test("LinearForm companion object standard constructor") {
-    val lf = LinearForm(1,2,-1)
-    expectResult("1+2*v0-v1") { lf.toString }
-    val lf2 = LinearForm(1,0,3)
-    expectResult("1+3*v1") { lf2.toString }
-  }
-
-  test("LinearForm companion object v constructor") {
+  test("Variable constructor") {
     var lf = LinearForm.v[Int](1)
-    expectResult("v1") { lf.toString }
+    expectResult(LinearForm(0,0,1)) { lf }
   }
 
-  test("LinearForm companion object sparse constructor") {
+  test("Sparse constructor") {
     val lf1 = LinearForm(0,0,2)
     val lf2 = LinearForm(0, 1 -> 2)
     expectResult(lf1) { lf2 }
   }
 
-  test("LinearForm companion addition") {
+  test("Accessors") {
+    val lf = LinearForm(1,2,-1)
+    expectResult(1) { lf.known }
+    expectResult(Seq(1,2,-1)) { lf.coeffs }
+    expectResult(Seq(2,-1)) { lf.homcoeffs }
+    expectResult(2) { lf.dimension }
+    expectResult(Seq(0 -> 2, 1 -> -1)) { lf.pairs }
+  }
+
+  test("Arithmetic operations") {
     val lf1 = LinearForm(1,2,-1)
     val lf2 = LinearForm(1,0,3)
     val lf3 = LinearForm(2,2,2)
-  	expectResult(lf3) { lf1+lf2 }
+    expectResult(LinearForm(-1,-2,1)) { - lf1 }
+  	expectResult(LinearForm(2,2,2)) { lf1+lf2 }
+    expectResult(LinearForm(0,2,-4)) { lf1-lf2 }
+    expectResult(LinearForm(2,4,-2)) { lf1 * 2 }
+    expectResult(Some(LinearForm(2,4,-2))) { 2 * lf1 }
+    expectResult(None) { lf1 * lf2 }
+    expectResult(LinearForm(0.5,1,-0.5)) { lf1.toDouble / 2 }
+    expectResult(Some(LinearForm(0.5,1,-0.5))) { lf1.toDouble / LinearForm(2.0) }
+    expectResult(None) { lf1.toDouble / lf2.toDouble }
+    intercept[ClassCastException] { lf1 / 2 }
+    intercept[ClassCastException] { lf1 / lf2 }
   }
 
   test("Equality") {
@@ -60,5 +72,12 @@ class LinearFormSuite extends FunSuite {
     expectResult(lf1) { lf2 }
     val lf3 = LinearForm(1,0,1)
     expectResult(false) (lf1 == lf3)
+  }
+
+  test("Conversion to String") {
+    val lf = LinearForm(1,2,-1)
+    expectResult("1+2*v0-v1") { lf.toString }
+    val lf2 = LinearForm(1,0,3)
+    expectResult("1+3*v1") { lf2.toString }
   }
 }

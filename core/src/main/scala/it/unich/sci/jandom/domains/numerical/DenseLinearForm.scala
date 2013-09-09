@@ -59,9 +59,9 @@ class DenseLinearForm[T](val coeffs: Seq[T])(implicit numeric: Numeric[T]) exten
   def *(coeff: T): LinearForm[T] = new DenseLinearForm(coeffs map (_ * coeff))
 
   def *(that: LinearForm[T]): Option[LinearForm[T]] = {
-    if (coeffs.tails forall { _ == 0 })
+    if (homcoeffs forall { _ == 0 })
       Some(new DenseLinearForm(that.coeffs map (_ * coeffs(0))))
-    else if (that.coeffs.tails forall { _ == 0 })
+    else if (that.homcoeffs forall { _ == 0 })
       Some(new DenseLinearForm(coeffs map (_ * that.coeffs(0))))
     else None
   }
@@ -113,11 +113,9 @@ class DenseLinearForm[T](val coeffs: Seq[T])(implicit numeric: Numeric[T]) exten
 }
 
 /**
- * Factory object for the LinearForm class.
+ * Factory object for the DenseLinearForm class.
  */
 object DenseLinearForm {
-  import scala.language.implicitConversions
-
   /**
    * Builds a dense linear form given the coefficients.
    * @param coeffs the coefficient of the linear form
