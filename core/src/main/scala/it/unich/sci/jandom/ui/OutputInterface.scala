@@ -56,6 +56,38 @@ import scala.collection.JavaConversions._
  */
 object OutputInterface {
   
+ def  getWideningStrategies = {
+   WideningScopes.values.map(x => x.name)   
+ }
+  def  getWideningStrategiesTips = {
+   WideningScopes.values.map(x => x.description)
+ }
+  
+  def  getNarrowingStrategies = {
+  NarrowingStrategies.values.map(x => x.name)   
+ }
+  def  getNarrowingStrategiesTips = {
+   NarrowingStrategies.values.map(x => x.description)
+ }
+ 
+  def getNumericalDomains = {
+    NumericalDomains.values.map(x => x.name)  
+  }
+   def getNumericalDomainsTips = {
+    NumericalDomains.values.map(x => x.description)
+  }
+   
+  def getObjectDomains = {
+    ObjectDomains.values.map(x => x.name)  
+  }
+   def getObjectDomainsTips = {
+    ObjectDomains.values.map(x => x.description)
+  }
+  
+   
+
+
+  
   /**
    * Analyze a class using Baf. 
    * @param method the method to be analyzed
@@ -67,7 +99,7 @@ object OutputInterface {
    * @return a string with the program annotated with the analysis result
    */
   
-  def analyze[T<:SootCFG[T, Block]](method: SootCFG[T, Block], domain: DimensionFiberedDomain, widening: WideningScope.Value,
+  private def analyze[T<:SootCFG[T, Block]](method: SootCFG[T, Block], domain: DimensionFiberedDomain, widening: WideningScope.Value,
 		  	   narrowing: NarrowingStrategy.Value, delay:Int, debug: Boolean):String =  {
       try {
         val sootScene: Scene = Scene.v()
@@ -101,6 +133,26 @@ object OutputInterface {
       }     
   }
   
+   def analyze(dir:String, klass:String, method: Int, isNumerical:Boolean, isBaf: Boolean, domain: Int, widening: Int,
+		  	   narrowing: Int, delay:Int, debug: Boolean):String =  {
+     val methods = getMethods(dir,klass)
+     val selectedMethod=methods.get(method)
+     val aDomain = if(isNumerical) 
+    	 			NumericalDomains.values(domain).value 
+    	 		   else 
+    	 			ObjectDomains.values(domain).value 
+
+     val aWidening = WideningScopes.values(widening).value
+     val aNarrowing = NarrowingStrategies.values(narrowing).value
+     
+     if(isBaf)
+    	 analyze(new BafMethod(selectedMethod), aDomain, aWidening, aNarrowing, delay, debug)
+     else 
+    	 analyze(new JimpleMethod(selectedMethod), aDomain, aWidening, aNarrowing, delay, debug)
+   }
+  
+  
+  /*
   def analyze(klass: String, method: String, isBaf: Boolean, domain: DimensionFiberedDomain, widening: WideningScope.Value,
 		  	   narrowing: NarrowingStrategy.Value, delay:Int, debug: Boolean):String = {
 	val c = Scene.v().loadClassAndSupport(klass)
@@ -110,7 +162,7 @@ object OutputInterface {
 	else
 	  analyze(new JimpleMethod(c.getMethodByName(method)),domain,widening, narrowing, delay, debug)  
   }
-  
+  */
   
   private def getScene(dir: String) = {
 	val scene = Scene.v()                     
@@ -142,7 +194,7 @@ object OutputInterface {
 	  val scene = getScene(dir)                   
 	  val sootKlass = scene.loadClassAndSupport(klass)
 	  sootKlass.setApplicationClass()
-      sootKlass.getMethods()
+      sootKlass.getMethods()//.map(x => x.getName())
   }
   
  
@@ -153,7 +205,7 @@ object OutputInterface {
         // these two lines are a mess because Scala Swing does not play well with Java 1.7
     	 fileProcessor.classNameList
       }
-     else Seq()
+     else Seq[String]()
   }
   
 }
