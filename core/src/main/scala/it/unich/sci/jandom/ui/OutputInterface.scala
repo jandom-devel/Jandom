@@ -49,6 +49,7 @@ import java.nio.file.attribute.BasicFileAttributes
 import scala.util.Try
 import java.nio.file.Files
 import it.unich.sci.jandom.ui.gui.SootEditorPane
+import scala.collection.JavaConversions._
 
 /**
  * An output interface is a collection of methods for implementing an external interface.
@@ -111,11 +112,10 @@ object OutputInterface {
   }
   
   
-  private def getScene(file: String) = {
-	  val scene = Scene.v()                     
-	  val sootKlass = scene.loadClassAndSupport(file)
-	  sootKlass.setApplicationClass()
-	  scene
+  private def getScene(dir: String) = {
+	val scene = Scene.v()                     
+	scene.setSootClassPath(scene.defaultClassPath + ":" + dir)
+	scene
   }
   
   def unzipJar(dir:String, jarFile:String, destDir:String) = {
@@ -136,31 +136,28 @@ object OutputInterface {
     		is.close();
     		}
     }
+  } 
+  
+  def getMethods(dir: String, klass:String) = {
+	  val scene = getScene(dir)                   
+	  val sootKlass = scene.loadClassAndSupport(klass)
+	  sootKlass.setApplicationClass()
+      sootKlass.getMethods()
   }
   
-   
-  def getMethods(file: String, klass:String) = {
-    val scene = getScene(file)
-    scene.loadClassAndSupport(klass).getMethods()
-  }
-  
-  def getInput(file: String, klass:String, isBaf: Boolean,  method: String) = {
-    
-    
-    
-  }
-  /*
-  def getClasses(classPathField: String) = {
+ 
+  def getClasses(classPathField: String):Seq[String] = {
      val rootPath = Paths.get(classPathField)   
      val fileProcessor = new ClassFileVisitor(rootPath)
      if (Try(Files.walkFileTree(rootPath, fileProcessor)).isSuccess) {
         // these two lines are a mess because Scala Swing does not play well with Java 1.7
     	 fileProcessor.classNameList
       }
+     else Seq()
   }
-  */
+  
 }
-/*
+
 class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
     private val privateClassNamesList = scala.collection.mutable.SortedSet[String]()
     def classNameList = privateClassNamesList.toSeq
@@ -174,4 +171,4 @@ class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
       FileVisitResult.CONTINUE;
     }
   }
-  */ 
+   
