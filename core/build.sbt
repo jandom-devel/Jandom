@@ -21,7 +21,7 @@ unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory
 
 // It would be nice to be able to exclude resource directories from compilation.
 
-createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource + EclipseCreateSrc.Managed
+createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Managed
 
 // BuildInfo plugin
 

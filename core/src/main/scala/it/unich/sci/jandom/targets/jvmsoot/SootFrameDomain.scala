@@ -364,6 +364,6 @@ trait SootFrameDomain extends AbstractDomain {
      * Returns the string representation of the property. It calls `mkString` with the standard
      * variable names `v1` ... `vn`.
      */
-    override def toString = mkString(for (i <- 0 until size) yield "v" + i).mkString(", ")
+    override def toString = mkString(for (i <- 0 until size) yield "v" + i)
   }
 }
