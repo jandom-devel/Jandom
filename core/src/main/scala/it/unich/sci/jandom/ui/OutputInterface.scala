@@ -41,11 +41,19 @@ import scala.swing.Dialog
 import it.unich.sci.jandom.targets.jvmsoot.SootCFG
 import soot.toolkits.graph.Block
 import it.unich.sci.jandom.targets.jvmsoot.JimpleMethod
+import java.nio.file.Paths
+import java.nio.file.Path
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.FileVisitResult
+import java.nio.file.attribute.BasicFileAttributes
+import scala.util.Try
+import java.nio.file.Files
+import it.unich.sci.jandom.ui.gui.SootEditorPane
+
 /**
  * An output interface is a collection of methods for implementing an external interface.
  */
 object OutputInterface {
-
   
   /**
    * Analyze a class using Baf. 
@@ -101,5 +109,69 @@ object OutputInterface {
 	else
 	  analyze(new JimpleMethod(c.getMethodByName(method)),domain,widening, narrowing, delay, debug)  
   }
-}
+  
+  
+  private def getScene(file: String) = {
+	  val scene = Scene.v()                     
+	  val sootKlass = scene.loadClassAndSupport(file)
+	  sootKlass.setApplicationClass()
+	  scene
+  }
+  
+  def unzipJar(dir:String, jarFile:String, destDir:String) = {
+    val jar = new java.util.jar.JarFile(dir+"/"+jarFile);
+    val enum = jar.entries();  
+    while (enum.hasMoreElements()) {
+    	val file = enum.nextElement(); //(java.util.jar.JarEntry)
+    	val f = new java.io.File(destDir + java.io.File.separator + file.getName());
+    	if (file.isDirectory()) { // if its a directory, create it
+    		f.mkdir();
+    	} else {
+    		val is = jar.getInputStream(file); // get the input stream
+    		val fos = new java.io.FileOutputStream(f);
+    		while (is.available() > 0) {  // write contents of 'is' to 'fos'
+    			fos.write(is.read());
+    		}
+    		fos.close();
+    		is.close();
+    		}
+    }
+  }
+  
    
+  def getMethods(file: String, klass:String) = {
+    val scene = getScene(file)
+    scene.loadClassAndSupport(klass).getMethods()
+  }
+  
+  def getInput(file: String, klass:String, isBaf: Boolean,  method: String) = {
+    
+    
+    
+  }
+  /*
+  def getClasses(classPathField: String) = {
+     val rootPath = Paths.get(classPathField)   
+     val fileProcessor = new ClassFileVisitor(rootPath)
+     if (Try(Files.walkFileTree(rootPath, fileProcessor)).isSuccess) {
+        // these two lines are a mess because Scala Swing does not play well with Java 1.7
+    	 fileProcessor.classNameList
+      }
+  }
+  */
+}
+/*
+class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
+    private val privateClassNamesList = scala.collection.mutable.SortedSet[String]()
+    def classNameList = privateClassNamesList.toSeq
+    override def visitFile(aFile: Path, aAttrs: BasicFileAttributes): FileVisitResult = {
+      val relativePath = rootPath.relativize(aFile)
+      val className = (relativePath.head.toString /: relativePath.tail)(_ + "." + _.toString)
+      if (className endsWith ".class")
+        privateClassNamesList += className stripSuffix ".class"
+      else if (className endsWith ".java")
+        privateClassNamesList += className stripSuffix ".java"
+      FileVisitResult.CONTINUE;
+    }
+  }
+  */ 
