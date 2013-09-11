@@ -84,10 +84,19 @@ object OutputInterface {
     ObjectDomains.values.map(x => x.description)
   }
   
-   
+ def getDebugTip = {
+ 	  "Generate debug information - for developers only"
+ 	}
 
-
+def getAnalysisTypeTip = {
+  "Choose between an analysis of numerical properties or object-related properties"
+}
   
+def getWideningDelayTip = {
+  "Apply the widening with delay" 
+}
+
+
   /**
    * Analyze a class using Baf. 
    * @param method the method to be analyzed
@@ -210,7 +219,7 @@ object OutputInterface {
   
 }
 
-class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
+private class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
     private val privateClassNamesList = scala.collection.mutable.SortedSet[String]()
     def classNameList = privateClassNamesList.toSeq
     override def visitFile(aFile: Path, aAttrs: BasicFileAttributes): FileVisitResult = {
