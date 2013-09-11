@@ -205,7 +205,7 @@ def getWideningDelayTip = {
 	  sootKlass.setApplicationClass()
       sootKlass.getMethods().map(x => x.getName())
   }
-  def getSootMethods(dir: String, klassIndex:Int) = {
+ private def getSootMethods(dir: String, klassIndex:Int) = {
 	  val scene = getScene(dir)     
 	  val sootKlass = scene.loadClassAndSupport( getClasses(dir)(klassIndex))
 	  sootKlass.setApplicationClass()
@@ -221,6 +221,14 @@ def getWideningDelayTip = {
     	 fileProcessor.classNameList
       }
      else Seq[String]()
+  }
+  
+  def getBytecodeAbstraction(dir: String, klassIndex:Int, methodIndex:Int, isBaf:Boolean) = {
+    val myMethod = getSootMethods(dir,klassIndex).get(methodIndex)
+    if(isBaf)
+    	 new BafMethod(myMethod).toString
+     else 
+    	 new JimpleMethod(myMethod).toString
   }
   
 }
