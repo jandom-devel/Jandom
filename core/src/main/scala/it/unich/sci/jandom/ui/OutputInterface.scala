@@ -144,7 +144,7 @@ def getWideningDelayTip = {
   
    def analyze(dir:String, klass:Int, method: Int, isNumerical:Boolean, isBaf: Boolean, domain: Int, widening: Int,
 		  	   narrowing: Int, delay:Int, debug: Boolean):String =  {
-     val methods = getMethods(dir,klass)
+     val methods = getSootMethods(dir,klass)
      val selectedMethod=methods.get(method)
      val aDomain = if(isNumerical) 
     	 			NumericalDomains.values(domain).value 
@@ -203,7 +203,13 @@ def getWideningDelayTip = {
 	  val scene = getScene(dir)     
 	  val sootKlass = scene.loadClassAndSupport( getClasses(dir)(klassIndex))
 	  sootKlass.setApplicationClass()
-      sootKlass.getMethods()//.map(x => x.getName())
+      sootKlass.getMethods().map(x => x.getName())
+  }
+  def getSootMethods(dir: String, klassIndex:Int) = {
+	  val scene = getScene(dir)     
+	  val sootKlass = scene.loadClassAndSupport( getClasses(dir)(klassIndex))
+	  sootKlass.setApplicationClass()
+      sootKlass.getMethods()
   }
   
  
