@@ -21,65 +21,55 @@ package it.unich.sci.jandom.domains.numerical
 import scala.collection.mutable.WeakHashMap
 
 /**
- * The most abstract numerical domain. Not that it does not extends from [[it.unich.sci.jandom.domains.TopLike]]
- * since numerical domains do not have a well defined top and bottom domains, but are fibered over dimensions.
+ * The most abstract numerical domain. It has a single element top element for each dimension.
  * @author Gianluca Amato <gamato@unich.it>
  */
 object NumericalTopDomain extends NumericalDomain {
 
-  /**
-   * This is the class for the top property. There is a single top property for each dimension.
-   */
-  case class Property private[NumericalTopDomain] (val dimension: Int) extends NumericalProperty[Property] {
+  case class Property private[NumericalTopDomain](val dimension: Int) extends NumericalProperty[Property] {
+    require(dimension >= 0)
+
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
-      case other: Property => Some(0)
+      case other: Property if dimension == other.dimension => Some(0)
       case _ => None
     }
-    def widening(that: Property) = { require(that.dimension == dimension); this }
-    def union(that: Property) = { require(that.dimension == dimension); this }
-    def narrowing(that: Property) = { require(that.dimension == dimension); this }
-    def intersection(that: Property) = { require(that.dimension == dimension); this }
-    def nonDeterministicAssignment(n: Int) = { require(n < dimension); this }
-    def linearAssignment(n: Int, lf: LinearForm[Double]) = {
-      require(n < dimension && lf.dimension <= dimension)
-      this
-    }
-    def linearInequality(lf: LinearForm[Double]) = { require(lf.dimension <= dimension); this }
-    def linearDisequality(lf: LinearForm[Double]) = { require(lf.dimension <= dimension); this }
+    def widening(that: Property) = this
+    def union(that: Property) = this
+    def narrowing(that: Property) = this
+    def intersection(that: Property) = this
+    def nonDeterministicAssignment(n: Int) = this
+    def linearAssignment(n: Int, lf: LinearForm[Double]) = this
+    def linearInequality(lf: LinearForm[Double]) = this
+    def linearDisequality(lf: LinearForm[Double]) = this
 
-    def minimize(lf: LinearForm[Double]) = {
-      require(lf.dimension <= dimension)
+    def minimize(lf: LinearForm[Double]) =
       if (lf.homcoeffs.exists(_ != 0))
         Double.NegativeInfinity
       else
         lf.known
-    }
 
-    def maximize(lf: LinearForm[Double]) = {
-      require(lf.dimension <= dimension)
+    def maximize(lf: LinearForm[Double]) =
       if (lf.homcoeffs.exists(_ != 0))
         Double.PositiveInfinity
       else
         lf.known
-    }
 
-    def frequency(lf: LinearForm[Double]) = {
-      require(lf.dimension <= dimension)
+    def frequency(lf: LinearForm[Double]) =
       if (lf.homcoeffs.exists(_ != 0))
         None
       else
         Some(lf.known)
-    }
 
     def addVariable = new Property(dimension + 1)
-    def delVariable(n: Int) = { require(n < dimension); new Property(dimension - 1) }
+    def delVariable(n: Int) = new Property(dimension - 1)
     def mapVariables(rho: Seq[Int]) = new Property(rho count { _ != -1 })
+
     def isEmpty = false
     def isTop = true
     def isBottom = true
     def bottom = this
     def top = this
-    def mkString(vars: Seq[String]): String = "top"
+    def mkString(vars: Seq[String]): String = "full"
   }
 
   def top(n: Int) = Property(n)

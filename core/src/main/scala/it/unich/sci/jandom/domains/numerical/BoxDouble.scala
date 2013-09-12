@@ -32,7 +32,6 @@ package it.unich.sci.jandom.domains.numerical
  * @note `low` and `high` should be normalized according to the method `normalized`
  * @throws IllegalArgumentException if parameters are not correct.
  * @define ROUNDING this is not implemented correctly since it does not control rounding errors.
- *
  */
 
 final class BoxDouble(private[domains] val low: Array[Double], private[domains] val high: Array[Double]) extends NumericalProperty[BoxDouble] {
@@ -71,37 +70,41 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
   /**
    * Returns the product of `x` and `y`, rounded towards +Inf. Moreover,
    * if `x` is `0`, the product is `0` independently from the value of `y`.
-   * @todo §ROUNDING
+   * @todo $ROUNDING
    */
   private def mul_hi(x: Double, y: Double): Double = if (x == 0) 0 else x * y
 
   /**
    * Returns the product of `x` and `y`, rounded towards -Inf. Moreover,
    * if `x` is `0`, the product is `0` independently from the value of `y`.
-   * @todo §ROUNDING
+   * @todo $ROUNDING
    */
   private def mul_lo(x: Double, y: Double): Double = if (x == 0) 0 else x * y
 
   /**
    * Return the dot product of `x` and `y`, rounded towards `-Inf`. If element `x(i)` is
    * zero, then `x(i)*y(i)` is `0` independently from the value of `y(i)`.
+   * If `remove` is a valid index in `x` and `y`, the factor `x(remove) * y(remove)` is
+   * removed from the dot product.
    * @todo $ROUNDING
    */
   private def dotprod_lo(x: Seq[Double], y: Seq[Double], remove: Int = -1): Double = {
     var sum: Double = 0
     for (i <- x.indices) if (i != remove) sum = add_lo(sum, mul_lo(x(i), y(i)))
-    return sum;
+    return sum
   }
 
   /**
    * Return the dot product of `x` and `y`, rounded towards `+Inf`. If element `x(i)` is
    * zero, then `x(i)*y(i)` is `0` independently from the value of `y(i)`.
+   * If `remove` is a valid index in `x` and `y`, the factor `x(remove) * y(remove)` is
+   * removed from the dot product.
    * @todo $ROUNDING
    */
   private def dotprod_hi(x: Seq[Double], y: Seq[Double], remove: Int = -1): Double = {
     var sum: Double = 0
     for (i <- x.indices) if (i != remove) sum = add_hi(sum, mul_hi(x(i), y(i)))
-    return sum;
+    return sum
   }
 
   /**
@@ -155,12 +158,10 @@ final class BoxDouble(private[domains] val low: Array[Double], private[domains] 
   /**
    * Compute the minimum and maximum value of a linear form in a box.
    * @todo should be generalized to linear forms over arbitrary types.
-   * @param coeff the homogeneous coefficients.
-   * @param known the in-homogeneous coefficient.
    * @return a tuple with two components: the first component is the least value, the second component is the greatest value
    * of the linear form over the box.
    */
-  private def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
+  def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
     require(lf.dimension <= dimension)
     var newlow: Double = lf.known
     var newhigh: Double = lf.known

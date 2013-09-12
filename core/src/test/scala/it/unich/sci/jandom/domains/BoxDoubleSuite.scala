@@ -56,15 +56,15 @@ class BoxDoubleSuite extends FunSuite {
     expectResult(BoxDouble.bottom(2)) { i }
     expectResult(j) { i union j }
     expectResult(i) { i intersection j }
-    expectResult(i) { i.linearAssignment(1, Seq(1.0,1.0,1.0)) }
-    expectResult(i) { i.linearAssignment(1, 0.0) }
-    intercept[IllegalArgumentException] { i.linearAssignment(-1, Seq(1.0,1.0,1.0)) }
-    intercept[IllegalArgumentException] { i.linearAssignment(2, Seq(1.0,1.0,1.0)) }
+    expectResult(i) { i.linearAssignment(1, LinearForm(1,1,1)) }
+    expectResult(i) { i.linearAssignment(1, LinearForm(0)) }
+    intercept[IllegalArgumentException] { i.linearAssignment(-1, LinearForm(1,1,1)) }
+    intercept[IllegalArgumentException] { i.linearAssignment(2, LinearForm(1,1,1)) }
   }
 
   test("linear inequations") {
-    val i = BoxDouble.top(2).linearInequality(Seq(-3.0, 1.0, 0.0))
-    val j = BoxDouble(Array(0, 0), Array(5, 5)).linearInequality(Seq(-4.0, 1.0, 1.0))
+    val i = BoxDouble.top(2).linearInequality(LinearForm(-3, 1, 0))
+    val j = BoxDouble(Array(0, 0), Array(5, 5)).linearInequality(LinearForm(-4, 1, 1))
     expectResult(BoxDouble(Array(Double.NegativeInfinity, Double.NegativeInfinity), Array(3, Double.PositiveInfinity))) { i }
     expectResult(BoxDouble(Array(0, 0), Array(4, 4))) { j }
   }
@@ -72,12 +72,12 @@ class BoxDoubleSuite extends FunSuite {
   test("inequalities and disequalities") {
     val i = BoxDouble.top(2).linearInequality(LinearForm.v(0))
     expectResult(i) { i.linearDisequality(LinearForm.v(0)) }
-    val j = i.linearInequality(Seq(0.0,-1.0, 0.0))
+    val j = i.linearInequality(LinearForm(0,-1, 0))
     expectResult(BoxDouble.bottom(2)) { j.linearDisequality(LinearForm.v(0)) }
-    expectResult(BoxDouble.bottom(2)) { j.linearDisequality(0.0) }
-    expectResult(j) { j.linearDisequality(2.0) }
-    expectResult(j) { j.linearDisequality(Seq(2.0, 1, 1)) }
-    expectResult(j) { j.linearDisequality(Seq(2.0, 1, 0)) }
+    expectResult(BoxDouble.bottom(2)) { j.linearDisequality(LinearForm(0)) }
+    expectResult(j) { j.linearDisequality(LinearForm(2)) }
+    expectResult(j) { j.linearDisequality(LinearForm(2, 1, 1)) }
+    expectResult(j) { j.linearDisequality(LinearForm(2, 1, 0)) }
   }
 
   test("non deterministic assignment") {
@@ -112,14 +112,14 @@ class BoxDoubleSuite extends FunSuite {
 
   test("minimization, maximization and frequency") {
     val i = BoxDouble(Array(0, 0), Array(1, 2))
-    expectResult(3)(i.maximize(Seq(0.0,1.0,1.0)))
-    expectResult(0)(i.minimize(Seq(0.0,1.0,1.0)))
-    expectResult(None)(i.frequency(Seq(0.0,1.0,1.0)))
+    expectResult(3)(i.maximize(LinearForm(0, 1, 1)))
+    expectResult(0)(i.minimize(LinearForm(0, 1, 1)))
+    expectResult(None)(i.frequency(LinearForm(0, 1, 1)))
     val j = BoxDouble(Array(0, 1, 0), Array(0, 1, 1))
-    expectResult(None)(j.frequency(Seq[Double](0,1, 1, 1)))
-    expectResult(None)(j.frequency(Seq[Double](0, 0, 0, 1)))
-    expectResult(Some(0))(j.frequency(Seq[Double](0, 1, 0, 0)))
-    expectResult(Some(1))(j.frequency(Seq[Double](0, 0, 1, 0)))
+    expectResult(None)(j.frequency(LinearForm(0, 1, 1, 1)))
+    expectResult(None)(j.frequency(LinearForm(0, 0, 0, 1)))
+    expectResult(Some(0))(j.frequency(LinearForm(0, 1, 0, 0)))
+    expectResult(Some(1))(j.frequency(LinearForm(0, 0, 1, 0)))
   }
 
   test("string conversion") {

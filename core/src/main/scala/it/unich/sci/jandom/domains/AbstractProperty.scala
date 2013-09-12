@@ -29,6 +29,12 @@ package it.unich.sci.jandom.domains
  * Properties are partitioned in fibers. Binary operators are guaranteed to work when
  * both elements are part of the same fiber. Finally, properties are immutable.
  *
+ * Analogously to `isTop`, `isBottom` and `isEmpty`, comparison between abstract elements
+ * should return `true` ONLY IF the relationship actually holds between elements. However,
+ * it is not required to return `true` every time the relation holds. The `tryCompare`
+ * method, in particular, should return `None` each time it cannot (or does not want)
+ * determine the relationship between two abstract properties.
+ *
  * @tparam Property the real class we are endowing with the AbstractProperty quality.
  * @define NOTEFIBER `this` and `that` should generally be part of the same fiber.
  * @author Gianluca Amato <gamato@unich.it>
@@ -37,7 +43,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   /**
    * The standard widening for two abstract properties.
    * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
-   * @note NOTEFIBER
+   * @note $NOTEFIBER
    * @return the widening of the two abstract properties.
    */
   def widening(that: Property): Property
@@ -45,7 +51,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   /**
    * The standard widening for two abstract properties.
    * @param that the abstract object to be narrowed with `this`. `that` IS assumed to be smaller than `this`.
-   * @note NOTEFIBER
+   * @note $NOTEFIBER
    * @return the narrowing of the two abstract properties.
    */
   def narrowing(that: Property): Property
@@ -54,7 +60,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
    * Compute an upper bound of two abstract properties. If it is possible and convenient, this should compute
    * the least upper bound, but it is not a requirement.
    * @param that the abstract object to join with `this`.
-   * @note NOTEFIBER
+   * @note $NOTEFIBER
    * @return an upper bound of the two abstract properties.
    */
   def union(that: Property): Property
@@ -63,36 +69,27 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
    * Compute a lower bound of two abstract properties. If it is possible and convenient, this should compute
    * the greatest lower bound, but it is not a requirement.
    * @param that the abstract object to meet with `this`.
-   * @note NOTEFIBER
+   * @note $NOTEFIBER
    * @return a lower bound of the two abstract properties.
    */
   def intersection(that: Property): Property
 
   /**
-   * Returns a string representation of the abstract property.
-   * @param vars an array with the name of the variables in the environment
-   * @return a sequence of strings. The idea is that each string is an atomic piece of information
-   * which should be printed out together, while different strings may be also printed out
-   * separately.
-   */
-  def mkString(vars: Seq[String]): String
-
-  /**
-   * Returns true if this is the top element on the fiber. A top element
+   * Returns true ONLY IF this is the top element on the fiber. A top element
    * is bigger than all the other elements, is neutral for intersection and
    * narrowing, and is absorbing for widening and union.
    */
   def isTop: Boolean
 
   /**
-   * Returns true if this is the bottom element of the fiber. A bottom element
-   * is smaller than all the other elements, is neutral for union and widening
-   * and is absorbing for intersection and narrowing.
+   * Returns true ONLY IF this is the bottom element of the fiber. The
+   * opposite is not always true. A bottom element is smaller than all the other elements,
+   * is neutral for union and widening and is absorbing for intersection and narrowing.
    */
   def isBottom: Boolean
 
   /**
-   * Returns true if this an empty element, i.e. it represents unreachability. If
+   * Returns true ONLY IF this an empty element, i.e. it represents unreachability. If
    * `x.isEmpty` is true, the same happens for `x.isBottom`, but the opposite does
    * not always hold.
    */
@@ -107,4 +104,5 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
    * Returns the bottom property on the same fiber as `this`.
    */
   def bottom: Property
+
 }

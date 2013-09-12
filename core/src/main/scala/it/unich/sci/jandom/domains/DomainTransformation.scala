@@ -23,6 +23,8 @@ import it.unich.sci.jandom.domains.numerical._
 /**
  * This is the trait for domain transformations, i.e. maps from one domain to
  * another. This is just a marker trait.
+ * @tparam A source domain property
+ * @tparam B target domain property
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait DomainTransformation[A, B] extends Function[A, B]
@@ -54,15 +56,11 @@ object DomainTransformation {
   }
 
   implicit object ParallelotopeToParallelotope extends DomainTransformation[Parallelotope, Parallelotope] {
-    def apply(x: Parallelotope) = {
-      x
-    }
+    def apply(x: Parallelotope) = x
   }
 
   implicit object BoxDoubleToBoxDouble extends DomainTransformation[BoxDouble, BoxDouble] {
-    def apply(x: BoxDouble) = {
-      x
-    }
+    def apply(x: BoxDouble) = x
   }
 
   implicit object NumericalPropertyToBoxDouble extends DomainTransformation[NumericalProperty[_], BoxDouble] {
@@ -71,4 +69,3 @@ object DomainTransformation {
     }
   }
 }
-

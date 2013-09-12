@@ -83,8 +83,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
           val res2 = jimpleExprToLinearForm(v.getOp2())
           res1 flatMap { res1 =>
             res2 flatMap { res2 =>
-              // TODO: this is terrible... we need it because the linear form / linear cond API should be rewritten
-              val lf = LinearForm(for (i <- 0 to size) yield res1(i) - res2(i))
+              val lf = LinearForm(res1: _*) - LinearForm(res2: _*)
               v match {
                 case _: GtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GT))
                 case _: GeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GTE))

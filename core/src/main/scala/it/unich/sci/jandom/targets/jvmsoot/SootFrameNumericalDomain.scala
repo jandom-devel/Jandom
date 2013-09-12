@@ -130,7 +130,6 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     def evalNew(tpe: Type) = addVariable(tpe)
 
     def evalLocal(v: Int) = {
-
       if (vars(size - 1 - v).isInstanceOf[PrimType] || vars(size - 1 - v).isInstanceOf[WordType] || vars(size - 1 - v).isInstanceOf[DoubleWordType])
         Property(prop.addVariable().variableAssignment(size, v), vars.push(vars(size - 1 - v)))
       else
@@ -139,7 +138,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalField(v: Int, f: SootField) = {
       assume(vars(size - 1 - v).isInstanceOf[RefType],"Expected RefType, got "+vars(size - 1 - v))
-      delVariable.addVariable(f.getType())
+      addVariable(f.getType())
     }
 
     def assignLocal(dst: Int, src: Int) = {
@@ -156,7 +155,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def assignField(dst: Int, f: SootField) = {
       assume(vars(size - 1 - dst).isInstanceOf[RefType],"Expected RefType, got "+vars(size - 1 - dst))
-      delVariable.delVariable
+      delVariable
     }
 
     def assignStaticField(dst: Int, f: SootField) = {
@@ -194,7 +193,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      */
     private def testComp(op: AtomicCond.ComparisonOperators.Value) = {
       import AtomicCond.ComparisonOperators._
-      val lf = LinearForm(Seq(size-1 -> -1, size-2 -> 1),0)
+      val lf = LinearForm(0, size-2 -> 1, size-1 -> -1)
       val tbranch = Property(AtomicCond(lf, op).analyze(prop).delVariable().delVariable(), vars.pop.pop)
       val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), vars.pop.pop)
       (tbranch, fbranch)

@@ -55,19 +55,15 @@ class PPLMacroPropertySuite extends FunSuite {
     expectResult(true) { empty <= full }
   }
 
-  test("minimization/maximization") {
+  test("minimization/maximization/frequency") {
     val obj = full.
       linearAssignment(0, 0.0).
-      linearInequality(Seq(-1.0, 0, 1, 1)).
-      linearInequality(Seq(-1.0, 0, 1, -1))
-    expectResult(Double.PositiveInfinity) { obj.maximize(Seq(0.0, 0, 0, 1)) }
-
-    /*
-    commented until PPL is corrected
-    expectResult(1) { obj.maximize(Array(1, 1, 0), 0) }
-    expectResult(None) { obj.frequency(Array(1, 0, 1), 0) }
-    expectResult(Some(0)) { obj.frequency(Array(1, 0, 0), 0) }
-     */
+      linearInequality(LinearForm(-1, 0, 1, 1)).
+      linearInequality(LinearForm(-1, 0, 1, -1))
+    expectResult(Double.PositiveInfinity) { obj.maximize(LinearForm(0.0, 0, 0, 1)) }
+    expectResult(1) { obj.maximize(LinearForm(0, 1, 1, 0)) }
+    expectResult(None) { obj.frequency(LinearForm(0, 1, 0, 1)) }
+    expectResult(Some(0)) { obj.frequency(LinearForm(0, 1, 0, 0)) }
   }
 
   test("various operations") {
@@ -77,7 +73,7 @@ class PPLMacroPropertySuite extends FunSuite {
     val obj4 = full.linearAssignment(2, 1.0)
     val obj5 = obj4 union obj3
     expectResult(true) { obj5 > obj4 }
-    val obj7 = obj5.linearInequality(Seq(1.0, 0, 0, 1))
+    val obj7 = obj5.linearInequality(LinearForm(1, 0, 0, 1))
     expectResult(empty) { obj7 }
     val obj8 = obj4 widening obj3
     expectResult(obj5) { obj8 }
@@ -85,19 +81,19 @@ class PPLMacroPropertySuite extends FunSuite {
 
   test("disequality do not crash") {
     val obj = full.linearAssignment(0, 0.0)
-    val dis = obj.linearDisequality(Seq(0.0, 1, 0, 0))
+    val dis = obj.linearDisequality(LinearForm(0, 1, 0, 0))
     assert(true)
   }
 
   test("disequality is precise on boxes") {
     val boxDomain: NumericalDomain = PPLPropertyMacros[Double_Box]
     val obj = boxDomain.top(3).linearAssignment(0, 0.0)
-    expectResult(boxDomain.bottom(3)) { obj.linearDisequality(Seq(0.0, 1, 0, 0)) }
+    expectResult(boxDomain.bottom(3)) { obj.linearDisequality(LinearForm(0, 1, 0, 0)) }
   }
 
   test("string conversion") {
-    val obj = full.linearInequality(Seq(1.0, 1, 1, 0))
-    val obj2 = obj.linearInequality(Seq(2.0, 1, 0, 0))
+    val obj = full.linearInequality(LinearForm(1, 1, 1, 0))
+    val obj2 = obj.linearInequality(LinearForm(2, 1, 0, 0))
     expectResult("[ -x >= 2 , -x - y >= 1 ]") { obj2.mkString(Seq("x", "y", "z")) }
     expectResult("[ -v0 >= 2 , -v0 - v1 >= 1 ]") { obj2.toString }
   }
@@ -108,9 +104,9 @@ class PPLMacroPropertySuite extends FunSuite {
   }
 
   test("map dimensions") {
-    val obj = full.linearInequality(Seq(1.0, 1, 1, 0)).linearInequality(Seq(2.0, 1, 0, 0))
-    val obj2 = full.linearInequality(Seq(1.0, 1, 1, 0)).linearInequality(Seq(2.0, 0, 1, 0))
-    val obj3 = octDomain.top(2).linearInequality(Seq(2.0, 1, 0))
+    val obj = full.linearInequality(LinearForm(1.0, 1, 1, 0)).linearInequality(LinearForm(2.0, 1, 0, 0))
+    val obj2 = full.linearInequality(LinearForm(1.0, 1, 1, 0)).linearInequality(LinearForm(2.0, 0, 1, 0))
+    val obj3 = octDomain.top(2).linearInequality(LinearForm(2.0, 1, 0))
 
     expectResult(obj)(obj.mapVariables(Seq(0, 1, 2)))
     expectResult(obj2)(obj.mapVariables(Seq(1, 0, 2)))
@@ -119,15 +115,15 @@ class PPLMacroPropertySuite extends FunSuite {
 
   test("connect") {
     val obj1 = full.
-      linearAssignment(0, Seq(3.0, 0, 0, 1)).
-      linearInequality(Seq(-10.0, 0, 0, 1))
+      linearAssignment(0, LinearForm(3.0, 0, 0, 1)).
+      linearInequality(LinearForm(-10.0, 0, 0, 1))
     val obj2 = full.
-      linearAssignment(0, Seq(1.0, 0, 0, 0)).
-      linearAssignment(1, Seq(3.0, 0, 0, 0)).
-      linearInequality(Seq(0.0, 0, 1, 1))
+      linearAssignment(0, LinearForm(1.0, 0, 0, 0)).
+      linearAssignment(1, LinearForm(3.0, 0, 0, 0)).
+      linearInequality(LinearForm(0.0, 0, 1, 1))
     val obj3 = octDomain.top(4).
-      linearAssignment(0, Seq(4.0, 0, 0, 0, 0)).
-      linearAssignment(2, Seq(3.0, 0, 0, 0, 0)).
-      linearInequality(Seq(0.0, 0, 0, 1, 1))
+      linearAssignment(0, LinearForm(4.0, 0, 0, 0, 0)).
+      linearAssignment(2, LinearForm(3.0, 0, 0, 0, 0)).
+      linearInequality(LinearForm(0.0, 0, 0, 1, 1))
     expectResult(obj3)(obj1.connect(obj2, 1))
   }}

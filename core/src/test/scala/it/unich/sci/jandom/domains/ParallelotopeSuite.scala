@@ -21,6 +21,7 @@ package it.unich.sci.jandom.domains
 import org.scalatest.FunSuite
 import breeze.linalg._
 import it.unich.sci.jandom.domains.numerical.Parallelotope
+import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
  * Test suite for the parallelotope domain. Disabled at the moment due to non-functionin domain.
@@ -86,24 +87,24 @@ class ParallelotopeSuite extends FunSuite {
 
   test("linear invertible assignment") {
     val li1 = Parallelotope(DenseVector(0, -1), DenseMatrix((1.0, -1.0), (0.0, 1.0)), DenseVector(2, 1))
-    expectResult(li1) { box.linearAssignment(0, Seq(1.0, 1, 1)) }
+    expectResult(li1) { box.linearAssignment(0, LinearForm(1.0, 1, 1)) }
     val li2 = Parallelotope(DenseVector(1, -1), DenseMatrix((1.0, 0.0), (-1.0, 1.0)), DenseVector(1, 0))
     val li3 = Parallelotope(DenseVector(2, -2), DenseMatrix((1.0, 0.0), (-1.0, 1.0)), DenseVector(2, -1))
-    expectResult(li3) { li2.linearAssignment(0, Seq(1.0, 1, 0)) }
-    expectResult(li3) { li2.linearAssignment(0, Seq(1.0, 1)) }
+    expectResult(li3) { li2.linearAssignment(0, LinearForm(1.0, 1, 0)) }
+    expectResult(li3) { li2.linearAssignment(0, LinearForm(1.0, 1)) }
     val li4 = Parallelotope(DenseVector(-1, -2), DenseMatrix((1.0, 0.0), (-1.0, 1.0)), DenseVector(1, 2))
-    expectResult(li4) { box.linearAssignment(1, Seq(0.0, 1, 2)) }
-    assert(empty.linearAssignment(1, Seq(0.0, 1, 1)).isEmpty)
+    expectResult(li4) { box.linearAssignment(1, LinearForm(0.0, 1, 2)) }
+    assert(empty.linearAssignment(1, LinearForm(0.0, 1, 1)).isEmpty)
   }
 
   test("non-invertible linear assignment") {
     val ln1 = Parallelotope(DenseVector(2, -1), DenseMatrix((1.0, -1.0), (0.0, 1.0)), DenseVector(2, 1))
-    expectResult(ln1) { box.linearAssignment(0, Seq(2.0, 0, 1)) }
+    expectResult(ln1) { box.linearAssignment(0, LinearForm(2.0, 0, 1)) }
     val ln2 = Parallelotope(DenseVector(0, Double.NegativeInfinity), DenseMatrix((-1.0, 1.0), (0.0, 1.0)), DenseVector(0, Double.PositiveInfinity))
     val ln3 = Parallelotope(DenseVector(Double.NegativeInfinity, 0), DenseMatrix((1.0, -1.0), (0.0, 1.0)), DenseVector(Double.PositiveInfinity, 0))
-    expectResult(ln2) { ln3.linearAssignment(1, Seq(0.0, 1, 0)) }
-    expectResult(ln2) { ln3.linearAssignment(1, Seq(0.0, 1)) }
-    assert(empty.linearAssignment(1, Seq(0.0, 1, 0)).isEmpty)
+    expectResult(ln2) { ln3.linearAssignment(1, LinearForm(0.0, 1, 0)) }
+    expectResult(ln2) { ln3.linearAssignment(1, LinearForm(0.0, 1)) }
+    assert(empty.linearAssignment(1, LinearForm(0.0, 1, 0)).isEmpty)
   }
 
   test("non-deterministic assignment") {
@@ -124,18 +125,18 @@ class ParallelotopeSuite extends FunSuite {
 
   test("linear inequalities") {
     val li1 = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(0, 0))
-    expectResult(li1) { diamond.linearInequality(Seq(1.0, 2, 0)) }
-    expectResult(li1) { diamond.linearInequality(Seq(1.0, 2)) }
-    assert(empty.linearInequality(Seq(-1.0, 1, 0)).isEmpty)
+    expectResult(li1) { diamond.linearInequality(LinearForm(1.0, 2, 0)) }
+    expectResult(li1) { diamond.linearInequality(LinearForm(1.0, 2)) }
+    assert(empty.linearInequality(LinearForm(-1.0, 1, 0)).isEmpty)
   }
 
   test("linear disequalities") {
     val li1 = Parallelotope(DenseVector(-1, 0), DenseMatrix((1.0, 1.0), (1.0, -2.0)), DenseVector(0, 0))
     expectResult (li1) { li1.linearDisequality(1.0)}
     expectResult (empty) { li1.linearDisequality(0.0)}
-    expectResult (li1) { li1.linearDisequality(Seq(1.0, 0, 1))}
-    expectResult (li1) { li1.linearDisequality(Seq(0.5, 1, -2))}
-    expectResult (empty) { li1.linearDisequality(Seq(0.0, 1, -2))}
+    expectResult (li1) { li1.linearDisequality(LinearForm(1.0, 0, 1))}
+    expectResult (li1) { li1.linearDisequality(LinearForm(0.5, 1, -2))}
+    expectResult (empty) { li1.linearDisequality(LinearForm(0.0, 1, -2))}
   }
 
   test("union") {
@@ -159,8 +160,38 @@ class ParallelotopeSuite extends FunSuite {
     expectResult(u11) { u10 union u11 }
   }
 
+  test("minimization, maximization and frequency") {
+    val i = Parallelotope(DenseVector(-4, -1, 0), DenseMatrix((-1.0, 3.0, 0.0), (0.0, 1.0, 0.0),(-1.0, -1.0, 1.0)), DenseVector(4, 2, 0))
+    expectResult(12)(i.maximize(LinearForm(0, 1, 1, 0)))
+    expectResult(-8)(i.minimize(LinearForm(0, 1, 1, 0)))
+    expectResult(None)(i.frequency(LinearForm(0, 1, 1, 0)))
+    expectResult(Some(0))(i.frequency(LinearForm(0, -1, -1, 1)))
+  }
+
+
+  test("dimensional variation") {
+    val i = diamond
+    val j = Parallelotope(DenseVector(-1, -1, Double.NegativeInfinity), DenseMatrix((1.0, 1.0, 0.0),
+        (1.0, -1.0, 0.0), (0.0, 0.0, 1.0)), DenseVector(1, 1, Double.PositiveInfinity))
+    val h = Parallelotope(DenseVector(-1,  Double.NegativeInfinity), DenseMatrix((1.0, 0.0),
+         (0.0, 1.0)), DenseVector(1, Double.PositiveInfinity))
+    expectResult(j)(i.addVariable())
+    expectResult(h)(j.delVariable(0))
+    expectResult(h)(j.delVariable(1))
+    expectResult(i)(j.delVariable(2))
+  }
+
+  test("dimensional maps") {
+    val i = diamond
+    val h = Parallelotope(DenseVector(-1), DenseMatrix((1.0)), DenseVector(1))
+    expectResult(diamond) (diamond.mapVariables(Seq(1, 0)))
+    expectResult(diamond)(i.mapVariables(Seq(0, 1)))
+    expectResult(h)(i.mapVariables(Seq(-1, 0)))
+    expectResult(diamond) (diamond.addVariable.mapVariables(Seq(1,0,-1)))
+  }
+
   test("string representation") {
-    expectResult("[ -1.0 <= x+y <= 1.0 , -1.0 <= x-y <= 1.0 ]") { diamond.mkString(IndexedSeq("x", "y")) }
+    expectResult("[ -1.0 <= x+y <= 1.0 , -1.0 <= x-y <= 1.0 ]") { diamond.mkString(Seq("x", "y")) }
     expectResult("empty") { empty.toString }
     expectResult("[ -Infinity <= v0 <= Infinity , -Infinity <= v1 <= Infinity ]") { full.toString }
   }

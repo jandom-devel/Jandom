@@ -58,7 +58,7 @@ class NumericalTopDomainSuite extends FunSpec {
 
       describe(s"has a minimization operator which") {
         if (dim != 0) it("should return -Inf for not constant linear forms") {
-          expectResult(Double.NegativeInfinity)(x.minimize(LinearForm(Seq(0 -> 1), 3)))
+          expectResult(Double.NegativeInfinity)(x.minimize(LinearForm(3, 0 -> 1.0)))
         }
         it("should return the known coefficient for constant linear forms") {
           expectResult(3)(x.minimize(3.0))
@@ -67,7 +67,7 @@ class NumericalTopDomainSuite extends FunSpec {
 
       describe(s"has a maximization operator which") {
         if (dim != 0) it("should return +Inf for not constants linear forms") {
-          expectResult(Double.PositiveInfinity)(x.maximize(LinearForm(Seq(0 -> 1), 3)))
+          expectResult(Double.PositiveInfinity)(x.maximize(LinearForm(3, 0 -> 1.0)))
         }
         it("should return the known coefficient for null linear forms") {
           expectResult(3)(x.maximize(3.0))
@@ -76,7 +76,7 @@ class NumericalTopDomainSuite extends FunSpec {
 
       describe(s"has a frequency operator which") {
         if (dim != 0) it("should return None for not null linear forms") {
-          expectResult(None)(x.frequency(LinearForm(Seq(0 -> 1), 3)))
+          expectResult(None)(x.frequency(LinearForm(3, 0 -> 1.0)))
         }
         it("should return the known coefficient for null linear forms") {
           expectResult(Some(3))(x.frequency(3.0))
