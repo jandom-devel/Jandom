@@ -66,17 +66,23 @@ class SootFrameNumericalDomainSuite extends FunSuite {
     assert(conn === absframe3)
   }
 
-  test("Restrict") {
+  test("Restrict/Extract") {
     // TODO change the parser API.. is very cumbersome to use since it permanently modifies the environment
     val env = Environment()
     val parser = new NumericalPropertyParser(env)
     val prop = parser.parseProperty("v0 == v0 && v1 + v2 == 0 && v1 <= 4", dom.numdom).get
     val absframe = dom(prop, types)
-    val restr = absframe.restrict(2)
+    val extr = absframe.extract(2)
     val env2 = Environment()
     val parser2 = new NumericalPropertyParser(env2)
     val prop2 = parser2.parseProperty("v1 + v2 == 0 && v1 <= 4", dom.numdom).get
     val absframe2 = dom(prop2, Seq(soot.IntType.v(), soot.DoubleType.v()))
-    assert(restr === absframe2)
+    assert(extr === absframe2)
+    val env3 = Environment()
+    val parser3= new NumericalPropertyParser(env3)
+    val prop3 = parser3.parseProperty("v0 == v0 && v1 <= 4", dom.numdom).get
+    val restr = absframe.restrict(1)
+    val absframe3 = dom(prop3, Seq(classAType, soot.IntType.v()))
+    assert(restr === absframe3)
   }
 }

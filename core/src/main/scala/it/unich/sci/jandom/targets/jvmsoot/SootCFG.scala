@@ -79,7 +79,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   override def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
     val tmp = super.extractOutput(params)(ann)
     if (params.io)
-      tmp.restrict(SootCFG.outputTypes(method).size)
+      tmp.extract(SootCFG.outputTypes(method).size)
     else
       throw new IllegalArgumentException("Only supported with I/O semantics")
   }

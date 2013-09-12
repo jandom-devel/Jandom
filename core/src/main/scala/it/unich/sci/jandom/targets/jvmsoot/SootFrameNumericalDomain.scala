@@ -217,19 +217,15 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def narrowing(that: Property) = Property(prop widening that.prop, vars)
 
+    def extract(n: Int) = {
+      assume (n >= 0 && n <= size, s"Trying to extract ${n} variables in the abstract frame {$this}")
+      Property( prop.delVariables(0 until size-n), vars.dropRight(size-n))
+    }
+          
     def restrict(n: Int) = {
-      assume ( n >= 0 && n <= size,s"Trying to restrict to ${n} variables in the abstract frame {$this}")
-      Property((0 until size - n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delVariable(size-1) },
-      vars.dropRight(size - n))
+      assume (n >= 0 && n <= size, s"Trying to restrict ${n} variables top in the abstract frame {$this}")
+      Property( prop.delVariables(size-n until size), vars.drop(n))
     }
-    /*
-     def restrictTop(n: Int) = {
-      assume (n>=1 && n<=2, s"Trying to remove to ${n} variables in the abstract frame {$this}")
-      if (n==1)
-        delVariable
-      else delVariable.delVariable
-    }
-    */
     
     def connect(p: Property, common: Int) = {
       assume ( (vars.dropRight(size-common) zip p.vars.drop(p.size - common)) forall { case (tdst, tsrc) => compatibleTypes(tdst, tsrc) })

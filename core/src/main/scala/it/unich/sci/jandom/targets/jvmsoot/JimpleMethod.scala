@@ -162,7 +162,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
           throw new IllegalArgumentException("Invoke dynamic not yet supported")
       }
       val callprop = v.getArgs().foldLeft(baseprop) { case (p, arg) => analyzeExpr(arg, p) }
-      val inputprop = callprop.restrict(v.getArgCount() + implicitArgs)
+      val inputprop = callprop.extract(v.getArgCount() + implicitArgs)
       val exitprop = params.interpretation match {
         case Some(inte) => inte(method, inputprop)
         case None => throw new IllegalArgumentException("Interprocedural analysis")
@@ -266,7 +266,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
         currprop = fbranch
       case unit: InvokeStmt =>
         currprop = analyzeInvokeExpr(unit.getInvokeExpr(), currprop)
-        if (unit.getInvokeExpr().getType() != VoidType.v()) currprop = currprop.restrict(size - 1)
+        if (unit.getInvokeExpr().getType() != VoidType.v()) currprop = currprop.restrict(1)
       case unit: LookupSwitchStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: NopStmt =>

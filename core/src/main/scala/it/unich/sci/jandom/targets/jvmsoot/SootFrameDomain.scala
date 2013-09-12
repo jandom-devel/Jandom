@@ -282,8 +282,13 @@ trait SootFrameDomain extends AbstractDomain {
     /**
      * Returns the last `n` dimensions.
      */
-    def restrict(n: Int): Property
+    def extract(n: Int): Property
 
+    /**
+     * Deletes the last `n` dimensions 
+     */   
+    def restrict(n: Int): Property
+    
     /**
      * Remove the last or the two last dimension of the frame.
      * @param n the number of dimensions to be removed. We assume n is between 1 and 2
