@@ -29,6 +29,7 @@ import soot.toolkits.graph._
  * based on the generic analyzer for control flow graphs.
  * @param method the method we want to analyze
  * @author Gianluca Amato
+ * @author Luca Mangifesta
  */
 class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
   import scala.collection.JavaConversions._

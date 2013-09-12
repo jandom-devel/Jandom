@@ -36,6 +36,8 @@ import soot.jimple.StaticFieldRef
 /**
  * This class implements an abstract frame for Soot where only numerical variables are considered.
  * @param numdom the numerical domain to use for representing properties of numerical variables.
+ * @author Gianluca Amato <gamato@unich.it>
+ * @author Luca Mangifesta
  */
 class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDomain {
 
@@ -158,7 +160,6 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     }
 
     def assignStaticField(dst: Int, f: SootField) = {
-     // assume(vars(size - 1 - dst).isInstanceOf[RefType], "Expected RefType, got "+vars(size -1 - dst))
       delVariable
     }
 
@@ -177,7 +178,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     def evalUshr = Property(prop.variableUshr().delVariable(), vars.pop)
 
     def evalBinOp = Property(prop.delVariable().delVariable().addVariable(), vars.pop)
-    def evalNeg = Property(prop.variableNeg().delVariable(), vars)
+    def evalNeg = Property(prop.variableNeg(), vars)
     def evalLength = addVariable(IntType.v())
 
     def evalGt = delVariable
@@ -219,10 +220,18 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def restrict(n: Int) = {
       assume ( n >= 0 && n <= size,s"Trying to restrict to ${n} variables in the abstract frame {$this}")
-      Property((0 until size - n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delVariable(0) },
+      Property((0 until size - n).foldLeft(prop) { (x: numdom.Property, i: Int) => x.delVariable(size-1) },
       vars.dropRight(size - n))
     }
-
+    /*
+     def restrictTop(n: Int) = {
+      assume (n>=1 && n<=2, s"Trying to remove to ${n} variables in the abstract frame {$this}")
+      if (n==1)
+        delVariable
+      else delVariable.delVariable
+    }
+    */
+    
     def connect(p: Property, common: Int) = {
       assume ( (vars.dropRight(size-common) zip p.vars.drop(p.size - common)) forall { case (tdst, tsrc) => compatibleTypes(tdst, tsrc) })
       Property(prop.connect(p.prop, common), p.vars.dropRight(common) ++ vars.drop(common))
@@ -242,7 +251,6 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     }
 
     def evalSwap(i: Int, j:Int): Property = {
-            //val seq = (0 until prop.dimension-3) :+  (prop.dimension-1) :+ (prop.dimension-2)
             val seq = ((0 until i-1) :+ j) ++ ((i+1 until j-1) :+ i) ++ (j+1 until size-1)
             val st1 = vars.updated(i, vars.apply(j))
     		val st2 = st1.updated(j, vars.apply(i))

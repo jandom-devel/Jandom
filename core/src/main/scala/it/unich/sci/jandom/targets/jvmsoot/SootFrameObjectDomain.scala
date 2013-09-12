@@ -33,6 +33,7 @@ import it.unich.sci.jandom.domains.objects.ObjectDomain
  * An abstract frame for analysis of object properties. It depends on an analysis of class reachability
  * which determines whether it is possible to reach a class B from a class A.
  * @author Gianluca Amato <gamato@unich.it>
+ * @author Luca Mangifesta
  * @param dom the basic object domain to use for the analysis
  * @param classAnalysis the analysis of class reachability
  */
@@ -142,7 +143,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def evalShr = delUntrackedVariable
     def evalUshr = delUntrackedVariable
     def evalBinOp = delUntrackedVariable
-    def evalNeg = delUntrackedVariable
+    def evalNeg = this
 
     def evalGt = delUntrackedVariable
     def evalGe = delUntrackedVariable
@@ -198,7 +199,9 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     }
 
     def restrict(newSize: Int) =  Property(prop delVariables (newSize until size), stack dropRight (size - newSize), globals)
-
+    		
+   // def restrictTop(n: Int) = Property(prop delVariables (n until size), stack drop (n), globals)
+    
     def connect(p: Property, common: Int): Property = Property(prop.connect(p.prop, common), p.stack.dropRight(common) ++ stack.drop(common), globals)
 
     def widening(that: Property) = this union that

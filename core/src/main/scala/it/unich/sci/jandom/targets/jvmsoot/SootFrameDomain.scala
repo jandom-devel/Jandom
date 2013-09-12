@@ -33,6 +33,7 @@ import soot.jimple.StaticFieldRef
  * although Jimple could be made faster by analyzing one statement at a time instead of
  * evaluating expressions compositionally.
  * @author Gianluca Amato <gamato@unich.it>
+ * @author Luca Mangifesta
  */
 trait SootFrameDomain extends AbstractDomain {
   type Property <: SootFrameProperty[Property]
@@ -283,6 +284,12 @@ trait SootFrameDomain extends AbstractDomain {
      */
     def restrict(n: Int): Property
 
+    /**
+     * Remove the last or the two last dimension of the frame.
+     * @param n the number of dimensions to be removed. We assume n is between 1 and 2
+     */
+   // def restrictTop(n: Int): Property
+    
     /**
      * Connect `this` with `p`, keeping in consideration that the last `common` dimensions
      * in `this` and the first `common` dimensions in `p` are the same. The common dimensions

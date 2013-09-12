@@ -1,40 +1,8 @@
-import java.util.Random;
-import java.util.*;
-
+ /*
+ * @author Gianluca Amato <gamato@unich.it>
+ * @author Luca Mangifesta
+*/
 class SimpleTest {
-	static int aa=1;
-	int yy=4;
-	Integer zz=4;
-	static void stringa (){
-		String a="ciao";
-		String b=null;
-	}
-	static void isnotnull (){
-		String h="ciao";
-		int y;
-		if (h==null){
-			y=0;
-		}
-		else {
-			y=1;
-		}
-	}
-	static void isnull (){
-		String h=null;
-		int y;
-		if (h!=null){
-			y=0;
-		}
-		else {
-			y=1;
-		}
-	}
-	void putfield() {
-		yy = 3;
-	}
-	 void getfield(int i){
-		i= yy;
-	}
 	static void sequential() {
 		int x = 0;
 		int y = 10;
@@ -79,9 +47,56 @@ class SimpleTest {
 			z = 2;
 		z = z + 1;
 	}
+	/////////////////////////////////////////////////////////
+	
+	//serve a testare il compare
+	static void whileDouble() {
+		double i = 0.0;
+		while (i < 100.1) {
+			i++;
+		}
+	}
+	//serve a testare andInst e xorInst
+	static int align2grain(int i, int grain) {
+		return ((i + grain-1) & ~(grain-1));
+	}
+	//serve a testare pushInst(STRINGA) e pushInst(NULL)
+	static void stringa (){
+		String a="ciao";
+		String b=null;
+	}
+	
+	static void isnotnull (){
+		String h="ciao";
+		int y;
+		if (h==null){
+			y=0;
+		}
+		else {
+			y=1;
+		}
+	}
+	static void isnull (){
+		String h=null;
+		int y;
+		if (h!=null){
+			y=0;
+		}
+		else {
+			y=1;
+		}
+	}
+	int yy=4;
+	
+	void putfield() {
+		yy = 3;
+	}
+	 void getfield(int i){
+		i= yy;
+	}
+	
 	
 	static void iadd() {
-		//viene utilizzata la stessa variabile per z e z3
 		long x=35;
 		long y=45;
 		long z=x+y;
@@ -105,7 +120,7 @@ class SimpleTest {
 		int d=4;
 		int e=d+d;
 	}
-	
+	static int aa=1;
 	static void getstaticfield(){
 		int c=aa+2;
 	}
@@ -159,11 +174,6 @@ class SimpleTest {
 		}
 		static void ireturnvoid(){
 			return;
-		}
-		static void pop(){
-			Integer x = 5;
-			Integer y=7;
-			Integer z=x+y;
 		}
 		static void iswap(){
 			int x=3;
@@ -302,86 +312,6 @@ class SimpleTest {
 				x=x+1;
 			}
 		}		
-		static boolean bsearch (double k, double [] r){
-			double lwb=1;
-			double upb=100;
-			int m;
-			while (lwb<=upb){
-				m=(int)((lwb+upb)/2); //divisione intera
-				if (k==r[m]){
-					return true;
-				}
-				else if (k<r[m]){
-						upb=m-1;
-					}
-					else{
-						lwb=m+1;
-					}
-				
-			}
-			return false;
-		}
-		static double [] bubblesort(double[] k){
-			int b=100;
-			int t;
-			double tmp;
-			int j;
-			while (b>=1){
-				j=1;
-				t=0;
-				while (j<=(b-1)){
-					if (k[j]>k[j+1]){
-						tmp = k[j+1];
-						k[j+1]=k[j];
-						k[j]=tmp;
-						t=j;
-					}
-					j=j+1;
-				}
-				if (t==0){
-					return k;
-				}
-				b=t;
-			}
-			return k;
-		}
-		static double[] bubblesort(double[] k, int n){
-			double b=n;
-			double t, tmp;
-			int j;
-			while (b>=1){
-				j=1;
-				t=0;
-				while (j<=(b-1)){
-					if (k[j]>k[j+1]){
-						tmp = k[j+1];
-						k[j+1]=k[j];
-						k[j]=tmp;
-						t=j;
-					}
-					j=j+1;
-				}
-				if (t==0){
-					return k;
-				}
-				b=t;
-			}
-			return k;
-		}
-		//da errore
-		static void cousot78a(){
-			double i=2;
-			double j=0;
-			while (true){
-				if ((new Random()).nextBoolean()){
-					i=i+4;
-				}
-				else {
-					j=j+1;
-					i=i+2;
-				}
-			}
-		}
 		static void doublerate(){
 			int i=0;
 			int j=0;
@@ -408,16 +338,6 @@ class SimpleTest {
 				k=k-1;
 			}
 		}
-		static void octagon1(){
-			int x=100;
-			int y=0;
-			while (x>=0){
-				x=x-1;
-				if ((new Random()).nextBoolean()){
-					y=y+1;
-				}
-			}
-		}
 		static void octagon3(double n){
 			double x=0;
 			if (n<0){
@@ -435,6 +355,7 @@ class SimpleTest {
 				i=i-1;
 			}
 		}
+		
 		static void octagon5(double x){
 			if ((x<-100)||(x>100)){
 				return;
@@ -447,24 +368,9 @@ class SimpleTest {
 				y=y;
 			}
 		}
-		static void octagon6(){
-			
-		}
-		static void octagon6bis(){
-			
-		}
-		
-		//da errore
-		static void parallellines(){
-			int x=1;
-			int y=1;
-			while (true){
-				x=x+y;
-				y=2*y;
-			}
-		}
+
 		static void policy1(){
-			int i=0;
+			int i=1;
 			int j=10;
 			while (j>=i){
 				i=i+2;
@@ -497,20 +403,16 @@ class SimpleTest {
 				z=1;
 			}
 		}
-		//static void provatest CONTROLLARE provatest.R 
-		//static void ratelim-monniaux() CONTROLLARE ratelim-monniaux.R
-		static void reviewer3(){
-			double x=0;
-			double y=0;
-			while(true){
-				y=y+1;
-				if ((new Random()).nextBoolean()){
-					x=2*y;
+		static void seidl(){
+			int i=0;
+			int j;
+			while (i<42){
+				j=0;
+				while(j<10){
+					j=j+1;
 				}
-				else {
-					x=-2*y;
-				}
-			}
+				i=i+j;
+			}	
 		}
 		static void trydoublematrix(){
 			int x=0;
@@ -533,19 +435,21 @@ class SimpleTest {
 				x=x+x;
 			}
 		}
-		static void widening (double [] k){
-			int x=0;
-			double y=0;
-			while (x<100){
-				x=x+1;
-				if (k[x]<=0){
-					y=x;
-				}
-			}
-		}
 		static void xyline(){
 			double x=10;
 			double y=-10;
+			while (x>y){
+				x=x-1;
+				y=y+1;
+			}
+		}
+		
+		static void xyline1(double k){
+			if (k<=0){
+				return;
+			}
+			double x=k;
+			double y=-k;
 			while (x>y){
 				x=x-1;
 				y=y+1;
