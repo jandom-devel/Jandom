@@ -106,6 +106,8 @@ class PairSharingSuite extends FunSuite {
   test("Delete variables in the middle") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
     expectResult( dom(Set(UP(0, 0), UP(1, 1)) ,2) ) (ps1.delVariables(1 to 2))
+    val ps2 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
+    expectResult( dom(Set(UP(0, 0), UP(2, 2)) ,3) ) (ps1.delVariable(1))
   }
 
   test("Map variables") {

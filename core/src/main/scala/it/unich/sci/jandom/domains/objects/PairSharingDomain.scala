@@ -48,7 +48,6 @@ object PairSharingDomain extends ObjectDomain {
         UP(l, r) <- ps; if l == v || r == v; first = if (l == v) r else l;
         UP(l1, r1) <- ps; if l1 == v || r1 == v; second = if (l1 == v) r1 else l1
       ) yield UP(first, second)) ++ ps
-    private def shiftVariables(v: Int) = ps map { _.replace { x => if (x < v) v else v + 1 } }
 
     def addVariable() = {
       val ps2 = for (UP(i, j) <- ps; if (i == j)) yield UP(i, dimension)
@@ -59,8 +58,8 @@ object PairSharingDomain extends ObjectDomain {
       if (n == dimension - 1)
         new Property(removeVariable(ps, n), dimension - 1)
       else
-        new Property(removeVariable(renameVariable(renameVariable(ps, dimension, n), n, dimension - 1), dimension), dimension - 1)
-
+        new Property(removeVariable(ps, n) map { _.replace { x => if (x < n) x else x - 1 } }, dimension-1)
+    
     def mapVariables(rho: Seq[Int]) = {
         val ps2 = for ( UP(l, r) <- ps; if rho(l) != -1; if rho(r) != -1) yield UP(rho(l),rho(r))
         new Property(ps2, dimension - rho.count { _ == -1 })
