@@ -223,7 +223,7 @@ def getWideningDelayTip = {
      else Seq[String]()
   }
   
-  def getBytecodeAbstraction(dir: String, klassIndex:Int, methodIndex:Int, isBaf:Boolean) = {
+  def getSootAbstraction(dir: String, klassIndex:Int, methodIndex:Int, isBaf:Boolean) = {
     val myMethod = getSootMethods(dir,klassIndex).get(methodIndex)
     if(isBaf)
     	 new BafMethod(myMethod).toString
@@ -231,6 +231,16 @@ def getWideningDelayTip = {
     	 new JimpleMethod(myMethod).toString
   }
   
+  
+  def getASMAbstraction() = ???
+  
+  def getRandomAbstraction() = ???
+  
+  def getASMMethods() = ???
+  
+  def analyzeASM() = ???
+  
+  def analyzeRandom() = ???
 }
 
 private class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
