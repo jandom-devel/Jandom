@@ -198,8 +198,10 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
       Property(prop union that.prop, stack, globals)
     }
 
-    def restrict(newSize: Int) =  Property(prop delVariables (newSize until size), stack dropRight (size - newSize), globals)
-    		
+    def restrict(n: Int) = {
+      assume (n >= 0 && n <= size, s"Trying to restrict to ${n} variables in the abstract frame {$this}")
+      Property( prop.delVariables(0 until size-n), stack.dropRight(size-n), globals)
+    }    		
    // def restrictTop(n: Int) = Property(prop delVariables (n until size), stack drop (n), globals)
     
     def connect(p: Property, common: Int): Property = Property(prop.connect(p.prop, common), p.stack.dropRight(common) ++ stack.drop(common), globals)
