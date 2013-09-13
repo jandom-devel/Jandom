@@ -56,6 +56,9 @@ import org.objectweb.asm.tree.{ ClassNode, MethodNode }
 import it.unich.sci.jandom.targets.jvmasm.AsmMethod
 import it.unich.sci.jandom.targets.jvmasm.JVMEnvFixedFrameDomain
 import it.unich.sci.jandom.targets.jvmasm.UnsupportedASMInsnException
+import it.unich.sci.jandom.parsers.RandomParser
+import java.io.IOException
+import it.unich.sci.jandom.targets.slil.SLILTarget
 
 /**
  * An output interface is a collection of methods for implementing an external interface.
@@ -91,9 +94,7 @@ object OutputInterface {
   }
   
 def getDebugTip = "Generate debug information - for developers only"
-  
 def getWideningDelayTip = "Apply the widening with delay" 
-
 def getRadioBafTip = "Analysis of Java bytecode thorugh the Baf representation of the Soot library"
 def getRadioJimpleTip = "Analysis of Java bytecode thorugh the Jimple representation of the Soot library"
 def getRadioNumericalTip = "Analysis of numerical properties"
@@ -104,7 +105,6 @@ def getMethodTip = "Choose the method to analyze"
 def getIRTypeTip = "Type of intermediate representation to use"
 def getAnalysisTypeTip = "Choose between an analysis of numerical properties or object-related properties"
 
-  
   /**
    * Analyze a class using Baf. 
    * @param method the method to be analyzed
@@ -125,14 +125,15 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
    	 val inte = new TopSootInterpretation[T, params.type](params)
    	 params.interpretation = Some(inte)
    	 params
-}   		
+ }   		
+
   private def setParameters(tMethod:AsmMethod, aDomain: JVMEnvFixedFrameDomain, wideningIndex: Int,
 		  	   narrowingIndex: Int, delay:Int, debug: Boolean) = {
      //type T = AsmMethod
 	 val params = new Parameters[AsmMethod] { val domain = aDomain }
 	 params.setParameters(wideningIndex, narrowingIndex, delay, debug)
    	 params
-}   		
+ }   		
  
   private def analyze[T<:SootCFG[T, Block]](method: SootCFG[T, Block], domain: DimensionFiberedDomain, wideningIndex: Int,
 		  	   narrowingIndex: Int, delay:Int, debug: Boolean):String =  {
@@ -170,20 +171,7 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
      else 
     	 analyze(new JimpleMethod(selectedMethod), aDomain, wideningIndex, narrowingIndex, delay, debug)
    }
-  
-  
-  /*
-  def analyze(klass: String, method: String, isBaf: Boolean, domain: DimensionFiberedDomain, widening: WideningScope.Value,
-		  	   narrowing: NarrowingStrategy.Value, delay:Int, debug: Boolean):String = {
-	val c = Scene.v().loadClassAndSupport(klass)
-    c.setApplicationClass()
-	if(isBaf)
-	  analyze(new BafMethod(c.getMethodByName(method)),domain,widening, narrowing, delay, debug)
-	else
-	  analyze(new JimpleMethod(c.getMethodByName(method)),domain,widening, narrowing, delay, debug)  
-  }
-  */
-  
+    
   private def getScene(dir: String) = {
 	val scene = Scene.v()                     
 	scene.setSootClassPath(scene.defaultClassPath + ":" + dir)
@@ -216,7 +204,8 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
 	  sootKlass.setApplicationClass()
       sootKlass.getMethods().map(x => x.getName())
   }
- private def getSootMethods(dir: String, klassIndex:Int) = {
+  
+  private def getSootMethods(dir: String, klassIndex:Int) = {
 	  val scene = getScene(dir)     
 	  val sootKlass = scene.loadClassAndSupport( getClasses(dir)(klassIndex))
 	  sootKlass.setApplicationClass()
@@ -246,9 +235,7 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
   def getASMAbstraction(dir:String, klassName:String, methodIndex: Int) = {
 	 new AsmMethod(getASMMethodsList(dir,klassName).get(methodIndex)).toString 	 
   }
-  
-  def getRandomAbstraction() = ???
-  
+    
   private def getASMMethodsList(dir: String, klassName:String) = {
 	  val file = dir+java.io.File.separator+klassName
       val is = new FileInputStream(file)
@@ -286,8 +273,37 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
             e.getMessage + " Error" 
         }
   }
-  
-  def analyzeRandom() = ???
+
+  def getRandomText(dir:String, file:String) = {
+     val filename = new java.io.File(dir + java.io.File.separator + file);
+	 try {
+		 scala.io.Source.fromFile(filename).mkString
+	 }
+	 catch {
+      case e: IOException => "File not found"
+    } 
+  }
+
+  def analyzeRandom(dir:String, file:String, domain: Int, widening: Int,
+		  	   narrowing: Int, delay:Int, debug: Boolean) = {
+    val program = getRandomText(dir, file)
+    val parser = RandomParser()
+    try {
+      val numericalDomain = NumericalDomains.values(domain).value 
+      parser.parseProgram(program) match {
+      case parser.Success(program, _) =>
+        val params = new Parameters[SLILTarget] { val domain = numericalDomain }
+        params.setParameters(widening,narrowing, delay, debug)
+        val ann = program.analyze(params)
+        params.debugWriter.toString + program.mkString(ann)
+      case parser.NoSuccess(msg, next) =>
+        msg + " in line " + next.pos.line + " column " + next.pos.column + " Error in parsing source code"
+      }
+    }
+    catch {
+      case e: IOException =>
+    }
+  }
 }
 
 private class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
