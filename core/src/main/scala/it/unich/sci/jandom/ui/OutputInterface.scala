@@ -50,6 +50,12 @@ import scala.util.Try
 import java.nio.file.Files
 import it.unich.sci.jandom.ui.gui.SootEditorPane
 import scala.collection.JavaConversions._
+import java.io.FileInputStream
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.tree.{ ClassNode, MethodNode }
+import it.unich.sci.jandom.targets.jvmasm.AsmMethod
+import it.unich.sci.jandom.targets.jvmasm.JVMEnvFixedFrameDomain
+import it.unich.sci.jandom.targets.jvmasm.UnsupportedASMInsnException
 
 /**
  * An output interface is a collection of methods for implementing an external interface.
@@ -84,19 +90,21 @@ object OutputInterface {
     ObjectDomains.values.map(x => x.description)
   }
   
- def getDebugTip = {
- 	  "Generate debug information - for developers only"
- 	}
-
-def getAnalysisTypeTip = {
-  "Choose between an analysis of numerical properties or object-related properties"
-}
+def getDebugTip = "Generate debug information - for developers only"
   
-def getWideningDelayTip = {
-  "Apply the widening with delay" 
-}
+def getWideningDelayTip = "Apply the widening with delay" 
 
+def getRadioBafTip = "Analysis of Java bytecode thorugh the Baf representation of the Soot library"
+def getRadioJimpleTip = "Analysis of Java bytecode thorugh the Jimple representation of the Soot library"
+def getRadioNumericalTip = "Analysis of numerical properties"
+def getRadioObjectTip = "Analysis of object properties"
+def getClassPathTip = "Choose the classpath of the program to analyze"
+def getClassTip = "Choose the class to analyze"
+def getMethodTip = "Choose the method to analyze"
+def getIRTypeTip = "Type of intermediate representation to use"
+def getAnalysisTypeTip = "Choose between an analysis of numerical properties or object-related properties"
 
+  
   /**
    * Analyze a class using Baf. 
    * @param method the method to be analyzed
@@ -108,8 +116,26 @@ def getWideningDelayTip = {
    * @return a string with the program annotated with the analysis result
    */
   
-  private def analyze[T<:SootCFG[T, Block]](method: SootCFG[T, Block], domain: DimensionFiberedDomain, widening: WideningScope.Value,
-		  	   narrowing: NarrowingStrategy.Value, delay:Int, debug: Boolean):String =  {
+  private def setParameters[T<:SootCFG[T, Block]](tMethod:T, aDomain: T#DomainBase, wideningIndex: Int,
+		  	   narrowingIndex: Int, delay:Int, debug: Boolean) = {
+	 val params = new Parameters[T] { val domain = aDomain }
+	 params.setParameters(wideningIndex, narrowingIndex, delay, debug)
+   	 params.wideningFactory = MemoizingFactory(tMethod)(params.wideningFactory)
+   	 params.narrowingFactory = MemoizingFactory(tMethod)(params.narrowingFactory)
+   	 val inte = new TopSootInterpretation[T, params.type](params)
+   	 params.interpretation = Some(inte)
+   	 params
+}   		
+  private def setParameters(tMethod:AsmMethod, aDomain: JVMEnvFixedFrameDomain, wideningIndex: Int,
+		  	   narrowingIndex: Int, delay:Int, debug: Boolean) = {
+     //type T = AsmMethod
+	 val params = new Parameters[AsmMethod] { val domain = aDomain }
+	 params.setParameters(wideningIndex, narrowingIndex, delay, debug)
+   	 params
+}   		
+ 
+  private def analyze[T<:SootCFG[T, Block]](method: SootCFG[T, Block], domain: DimensionFiberedDomain, wideningIndex: Int,
+		  	   narrowingIndex: Int, delay:Int, debug: Boolean):String =  {
       try {
         val sootScene: Scene = Scene.v()
         val klassAnalysis = new ClassReachableAnalysis(sootScene)
@@ -119,20 +145,8 @@ def getWideningDelayTip = {
         //case _ => None
         }
         val tMethod = method.asInstanceOf[T]
-        val params = new Parameters[T] { val domain = sootDomain }
-      
-        params.wideningScope = widening
-        params.narrowingStrategy = narrowing
-        if (delay != 0) {
-        	params.wideningFactory = DelayedWideningFactory(DefaultWidening, delay)
-        }
-        params.narrowingFactory = DelayedNarrowingFactory(NoNarrowing, 2)
-   		if (debug) params.debugWriter = new java.io.StringWriter
-   		params.wideningFactory = MemoizingFactory(tMethod)(params.wideningFactory)
-   		params.narrowingFactory = MemoizingFactory(tMethod)(params.narrowingFactory)
-   		val inte = new TopSootInterpretation[T, params.type](params)
-   		params.interpretation = Some(inte)
-   		val ann = tMethod.analyze(params)
+        val params = setParameters[T](tMethod, sootDomain, wideningIndex, narrowingIndex, delay, debug)		
+        val ann = tMethod.analyze(params)
    		tMethod.mkString(params)(ann)
       } catch {
         case e: UnsupportedSootUnitException =>
@@ -142,22 +156,19 @@ def getWideningDelayTip = {
       }     
   }
   
-   def analyze(dir:String, klass:Int, method: Int, isNumerical:Boolean, isBaf: Boolean, domain: Int, widening: Int,
-		  	   narrowing: Int, delay:Int, debug: Boolean):String =  {
+   def analyze(dir:String, klass:Int, method: Int, isNumerical:Boolean, isBaf: Boolean, domain: Int, wideningIndex: Int,
+		  	   narrowingIndex: Int, delay:Int, debug: Boolean):String =  {
      val methods = getSootMethods(dir,klass)
      val selectedMethod=methods.get(method)
+     
      val aDomain = if(isNumerical) 
     	 			NumericalDomains.values(domain).value 
     	 		   else 
     	 			ObjectDomains.values(domain).value 
-
-     val aWidening = WideningScopes.values(widening).value
-     val aNarrowing = NarrowingStrategies.values(narrowing).value
-     
      if(isBaf)
-    	 analyze(new BafMethod(selectedMethod), aDomain, aWidening, aNarrowing, delay, debug)
+    	 analyze(new BafMethod(selectedMethod), aDomain, wideningIndex, narrowingIndex, delay, debug)
      else 
-    	 analyze(new JimpleMethod(selectedMethod), aDomain, aWidening, aNarrowing, delay, debug)
+    	 analyze(new JimpleMethod(selectedMethod), aDomain, wideningIndex, narrowingIndex, delay, debug)
    }
   
   
@@ -232,13 +243,49 @@ def getWideningDelayTip = {
   }
   
   
-  def getASMAbstraction() = ???
+  def getASMAbstraction(dir:String, klassName:String, methodIndex: Int) = {
+	 new AsmMethod(getASMMethodsList(dir,klassName).get(methodIndex)).toString 	 
+  }
   
   def getRandomAbstraction() = ???
   
-  def getASMMethods() = ???
+  private def getASMMethodsList(dir: String, klassName:String) = {
+	  val file = dir+java.io.File.separator+klassName
+      val is = new FileInputStream(file)
+      val cr = new ClassReader(is)
+      val node = new ClassNode()
+      cr.accept(node, ClassReader.SKIP_DEBUG)
+      val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
+      methodList 
+  }
   
-  def analyzeASM() = ???
+  def getASMMethods(dir: String, klassName:String) = {
+	  getASMMethodsList(dir,klassName) map { _.name }
+  }
+  
+  
+  def analyzeASM(dir:String, klassName:String, methodIndex: Int, domain: Int, widening: Int,
+		  	   narrowing: Int, delay:Int, debug: Boolean) = {
+    try {
+      /*    
+      val numericalDomain = if(isNumerical) 
+    	 			NumericalDomains.values(domain).value 
+    	 		   else 
+    	 			ObjectDomains.values(domain).value 
+    */	 			
+    	val numericalDomain = NumericalDomains.values(domain).value 
+    	val aDomain = new JVMEnvFixedFrameDomain(numericalDomain)
+    	val method = new AsmMethod(getASMMethodsList(dir,klassName).get(methodIndex)) 	  
+    	val params = setParameters(method, aDomain, widening,narrowing, delay, debug)  
+    	val ann = method.analyze(params)
+          method.mkString(ann)
+        } catch {
+          case e: UnsupportedASMInsnException =>
+            e.getMessage + " : " + e.node+ " Error in analysing bytecode"
+          case e: Exception =>
+            e.getMessage + " Error" 
+        }
+  }
   
   def analyzeRandom() = ???
 }

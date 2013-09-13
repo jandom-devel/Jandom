@@ -82,14 +82,8 @@ class ParametersPane extends GridBagPanel {
   def selectedObjectDomain = ObjectDomains.values(objectDomainComboBox.selection.index).value
 
   def setParameters[T <: Target[T]](parameters: Parameters[T]) {
-    parameters.wideningScope = WideningScopes.values(wideningComboBox.selection.index).value
-    parameters.narrowingStrategy = NarrowingStrategies.values(narrowingComboBox.selection.index).value
-    val delay = delayModel.getValue().asInstanceOf[Double].toInt
-    if (delay != 0) {
-      parameters.wideningFactory = DelayedWideningFactory(DefaultWidening, delay)
-    }
-    parameters.narrowingFactory = DelayedNarrowingFactory(NoNarrowing, 2)
-    if (debug.selected) parameters.debugWriter = new java.io.StringWriter
+    parameters.setParameters(wideningComboBox.selection.index, narrowingComboBox.selection.index, 
+        delayModel.getValue().asInstanceOf[Double].toInt, debug.selected)
   }
 
 }

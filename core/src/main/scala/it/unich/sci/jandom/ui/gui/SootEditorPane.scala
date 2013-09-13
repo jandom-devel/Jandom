@@ -38,6 +38,7 @@ import scala.swing.event.EditDone
 import scala.swing.event.SelectionEvent
 import scala.swing.event.ActionEvent
 import scala.util.Try
+import it.unich.sci.jandom.ui.OutputInterface
 
 /**
  * This is the pane used to select the class and method to analyze for
@@ -56,15 +57,15 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   private val classComboBox = new ComboBox(Seq[String]())
   private val methodComboBox = new ComboBox(Seq[SootMethod]())
   private val radioBaf = new RadioButton("Baf")
-  radioBaf.tooltip = "Analysis of Java bytecode thorugh the Baf representation of the Soot library"
+  radioBaf.tooltip = OutputInterface.getRadioBafTip
   private val radioJimple = new RadioButton("Jimple")
-  radioJimple.tooltip = "Analysis of Java bytecode thorugh the Jimple representation of the Soot library"
+  radioJimple.tooltip = OutputInterface.getRadioJimpleTip
   private val typeGroup = new ButtonGroup(radioBaf, radioJimple)
   typeGroup.select(radioJimple)
   private val radioNumerical = new RadioButton("Numerical")
-  radioNumerical.tooltip = "Analysis of numerical properties"
+  radioNumerical.tooltip = OutputInterface.getRadioNumericalTip
   private val radioObject = new RadioButton("Object")
-  radioObject.tooltip = "Analysis of object properties"
+  radioObject.tooltip = OutputInterface.getRadioObjectTip
   private val anGroup = new ButtonGroup(radioNumerical, radioObject)
   anGroup.select(radioNumerical)
 
@@ -77,17 +78,18 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
     c.gridx = 0
     c.gridy = 0
     val cplabel = new Label("ClassPath: ")
-    cplabel.tooltip = "Choose the classpath of the program to analyze"
+    cplabel.tooltip = OutputInterface.getClassPathTip
     layout(cplabel) = c
 
     c.gridy = 1
     val clabel = new Label("Class: ")
-    clabel.tooltip = "Choose the class to analyze"
+    clabel.tooltip = OutputInterface.getClassTip
     layout(clabel) = c
 
     c.gridy = 2
     val mlabel = new Label("Method: ")
-    mlabel.tooltip = "Choose the method to analyze"
+    mlabel.tooltip = OutputInterface.getMethodTip
+
     layout(mlabel) = c
 
     c.fill = GridBagPanel.Fill.Horizontal
@@ -108,10 +110,10 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
     val horPanel = new BoxPanel(Orientation.Horizontal) {
 
       val tlabel = new Label("IR type: ")
-      tlabel.tooltip = "Type of intermediate representation to use"
+      tlabel.tooltip = OutputInterface.getIRTypeTip
 
       val anlabel = new Label("Analysis type: ")
-      anlabel.tooltip = "Choose the type of analysis to perform"
+      anlabel.tooltip = OutputInterface.getAnalysisTypeTip
 
       contents += Swing.HGlue += tlabel += radioBaf += radioJimple +=
         Swing.HStrut(100) +=

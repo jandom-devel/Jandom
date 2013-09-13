@@ -20,18 +20,15 @@ package it.unich.sci.jandom.ui.gui
 
 import java.awt.event.{ InputEvent, KeyEvent }
 import java.io.{ File, FileInputStream }
-
 import scala.swing.{Action, BorderPanel, BoxPanel, ComboBox, EditorPane, FileChooser, Label, MenuItem, Orientation, ScrollPane}
 import scala.swing.Dialog
-
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.{ ClassNode, MethodNode }
-
 import it.unich.sci.jandom._
 import it.unich.sci.jandom.targets.jvmasm._
 import it.unich.sci.jandom.targets.Parameters
-
 import javax.swing.KeyStroke
+import it.unich.sci.jandom.ui.OutputInterface
 
 /**
  * This is the pane used to select the class and method to analyzer for
@@ -48,7 +45,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   private val fileChooser = new FileChooser(new File("."))
   private var methodComboBox: ComboBox[String] = new ComboBox(Seq())
   private val methodSelector = new BoxPanel(Orientation.Horizontal) {
-    contents += new Label("Method: ") { tooltip = "Choose the method to analyze." }
+    contents += new Label("Method: ") { tooltip = OutputInterface.getMethodTip}
     contents += methodComboBox
   }
   /*

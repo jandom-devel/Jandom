@@ -23,6 +23,11 @@ import it.unich.sci.jandom.narrowings.Narrowing
 import it.unich.sci.jandom.ppfactories.PPFactory
 import it.unich.sci.jandom.widenings.DefaultWidening
 import it.unich.sci.jandom.widenings.Widening
+import it.unich.sci.jandom.ui.WideningScopes
+import it.unich.sci.jandom.ui.NarrowingStrategies
+import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
+import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
+import it.unich.sci.jandom.narrowings.NoNarrowing
 
 /**
  * This class is used to provide parameters for analyzers. Each instance of `Parameters` is
@@ -102,5 +107,15 @@ abstract class Parameters[Tgt <: Target[Tgt]]  {
   def log(msg: String) {
     debugWriter.write(" " * nestingLevel * 3)
     debugWriter.write(msg)
+  }
+  
+  def setParameters[T <: Target[T]](wideningIndex:Int, narrowingIindex:Int, delay:Int, debug:Boolean) {
+    wideningScope = WideningScopes.values(wideningIndex).value
+    narrowingStrategy = NarrowingStrategies.values(narrowingIindex).value
+    if (delay != 0) {
+      wideningFactory = DelayedWideningFactory(DefaultWidening, delay)
+    }
+    narrowingFactory = DelayedNarrowingFactory(NoNarrowing, 2)
+    if (debug) debugWriter = new java.io.StringWriter
   }
 }
