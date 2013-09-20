@@ -286,22 +286,25 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
 
   def analyzeRandom(dir:String, file:String, domain: Int, widening: Int,
 		  	   narrowing: Int, delay:Int, debug: Boolean) = {
-    val program = getRandomText(dir, file)
-    val parser = RandomParser()
     try {
+      val program = getRandomText(dir, file)
+      val parser = RandomParser()
+    
       val numericalDomain = NumericalDomains.values(domain).value 
-      parser.parseProgram(program) match {
-      case parser.Success(program, _) =>
+       val result = parser.parseProgram(program) match {
+     case parser.Success(program, _) =>
         val params = new Parameters[SLILTarget] { val domain = numericalDomain }
         params.setParameters(widening,narrowing, delay, debug)
         val ann = program.analyze(params)
         params.debugWriter.toString + program.mkString(ann)
       case parser.NoSuccess(msg, next) =>
         msg + " in line " + next.pos.line + " column " + next.pos.column + " Error in parsing source code"
+      case _ => "Error in parsing"
       }
+      result
     }
     catch {
-      case e: IOException =>
+     case e: IOException => "I/O error" 
     }
   }
 }
