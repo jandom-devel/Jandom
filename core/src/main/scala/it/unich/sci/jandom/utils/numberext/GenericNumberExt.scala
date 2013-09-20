@@ -115,7 +115,7 @@ object GenericNumberExt {
         else
           GenericNumberExt.NegativeInfinity[T]
     }
-    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) ⇒ PartiallyOrdered[B]) = that match {
+    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) => PartiallyOrdered[B]) = that match {
       case that: NANVAL[_] => None
       case _ => Some(1)
     }
@@ -150,7 +150,7 @@ object GenericNumberExt {
         else
           GenericNumberExt.PositiveInfinity[T]
     }
-    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) ⇒ PartiallyOrdered[B]) = that match {
+    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) => PartiallyOrdered[B]) = that match {
       case that: NANVAL[_] => None
       case _ => Some(-1)
     }
@@ -170,7 +170,7 @@ object GenericNumberExt {
     override def *(that: GenericNumberExt[T]): GenericNumberExt[T] = this
     override def unary_- = this
 
-    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) ⇒ PartiallyOrdered[B]) = None
+    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) => PartiallyOrdered[B]) = None
 
     override def toString = "NaN"
     override def doubleValue = scala.Double.NaN
@@ -194,7 +194,7 @@ object GenericNumberExt {
       case that => that * this
     }
 
-    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) ⇒ PartiallyOrdered[B]) = that match {
+    def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) => PartiallyOrdered[B]) = that match {
       case that: GenericNumberExtNormal[T] => Some(implicitly[Numeric[T]].compare(this.value, that.value))
       case that => that.tryCompareTo(this)
     }

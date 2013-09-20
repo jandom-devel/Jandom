@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Francesca Scozzari <fscozzari@unich.it>
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,37 +64,37 @@ import it.unich.sci.jandom.targets.slil.SLILTarget
  * An output interface is a collection of methods for implementing an external interface.
  */
 object OutputInterface {
-  
+
  def  getWideningStrategies = {
-   WideningScopes.values.map(x => x.name)   
+   WideningScopes.values.map(x => x.name)
  }
   def  getWideningStrategiesTips = {
    WideningScopes.values.map(x => x.description)
  }
-  
+
   def  getNarrowingStrategies = {
-  NarrowingStrategies.values.map(x => x.name)   
+  NarrowingStrategies.values.map(x => x.name)
  }
   def  getNarrowingStrategiesTips = {
    NarrowingStrategies.values.map(x => x.description)
  }
- 
+
   def getNumericalDomains = {
-    NumericalDomains.values.map(x => x.name)  
+    NumericalDomains.values.map(x => x.name)
   }
    def getNumericalDomainsTips = {
     NumericalDomains.values.map(x => x.description)
   }
-   
+
   def getObjectDomains = {
-    ObjectDomains.values.map(x => x.name)  
+    ObjectDomains.values.map(x => x.name)
   }
    def getObjectDomainsTips = {
     ObjectDomains.values.map(x => x.description)
   }
-  
+
 def getDebugTip = "Generate debug information - for developers only"
-def getWideningDelayTip = "Apply the widening with delay" 
+def getWideningDelayTip = "Apply the widening with delay"
 def getRadioBafTip = "Analysis of Java bytecode thorugh the Baf representation of the Soot library"
 def getRadioJimpleTip = "Analysis of Java bytecode thorugh the Jimple representation of the Soot library"
 def getRadioNumericalTip = "Analysis of numerical properties"
@@ -106,7 +106,7 @@ def getIRTypeTip = "Type of intermediate representation to use"
 def getAnalysisTypeTip = "Choose between an analysis of numerical properties or object-related properties"
 
   /**
-   * Analyze a class using Baf. 
+   * Analyze a class using Baf.
    * @param method the method to be analyzed
    * @param domain the abstract domain to be used (either numerical or object)
    * @param widening the widening strategy
@@ -115,7 +115,7 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
    * @param debug is true when the debug is active
    * @return a string with the program annotated with the analysis result
    */
-  
+
   private def setParameters[T<:SootCFG[T, Block]](tMethod:T, aDomain: T#DomainBase, wideningIndex: Int,
 		  	   narrowingIndex: Int, delay:Int, debug: Boolean) = {
 	 val params = new Parameters[T] { val domain = aDomain }
@@ -125,7 +125,7 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
    	 val inte = new TopSootInterpretation[T, params.type](params)
    	 params.interpretation = Some(inte)
    	 params
- }   		
+ }
 
   private def setParameters(tMethod:AsmMethod, aDomain: JVMEnvFixedFrameDomain, wideningIndex: Int,
 		  	   narrowingIndex: Int, delay:Int, debug: Boolean) = {
@@ -133,8 +133,8 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
 	 val params = new Parameters[AsmMethod] { val domain = aDomain }
 	 params.setParameters(wideningIndex, narrowingIndex, delay, debug)
    	 params
- }   		
- 
+ }
+
   private def analyze[T<:SootCFG[T, Block]](method: SootCFG[T, Block], domain: DimensionFiberedDomain, wideningIndex: Int,
 		  	   narrowingIndex: Int, delay:Int, debug: Boolean):String =  {
       try {
@@ -146,7 +146,7 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
         //case _ => None
         }
         val tMethod = method.asInstanceOf[T]
-        val params = setParameters[T](tMethod, sootDomain, wideningIndex, narrowingIndex, delay, debug)		
+        val params = setParameters[T](tMethod, sootDomain, wideningIndex, narrowingIndex, delay, debug)
         val ann = tMethod.analyze(params)
    		tMethod.mkString(params)(ann)
       } catch {
@@ -154,33 +154,33 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
         	e.getMessage + " : " + e.unit + " Error in analysing bytecode"
         case e: Exception =>
             e.getMessage + " Error in parsing source code"
-      }     
+      }
   }
-  
+
    def analyze(dir:String, klass:Int, method: Int, isNumerical:Boolean, isBaf: Boolean, domain: Int, wideningIndex: Int,
 		  	   narrowingIndex: Int, delay:Int, debug: Boolean):String =  {
      val methods = getSootMethods(dir,klass)
      val selectedMethod=methods.get(method)
-     
-     val aDomain = if(isNumerical) 
-    	 			NumericalDomains.values(domain).value 
-    	 		   else 
-    	 			ObjectDomains.values(domain).value 
+
+     val aDomain = if(isNumerical)
+    	 			NumericalDomains.values(domain).value
+    	 		   else
+    	 			ObjectDomains.values(domain).value
      if(isBaf)
     	 analyze(new BafMethod(selectedMethod), aDomain, wideningIndex, narrowingIndex, delay, debug)
-     else 
+     else
     	 analyze(new JimpleMethod(selectedMethod), aDomain, wideningIndex, narrowingIndex, delay, debug)
    }
-    
+
   private def getScene(dir: String) = {
-	val scene = Scene.v()                     
-	scene.setSootClassPath(scene.defaultClassPath + ":" + dir)
+	val scene = Scene.v()
+	scene.setSootClassPath(scene.defaultClassPath + java.io.File.pathSeparator + dir)
 	scene
   }
-  
+
   def unzipJar(dir:String, jarFile:String, destDir:String) = {
-    val jar = new java.util.jar.JarFile(dir+"/"+jarFile);
-    val enum = jar.entries();  
+    val jar = new java.util.jar.JarFile(dir+ java.io.File.separator +jarFile);
+    val enum = jar.entries();
     while (enum.hasMoreElements()) {
     	val file = enum.nextElement(); //(java.util.jar.JarEntry)
     	val f = new java.io.File(destDir + java.io.File.separator + file.getName());
@@ -196,25 +196,25 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
     		is.close();
     		}
     }
-  } 
-  
+  }
+
   def getMethods(dir: String, klassIndex:Int) = {
-	  val scene = getScene(dir)     
+	  val scene = getScene(dir)
 	  val sootKlass = scene.loadClassAndSupport( getClasses(dir)(klassIndex))
 	  sootKlass.setApplicationClass()
       sootKlass.getMethods().map(x => x.getName())
   }
-  
+
   private def getSootMethods(dir: String, klassIndex:Int) = {
-	  val scene = getScene(dir)     
+	  val scene = getScene(dir)
 	  val sootKlass = scene.loadClassAndSupport( getClasses(dir)(klassIndex))
 	  sootKlass.setApplicationClass()
       sootKlass.getMethods()
   }
-  
- 
+
+
   def getClasses(classPathField: String):Seq[String] = {
-     val rootPath = Paths.get(classPathField)   
+     val rootPath = Paths.get(classPathField)
      val fileProcessor = new ClassFileVisitor(rootPath)
      if (Try(Files.walkFileTree(rootPath, fileProcessor)).isSuccess) {
         // these two lines are a mess because Scala Swing does not play well with Java 1.7
@@ -222,20 +222,20 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
       }
      else Seq[String]()
   }
-  
+
   def getSootAbstraction(dir: String, klassIndex:Int, methodIndex:Int, isBaf:Boolean) = {
     val myMethod = getSootMethods(dir,klassIndex).get(methodIndex)
     if(isBaf)
     	 new BafMethod(myMethod).toString
-     else 
+     else
     	 new JimpleMethod(myMethod).toString
   }
-  
-  
+
+
   def getASMAbstraction(dir:String, klassName:String, methodIndex: Int) = {
-	 new AsmMethod(getASMMethodsList(dir,klassName).get(methodIndex)).toString 	 
+	 new AsmMethod(getASMMethodsList(dir,klassName).get(methodIndex)).toString
   }
-    
+
   private def getASMMethodsList(dir: String, klassName:String) = {
 	  val file = dir+java.io.File.separator+klassName
       val is = new FileInputStream(file)
@@ -243,34 +243,34 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
       val node = new ClassNode()
       cr.accept(node, ClassReader.SKIP_DEBUG)
       val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
-      methodList 
+      methodList
   }
-  
+
   def getASMMethods(dir: String, klassName:String) = {
 	  getASMMethodsList(dir,klassName) map { _.name }
   }
-  
-  
+
+
   def analyzeASM(dir:String, klassName:String, methodIndex: Int, domain: Int, widening: Int,
 		  	   narrowing: Int, delay:Int, debug: Boolean) = {
     try {
-      /*    
-      val numericalDomain = if(isNumerical) 
-    	 			NumericalDomains.values(domain).value 
-    	 		   else 
-    	 			ObjectDomains.values(domain).value 
-    */	 			
-    	val numericalDomain = NumericalDomains.values(domain).value 
+      /*
+      val numericalDomain = if(isNumerical)
+    	 			NumericalDomains.values(domain).value
+    	 		   else
+    	 			ObjectDomains.values(domain).value
+    */
+    	val numericalDomain = NumericalDomains.values(domain).value
     	val aDomain = new JVMEnvFixedFrameDomain(numericalDomain)
-    	val method = new AsmMethod(getASMMethodsList(dir,klassName).get(methodIndex)) 	  
-    	val params = setParameters(method, aDomain, widening,narrowing, delay, debug)  
+    	val method = new AsmMethod(getASMMethodsList(dir,klassName).get(methodIndex))
+    	val params = setParameters(method, aDomain, widening,narrowing, delay, debug)
     	val ann = method.analyze(params)
           method.mkString(ann)
         } catch {
           case e: UnsupportedASMInsnException =>
             e.getMessage + " : " + e.node+ " Error in analysing bytecode"
           case e: Exception =>
-            e.getMessage + " Error" 
+            e.getMessage + " Error"
         }
   }
 
@@ -281,7 +281,7 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
 	 }
 	 catch {
       case e: IOException => "File not found"
-    } 
+    }
   }
 
   def analyzeRandom(dir:String, file:String, domain: Int, widening: Int,
@@ -322,4 +322,3 @@ private class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
       FileVisitResult.CONTINUE;
     }
   }
-   

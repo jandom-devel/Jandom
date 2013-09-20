@@ -518,7 +518,7 @@ class Parallelotope(
     return new Parallelotope(false, newlow, Aprime, newhigh)
   }
 
-  def <=[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Boolean = {
+  def <=[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean = {
     if (isEmpty) return (true)
     if (that.isEmpty) return (false)
     if (that.isTop) return (true)
@@ -526,13 +526,13 @@ class Parallelotope(
     (0 to ptemp.low.length - 1) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) }
   }
 
-  def >=[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Boolean =
+  def >=[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
     that <= this
 
-  def <[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Boolean =
+  def <[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
     (this <= that) && !(this >= that)
 
-  def >[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Boolean =
+  def >[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
     (this >= that) && !(this <= that)
 
   override def equals(other: Any): Boolean = other match {

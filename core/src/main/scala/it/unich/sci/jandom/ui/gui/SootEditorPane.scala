@@ -130,7 +130,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   listenTo(classPathField, classComboBox.selection, methodComboBox.selection, radioBaf, radioJimple)
   reactions += {
     case EditDone(`classPathField`) =>
-      sootScene.setSootClassPath(sootScene.defaultClassPath + ":" + classPathField.text)
+      sootScene.setSootClassPath(sootScene.defaultClassPath + java.io.File.pathSeparator + classPathField.text)
       val rootPath = Paths.get(classPathField.text)
       val fileProcessor = new ClassFileVisitor(rootPath)
       if (Try(Files.walkFileTree(rootPath, fileProcessor)).isSuccess) {
