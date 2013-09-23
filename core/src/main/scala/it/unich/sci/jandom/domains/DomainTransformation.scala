@@ -21,13 +21,20 @@ package it.unich.sci.jandom.domains
 import it.unich.sci.jandom.domains.numerical._
 
 /**
- * This is the trait for domain transformations, i.e. maps from one domain to
- * another. This is just a marker trait.
- * @tparam A source domain property
- * @tparam B target domain property
+ * This is the trait for domain transformations, i.e. maps from one domain to another.
+ * @tparam DomA source domain
+ * @tparam DomB target domain
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait DomainTransformation[A, B] extends Function[A, B]
+trait DomainTransformation[DomA <: AbstractDomain, DomB <: AbstractDomain] {
+  /**
+   * This applies the real transformation.
+   * @param d the target domain
+   * @param x the source property
+   * @return the translation of x in the domain d
+   */
+  def apply(x: DomA#Property, d: DomB): d.Property
+}
 
 /**
  * This object is a collection of standard domain transformations.
@@ -37,35 +44,33 @@ trait DomainTransformation[A, B] extends Function[A, B]
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
 object DomainTransformation {
-  implicit object ParallelotopeToBoxDouble extends DomainTransformation[Parallelotope, BoxDouble.Property] {
+  implicit object ParallelotopeToBoxDouble extends DomainTransformation[Parallelotope.type, BoxDoubleDomain] {
     import breeze.linalg.{ DenseMatrix, DenseVector }
-    def apply(x: Parallelotope) = {
+    def apply(x: Parallelotope, boxdom: BoxDoubleDomain): boxdom.Property = {
       val newPar = x.rotate(DenseMatrix.eye(x.dimension))
       if (newPar.isEmpty)
-        BoxDouble.bottom(newPar.dimension)
+        boxdom.bottom(newPar.dimension)
       else
-        BoxDouble(newPar.low.toArray, newPar.high.toArray)
+        boxdom(newPar.low.toArray, newPar.high.toArray)
     }
   }
 
-  implicit object BoxDoubleToParallelotope extends DomainTransformation[BoxDouble.Property, Parallelotope] {
+  implicit object BoxDoubleToParallelotope extends DomainTransformation[BoxDoubleDomain, Parallelotope.type] {
     import breeze.linalg.{ DenseMatrix, DenseVector }
-    def apply(x: BoxDouble.Property) = {
+    def apply(x: BoxDoubleDomain#Property, ptopedom: Parallelotope.type) = {
       Parallelotope(DenseVector(x.low), DenseMatrix.eye(x.dimension), DenseVector(x.high))
     }
   }
 
-  implicit object ParallelotopeToParallelotope extends DomainTransformation[Parallelotope, Parallelotope] {
-    def apply(x: Parallelotope) = x
+  implicit object ParallelotopeToParallelotope extends DomainTransformation[Parallelotope.type, Parallelotope.type] {
+    def apply(x: Parallelotope, ptopedom: Parallelotope.type) = x
   }
 
-  implicit object BoxDoubleToBoxDouble extends DomainTransformation[BoxDouble.Property, BoxDouble.Property] {
-    def apply(x: BoxDouble.Property) = x
+  implicit object BoxDoubleToBoxDouble extends DomainTransformation[BoxDoubleDomain, BoxDoubleDomain] {
+    def apply(x: BoxDoubleDomain#Property, boxdom: BoxDoubleDomain): boxdom.Property = boxdom(x.low,x.high)
   }
 
-  implicit object NumericalPropertyToBoxDouble extends DomainTransformation[NumericalProperty[_], BoxDouble.Property] {
-    def apply(x: NumericalProperty[_]) = {
-      BoxDouble.top(x.dimension)
-    }
+  implicit object NumericalPropertyToBoxDouble extends DomainTransformation[NumericalDomain, BoxDoubleDomain] {
+    def apply(x: NumericalDomain#Property, boxdom: BoxDoubleDomain): boxdom.Property = boxdom.top(x.dimension)
   }
 }

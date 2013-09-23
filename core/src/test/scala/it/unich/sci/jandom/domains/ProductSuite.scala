@@ -34,11 +34,11 @@ class ProductSuite extends FunSuite {
   val n=2
 
 
-  val productDomain = new ProductDomain {
+  val productDomain = new ProductDomain[BoxDoubleDomain, Parallelotope.type] {
     val dom1 = d1
     val dom2 = d2
-  	val dom1Todom2 = implicitly[DomainTransformation[d1.Property, d2.Property]]
-  	val dom2Todom1 = implicitly[DomainTransformation[d2.Property, d1.Property]]
+  	val dom1Todom2 = implicitly[DomainTransformation[BoxDoubleDomain, d2.type]]
+  	val dom2Todom1 = implicitly[DomainTransformation[d2.type, BoxDoubleDomain]]
   }
 
   val empty = productDomain.bottom(n)

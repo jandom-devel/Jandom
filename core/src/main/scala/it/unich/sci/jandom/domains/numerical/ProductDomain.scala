@@ -30,26 +30,26 @@ import it.unich.sci.jandom.domains.DomainTransformation
  * @author Gianluca Amato <gamato@unich.it>
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
- abstract class ProductDomain extends NumericalDomain {
+ abstract class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends NumericalDomain {
   /**
    * First numerical domain
    */
-  val dom1: NumericalDomain
+  val dom1: D1
 
   /**
    * Second numerical domain
    */
-  val dom2: NumericalDomain
+  val dom2: D2
 
   /**
    * A transformation from first to second domain.
    */
-  val dom1Todom2: DomainTransformation[dom1.Property, dom2.Property]
+  val dom1Todom2: DomainTransformation[D1,D2]
 
   /**
    * A transformation from second to first domain
    */
-  val dom2Todom1: DomainTransformation[dom2.Property, dom1.Property]
+  val dom2Todom1: DomainTransformation[D2,D1]
 
   def top(n: Int) =
     new Property(dom1.top(n), dom2.top(n))
@@ -78,8 +78,8 @@ import it.unich.sci.jandom.domains.DomainTransformation
       else if (x2.isEmpty)
         new Property(x1.bottom, x2)
       else {
-        val y1=x1.intersection(dom2Todom1.apply(x2))
-        val y2=x2.intersection(dom1Todom2.apply(x1))
+        val y1=x1.intersection(dom2Todom1.apply(x2,dom1))
+        val y2=x2.intersection(dom1Todom2.apply(x1,dom2))
 
         new Property(y1, y2)
       }
