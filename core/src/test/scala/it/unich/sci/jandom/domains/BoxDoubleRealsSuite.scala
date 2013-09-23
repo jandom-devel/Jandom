@@ -19,7 +19,6 @@
 package it.unich.sci.jandom.domains
 
 import org.scalatest.FunSuite
-import it.unich.sci.jandom.domains.numerical.BoxDouble
 import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 
@@ -28,7 +27,9 @@ import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class BoxDoubleSuite extends FunSuite {
+class BoxDoubleRealsSuite extends FunSuite {
+  object BoxDouble extends BoxDoubleDomain(true)
+
   test("constructors should only work with normalized bounds") {
     intercept[IllegalArgumentException] { BoxDouble(Array(0, 2), Array(0, 2, 3)) }
     intercept[IllegalArgumentException] { BoxDouble(Array(Double.PositiveInfinity, 2), Array(0, 2, 3)) }
@@ -65,15 +66,15 @@ class BoxDoubleSuite extends FunSuite {
   test("linear inequations") {
     val i = BoxDouble.top(2).linearInequality(LinearForm(-3, 1, 0))
     val j = BoxDouble(Array(0, 0), Array(5, 5)).linearInequality(LinearForm(-4, 1, 1))
-    expectResult(BoxDouble(Array(Double.NegativeInfinity, Double.NegativeInfinity), Array(3, Double.PositiveInfinity))) { i }
-    expectResult(BoxDouble(Array(0, 0), Array(4, 4))) { j }
+    assert(BoxDouble(Array(Double.NegativeInfinity, Double.NegativeInfinity), Array(3, Double.PositiveInfinity)) <= i)
+    assert(BoxDouble(Array(0, 0), Array(4, 4)) <= j)
   }
 
   test("inequalities and disequalities") {
     val i = BoxDouble.top(2).linearInequality(LinearForm.v(0))
     expectResult(i) { i.linearDisequality(LinearForm.v(0)) }
     val j = i.linearInequality(LinearForm(0,-1, 0))
-    expectResult(BoxDouble.bottom(2)) { j.linearDisequality(LinearForm.v(0)) }
+    assert(BoxDouble.bottom(2) <= j.linearDisequality(LinearForm.v(0)))
     expectResult(BoxDouble.bottom(2)) { j.linearDisequality(LinearForm(0)) }
     expectResult(j) { j.linearDisequality(LinearForm(2)) }
     expectResult(j) { j.linearDisequality(LinearForm(2, 1, 1)) }
@@ -112,14 +113,15 @@ class BoxDoubleSuite extends FunSuite {
 
   test("minimization, maximization and frequency") {
     val i = BoxDouble(Array(0, 0), Array(1, 2))
-    expectResult(3)(i.maximize(LinearForm(0, 1, 1)))
-    expectResult(0)(i.minimize(LinearForm(0, 1, 1)))
+    assert(i.maximize(LinearForm(0, 1, 1)) >= 3)
+    assert(i.minimize(LinearForm(0, 1, 1)) <= 0)
     expectResult(None)(i.frequency(LinearForm(0, 1, 1)))
     val j = BoxDouble(Array(0, 1, 0), Array(0, 1, 1))
     expectResult(None)(j.frequency(LinearForm(0, 1, 1, 1)))
     expectResult(None)(j.frequency(LinearForm(0, 0, 0, 1)))
-    expectResult(Some(0))(j.frequency(LinearForm(0, 1, 0, 0)))
-    expectResult(Some(1))(j.frequency(LinearForm(0, 0, 1, 0)))
+    // the following twos cannot be proved due to rounding
+    // expectResult(Some(0))(j.frequency(LinearForm(0, 1, 0, 0)))
+    // expectResult(Some(1))(j.frequency(LinearForm(0, 0, 1, 0)))
   }
 
   test("string conversion") {

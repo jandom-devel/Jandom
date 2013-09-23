@@ -31,7 +31,7 @@ import it.unich.sci.jandom.domains.numerical.NumericalProperty
  */
 class DomainTransformationSuite extends FunSuite {
 	test("Parallelotope to BoxDouble") {
-		val transform = implicitly[DomainTransformation[Parallelotope, BoxDouble]]
+		val transform = implicitly[DomainTransformation[Parallelotope, BoxDouble.Property]]
         val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
         val box = BoxDouble(Array(-1,-1), Array(1,1))
 		expectResult(box) { transform(diamond) }
@@ -44,14 +44,14 @@ class DomainTransformationSuite extends FunSuite {
 	}
 
 	test("Box to Parallelotope") {
-		val transform = implicitly[DomainTransformation[BoxDouble, Parallelotope]]
+		val transform = implicitly[DomainTransformation[BoxDouble.Property, Parallelotope]]
 		val boxptope = Parallelotope(DenseVector(-1, -1), DenseMatrix.eye(2), DenseVector(1, 1))
 		val box = BoxDouble(Array(-1,-1), Array(1,1))
 		expectResult( boxptope ) { transform(box) }
 	}
 
 	test("General transformation to Box") {
-		val transform = implicitly[DomainTransformation[NumericalProperty[_], BoxDouble]]
+		val transform = implicitly[DomainTransformation[NumericalProperty[_], BoxDouble.Property]]
 		val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
         val box = BoxDouble(Array(-1,-1), Array(1,1))
 		expectResult (BoxDouble.top(2)) { transform(diamond) }

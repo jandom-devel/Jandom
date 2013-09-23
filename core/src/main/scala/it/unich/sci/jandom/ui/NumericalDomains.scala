@@ -22,6 +22,7 @@ import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.domains.numerical.Parallelotope
 import scala.collection.mutable.Buffer
 import scala.util.Try
+import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 
 /**
  * The ParameterEnumeration for numerical domains.
@@ -31,8 +32,10 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
   val description = "The numerical domain to use for the analysis."
 
   val values: Buffer[ParameterValue[NumericalDomain]] = Buffer(
-    ParameterValue(BoxDouble, "BoxDouble", "This is a native Scala implementation of boxes. It is not safe " +
-      "and should not be used."),
+    ParameterValue(BoxDouble, "BoxDouble", "This is a native Scala implementation of boxes. It is safe " +
+      "w.r.t. double arithmetics."),
+    ParameterValue(new BoxDoubleDomain(true), "BoxDouble over Reals", "This is a native Scala implementation of boxes. It is safe " +
+      "w.r.t. reals."),
     ParameterValue(Parallelotope, "Parallelotope", "This is a native Scala implementation of parallelotopes. It is " +
       "not safe and should not be used."))
   val default = values.head

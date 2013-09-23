@@ -37,7 +37,7 @@ trait DomainTransformation[A, B] extends Function[A, B]
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
 object DomainTransformation {
-  implicit object ParallelotopeToBoxDouble extends DomainTransformation[Parallelotope, BoxDouble] {
+  implicit object ParallelotopeToBoxDouble extends DomainTransformation[Parallelotope, BoxDouble.Property] {
     import breeze.linalg.{ DenseMatrix, DenseVector }
     def apply(x: Parallelotope) = {
       val newPar = x.rotate(DenseMatrix.eye(x.dimension))
@@ -48,9 +48,9 @@ object DomainTransformation {
     }
   }
 
-  implicit object BoxDoubleToParallelotope extends DomainTransformation[BoxDouble, Parallelotope] {
+  implicit object BoxDoubleToParallelotope extends DomainTransformation[BoxDouble.Property, Parallelotope] {
     import breeze.linalg.{ DenseMatrix, DenseVector }
-    def apply(x: BoxDouble) = {
+    def apply(x: BoxDouble.Property) = {
       Parallelotope(DenseVector(x.low), DenseMatrix.eye(x.dimension), DenseVector(x.high))
     }
   }
@@ -59,11 +59,11 @@ object DomainTransformation {
     def apply(x: Parallelotope) = x
   }
 
-  implicit object BoxDoubleToBoxDouble extends DomainTransformation[BoxDouble, BoxDouble] {
-    def apply(x: BoxDouble) = x
+  implicit object BoxDoubleToBoxDouble extends DomainTransformation[BoxDouble.Property, BoxDouble.Property] {
+    def apply(x: BoxDouble.Property) = x
   }
 
-  implicit object NumericalPropertyToBoxDouble extends DomainTransformation[NumericalProperty[_], BoxDouble] {
+  implicit object NumericalPropertyToBoxDouble extends DomainTransformation[NumericalProperty[_], BoxDouble.Property] {
     def apply(x: NumericalProperty[_]) = {
       BoxDouble.top(x.dimension)
     }
