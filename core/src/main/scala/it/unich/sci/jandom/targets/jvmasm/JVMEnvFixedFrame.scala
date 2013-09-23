@@ -36,9 +36,11 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
  * @author Gianluca Amato <gamato@unich.it>
  */
 class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
-  val maxLocals: Int, var property: NumProperty) extends JVMEnv[JVMEnvFixedFrame[NumProperty]] {
+  val domain: JVMEnvFixedFrameDomain, val maxLocals: Int, var property: NumProperty) extends JVMEnv[JVMEnvFixedFrame[NumProperty]] {
 
-  override def clone: JVMEnvFixedFrame[NumProperty] = new JVMEnvFixedFrame(maxLocals, property)
+  type Domain = JVMEnvFixedFrameDomain
+
+  override def clone: JVMEnvFixedFrame[NumProperty] = new JVMEnvFixedFrame(domain, maxLocals, property)
 
   def empty {
     property = property.bottom
@@ -78,16 +80,16 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
   }
 
   def union(that: JVMEnvFixedFrame[NumProperty]): JVMEnvFixedFrame[NumProperty] =
-    new JVMEnvFixedFrame[NumProperty](maxLocals, property union that.property)
+    new JVMEnvFixedFrame[NumProperty](domain, maxLocals, property union that.property)
 
   def intersection(that: JVMEnvFixedFrame[NumProperty]): JVMEnvFixedFrame[NumProperty] =
-    new JVMEnvFixedFrame[NumProperty](maxLocals, property intersection that.property)
+    new JVMEnvFixedFrame[NumProperty](domain, maxLocals, property intersection that.property)
 
   def narrowing(that: JVMEnvFixedFrame[NumProperty]): JVMEnvFixedFrame[NumProperty] =
-    new JVMEnvFixedFrame[NumProperty](maxLocals, property narrowing that.property)
+    new JVMEnvFixedFrame[NumProperty](domain, maxLocals, property narrowing that.property)
 
   def widening(that: JVMEnvFixedFrame[NumProperty]): JVMEnvFixedFrame[NumProperty] =
-    new JVMEnvFixedFrame[NumProperty](maxLocals, property widening that.property)
+    new JVMEnvFixedFrame[NumProperty](domain, maxLocals, property widening that.property)
 
   def tryCompareTo[B >: JVMEnvFixedFrame[NumProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: JVMEnvFixedFrame[NumProperty] =>
@@ -112,9 +114,9 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
 
   def isEmpty = property.isEmpty
 
-  def top = new JVMEnvFixedFrame(maxLocals, property.top)
+  def top = new JVMEnvFixedFrame(domain, maxLocals, property.top)
 
-  def bottom = new JVMEnvFixedFrame(maxLocals, property.bottom)
+  def bottom = new JVMEnvFixedFrame(domain, maxLocals, property.bottom)
 }
 
 /**
@@ -126,8 +128,8 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
 class JVMEnvFixedFrameDomain(val dom: NumericalDomain) extends JVMEnvDomain {
   type Property = JVMEnvFixedFrame[dom.Property]
 
-  def full(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.top(maxLocals))
+  def full(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](this, maxLocals, dom.top(maxLocals))
 
-  def empty(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](maxLocals, dom.bottom(maxLocals))
+  def empty(maxLocals: Int) = new JVMEnvFixedFrame[dom.Property](this, maxLocals, dom.bottom(maxLocals))
 
 }

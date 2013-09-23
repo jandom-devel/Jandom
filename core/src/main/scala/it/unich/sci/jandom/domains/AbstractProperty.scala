@@ -41,6 +41,16 @@ package it.unich.sci.jandom.domains
  */
 trait AbstractProperty[Property <: AbstractProperty[Property]] extends PartiallyOrdered[Property] {
   /**
+   * The class of abstract domains which containts this properties.
+   */
+  type Domain <: AbstractDomain
+
+  /**
+   * Returns the abstract domain corresponding to this property.
+   */
+  def domain: Domain
+
+  /**
    * The standard widening for two abstract properties.
    * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
    * @note $NOTEFIBER

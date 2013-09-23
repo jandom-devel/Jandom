@@ -39,10 +39,12 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
  */
 
 class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
-  val frame: Array[Int], val stack: ArrayStack[Int], var property: NumProperty) extends JVMEnv[JVMEnvDynFrame[NumProperty]] {
+  val domain: JVMEnvDynFrameDomain, val frame: Array[Int], val stack: ArrayStack[Int], var property: NumProperty) extends JVMEnv[JVMEnvDynFrame[NumProperty]] {
+
+  type Domain = JVMEnvDynFrameDomain
 
   override def clone: JVMEnvDynFrame[NumProperty] =
-    new JVMEnvDynFrame(frame.clone, stack.clone, property)
+    new JVMEnvDynFrame(domain,frame.clone, stack.clone, property)
 
   /**
    * Remove a dimension in the numerical property and auxiliary structures. The hypothesis
@@ -125,16 +127,16 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
   }
 
   def union(that: JVMEnvDynFrame[NumProperty]) =
-    new JVMEnvDynFrame(frame.clone, stack.clone, property union that.propertyConformantWith(this))
+    new JVMEnvDynFrame(domain, frame.clone, stack.clone, property union that.propertyConformantWith(this))
 
   def intersection(that: JVMEnvDynFrame[NumProperty]): JVMEnvDynFrame[NumProperty] =
-    new JVMEnvDynFrame(frame.clone, stack.clone, property intersection that.propertyConformantWith(this))
+    new JVMEnvDynFrame(domain, frame.clone, stack.clone, property intersection that.propertyConformantWith(this))
 
   def narrowing(that: JVMEnvDynFrame[NumProperty]): JVMEnvDynFrame[NumProperty] =
-    new JVMEnvDynFrame(frame.clone, stack.clone, property narrowing that.propertyConformantWith(this))
+    new JVMEnvDynFrame(domain, frame.clone, stack.clone, property narrowing that.propertyConformantWith(this))
 
   def widening(that: JVMEnvDynFrame[NumProperty]): JVMEnvDynFrame[NumProperty] =
-    new JVMEnvDynFrame(frame.clone, stack.clone, property widening that.propertyConformantWith(this))
+    new JVMEnvDynFrame(domain, frame.clone, stack.clone, property widening that.propertyConformantWith(this))
 
   def tryCompareTo[B >: JVMEnvDynFrame[NumProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: JVMEnvDynFrame[NumProperty] =>
@@ -154,7 +156,8 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
       (prop, i) => if (stack(i) != -1) prop.variableAssignment(property.dimension + frame.length +  i, stack(i)) else prop
     }
     val finalProp = (0 until property.dimension).foldLeft(stackedProp) { (prop,_) => prop.delVariable(0)}
-    new JVMEnvFixedFrame(frame.length, finalProp)
+    val ffdom = new JVMEnvFixedFrameDomain(domain.dom)
+    new JVMEnvFixedFrame(ffdom, frame.length, finalProp)
   }
 
   override def equals(that: Any) = that match {
@@ -174,9 +177,9 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
 
   def isEmpty = property.isEmpty
 
-  def top = new JVMEnvDynFrame(frame, stack, property.top)
+  def top = new JVMEnvDynFrame(domain, frame, stack, property.top)
 
-  def bottom = new JVMEnvDynFrame(frame, stack, property.bottom)
+  def bottom = new JVMEnvDynFrame(domain, frame, stack, property.bottom)
 }
 
 /**
@@ -188,7 +191,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
 class JVMEnvDynFrameDomain(val dom: NumericalDomain) extends JVMEnvDomain {
   type Property = JVMEnvDynFrame[dom.Property]
 
-  def full(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.top(0))
+  def full(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](this, Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.top(0))
 
-  def empty(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.bottom(0))
+  def empty(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](this, Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.bottom(0))
 }

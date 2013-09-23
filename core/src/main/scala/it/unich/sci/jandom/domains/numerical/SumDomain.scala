@@ -38,6 +38,10 @@ class SumDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends Nu
 
     require(p1.dimension == p2.dimension)
 
+    type Domain = SumDomain.this.type
+
+    def domain = SumDomain.this
+
     def union(that: Property): Property = {
       val q1 = p1 union that.p1
       val q2 = p2 union that.p2

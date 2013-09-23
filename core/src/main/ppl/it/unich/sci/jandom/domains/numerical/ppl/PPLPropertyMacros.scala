@@ -57,6 +57,9 @@ object PPLPropertyMacros {
        * @author Gianluca Amato <amato@sci.unich.it>
        */
       class PPLProperty(private val pplbox: Double_Box) extends NumericalProperty[PPLProperty] {
+    	type Domain = PPLProperty.type
+
+    	def domain = PPLProperty
 
         def widening(that: PPLProperty): PPLProperty = {
           val newpplbox = new Double_Box(pplbox)

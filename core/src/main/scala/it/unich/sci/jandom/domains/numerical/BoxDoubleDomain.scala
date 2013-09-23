@@ -45,6 +45,10 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
   final class Property(private[domains] val low: Array[Double], private[domains] val high: Array[Double]) extends NumericalProperty[Property] {
     require(normalized, "The parameters low:" + low.mkString(",") + " and high: " + high.mkString(",") + " are not normalized")
 
+    type Domain = BoxDoubleDomain
+
+    def domain = BoxDoubleDomain.this
+
     /**
      * This checks whether the box is normalized. This should always be the case. A box is normalized when
      * the lower and higher bounds are of the same length, and either

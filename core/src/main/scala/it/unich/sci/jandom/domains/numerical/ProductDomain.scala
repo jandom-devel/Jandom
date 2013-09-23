@@ -66,6 +66,10 @@ import it.unich.sci.jandom.domains.DomainTransformation
 
     require(p1.dimension == p2.dimension)
 
+    type Domain = ProductDomain.this.type
+
+    def domain = ProductDomain.this
+
     def reduce(x1: dom1.Property, x2: dom2.Property): Property = {
       if (x1.isEmpty && x2.isEmpty)
         this

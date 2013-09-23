@@ -75,6 +75,10 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     invariantCheck
 
+    type Domain = SootFrameNumericalDomain.this.type
+
+    def domain = SootFrameNumericalDomain.this
+
     /**
      * An alternative constructor which returns an abstract frame where all variables are of the same type.
      * @param prop the numerical property to use.
@@ -221,12 +225,12 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
       assume (n >= 0 && n <= size, s"Trying to extract ${n} variables in the abstract frame {$this}")
       Property( prop.delVariables(0 until size-n), vars.dropRight(size-n))
     }
-          
+
     def restrict(n: Int) = {
       assume (n >= 0 && n <= size, s"Trying to restrict ${n} variables top in the abstract frame {$this}")
       Property( prop.delVariables(size-n until size), vars.drop(n))
     }
-    
+
     def connect(p: Property, common: Int) = {
       assume ( (vars.dropRight(size-common) zip p.vars.drop(p.size - common)) forall { case (tdst, tsrc) => compatibleTypes(tdst, tsrc) })
       Property(prop.connect(p.prop, common), p.vars.dropRight(common) ++ vars.drop(common))

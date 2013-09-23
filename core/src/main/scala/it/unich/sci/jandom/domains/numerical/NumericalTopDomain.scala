@@ -29,6 +29,10 @@ object NumericalTopDomain extends NumericalDomain {
   case class Property private[NumericalTopDomain](val dimension: Int) extends NumericalProperty[Property] {
     require(dimension >= 0)
 
+    type Domain = NumericalTopDomain.type
+
+    def domain = NumericalTopDomain
+
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
       case other: Property if dimension == other.dimension => Some(0)
       case _ => None

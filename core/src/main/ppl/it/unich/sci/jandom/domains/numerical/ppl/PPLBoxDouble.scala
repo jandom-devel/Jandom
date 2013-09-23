@@ -32,6 +32,10 @@ import parma_polyhedra_library._
  */
 class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPLBoxDouble] {
 
+  type Domain = PPLBoxDouble.type
+
+  def domain = PPLBoxDouble
+
   def widening(that: PPLBoxDouble): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
     newpplbox.upper_bound_assign(that.pplbox)

@@ -32,6 +32,10 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
  */
 class PPLCPolyhedron(private val pplpolyhedron: C_Polyhedron) extends NumericalProperty[PPLCPolyhedron] {
 
+  type Domain = PPLCPolyhedron.type
+
+  def domain = PPLCPolyhedron
+
   override def widening(that: PPLCPolyhedron): PPLCPolyhedron = {
     val newpplpolyhedron = new C_Polyhedron(pplpolyhedron)
     newpplpolyhedron.upper_bound_assign(that.pplpolyhedron)

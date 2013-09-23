@@ -41,6 +41,10 @@ object PairSharingDomain extends ObjectDomain {
 
   case class Property(val ps: Set[UP[Int]], val dimension: Int) extends ObjectProperty[Property] {
 
+    type Domain = PairSharingDomain.this.type
+
+    def domain = PairSharingDomain.this
+
     private def renameVariable(ps: Set[UP[Int]], newvar: Int, oldvar: Int) = ps map { _.replace(newvar, oldvar) }
     private def removeVariable(ps: Set[UP[Int]], v: Int) = ps filterNot { _.contains(v) }
     private def starUnion(ps: Set[UP[Int]], v: Int) =
@@ -59,7 +63,7 @@ object PairSharingDomain extends ObjectDomain {
         new Property(removeVariable(ps, n), dimension - 1)
       else
         new Property(removeVariable(ps, n) map { _.replace { x => if (x < n) x else x - 1 } }, dimension-1)
-    
+
     def mapVariables(rho: Seq[Int]) = {
         val ps2 = for ( UP(l, r) <- ps; if rho(l) != -1; if rho(r) != -1) yield UP(rho(l),rho(r))
         new Property(ps2, dimension - rho.count { _ == -1 })

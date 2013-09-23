@@ -49,6 +49,10 @@ class Parallelotope(
 
   require((low.length == A.rows) && (low.length == A.cols) && normalized)
 
+  type Domain = Parallelotope.type
+
+  def domain = Parallelotope
+
   private def normalized: Boolean = {
     //if( (0 until low.length-1) exists {i => low(i) == Double.PositiveInfinity })
     //  print("--create-- ",low," ")

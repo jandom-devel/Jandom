@@ -37,8 +37,10 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
  * @param pplobject is the PPL property we are encapsulating.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class PPLProperty[PPLNativeProperty <: AnyRef](private val domain: PPLDomain[PPLNativeProperty], val pplobject: PPLNativeProperty)
+class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativeProperty], val pplobject: PPLNativeProperty)
   extends NumericalProperty[PPLProperty[PPLNativeProperty]] {
+
+  type Domain = PPLDomain[PPLNativeProperty]
 
   def widening(that: PPLProperty[PPLNativeProperty]): PPLProperty[PPLNativeProperty] = {
     val newpplobject = domain.copyConstructor(pplobject)

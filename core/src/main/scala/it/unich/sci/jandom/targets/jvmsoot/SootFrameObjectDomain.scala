@@ -73,6 +73,10 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
    */
   case class Property(val prop: dom.Property, val stack: Stack[Type], val globals: Map[AnyRef, Int]) extends SootFrameProperty[Property] {
 
+    type Domain = SootFrameObjectDomain.this.type
+
+    def domain =  SootFrameObjectDomain.this
+
     invariantCheck
 
     /**
@@ -202,12 +206,12 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
       assume (n >= 0 && n <= size, s"Trying to extract ${n} variables in the abstract frame {$this}")
       Property( prop.delVariables(0 until size-n), stack.dropRight(size-n), globals)
     }
-    
+
     def restrict(n: Int) = {
       assume (n >= 0 && n <= size, s"Trying to restrict {n} top variables in the abstract frame {$this}")
       Property( prop.delVariables(size-n until size), stack.drop(n), globals)
     }
-        
+
     def connect(p: Property, common: Int): Property = Property(prop.connect(p.prop, common), p.stack.dropRight(common) ++ stack.drop(common), globals)
 
     def widening(that: Property) = this union that
