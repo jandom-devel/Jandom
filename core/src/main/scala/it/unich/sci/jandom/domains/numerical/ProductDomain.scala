@@ -24,32 +24,17 @@ import it.unich.sci.jandom.domains.DomainTransformation
  * This class implements the reduced product of two abstract domains. It is not a
  * real reduced product, but a cartesian product with some reduction given by transformation
  * funtions.
- * @note Due to the bug [[https://issues.scala-lang.org/browse/SI-5712 SI-5712] in Scala 2.10, we had to
- * declare `ProductDomain` an abstract domain. Instatiate it with appropriate values for `dom1`, `dom2`,
- * `dom1Todom2` and `dom2Todom1`.
+ * @tparam D1 the class of the first abstract domain
+ * @tparam D2 the class of the second abstract domain
+ * @param dom1 first abstract domain
+ * @param dom2 second abstract domain
+ * @param dom1Todom2 domain transformer from D1 to D2
+ * @param dom2Todom1 domain transformer from D1 to D2
  * @author Gianluca Amato <gamato@unich.it>
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
- abstract class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends NumericalDomain {
-  /**
-   * First numerical domain
-   */
-  val dom1: D1
-
-  /**
-   * Second numerical domain
-   */
-  val dom2: D2
-
-  /**
-   * A transformation from first to second domain.
-   */
-  val dom1Todom2: DomainTransformation[D1,D2]
-
-  /**
-   * A transformation from second to first domain
-   */
-  val dom2Todom1: DomainTransformation[D2,D1]
+ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val dom2: D2)(
+      implicit val dom1Todom2: DomainTransformation[D1,D2], val dom2Todom1: DomainTransformation[D2,D1]) extends NumericalDomain {
 
   def top(n: Int) =
     new Property(dom1.top(n), dom2.top(n))

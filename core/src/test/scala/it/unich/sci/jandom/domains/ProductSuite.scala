@@ -29,18 +29,9 @@ import it.unich.sci.jandom.domains.numerical._
  */
 class ProductSuite extends FunSuite {
 
-  val d1 = BoxDouble
-  val d2 = Parallelotope
   val n=2
 
-
-  val productDomain = new ProductDomain[BoxDoubleDomain, Parallelotope.type] {
-    val dom1 = d1
-    val dom2 = d2
-  	val dom1Todom2 = implicitly[DomainTransformation[BoxDoubleDomain, d2.type]]
-  	val dom2Todom1 = implicitly[DomainTransformation[d2.type, BoxDoubleDomain]]
-  }
-
+  val productDomain = new ProductDomain(new BoxDoubleDomain(false), Parallelotope)
   val empty = productDomain.bottom(n)
   val full = productDomain.top(n)
 
@@ -56,13 +47,13 @@ class ProductSuite extends FunSuite {
     expectResult(true) { full.isTop }
   }
 
-  val p1= new productDomain.Property(BoxDouble.top(n), Parallelotope.top(n))
+  val p1= new productDomain.Property(productDomain.dom1.top(n), Parallelotope.top(n))
   test("construct a full pair") {
     expectResult(true) {p1.isTop}
     expectResult(false) {p1.isEmpty}
   }
 
-  val box = BoxDouble(Array(1, 2), Array(5, 4))
+  val box = productDomain.dom1(Array(1, 2), Array(5, 4))
   val p2= new productDomain.Property(box, Parallelotope.top(n))
  test("construct a non-empty non-full pair") {
     expectResult(false) {p2.isTop}
@@ -70,7 +61,7 @@ class ProductSuite extends FunSuite {
   }
 
 
-  val boxEmpty =  BoxDouble.bottom(n)
+  val boxEmpty =  productDomain.dom1.bottom(n)
   val ptopeFull = Parallelotope.top(n)
   val p3= new productDomain.Property(boxEmpty, ptopeFull)
  test("construct an empty product") {
@@ -82,10 +73,10 @@ class ProductSuite extends FunSuite {
   val x2 = full.linearAssignment(0, 0.0)
   test("assignment on product") {
     expectResult(true) {new productDomain.Property(
-        BoxDouble.top(2).linearAssignment(0, 0.0),
+        productDomain.dom1.top(2).linearAssignment(0, 0.0),
         ptopeFull.linearAssignment(0, 0.0)) <=  x2}
       expectResult(true) {new productDomain.Property(
-        BoxDouble.top(2).linearAssignment(0, 0.0),
+        productDomain.dom1.top(2).linearAssignment(0, 0.0),
         ptopeFull.linearAssignment(0, 0.0)) >=  x2}
   }
 
@@ -94,5 +85,4 @@ class ProductSuite extends FunSuite {
     expectResult(n+1) {full.addVariable().dimension}
 
   }
-
 }

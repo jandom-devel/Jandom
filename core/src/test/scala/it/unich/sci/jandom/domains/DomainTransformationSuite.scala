@@ -24,6 +24,7 @@ import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import breeze.linalg.DenseVector
 import breeze.linalg.DenseMatrix
+import it.unich.sci.jandom.domains.numerical.NumericalDomain
 
 
 /**
@@ -57,6 +58,7 @@ class DomainTransformationSuite extends FunSuite {
     val transform = implicitly[DomainTransformation[NumericalDomain, BoxDoubleDomain]]
     val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
     val box = boxdom(Array(-1, -1), Array(1, 1))
+    // TODO: remove the cast
     expectResult(boxdom.top(2)) { transform(diamond.asInstanceOf[NumericalDomain#Property],boxdom) }
   }
 }
