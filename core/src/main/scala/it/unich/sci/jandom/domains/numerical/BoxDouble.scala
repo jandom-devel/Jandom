@@ -18,6 +18,8 @@
 
 package it.unich.sci.jandom.domains.numerical
 
+import it.unich.sci.jandom.domains.CachedTopBottom
+
 /**
  * This is the domain of boxes, also known as the interval domain. Bounds are represented by doubles. It may be
  * instantiated to be safe w.r.t. double arithmetics or real arithmetics. However, correctness w.r.t. real
@@ -418,17 +420,6 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
   }
 
   /**
-   * This is the cache for empty boxes.
-   * The factory object for `BoxDouble` properties. It caches the value of `empty(n)` for
-   * different `n`, so that we do not create multiple copies of them. This works since
-   * numerical properties are immutables.
-   *
-   * The caching should be probably implemented in [[it.unich.sci.jandom.domains.NumericalDomain]], and
-   * should be extended to both full and empty values.
-   */
-  private var cacheEmpty: Map[Int, BoxDouble] = Map()
-
-  /**
    * Returns a normalized box with given bounds.
    * @param low lower bounds.
    * @param high upper bounds.
@@ -454,24 +445,20 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  def top(n: Int): BoxDouble = {
+  def top(n: Int): BoxDouble =
     new BoxDouble(Array.fill(n)(Double.NegativeInfinity), Array.fill(n)(Double.PositiveInfinity))
-  }
 
   /**
    * @inheritdoc
    * @note @inheritdoc
    * @throws $ILLEGAL
    */
-  def bottom(n: Int): BoxDouble = {
-    if (!(cacheEmpty isDefinedAt n))
-      cacheEmpty += (n -> new BoxDouble(Array.fill(n)(Double.PositiveInfinity), Array.fill(n)(Double.NegativeInfinity)))
-    cacheEmpty(n)
-  }
+  def bottom(n: Int): BoxDouble =
+    new BoxDouble(Array.fill(n)(Double.PositiveInfinity), Array.fill(n)(Double.NegativeInfinity))
 }
 
 /**
  * This is the box domain correct over doubles. It is only provided for compatibility with previous
- * versions of Jandom.
+ * versions of Jandom, and is equivalent to `BoxDoubleDomain(false)`.
  */
 object BoxDouble extends BoxDoubleDomain(false)
