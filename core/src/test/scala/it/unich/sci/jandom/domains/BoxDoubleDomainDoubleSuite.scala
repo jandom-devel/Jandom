@@ -19,16 +19,17 @@
 package it.unich.sci.jandom.domains
 
 import org.scalatest.FunSuite
-import it.unich.sci.jandom.domains.numerical.BoxDouble
 import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 
 /**
- * This is a unit test for the BoxDouble numerical domain.
+ * This is a unit test for the BoxDouble numerical domain over doubles.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class BoxDoubleSuite extends FunSuite {
+class BoxDoubleDomainDoubleSuite extends FunSuite {
+  val BoxDouble = new BoxDoubleDomain(false)
+
   test("constructors should only work with normalized bounds") {
     intercept[IllegalArgumentException] { BoxDouble(Array(0, 2), Array(0, 2, 3)) }
     intercept[IllegalArgumentException] { BoxDouble(Array(Double.PositiveInfinity, 2), Array(0, 2, 3)) }

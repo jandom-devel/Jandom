@@ -23,12 +23,12 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 
 /**
- * This is a unit test for the BoxDouble numerical domain.
+ * This is a unit test for the BoxDouble numerical domain over reals.
  * @author Gianluca Amato <amato@sci.unich.it>
  *
  */
-class BoxDoubleRealsSuite extends FunSuite {
-  object BoxDouble extends BoxDoubleDomain(true)
+class BoxDoubleDomainRealSuite extends FunSuite {
+  val BoxDouble = new BoxDoubleDomain(true)
 
   test("constructors should only work with normalized bounds") {
     intercept[IllegalArgumentException] { BoxDouble(Array(0, 2), Array(0, 2, 3)) }

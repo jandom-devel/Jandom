@@ -45,5 +45,4 @@ trait CachedTopBottom extends DimensionFiberedDomain {
       cacheTop += (n -> super.top(n))
     cacheTop(n)
   }
-
 }
