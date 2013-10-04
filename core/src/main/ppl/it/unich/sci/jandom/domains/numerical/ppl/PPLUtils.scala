@@ -41,11 +41,16 @@ private[jandom] object PPLUtils {
    * @param known the in-homogeneous coefficient.
    */
   def toPPLLinearExpression(lf: LinearForm[Double]): Linear_Expression = {
-    var le : Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(lf.known.toInt))
-	for (i <- 0 until lf.dimension) {
-	  le = le.sum ( (new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(lf.homcoeffs(i).toInt)) ))
-	}
-    return le
+    if (lf.toPPL != null)
+      lf.toPPL.asInstanceOf[Linear_Expression]
+    else {
+      var le: Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(lf.known.toInt))
+      for (i <- 0 until lf.dimension) {
+        le = le.sum((new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(lf.homcoeffs(i).toInt))))
+      }
+      lf.toPPL = le
+      le
+    }
   }
 
   /**
@@ -63,7 +68,7 @@ private[jandom] object PPLUtils {
     val result = for (c <- cs)
       yield c.toString
     Variable.setStringifier(null)
-    result.mkString("[ "," , "," ]")
+    result.mkString("[ ", " , ", " ]")
   }
 
   /**

@@ -105,6 +105,12 @@ trait LinearForm[T] {
    * It is equivalent to `mkString` with variable names `v0`...`vn`
    */
   override def toString = mkString(Stream.from(0).map { "v" + _ })
+
+  /**
+   * This is used to store the PPL version of this linear form. It is declared
+   * of type `AnyRef` so that it may be compiled even when PPL is not present.
+   */
+  var toPPL: AnyRef = null
 }
 
 /**
