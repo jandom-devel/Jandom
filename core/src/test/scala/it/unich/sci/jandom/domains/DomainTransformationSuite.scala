@@ -22,43 +22,42 @@ import org.scalatest.FunSuite
 import it.unich.sci.jandom.domains.numerical.Parallelotope
 import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
+import it.unich.sci.jandom.domains.numerical.ParallelotopeDomain
 import breeze.linalg.DenseVector
 import breeze.linalg.DenseMatrix
-import it.unich.sci.jandom.domains.numerical.NumericalDomain
-
 
 /**
  * The test suite for domain transformations.
  * @author Gianluca Amato <gamato@unich.it>
  */
 class DomainTransformationSuite extends FunSuite {
-  val boxdom = new BoxDoubleDomain(false)
+  val boxdom = BoxDoubleDomain()
+  val pardom = ParallelotopeDomain()
 
   test("Parallelotope to BoxDouble") {
-    val transform = implicitly[DomainTransformation[Parallelotope.type, BoxDoubleDomain]]
-    val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
+    val transform = implicitly[DomainTransformation[ParallelotopeDomain, BoxDoubleDomain]]
+    val diamond = pardom(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
     val box = boxdom(Array(-1, -1), Array(1, 1))
     expectResult(box) { transform(diamond,boxdom) }
   }
 
   test("Parallelotope to Parallelotope") {
-    val transform = implicitly[DomainTransformation[Parallelotope.type, Parallelotope.type]]
-    val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
-    expectResult(diamond) { transform(diamond,Parallelotope) }
+    val transform = implicitly[DomainTransformation[ParallelotopeDomain, ParallelotopeDomain]]
+    val diamond = pardom(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
+    expectResult(diamond) { transform(diamond,pardom) }
   }
 
   test("Box to Parallelotope") {
-    val transform = implicitly[DomainTransformation[BoxDoubleDomain, Parallelotope.type]]
-    val boxptope = Parallelotope(DenseVector(-1, -1), DenseMatrix.eye(2), DenseVector(1, 1))
+    val transform = implicitly[DomainTransformation[BoxDoubleDomain, ParallelotopeDomain]]
+    val boxptope = pardom(DenseVector(-1, -1), DenseMatrix.eye(2), DenseVector(1, 1))
     val box = boxdom(Array(-1, -1), Array(1, 1))
-    expectResult(boxptope) { transform(box,Parallelotope) }
+    expectResult(boxptope) { transform(box,pardom) }
   }
 
   test("General transformation to Box") {
-    val transform = implicitly[DomainTransformation[NumericalDomain, BoxDoubleDomain]]
-    val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
+    val transform = DomainTransformation.NumericalPropertyToBoxDouble
+    val diamond = pardom(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
     val box = boxdom(Array(-1, -1), Array(1, 1))
-    // TODO: remove the cast
     expectResult(boxdom.top(2)) { transform(diamond.asInstanceOf[NumericalDomain#Property],boxdom) }
   }
 }

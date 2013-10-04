@@ -24,7 +24,7 @@ import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 import it.unich.sci.jandom.ppfactories.PPFactory.ConstantFactory
 import it.unich.sci.jandom.targets.Parameters
 import it.unich.sci.jandom.targets.slil.SLILTarget
-import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 
 /**
  * A very minimalistic CLI.
@@ -36,7 +36,7 @@ object JandomCLI extends App {
   val parsed = RandomParser().parseProgram(source)
   if (parsed.successful) {
     val program = parsed.get
-    val params = new Parameters[SLILTarget] { val domain = BoxDouble }
+    val params = new Parameters[SLILTarget] { val domain = BoxDoubleDomain() }
     params.narrowingStrategy = conf.narrowingStrategy()
     params.wideningScope = conf.wideningScope()
     params.narrowingFactory = DelayedNarrowingFactory(NoNarrowing,2)

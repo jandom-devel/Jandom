@@ -20,7 +20,7 @@ package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.sci.jandom.domains.numerical.LinearForm
 
 import linearcondition.{FalseCond,AtomicCond}
@@ -31,6 +31,8 @@ import lts._
  * @author Gianluca Amato <amato@sci.unich.it>
  */
 class LTSSuite extends FunSuite {
+  val BoxDouble = BoxDoubleDomain()
+
   test("simple LTS analysis") {
     val env = Environment("x")
 	val l1 = Location("start", Nil)

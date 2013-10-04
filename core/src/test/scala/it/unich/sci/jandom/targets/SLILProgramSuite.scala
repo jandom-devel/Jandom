@@ -20,7 +20,7 @@ package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.sci.jandom.domains.numerical.LinearForm
 import it.unich.sci.jandom.parsers.RandomParser
 
@@ -33,6 +33,8 @@ import slil._
  *
  */
 class SLILProgramSuite extends FunSuite {
+  val BoxDouble = BoxDoubleDomain()
+
   test("simple program 1") {
     val env = Environment("x")
     val program = SLILProgram(env, Seq(1),

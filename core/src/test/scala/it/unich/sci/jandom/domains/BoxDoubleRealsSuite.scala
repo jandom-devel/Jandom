@@ -28,7 +28,7 @@ import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
  *
  */
 class BoxDoubleDomainRealSuite extends FunSuite {
-  val BoxDouble = new BoxDoubleDomain(true)
+  val BoxDouble = BoxDoubleDomain()
 
   test("constructors should only work with normalized bounds") {
     intercept[IllegalArgumentException] { BoxDouble(Array(0, 2), Array(0, 2, 3)) }

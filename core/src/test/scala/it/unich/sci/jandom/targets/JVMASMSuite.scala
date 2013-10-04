@@ -23,11 +23,12 @@ import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.sci.jandom.targets.jvmasm._
 
 class JVMASMSuite extends FunSuite {
   import scala.collection.JavaConversions.asScalaBuffer
+  val BoxDouble = BoxDoubleDomain()
 
   test("simple method analysis") {
     val is = getClass().getResourceAsStream("/javatest/SimpleTest.class")

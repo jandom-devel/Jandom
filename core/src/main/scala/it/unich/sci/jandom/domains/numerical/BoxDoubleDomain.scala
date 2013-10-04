@@ -18,6 +18,8 @@
 
 package it.unich.sci.jandom.domains.numerical
 
+import it.unich.sci.jandom.domains.CachedTopBottom
+
 /**
  * This is the domain of boxes, also known as the interval domain. Bounds are represented by doubles. It may be
  * instantiated to be safe w.r.t. double arithmetics or real arithmetics. However, correctness w.r.t. real
@@ -25,13 +27,14 @@ package it.unich.sci.jandom.domains.numerical
  * as possible with other implementations.
  *
  * This domain is implemented natively in Scala and is a sort of reference implementation for numerical domains.
- * Real domains should be implemented within $PPL or $APRON.
- *
+ * Real domains should be better implemented within $PPL or $APRON.
  * @author Gianluca Amato <amato@sci.unich.it>
+ *
+ * @constructor Builds a box domain using doubles as bounds
  * @param overReals is true if the domain is correct w.r.t. real arithmetic, otherwise it is correct w.r.t.
  * double arithmetics.
  */
-class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
+class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
   /**
    * This is the class representing a single box.
    *
@@ -456,3 +459,20 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
     new Property(Array.fill(n)(Double.PositiveInfinity), Array.fill(n)(Double.NegativeInfinity))
 }
 
+object BoxDoubleDomain {
+  /**
+   * Returns an abstract domain for boxes which is correct w.r.t. real arithmetic or
+   * double arithmetic, according to the parameter `overReals`.
+   */
+  def apply(overReals: Boolean = false) = if (overReals) this.overReals else this.overDoubles
+
+  /**
+   * The domain of boxes correct w.r.t. reals and with cached top and bottom.
+   */
+  private val overReals = new BoxDoubleDomain(true) with CachedTopBottom
+
+  /**
+   * The domain of boxes correct w.r.t. doubles and with cached top and bottom.
+   */
+  private val overDoubles = new BoxDoubleDomain(false) with CachedTopBottom
+}

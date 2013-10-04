@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package it.unich.sci.jandom.narrowings
 
 import org.scalatest.FunSpec
 
-import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 
 /**
  * Test suite for delayed narrowing.
@@ -28,6 +28,8 @@ import it.unich.sci.jandom.domains.numerical.BoxDouble
  *
  */
 class DelayedNarrowingSuite extends FunSpec {
+  val BoxDouble = BoxDoubleDomain()
+
   describe("DelayedNarrowing") {
     it("should delay for a fixed number of stepe") {
       val d1 = BoxDouble(Array(0), Array(3))

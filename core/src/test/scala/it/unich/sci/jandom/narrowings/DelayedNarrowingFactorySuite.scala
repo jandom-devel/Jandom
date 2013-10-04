@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package it.unich.sci.jandom.narrowings
 
 import org.scalatest.FunSpec
 
-import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.sci.jandom.ppfactories.DelayedNarrowingFactory
 import it.unich.sci.jandom.targets.MockTarget
 
@@ -28,15 +28,16 @@ import it.unich.sci.jandom.targets.MockTarget
  * Test suite for delayed narrowing factories.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class DelayedNarrowingFactorySuite extends FunSpec {  
-  
+class DelayedNarrowingFactorySuite extends FunSpec {
+  val BoxDouble = BoxDoubleDomain()
+
   describe("Delayed Narrowing Factory") {
-    it ("should create a difference instance of a delayed narrowing each time it is called")  {      
+    it ("should create a difference instance of a delayed narrowing each time it is called")  {
       val dwf = DelayedNarrowingFactory[MockTarget#ProgramPoint](DefaultNarrowing,1)
-      val wd = dwf(0)       
+      val wd = dwf(0)
       val d1 = BoxDouble(Array(0),Array(3))
       val d2 = BoxDouble(Array(1),Array(3))
-      val d3 = wd(d1,d2)    
+      val d3 = wd(d1,d2)
       expectResult ( BoxDouble(Array(1),Array(3)) ) { d3 }
       val wd2 = dwf(0)
       val d4 = BoxDouble(Array(2),Array(3))
@@ -44,11 +45,11 @@ class DelayedNarrowingFactorySuite extends FunSpec {
       expectResult ( BoxDouble(Array(1),Array(3)) ) { d5 }
       val wd3 = dwf(1)
       val d6 = wd3(d3,d4)
-      expectResult ( BoxDouble(Array(2),Array(3)) ) { d6 }          
+      expectResult ( BoxDouble(Array(2),Array(3)) ) { d6 }
     }
-    
+
     it ("should reject negative delays") {
       intercept[IllegalArgumentException] { DelayedNarrowingFactory(DefaultNarrowing,-1) }
     }
-  }      
+  }
 }

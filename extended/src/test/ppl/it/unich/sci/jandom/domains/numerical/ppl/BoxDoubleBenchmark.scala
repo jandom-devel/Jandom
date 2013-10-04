@@ -35,7 +35,8 @@ import parma_polyhedra_library._
 class BoxDoubleBenchmark extends SimpleBenchmark {
   private val numvars = 100
   private val numpoints = 10
-
+  private val BoxDouble = BoxDoubleDomain()
+  
   PPLInitializer
 
   def timePPL(reps: Int) {

@@ -19,7 +19,6 @@
 package it.unich.sci.jandom.domains
 
 import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
-import it.unich.sci.jandom.domains.numerical.BoxDouble
 import org.scalatest.FunSuite
 
 /**

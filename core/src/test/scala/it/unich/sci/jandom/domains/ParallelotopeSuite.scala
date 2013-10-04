@@ -19,8 +19,8 @@
 package it.unich.sci.jandom.domains
 
 import org.scalatest.FunSuite
+import it.unich.sci.jandom.domains.numerical.ParallelotopeDomain
 import breeze.linalg._
-import it.unich.sci.jandom.domains.numerical.Parallelotope
 import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
@@ -29,6 +29,7 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
  *
  */
 class ParallelotopeSuite extends FunSuite {
+  val Parallelotope = ParallelotopeDomain()
 
   val box = Parallelotope(DenseVector(-1, -1), DenseMatrix.eye(2), DenseVector(1, 1))
   val diamond = Parallelotope(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))

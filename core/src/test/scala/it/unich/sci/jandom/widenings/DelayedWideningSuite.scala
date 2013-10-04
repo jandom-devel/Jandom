@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package it.unich.sci.jandom.widenings
 
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 
 /**
  * A test for delayed widening.
@@ -28,12 +28,13 @@ import it.unich.sci.jandom.domains.numerical.BoxDouble
  *
  */
 class DelayedWideningSuite extends FunSuite {
+  val BoxDouble = BoxDoubleDomain()
   test ("delayed widening for boxes") {
     val d1 = BoxDouble(Array(0),Array(1))
     val wd = new DelayedWidening(DefaultWidening,2)
     val d2 = BoxDouble(Array(1),Array(2))
     val d3 = wd(d1,d2)
-    expectResult ( BoxDouble(Array(0),Array(2)) ) { d3 }	
+    expectResult ( BoxDouble(Array(0),Array(2)) ) { d3 }
     val d4 = BoxDouble(Array(2),Array(3))
     val d5 = wd(d3,d4)
     expectResult ( BoxDouble(Array(0),Array(3)) ) { d5 }
@@ -46,7 +47,7 @@ class DelayedWideningSuite extends FunSuite {
     val wd = new DelayedWidening(DefaultWidening,0)
     val d2 = BoxDouble(Array(1),Array(2))
     val d3 = wd(d1,d2)
-    expectResult ( BoxDouble(Array(0),Array(Double.PositiveInfinity)) ) { d3 }	
+    expectResult ( BoxDouble(Array(0),Array(Double.PositiveInfinity)) ) { d3 }
   }
   test ("delayed widening with negative delay") {
     intercept[IllegalArgumentException] { new DelayedWidening(DefaultWidening,-1) }

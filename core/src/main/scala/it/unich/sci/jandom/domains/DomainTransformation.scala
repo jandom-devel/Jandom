@@ -26,7 +26,7 @@ import it.unich.sci.jandom.domains.numerical._
  * @tparam DomB target domain
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait DomainTransformation[DomA <: AbstractDomain, DomB <: AbstractDomain] {
+trait DomainTransformation[-DomA <: AbstractDomain, -DomB <: AbstractDomain] {
   /**
    * This applies the real transformation.
    * @param d the target domain
@@ -44,9 +44,9 @@ trait DomainTransformation[DomA <: AbstractDomain, DomB <: AbstractDomain] {
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
 object DomainTransformation {
-  implicit object ParallelotopeToBoxDouble extends DomainTransformation[Parallelotope.type, BoxDoubleDomain] {
+  implicit object ParallelotopeToBoxDouble extends DomainTransformation[ParallelotopeDomain, BoxDoubleDomain] {
     import breeze.linalg.{ DenseMatrix, DenseVector }
-    def apply(x: Parallelotope, boxdom: BoxDoubleDomain): boxdom.Property = {
+    def apply(x: ParallelotopeDomain#Property, boxdom: BoxDoubleDomain): boxdom.Property = {
       val newPar = x.rotate(DenseMatrix.eye(x.dimension))
       if (newPar.isEmpty)
         boxdom.bottom(newPar.dimension)
@@ -55,22 +55,22 @@ object DomainTransformation {
     }
   }
 
-  implicit object BoxDoubleToParallelotope extends DomainTransformation[BoxDoubleDomain, Parallelotope.type] {
+  implicit object BoxDoubleToParallelotope extends DomainTransformation[BoxDoubleDomain, ParallelotopeDomain] {
     import breeze.linalg.{ DenseMatrix, DenseVector }
-    def apply(x: BoxDoubleDomain#Property, ptopedom: Parallelotope.type) = {
-      Parallelotope(DenseVector(x.low), DenseMatrix.eye(x.dimension), DenseVector(x.high))
+    def apply(x: BoxDoubleDomain#Property, ptopedom: ParallelotopeDomain) = {
+      ptopedom(DenseVector(x.low), DenseMatrix.eye(x.dimension), DenseVector(x.high))
     }
   }
 
-  implicit object ParallelotopeToParallelotope extends DomainTransformation[Parallelotope.type, Parallelotope.type] {
-    def apply(x: Parallelotope, ptopedom: Parallelotope.type) = x
+  implicit object ParallelotopeToParallelotope extends DomainTransformation[ParallelotopeDomain, ParallelotopeDomain] {
+    def apply(x: ParallelotopeDomain#Property, ptopedom: ParallelotopeDomain) = x
   }
 
   implicit object BoxDoubleToBoxDouble extends DomainTransformation[BoxDoubleDomain, BoxDoubleDomain] {
     def apply(x: BoxDoubleDomain#Property, boxdom: BoxDoubleDomain): boxdom.Property = boxdom(x.low,x.high)
   }
 
-  implicit object NumericalPropertyToBoxDouble extends DomainTransformation[NumericalDomain, BoxDoubleDomain] {
+  object NumericalPropertyToBoxDouble extends DomainTransformation[NumericalDomain, BoxDoubleDomain] {
     def apply(x: NumericalDomain#Property, boxdom: BoxDoubleDomain): boxdom.Property = boxdom.top(x.dimension)
   }
 }

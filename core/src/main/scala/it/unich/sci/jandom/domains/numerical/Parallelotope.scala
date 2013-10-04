@@ -22,25 +22,20 @@ import breeze.linalg._
 import scala.Array.canBuildFrom
 
 /**
- * This is the abstract domain of parallelotopes as appears in the NSAD 2012 paper. It is written
- * using the Breeze Math library. It is not safe to use, since it does not implement rounding correctly.
- * Real domains should be implemented within $PPL or $APRON.
- * @author Gianluca Amato <g.amato@unich.it>
- * @author Francesca Scozzari <fscozzari@unich.it>
+ * This is an element of the parallelotope domain.
  *
- *
- * @constructor Builds a `Parallelotope`.
+ * @constructor Builds a parallelotope
  * @param isEmpty is true if the parallelotope is empty. In this case, the other parameters are not relevant.
  * @param A is the constraint matrix. It should be invertible.
  * @param low lower bounds.
  * @param high higher bounds.
- * @note `low` and `high` should have the same length. The  matrix `A` should be invertiible
+ * @note `low` and `high` should have the same length. The  matrix `A` should be invertible
  * of the same size of the two vectors.
  * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
  * square or if `A` has not the same size of `low`.
  */
 
-class Parallelotope(
+class Parallelotope (
   val isEmpty: Boolean,
   private[domains] val low: DenseVector[Double],
   private[domains] val A: DenseMatrix[Double],
@@ -49,13 +44,11 @@ class Parallelotope(
 
   require((low.length == A.rows) && (low.length == A.cols) && normalized)
 
-  type Domain = Parallelotope.type
+  type Domain = ParallelotopeDomain
 
-  def domain = Parallelotope
+  def domain = ParallelotopeDomain()
 
   private def normalized: Boolean = {
-    //if( (0 until low.length-1) exists {i => low(i) == Double.PositiveInfinity })
-    //  print("--create-- ",low," ")
     low.length == high.length && (
       (0 until low.length - 1) forall { i =>
         !low(i).isPosInfinity &&
@@ -133,9 +126,9 @@ class Parallelotope(
     def priority(v: DenseVector[Double], ownedBy: Int = 0): PrioritizedConstraint = {
 
       val y1 = A.t \ v
-      val (l1, u1) = Parallelotope.extremalsInBox(y1, low, high)
+      val (l1, u1) = domain.extremalsInBox(y1, low, high)
       val y2 = that.A.t \ v
-      val (l2, u2) = Parallelotope.extremalsInBox(y2, that.low, that.high)
+      val (l2, u2) = domain.extremalsInBox(y2, that.low, that.high)
       val p =
         if (l1 == l2 && l2 == u1 && u1 == u2)
           0
@@ -227,7 +220,7 @@ class Parallelotope(
       if (nc4.isDefined) Q += priority(nc4.get)
     }
     val Qsorted = Q.sortBy[Int](_._4)
-    val pvt = Parallelotope.pivoting(Qsorted map (_._1))
+    val pvt = domain.pivoting(Qsorted map (_._1))
 
     val newA = DenseMatrix(pvt map (Qsorted(_)._1.toArray): _*)
     val newlow = DenseVector(pvt map (Qsorted(_)._2): _*)
@@ -331,8 +324,8 @@ class Parallelotope(
       case None => {
         val newlow = low.copy
         val newhigh = high.copy
-        val (minc, maxc) = Parallelotope.extremalsInBox(y, newlow, newhigh)
-        if (minc > -known) return Parallelotope.bottom(dimension)
+        val (minc, maxc) = domain.extremalsInBox(y, newlow, newhigh)
+        if (minc > -known) return domain.bottom(dimension)
         for (i <- 0 until dimension) {
           if (y(i) > 0)
             newhigh(i) = high(i) min ((-known - minc + y(i) * low(i)) / y(i))
@@ -405,7 +398,7 @@ class Parallelotope(
 
   def addVariable(): Parallelotope = {
     if (isEmpty)
-      Parallelotope.bottom(A.rows + 1)
+      domain.bottom(A.rows + 1)
     else {
       val e = DenseMatrix.zeros[Double](dimension + 1, 1)
       e(dimension, 0) = 1.0
@@ -423,7 +416,7 @@ class Parallelotope(
    */
   def delVariable(n: Int): Parallelotope = {
     if (isEmpty)
-      Parallelotope.bottom(A.rows - 1)
+      domain.bottom(A.rows - 1)
     else {
       val slice = (0 until n) ++ (n + 1 until dimension)
       val newA = A(slice, slice).toDenseMatrix
@@ -455,6 +448,7 @@ class Parallelotope(
    * of the linear form over the box.
    */
   def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
+    val BoxDouble = BoxDoubleDomain()
     val box = BoxDouble(low.toArray, high.toArray)
     val vec = DenseVector(lf.homcoeffs: _*)
     val newvec = A.t \ vec
@@ -477,9 +471,9 @@ class Parallelotope(
 
   def isBottom = isEmpty
 
-  def bottom = Parallelotope.bottom(dimension)
+  def bottom = domain.bottom(dimension)
 
-  def top = Parallelotope.top(dimension)
+  def top = domain.top(dimension)
 
   def tryCompareTo[B >: Parallelotope](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = that match {
     case that: Parallelotope =>
@@ -582,108 +576,5 @@ class Parallelotope(
       }
       eqns.mkString("[ ", " , ", " ]")
     }
-  }
-}
-
-/**
- * The companion object for the Parallelotope abstract domain.
- */
-object Parallelotope extends NumericalDomain {
-
-  type Property = Parallelotope
-
-  /**
-   * Build a non-empty parallelotope. If the parallelotope is not empty, the
-   * result is undetermined.
-   * @param A is the constraint matrix. It should be invertible.
-   * @param low lower bounds.
-   * @param high higher bounds.
-   * @note `low` and `high` should have the same length. The  matrix `A` should be invertiible
-   * of the same size of the two vectors.
-   * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
-   * square or if `A` has not the same size of `low`.
-   */
-
-  def apply(low: DenseVector[Double], A: DenseMatrix[Double], high: DenseVector[Double]) = {
-    val isEmpty = (0 until low.size) exists { i => low(i) > high(i) }
-    val isEmpty2 = (0 until low.size) exists { i => low(i).isInfinite() && low(i) == high(i) }
-
-    new Parallelotope(isEmpty || isEmpty2, low, A, high)
-
-  }
-
-  /**
-   * @inheritdoc
-   * @note @inheritdoc
-   * @throws $ILLEGAL
-   */
-  def top(n: Int) = {
-    val low = DenseVector.fill(n)(Double.NegativeInfinity)
-    val high = DenseVector.fill(n)(Double.PositiveInfinity)
-    val A = DenseMatrix.eye[Double](n)
-    new Parallelotope(false, low, A, high)
-    /* The full parallelotope of dimension 0 is not empty! */
-  }
-
-  /**
-   * @inheritdoc
-   * @note @inheritdoc
-   * @throws $ILLEGAL
-   */
-  def bottom(n: Int) = {
-    val low = DenseVector.fill(n)(1.0)
-    val high = DenseVector.fill(n)(0.0)
-    val A = DenseMatrix.eye[Double](n)
-    new Parallelotope(true, low, A, high)
-  }
-
-  /**
-   * Given the box specified by `low` and `high` and the linear form `lf`, determines the pair
-   * of the least and greatest value of the linear form in the box.
-   * @param lf  a linear form.
-   * @param low lower bound of the box.
-   * @param high higher bound of the box.
-   * @note `low`, `high` and `lf` should be of the same length.
-   * @return the least and greatest value of `lf` in the box determine by `low` and `high`.
-   */
-  private def extremalsInBox(lf: DenseVector[Double], low: DenseVector[Double], high: DenseVector[Double]): (Double, Double) = {
-    var minc = 0.0
-    var maxc = 0.0
-    for (i <- 0 to lf.length - 1)
-      if (lf(i) > 0) {
-        minc += lf(i) * low(i)
-        maxc += lf(i) * high(i)
-      } else if (lf(i) < 0) {
-        minc += lf(i) * high(i)
-        maxc += lf(i) * low(i)
-      }
-    return (minc, maxc)
-  }
-
-  /**
-   * Given a sequence of vectors of the same length `n`, returns a sequence of `n` indexes
-   * of vectors which are linearly independent. It is based on Gaussian elimination.
-   * @param m a sequence of vectors, all of the same length.
-   * @return a sequence of positions in m.
-   */
-  private def pivoting(m: IndexedSeq[DenseVector[Double]]): Seq[Int] = {
-    val dimension = m(0).length
-    var indexes = Seq[Int]()
-    var pivots = Seq[(DenseVector[Double], Int)]()
-    var i = 0
-    while (indexes.length < dimension) {
-      val row = m(i).copy
-      for (p <- pivots) row -= p._1 * row(p._2)
-      val col = (0 to row.length - 1) find (row(_) != 0)
-      col match {
-        case Some(col) =>
-          row /= row(col)
-          pivots +:= (row, col)
-          indexes +:= i
-        case None =>
-      }
-      i += 1
-    }
-    indexes
   }
 }

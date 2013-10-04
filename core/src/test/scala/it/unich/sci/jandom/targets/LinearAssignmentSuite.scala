@@ -20,7 +20,7 @@ package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.sci.jandom.domains.numerical.LinearForm
 
 /**
@@ -29,7 +29,7 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
  *
  */
 class LinearAssignmentSuite extends FunSuite {
-
+  val BoxDouble = BoxDoubleDomain()
   val env = Environment("v1","v2")
 
   test("simple linear form assignments") {

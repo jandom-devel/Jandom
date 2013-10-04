@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ package it.unich.sci.jandom. widenings
 
 import org.scalatest.FunSpec
 
-import it.unich.sci.jandom.domains.numerical.BoxDouble
+import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.sci.jandom.ppfactories.DelayedWideningFactory
 import it.unich.sci.jandom.targets.MockTarget
 
@@ -28,15 +28,16 @@ import it.unich.sci.jandom.targets.MockTarget
  * Test suite for delayed widening factories.
  * @author Gianluca Amato <amato@sci.unich.it>
  */
-class DelayedWideningFactorySuite extends FunSpec {  
-  
+class DelayedWideningFactorySuite extends FunSpec {
+  val BoxDouble = BoxDoubleDomain()
+
   describe("Delayed Widening Factory") {
-    it ("should create a difference instance of a delayed widening each time it is called")  {      
+    it ("should create a difference instance of a delayed widening each time it is called")  {
       val dwf = DelayedWideningFactory[MockTarget#ProgramPoint](DefaultWidening,1)
-      val wd = dwf(0)       
+      val wd = dwf(0)
       val d1 = BoxDouble(Array(0),Array(1))
       val d2 = BoxDouble(Array(1),Array(2))
-      val d3 = wd(d1,d2)    
+      val d3 = wd(d1,d2)
       expectResult ( BoxDouble(Array(0),Array(2)) ) { d3 }
       val wd2 = dwf(0)
       val d4 = BoxDouble(Array(2),Array(3))
@@ -45,11 +46,11 @@ class DelayedWideningFactorySuite extends FunSpec {
       val wd3 = dwf(1)
       val d6 = BoxDouble(Array(3),Array(4))
       val d7 = wd3(d5,d6)
-      expectResult ( BoxDouble(Array(0),Array(4)) ) { d7 }          
+      expectResult ( BoxDouble(Array(0),Array(4)) ) { d7 }
     }
-    
+
     it ("should reject negative delays") {
       intercept[IllegalArgumentException] { DelayedWideningFactory(DefaultWidening,-1) }
     }
-  }      
+  }
 }
