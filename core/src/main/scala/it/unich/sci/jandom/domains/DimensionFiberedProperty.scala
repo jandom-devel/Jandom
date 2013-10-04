@@ -28,6 +28,8 @@ package it.unich.sci.jandom.domains
 trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <: AbstractProperty[Property] {
   this: Property =>
 
+  type Domain <: DimensionFiberedDomain
+
   /**
    * Returns the dimension of the property.
    */
