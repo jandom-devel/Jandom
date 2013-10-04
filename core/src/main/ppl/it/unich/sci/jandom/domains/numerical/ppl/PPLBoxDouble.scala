@@ -24,17 +24,16 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
 import parma_polyhedra_library._
 
 /**
- * The domain for possibly opened box over doubles implemented within $PPL. This is essentially
- * a wrapper transforming methods of `Double_Box` to methods of `NumericalProperty`. We clone
- * objects in order have an immutable class.
- * @param pplbox an object of class `Double_Box` which is the $PPL wrapped object.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * This is an element of the domain `PPLBoxDoubleDomain`
+ * This is essentially a wrapper transforming methods of `Double_Box` to methods of `NumericalProperty`.
+ * We clone objects in order to get an immutable class.
+ * @author Gianluca Amato <gamato@unich.it>
  */
-class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPLBoxDouble] {
+final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPLBoxDouble] {
 
-  type Domain = PPLBoxDouble.type
+  type Domain = PPLBoxDoubleDomain
 
-  def domain = PPLBoxDouble
+  def domain = PPLBoxDoubleDomain()
 
   def widening(that: PPLBoxDouble): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
@@ -148,11 +147,7 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
 
   def mapVariables(rho: Seq[Int]) = {
     val newpplbox = new Double_Box(pplbox)
-    val pf = new Partial_Function
-    for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {
-      pf.insert(i, newi)
-    }
-    newpplbox.map_space_dimensions(pf)
+    newpplbox.map_space_dimensions(PPLUtils.sequenceToPartialFunction(rho))
     new PPLBoxDouble(newpplbox)
   }
 
@@ -164,9 +159,9 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
 
   def isBottom = isEmpty
 
-  def bottom = PPLBoxDouble.bottom(pplbox.space_dimension.toInt)
+  def bottom = domain.bottom(pplbox.space_dimension.toInt)
 
-  def top = PPLBoxDouble.top(pplbox.space_dimension.toInt)
+  def top = domain.top(pplbox.space_dimension.toInt)
 
   def tryCompareTo[B >: PPLBoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLBoxDouble =>
@@ -182,26 +177,5 @@ class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPL
 
   override def hashCode: Int = pplbox.hashCode
 
-  def mkString(vars: Seq[String]): String =
-    PPLUtils.replaceOutputWithVars(pplbox.toString, vars)
-}
-
-/**
- * This is the factory for ``PPLBoxDouble`` properties.
- */
-object PPLBoxDouble extends NumericalDomain {
-  PPLInitializer
-
-  type Property = PPLBoxDouble
-
-  def top(n: Int): PPLBoxDouble = {
-    val pplbox = new Double_Box(n, Degenerate_Element.UNIVERSE)
-    new PPLBoxDouble(pplbox)
-  }
-
-  def bottom(n: Int): PPLBoxDouble = {
-    val pplbox = new Double_Box(n, Degenerate_Element.EMPTY)
-    new PPLBoxDouble(pplbox)
-  }
-
+  def mkString(vars: Seq[String]): String = PPLUtils.constraintsToString(pplbox.minimized_constraints(), vars)
 }

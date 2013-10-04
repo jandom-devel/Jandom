@@ -21,16 +21,19 @@
 package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
-import it.unich.sci.jandom.domains.numerical.ppl.PPLCPolyhedron
+
+import it.unich.sci.jandom.domains.numerical.ppl.PPLDomain
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvmsoot.SootFrameNumericalDomain
+
+import parma_polyhedra_library.C_Polyhedron
 
 /**
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class SootFrameNumericalDomainSuite extends FunSuite {
-  val numdom = PPLCPolyhedron
+  val numdom = PPLDomain[C_Polyhedron]()
   val dom = new SootFrameNumericalDomain(numdom)
   val classAType = soot.RefType.v("classA")
   val types = Seq(classAType, soot.IntType.v(), soot.DoubleType.v())

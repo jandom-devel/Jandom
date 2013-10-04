@@ -25,7 +25,7 @@ import it.unich.sci.jandom.domains.CachedTopBottom
 /**
  * This is the abstract domain of parallelotopes as appears in the NSAD 2012 paper. It is written
  * using the Breeze Math library. It is not safe, due to rounding problem of Arithmetic.
- * It is declare private so that we can be sure to build a single instance of it. We do not
+ * It is declared private so that we can be sure to build a single instance of it. We do not
  * directly use Scala objects because we want to keep a uniform behaviour with other
  * non-singleton abstract domains.
  *

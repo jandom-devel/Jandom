@@ -26,7 +26,7 @@ package it.unich.sci.jandom.domains.numerical
  * @author Gianluca Amato <gamato@unich.it>
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
-class SumDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends NumericalDomain {
+final class SumDomain(val dom1: NumericalDomain, val dom2: NumericalDomain) extends NumericalDomain {
 
   /**
    * This class represens a single property in the sum domain, which is the Minkowski sum

@@ -35,7 +35,7 @@ import scala.Array.canBuildFrom
  * square or if `A` has not the same size of `low`.
  */
 
-class Parallelotope (
+final class Parallelotope (
   val isEmpty: Boolean,
   private[domains] val low: DenseVector[Double],
   private[domains] val A: DenseMatrix[Double],

@@ -104,6 +104,7 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
   }
   
   def timeJandomPPL(reps: Int) {
+    val PPLBoxDouble = PPLBoxDoubleDomain()
     for (iter <- 1 to reps) {
       var db = PPLBoxDouble.bottom(numvars)
       val full = PPLBoxDouble.top(numvars)
@@ -116,7 +117,7 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
   
   def timeJandomPPLReflexive(reps: Int) {
     for (iter <- 1 to reps) {
-      val domain = new PPLDomain[Octagonal_Shape_double]
+      val domain = PPLDomain[Octagonal_Shape_double]()
       var db = domain.bottom(numvars)
       val full = domain.top(numvars)
       for (i <- 1 to numpoints) {
@@ -128,8 +129,7 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
   
   def timeJandomPPLMacro(reps: Int) {
     for (iter <- 1 to reps) {
-      // we explicityl type domain in order to avoid generation
-      // of existential types.
+      // we explicitly type domain in order to avoid generation of existential types.
       val domain: NumericalDomain = PPLPropertyMacros[Double_Box]
       var db = domain.bottom(numvars)
       val zero = Array.fill(numvars)(0.0)

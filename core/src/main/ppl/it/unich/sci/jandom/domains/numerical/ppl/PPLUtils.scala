@@ -25,6 +25,9 @@ import parma_polyhedra_library.Linear_Expression_Variable
 import parma_polyhedra_library.Variable
 import java.util.regex.Matcher
 import it.unich.sci.jandom.domains.numerical.LinearForm
+import parma_polyhedra_library.Constraint_System
+import parma_polyhedra_library.Variable_Stringifier
+import parma_polyhedra_library.Partial_Function
 
 /**
  * This is a collection of methods used by the PPL-based numerical domains.
@@ -32,28 +35,7 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
  */
 private[jandom] object PPLUtils {
   /**
-   * This is an utility method used by the mkString methods of the PPL-based
-   * numerical domains. Since the Java API is not very reach, the only way
-   * to realize `mkString` is to use the standard `toString` method and replace
-   * the letters `A`, `B`, etc... with the corresponding variable name. This is what
-   * this method does.
-   * @param pplout a string obtained as the result of a `toString` method for a PPL object
-   * @param vars a sequence of variable names to replace for `A`, `B`, etc...
-   * @result the output `pplout` converted in the `mkString` format
-   */
-  def replaceOutputWithVars(pplout: String, vars: Seq[String]): String = {
-    var str = pplout
-    for (i <- 0 until vars.length) {
-      val letter = i % ('Z'-'A' + 1)
-      val number = i / ('Z'-'A' + 1)
-      val pplvar = (letter+'A').toChar.toString + (if (number!=0) number + " " else " ")
-      str = str.replaceAll(pplvar, Matcher.quoteReplacement(vars(i))+" ")
-    }
-    str
-  }
-
-  /**
-   * Converts a sequence of homogeneous and in-homogeneous coefficients into a `Linear_Expression`
+   * Converts a `LinearForm` into a `Linear_Expression`
    * object.
    * @param coeff the homogeneous coefficients.
    * @param known the in-homogeneous coefficient.
@@ -64,5 +46,37 @@ private[jandom] object PPLUtils {
 	  le = le.sum ( (new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(lf.homcoeffs(i).toInt)) ))
 	}
     return le
+  }
+
+  /**
+   * Generates a string representation of a constraint system.
+   * @param cs a constraint system
+   * @param vars the variables to use for the string form
+   */
+  def constraintsToString(cs: Constraint_System, vars: Seq[String]): String = {
+    import collection.JavaConversions._
+
+    val vs = new Variable_Stringifier {
+      def stringify(x: Long) = vars(x.toInt)
+    }
+    Variable.setStringifier(vs)
+    val result = for (c <- cs)
+      yield c.toString
+    Variable.setStringifier(null)
+    result.mkString("[ "," , "," ]")
+  }
+
+  /**
+   * Converts a sequence into a partial function.
+   * @param rho the original sequence. If `rho(i)=j` and `j>0`, the resulting partial
+   * function maps `i` to `j`. If `j=0`, then `i` is not in the domain of the resulting
+   * function.
+   */
+  def sequenceToPartialFunction(rho: Seq[Int]): Partial_Function = {
+    val pf = new Partial_Function
+    for ((newi, i) <- rho.zipWithIndex; if newi >= 0) {
+      pf.insert(i, newi)
+    }
+    pf
   }
 }

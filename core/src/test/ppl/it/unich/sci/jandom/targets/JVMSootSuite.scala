@@ -20,12 +20,13 @@ package it.unich.sci.jandom.targets
 
 import org.scalatest.FunSuite
 
-import it.unich.sci.jandom.domains.numerical.ppl.PPLCPolyhedron
+import it.unich.sci.jandom.domains.numerical.ppl.PPLDomain
 import it.unich.sci.jandom.domains.objects.PairSharingDomain
 import it.unich.sci.jandom.domains.objects.UP
 import it.unich.sci.jandom.parsers.NumericalPropertyParser
 import it.unich.sci.jandom.targets.jvmsoot._
 
+import parma_polyhedra_library.C_Polyhedron
 import soot._
 
 /**
@@ -40,7 +41,7 @@ class JVMSootSuite extends FunSuite {
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
   c.setApplicationClass()
   val classAnalysis = new ClassReachableAnalysis(scene)
-  val numdomain = PPLCPolyhedron
+  val numdomain = PPLDomain[C_Polyhedron]()
 
   bafTests()
   jimpleNumTests()
