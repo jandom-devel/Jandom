@@ -140,13 +140,12 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
    * @param x the source `PPLProperty`
    * @return x transformed into a `PPLPropert[PPLNativeProperty]`
    */
-  def apply[PPLSourceProperty <: AnyRef: Manifest](x: PPLProperty[PPLSourceProperty]): Property = {
-    val srcClass = implicitly[Manifest[PPLSourceProperty]].runtimeClass.asInstanceOf[Class[PPLSourceProperty]]
+  def apply(x: PPLProperty[_ <: AnyRef]): Property = {
+    val srcClass = x.domain.myClass
     val constructor = myClass.getConstructor(srcClass, classOf[Complexity_Class])
     val pplobject = constructor.newInstance(x.pplobject, Complexity_Class.SIMPLEX_COMPLEXITY)
     new PPLProperty(this, pplobject)
   }
-
 }
 
 object PPLDomain {
