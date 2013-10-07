@@ -33,7 +33,7 @@ trait DomainTransformation[-DomA <: AbstractDomain, -DomB <: AbstractDomain] {
    * @param x the source property
    * @return the translation of x in the domain d
    */
-  def apply(x: DomA#Property, d: DomB): d.Property
+  def apply(src: DomA, dst: DomB)(x: src.Property): dst.Property
 }
 
 /**
@@ -46,31 +46,31 @@ trait DomainTransformation[-DomA <: AbstractDomain, -DomB <: AbstractDomain] {
 object DomainTransformation {
   implicit object ParallelotopeToBoxDouble extends DomainTransformation[ParallelotopeDomain, BoxDoubleDomain] {
     import breeze.linalg.{ DenseMatrix, DenseVector }
-    def apply(x: ParallelotopeDomain#Property, boxdom: BoxDoubleDomain): boxdom.Property = {
+    def apply(src: ParallelotopeDomain, dst: BoxDoubleDomain)(x: src.Property): dst.Property = {
       val newPar = x.rotate(DenseMatrix.eye(x.dimension))
       if (newPar.isEmpty)
-        boxdom.bottom(newPar.dimension)
+        dst.bottom(newPar.dimension)
       else
-        boxdom(newPar.low.toArray, newPar.high.toArray)
+        dst(newPar.low.toArray, newPar.high.toArray)
     }
   }
 
   implicit object BoxDoubleToParallelotope extends DomainTransformation[BoxDoubleDomain, ParallelotopeDomain] {
     import breeze.linalg.{ DenseMatrix, DenseVector }
-    def apply(x: BoxDoubleDomain#Property, ptopedom: ParallelotopeDomain) = {
-      ptopedom(DenseVector(x.low), DenseMatrix.eye(x.dimension), DenseVector(x.high))
+    def apply(src: BoxDoubleDomain, dst: ParallelotopeDomain)(x: src.Property): dst.Property = {
+      dst(DenseVector(x.low), DenseMatrix.eye(x.dimension), DenseVector(x.high))
     }
   }
 
   implicit object ParallelotopeToParallelotope extends DomainTransformation[ParallelotopeDomain, ParallelotopeDomain] {
-    def apply(x: ParallelotopeDomain#Property, ptopedom: ParallelotopeDomain) = x
+    def apply(src: ParallelotopeDomain, dst: ParallelotopeDomain)(x: src.Property): dst.Property = x
   }
 
   implicit object BoxDoubleToBoxDouble extends DomainTransformation[BoxDoubleDomain, BoxDoubleDomain] {
-    def apply(x: BoxDoubleDomain#Property, boxdom: BoxDoubleDomain): boxdom.Property = boxdom(x.low,x.high)
+    def apply(src: BoxDoubleDomain, dst: BoxDoubleDomain)(x: src.Property): dst.Property = dst(x.low, x.high)
   }
 
   object NumericalPropertyToBoxDouble extends DomainTransformation[NumericalDomain, BoxDoubleDomain] {
-    def apply(x: NumericalDomain#Property, boxdom: BoxDoubleDomain): boxdom.Property = boxdom.top(x.dimension)
+    def apply(src: NumericalDomain, dst: BoxDoubleDomain)(x: src.Property): dst.Property = dst.top(x.dimension)
   }
 }

@@ -22,6 +22,7 @@ import org.scalatest.FunSuite
 import parma_polyhedra_library.Octagonal_Shape_double
 import parma_polyhedra_library.Double_Box
 import it.unich.sci.jandom.domains.numerical.LinearForm
+import it.unich.sci.jandom.domains.DomainTransformation
 
 /**
  * Test suite for the PPLProperty numerical domain.
@@ -29,6 +30,7 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
  */
 class PPLPropertySuite extends FunSuite {
   val octDomain = PPLDomain[Octagonal_Shape_double]()
+  val boxDomain = PPLDomain[Double_Box]()
 
   val full = octDomain.top(3)
   val empty = octDomain.bottom(3)

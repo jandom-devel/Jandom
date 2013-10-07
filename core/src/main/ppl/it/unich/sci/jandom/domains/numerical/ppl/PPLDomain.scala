@@ -19,7 +19,6 @@
 package it.unich.sci.jandom.domains.numerical.ppl
 
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
-
 import parma_polyhedra_library.By_Reference
 import parma_polyhedra_library.Coefficient
 import parma_polyhedra_library.Constraint
@@ -30,6 +29,7 @@ import parma_polyhedra_library.Partial_Function
 import parma_polyhedra_library.Polyhedron
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variables_Set
+import it.unich.sci.jandom.domains.DomainTransformation
 
 /**
  * This is the domain of PPL properties.  It is able to represent (almost) any property
@@ -48,9 +48,8 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   PPLInitializer
 
   /*
-   * The class object correspondening to PPLNativeProperty
+   * The class object corresponding to PPLNativeProperty
    */
-
   private val myClass =
     implicitly[Manifest[PPLNativeProperty]].runtimeClass.asInstanceOf[java.lang.Class[PPLNativeProperty]]
 
@@ -59,7 +58,6 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
    * Some methods takes a Polyhedron as a secondary parameter, and getMethod requires the precise
    * signature of methods.
    */
-
   private val otherClass = {
     val polyhedronClass = classOf[Polyhedron]
     if (polyhedronClass.isAssignableFrom(myClass))
@@ -123,12 +121,12 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
    */
   val supportsNarrowing = narrowingAssignHandle != null
 
-  def top(n: Int): PPLProperty[PPLNativeProperty] = {
+  def top(n: Int): Property = {
     val pplobject = constructor(n, Degenerate_Element.UNIVERSE)
     new PPLProperty[PPLNativeProperty](this, pplobject)
   }
 
-  def bottom(n: Int): PPLProperty[PPLNativeProperty] = {
+  def bottom(n: Int): Property = {
     val pplobject = constructor(n, Degenerate_Element.EMPTY)
     new PPLProperty[PPLNativeProperty](this, pplobject)
   }
