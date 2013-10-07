@@ -36,8 +36,8 @@ import it.unich.sci.jandom.domains.DomainTransformation
 final class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val dom2: D2)(
       implicit val dom1Todom2: DomainTransformation[D1,D2], val dom2Todom1: DomainTransformation[D2,D1]) extends NumericalDomain {
 
-  private val d12 = dom1Todom2(dom1,dom2) _
-  private val d21 = dom2Todom1(dom2,dom1) _
+  private val d12 = dom1Todom2(dom1,dom2)
+  private val d21 = dom2Todom1(dom2,dom1)
 
   def top(n: Int) =
     new Property(dom1.top(n), dom2.top(n))

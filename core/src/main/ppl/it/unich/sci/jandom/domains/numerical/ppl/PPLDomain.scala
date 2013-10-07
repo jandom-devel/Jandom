@@ -135,27 +135,16 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
 
   /**
    * Build a PPL property from a PPL property of other type. Conversion is slow because the right constructor
-   * is looked up at runtime. This is not type safe, but it is only though to be used internally.
-   * @param srcClass the `Class` object of the source PPL native property
-   * @param x the source `PPLProperty`
-   * @return x transformed into a `PPLPropert[PPLNativeProperty]`
-   */
-  private def apply(srcClass: Class[_], x: PPLProperty[_]): Property = {
-    val constructor = myClass.getConstructor(srcClass, classOf[Complexity_Class])
-    val pplobject = constructor.newInstance(x.pplobject.asInstanceOf[AnyRef], Complexity_Class.SIMPLEX_COMPLEXITY)
-    new PPLProperty(this, pplobject)
-  }
-
-  /**
-   * Build a PPL property from a PPL property of other type. Conversion is slow because the right constructor
    * is looked up at runtime.
    * @tparam PPLSourceProperty the class of the native PPL property
    * @param x the source `PPLProperty`
    * @return x transformed into a `PPLPropert[PPLNativeProperty]`
    */
   def apply[PPLSourceProperty <: AnyRef: Manifest](x: PPLProperty[PPLSourceProperty]): Property = {
-    val srcClass = implicitly[Manifest[PPLSourceProperty]].runtimeClass.asInstanceOf[java.lang.Class[PPLSourceProperty]]
-    apply(srcClass,x)
+    val srcClass = implicitly[Manifest[PPLSourceProperty]].runtimeClass.asInstanceOf[Class[PPLSourceProperty]]
+    val constructor = myClass.getConstructor(srcClass, classOf[Complexity_Class])
+    val pplobject = constructor.newInstance(x.pplobject, Complexity_Class.SIMPLEX_COMPLEXITY)
+    new PPLProperty(this, pplobject)
   }
 
 }
@@ -164,7 +153,15 @@ object PPLDomain {
   // TODO: evaluate whether we should mix with CachedTopBottom
   def apply[PPLNativeProperty <: AnyRef: Manifest]() = new PPLDomain[PPLNativeProperty]
 
-  object PPLtoPPL extends DomainTransformation[PPLDomain[_], PPLDomain[_]] {
-	  def apply(src: PPLDomain[_], dst: PPLDomain[_])(x: src.Property): dst.Property =  dst(src.myClass, x)
+  object PPLtoPPL extends DomainTransformation[PPLDomain[_ <: AnyRef], PPLDomain[_ <: AnyRef]] {
+    private def getTransformer[S <: AnyRef, D <: AnyRef](src: PPLDomain[S], dst: PPLDomain[D]): src.Property => dst.Property = {
+      val constructor = dst.myClass.getConstructor(src.myClass, classOf[Complexity_Class])
+      val transformer = { (x: src.Property) =>
+        val pplobject = constructor.newInstance(x.pplobject, Complexity_Class.SIMPLEX_COMPLEXITY)
+        new PPLProperty(dst, pplobject)
+      }
+      transformer
+    }
+    def apply(src: PPLDomain[_ <: AnyRef], dst: PPLDomain[_ <: AnyRef]): src.Property => dst.Property = getTransformer(src, dst)
   }
 }
