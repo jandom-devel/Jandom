@@ -153,7 +153,7 @@ object PPLDomain {
   // TODO: evaluate whether we should mix with CachedTopBottom
   def apply[PPLNativeProperty <: AnyRef: Manifest]() = new PPLDomain[PPLNativeProperty]
 
-  object PPLtoPPL extends DomainTransformation[PPLDomain[_ <: AnyRef], PPLDomain[_ <: AnyRef]] {
+  implicit object PPLtoPPL extends DomainTransformation[PPLDomain[_ <: AnyRef], PPLDomain[_ <: AnyRef]] {
     private def getTransformer[S <: AnyRef, D <: AnyRef](src: PPLDomain[S], dst: PPLDomain[D]): src.Property => dst.Property = {
       val constructor = dst.myClass.getConstructor(src.myClass, classOf[Complexity_Class])
       val transformer = { (x: src.Property) =>

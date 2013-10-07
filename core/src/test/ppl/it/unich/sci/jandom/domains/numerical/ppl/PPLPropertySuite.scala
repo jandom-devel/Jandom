@@ -139,7 +139,7 @@ class PPLPropertySuite extends FunSuite {
   }
 
   test("constructor from other domains and transformers") {
-    val transform = PPLDomain.PPLtoPPL
+    val transform = implicitly[DomainTransformation[PPLDomain[_ <: AnyRef], PPLDomain[_ <: AnyRef]]]
     val diamond = octDomain.top(2).linearInequality(LinearForm(-1, 1, 1)).linearInequality(LinearForm(-1,-1,-1)).
                   linearInequality(LinearForm(-1,1,-1)).linearInequality(LinearForm(-1,-1,1))
     val box = boxDomain.top(2).linearInequality(LinearForm(-1, 1, 0)).linearInequality(LinearForm(-1,-1,0)).
