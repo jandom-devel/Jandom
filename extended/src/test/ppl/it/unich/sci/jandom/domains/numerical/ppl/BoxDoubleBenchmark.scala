@@ -130,7 +130,7 @@ class BoxDoubleBenchmark extends SimpleBenchmark {
   def timeJandomPPLMacro(reps: Int) {
     for (iter <- 1 to reps) {
       // we explicitly type domain in order to avoid generation of existential types.
-      val domain: NumericalDomain = PPLPropertyMacros[Double_Box]
+      val domain: NumericalDomain = PPLDomainMacro[Double_Box]
       var db = domain.bottom(numvars)
       val zero = Array.fill(numvars)(0.0)
       val full = domain.top(numvars)

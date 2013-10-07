@@ -29,7 +29,7 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
  * @author Gianluca Amato <g.amato@unich.it>
  */
 class PPLMacroPropertySuite extends FunSuite {
-  val octDomain: NumericalDomain = PPLPropertyMacros[Octagonal_Shape_double]
+  val octDomain: PPLDomainMacro[Octagonal_Shape_double] = PPLDomainMacro[Octagonal_Shape_double]
 
   val full = octDomain.top(3)
   val empty = octDomain.bottom(3)
@@ -86,7 +86,7 @@ class PPLMacroPropertySuite extends FunSuite {
   }
 
   test("disequality is precise on boxes") {
-    val boxDomain: NumericalDomain = PPLPropertyMacros[Double_Box]
+    val boxDomain: NumericalDomain = PPLDomainMacro[Double_Box]
     val obj = boxDomain.top(3).linearAssignment(0, 0.0)
     expectResult(boxDomain.bottom(3)) { obj.linearDisequality(LinearForm(0, 1, 0, 0)) }
   }
