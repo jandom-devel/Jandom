@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,8 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
  */
 class PPLMacroPropertySuite extends FunSuite {
   val octDomain: PPLDomainMacro[Octagonal_Shape_double] = PPLDomainMacro[Octagonal_Shape_double]
-
+  val boxDomain: PPLDomainMacro[Double_Box] = PPLDomainMacro[Double_Box]
+  
   val full = octDomain.top(3)
   val empty = octDomain.bottom(3)
 
@@ -98,7 +99,7 @@ class PPLMacroPropertySuite extends FunSuite {
     expectResult("[ -v0 >= 2 , -v0 - v1 >= 1 ]") { obj2.toString }
   }
 
-  test("string conversion for high-dimensional spaces") {    
+  test("string conversion for high-dimensional spaces") {
     val obj3 = octDomain.top(33).linearInequality(LinearForm.v(27))
     expectResult("[ -v27 >= 0 ]") { obj3.toString }
   }
@@ -126,4 +127,14 @@ class PPLMacroPropertySuite extends FunSuite {
       linearAssignment(2, LinearForm(3.0, 0, 0, 0, 0)).
       linearInequality(LinearForm(0.0, 0, 0, 1, 1))
     expectResult(obj3)(obj1.connect(obj2, 1))
-  }}
+  }
+
+  test("transformers") {
+    val transform = PPLDomainMacro.transformer[Octagonal_Shape_double, Double_Box]
+    val diamond = octDomain.top(2).linearInequality(LinearForm(-1, 1, 1)).linearInequality(LinearForm(-1, -1, -1)).
+      linearInequality(LinearForm(-1, 1, -1)).linearInequality(LinearForm(-1, -1, 1))
+    val box = boxDomain.top(2).linearInequality(LinearForm(-1, 1, 0)).linearInequality(LinearForm(-1, -1, 0)).
+      linearInequality(LinearForm(-1, 0, -1)).linearInequality(LinearForm(-1, 0, 1))
+    expectResult(box) { transform(octDomain, boxDomain)(diamond) }
+  }
+}

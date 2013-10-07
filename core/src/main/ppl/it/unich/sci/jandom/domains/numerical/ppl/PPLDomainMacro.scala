@@ -32,10 +32,12 @@ import parma_polyhedra_library._
  * @tparam PPLType the PPL class of the numerical properties handled by this domain
  */
 abstract class PPLDomainMacro[PPLType] extends NumericalDomain {
-  type Property <: PPLPropertyMacro[Property,PPLType]
+  type Property <: PPLPropertyMacro[Property, PPLType]
+
+  def apply(x: PPLType): Property
 }
 
-abstract class PPLPropertyMacro[Property <: PPLPropertyMacro[Property,PPLType], PPLType] extends NumericalProperty[Property] {
+abstract class PPLPropertyMacro[Property <: PPLPropertyMacro[Property, PPLType], PPLType] extends NumericalProperty[Property] {
   this: Property =>
   type Domain <: PPLDomainMacro[PPLType]
 
@@ -58,6 +60,43 @@ object PPLDomainMacro {
   def apply[PPLType]: PPLDomainMacro[PPLType] = macro PPLDomainImpl[PPLType]
 
   /**
+   * This method returns a DomainTransformation between PPL macro-based domains
+   */
+  def transformer[PPLSource, PPLDest]: DomainTransformation[PPLDomainMacro[PPLSource], PPLDomainMacro[PPLDest]] = macro PPLTransformationImpl[PPLSource, PPLDest]
+
+  /**
+   * This is the implementaton of the transformer `method`
+   */
+  def PPLTransformationImpl[PPLSource: c.WeakTypeTag, PPLDest: c.WeakTypeTag](c: Context): c.Expr[DomainTransformation[PPLDomainMacro[PPLSource], PPLDomainMacro[PPLDest]]] = {
+    import c.universe._
+    import parma_polyhedra_library.Double_Box
+    import parma_polyhedra_library.C_Polyhedron
+
+    val template = reify {
+      object PPLtoPPL extends DomainTransformation[PPLDomainMacro[Double_Box], PPLDomainMacro[C_Polyhedron]] {
+        def apply(src: PPLDomainMacro[Double_Box], dst: PPLDomainMacro[C_Polyhedron]): src.Property => dst.Property = { (x) =>
+          dst(new C_Polyhedron(x.pplobject))
+        }
+      }
+    }
+
+    val PPLSourceTypeSymbol = implicitly[c.WeakTypeTag[PPLSource]].tpe.typeSymbol
+    val PPLDestTypeSymbol = implicitly[c.WeakTypeTag[PPLDest]].tpe.typeSymbol
+
+    // Here we substitute the placeholders Double_Box and C_Polyhedron with the real types
+    val templateWithSubstitution = template.tree.substituteSymbols(
+      List(typeOf[Double_Box].typeSymbol, typeOf[C_Polyhedron].typeSymbol),
+      List(PPLSourceTypeSymbol, PPLDestTypeSymbol))
+
+    // Here we add the resulting domain as output of the tree
+    val outputTree = templateWithSubstitution match {
+      case Block(stats, expr) => Block(stats, Ident(newTermName("PPLtoPPL")))
+    }
+
+    c.Expr[DomainTransformation[PPLDomainMacro[PPLSource], PPLDomainMacro[PPLDest]]](outputTree)
+  }
+
+  /**
    * This is the implementation of the `apply` method.
    * @tparam PPLType the PPL class of the numerical properties handled by this domain
    */
@@ -74,7 +113,7 @@ object PPLDomainMacro {
        * but all references to `Double_Box` is changed by the macro and replaced by `PPLType`.
        * @author Gianluca Amato <gamato@unich.it>
        */
-      class ThisProperty(val pplobject: Double_Box) extends PPLPropertyMacro[ThisProperty, Double_Box]{
+      class ThisProperty(val pplobject: Double_Box) extends PPLPropertyMacro[ThisProperty, Double_Box] {
         type Domain = ThisDomain.type
 
         def domain = ThisDomain
@@ -233,6 +272,8 @@ object PPLDomainMacro {
           val pplobject = new Double_Box(n, Degenerate_Element.EMPTY)
           new ThisProperty(pplobject)
         }
+
+        def apply(x: Double_Box): ThisProperty = new ThisProperty(x)
       }
     }
 
