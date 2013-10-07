@@ -137,4 +137,14 @@ class PPLPropertySuite extends FunSuite {
       linearInequality(LinearForm(0, 0, 0, 1, 1))
     expectResult(obj3)(obj1.connect(obj2, 1))
   }
+
+  test("constructor from other domains") {
+    val transform = PPLDomain.PPLtoPPL
+    val diamond = octDomain.top(2).linearInequality(LinearForm(-1, 1, 1)).linearInequality(LinearForm(-1,-1,-1)).
+                  linearInequality(LinearForm(-1,1,-1)).linearInequality(LinearForm(-1,-1,1))
+    val box = boxDomain.top(2).linearInequality(LinearForm(-1, 1, 0)).linearInequality(LinearForm(-1,-1,0)).
+                  linearInequality(LinearForm(-1,0,-1)).linearInequality(LinearForm(-1,0,1))
+    expectResult(box) { boxDomain(diamond) }
+    expectResult(box) { transform(octDomain, boxDomain)(diamond) }
+  }
 }

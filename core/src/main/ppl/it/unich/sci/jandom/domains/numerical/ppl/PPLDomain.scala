@@ -30,6 +30,8 @@ import parma_polyhedra_library.Polyhedron
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variables_Set
 import it.unich.sci.jandom.domains.DomainTransformation
+import parma_polyhedra_library.Complexity_Class
+import java.lang.reflect.Constructor
 
 /**
  * This is the domain of PPL properties.  It is able to represent (almost) any property
@@ -123,16 +125,46 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
 
   def top(n: Int): Property = {
     val pplobject = constructor(n, Degenerate_Element.UNIVERSE)
-    new PPLProperty[PPLNativeProperty](this, pplobject)
+    new PPLProperty(this, pplobject)
   }
 
   def bottom(n: Int): Property = {
     val pplobject = constructor(n, Degenerate_Element.EMPTY)
-    new PPLProperty[PPLNativeProperty](this, pplobject)
+    new PPLProperty(this, pplobject)
   }
+
+  /**
+   * Build a PPL property from a PPL property of other type. Conversion is slow because the right constructor
+   * is looked up at runtime. This is not type safe, but it is only though to be used internally.
+   * @param srcClass the `Class` object of the source PPL native property
+   * @param x the source `PPLProperty`
+   * @return x transformed into a `PPLPropert[PPLNativeProperty]`
+   */
+  private def apply(srcClass: Class[_], x: PPLProperty[_]): Property = {
+    val constructor = myClass.getConstructor(srcClass, classOf[Complexity_Class])
+    val pplobject = constructor.newInstance(x.pplobject.asInstanceOf[AnyRef], Complexity_Class.SIMPLEX_COMPLEXITY)
+    new PPLProperty(this, pplobject)
+  }
+
+  /**
+   * Build a PPL property from a PPL property of other type. Conversion is slow because the right constructor
+   * is looked up at runtime.
+   * @tparam PPLSourceProperty the class of the native PPL property
+   * @param x the source `PPLProperty`
+   * @return x transformed into a `PPLPropert[PPLNativeProperty]`
+   */
+  def apply[PPLSourceProperty <: AnyRef: Manifest](x: PPLProperty[PPLSourceProperty]): Property = {
+    val srcClass = implicitly[Manifest[PPLSourceProperty]].runtimeClass.asInstanceOf[java.lang.Class[PPLSourceProperty]]
+    apply(srcClass,x)
+  }
+
 }
 
 object PPLDomain {
   // TODO: evaluate whether we should mix with CachedTopBottom
   def apply[PPLNativeProperty <: AnyRef: Manifest]() = new PPLDomain[PPLNativeProperty]
+
+  object PPLtoPPL extends DomainTransformation[PPLDomain[_], PPLDomain[_]] {
+	  def apply(src: PPLDomain[_], dst: PPLDomain[_])(x: src.Property): dst.Property =  dst(src.myClass, x)
+  }
 }
