@@ -115,4 +115,11 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
    */
   def bottom: Property
 
+  /**
+   * Determines if two properties are the same on the base of `tryCompareTo`
+   */
+  override def equals(other: Any): Boolean = other match {
+    case other: AbstractProperty[Property] => this.tryCompareTo(other) == Some(0)
+    case _ => false
+  }
 }

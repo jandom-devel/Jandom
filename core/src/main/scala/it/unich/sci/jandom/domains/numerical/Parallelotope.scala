@@ -533,11 +533,6 @@ final class Parallelotope (
   def >[B >: Parallelotope](that: Parallelotope)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
     (this >= that) && !(this <= that)
 
-  override def equals(other: Any): Boolean = other match {
-    case other: Parallelotope => (this <= other) && (other <= this)
-    case _ => false
-  }
-
   def mkString(vars: Seq[String]): String = {
 
     /**

@@ -402,20 +402,17 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
       case other: Property =>
-        if (this.equals(other))
+        val lowpairs = (this.low, other.low).zipped
+        val highpairs = (this.high, other.high).zipped
+        if (lowpairs.forall(_ == _) && highpairs.forall(_ <= _))
           Some(0)
-        else if ((this.low, other.low).zipped.forall(_ <= _) && (this.high, other.high).zipped.forall(_ >= _))
+        else if (lowpairs.forall(_ <= _) && highpairs.forall(_ >= _))
           Some(1)
-        else if ((this.low, other.low).zipped.forall(_ >= _) && (this.high, other.high).zipped.forall(_ <= _))
+        else if (lowpairs.forall(_ >= _) && highpairs.forall(_ <= _))
           Some(-1)
         else
           None
       case _ => None
-    }
-
-    override def equals(other: Any): Boolean = other match {
-      case other: BoxDoubleDomain#Property => java.util.Arrays.equals(this.low, other.low) && java.util.Arrays.equals(this.high, other.high)
-      case _ => false
     }
 
     override def hashCode: Int = 41 * (41 + low.hashCode) + high.hashCode

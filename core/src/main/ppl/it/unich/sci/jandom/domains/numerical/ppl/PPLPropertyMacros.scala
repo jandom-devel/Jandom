@@ -190,11 +190,6 @@ object PPLPropertyMacros {
           case _ => None
         }
 
-        override def equals(other: Any): Boolean = other match {
-          case other: PPLProperty => pplbox.equals(other.pplbox)
-          case _ => false
-        }
-
         override def hashCode: Int = pplbox.hashCode
 
         def mkString(vars: Seq[String]): String = PPLUtils.constraintsToString(pplbox.minimized_constraints(), vars)

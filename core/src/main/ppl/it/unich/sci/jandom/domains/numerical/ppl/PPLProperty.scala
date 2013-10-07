@@ -186,17 +186,12 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
         return None
       else {
         val other_pplobject = other.pplobject.asInstanceOf[PPLNativeProperty]
-        if (pplobject == other_pplobject) Some(0)
+        if (pplobject equals other_pplobject) Some(0)
         else if (domain.strictly_contains(pplobject, other_pplobject)) Some(1)
         else if (domain.strictly_contains(other_pplobject, pplobject)) Some(-1)
         else None
       }
     case _ => None
-  }
-
-  override def equals(other: Any): Boolean = other match {
-    case other: PPLProperty[_] => pplobject.equals(other.pplobject)
-    case _ => false
   }
 
   override def hashCode: Int = pplobject.hashCode

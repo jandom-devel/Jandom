@@ -33,7 +33,7 @@ import it.unich.sci.jandom.domains.DomainTransformation
  * @author Gianluca Amato <gamato@unich.it>
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
-final class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val dom2: D2)(
+class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val dom2: D2)(
       implicit val dom1Todom2: DomainTransformation[D1,D2], val dom2Todom1: DomainTransformation[D2,D1]) extends NumericalDomain {
 
   private val d12 = dom1Todom2(dom1,dom2)
@@ -172,6 +172,7 @@ final class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = {
       other match {
         case other: Property => {
+          println()
           val c1 = p1.tryCompareTo(other.p1)
           val c2 = p2.tryCompareTo(other.p2)
           if (c1 == Some(0))
