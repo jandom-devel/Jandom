@@ -60,7 +60,7 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
 
     def reduce(x1: dom1.Property, x2: dom2.Property): Property = {
       if (x1.isEmpty && x2.isEmpty)
-        this
+        new Property(x1,x2)
       else if (x1.isEmpty)
         new Property(x1, x2.bottom)
       else if (x2.isEmpty)
@@ -130,6 +130,7 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
     }
 
     def frequency(lf: LinearForm[Double]): Option[Double] = {
+        // This could be made more precise when the concrete domain is integer
     	p1.frequency(lf) match {
     	  case v@ Some(c) => v
     	  case None => p2.frequency(lf)
@@ -156,9 +157,9 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
 
     def isBottom = isEmpty || (p1.isBottom && p2.isBottom)
 
-    def bottom: Property = ProductDomain.this.bottom(dimension)
+    def bottom: Property = domain.bottom(dimension)
 
-    def top: Property = ProductDomain.this.top(dimension)
+    def top: Property = domain.top(dimension)
 
     def mkString(vars: Seq[String]): String = {
       if (isEmpty)
