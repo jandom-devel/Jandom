@@ -18,38 +18,43 @@
 
 package it.unich.sci.jandom.domains.numerical.ppl
 
+import it.unich.sci.jandom.domains.numerical.LinearForm
+
 import parma_polyhedra_library.Coefficient
+import parma_polyhedra_library.Constraint_System
 import parma_polyhedra_library.Linear_Expression
 import parma_polyhedra_library.Linear_Expression_Coefficient
 import parma_polyhedra_library.Linear_Expression_Variable
-import parma_polyhedra_library.Variable
-import java.util.regex.Matcher
-import it.unich.sci.jandom.domains.numerical.LinearForm
-import parma_polyhedra_library.Constraint_System
-import parma_polyhedra_library.Variable_Stringifier
 import parma_polyhedra_library.Partial_Function
+import parma_polyhedra_library.Variable
+import parma_polyhedra_library.Variable_Stringifier
 
 /**
  * This is a collection of methods used by the PPL-based numerical domains.
- * @author Gianluca Amato <g.amato@unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 private[jandom] object PPLUtils {
   /**
-   * Converts a `LinearForm` into a `Linear_Expression`
-   * object.
+   * Converts a `LinearForm` into a pair made of a `Linear_Expression` object and a
+   * `Coefficient` object, which is the denumerator to be used in linear assignments.
    * @param coeff the homogeneous coefficients.
    * @param known the in-homogeneous coefficient.
    */
-  def toPPLLinearExpression(lf: LinearForm[Double]): Linear_Expression = {
+  def toPPLLinearExpression(lf: LinearForm[Double]): (Linear_Expression, Coefficient) = {
     if (lf.toPPL != null)
-      lf.toPPL.asInstanceOf[Linear_Expression]
+      lf.toPPL.asInstanceOf[(Linear_Expression, Coefficient)]
     else {
-      var le: Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(lf.known.toInt))
+      val coeffs = lf.coeffs map { BigDecimal(_) }
+      val maxScale = (coeffs map { _.scale }).max
+      val denumerator = BigDecimal(10) pow maxScale
+      val newcoeffs = coeffs map { (x: BigDecimal) => (x * denumerator).toBigIntExact.get.bigInteger }
+      var le: Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(newcoeffs(0)))
       for (i <- 0 until lf.dimension) {
-        le = le.sum((new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(lf.homcoeffs(i).toInt))))
+        le = le.sum((new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(newcoeffs(i + 1)))))
       }
-      lf.toPPL = le
-      le
+      val result = (le, new Coefficient(denumerator.toBigIntExact.get.bigInteger))
+      lf.toPPL = result
+      result
     }
   }
 
@@ -65,8 +70,7 @@ private[jandom] object PPLUtils {
       def stringify(x: Long) = vars(x.toInt)
     }
     Variable.setStringifier(vs)
-    val result = for (c <- cs)
-      yield c.toString
+    val result = for (c <- cs) yield c.toString
     Variable.setStringifier(null)
     result.mkString("[ ", " , ", " ]")
   }

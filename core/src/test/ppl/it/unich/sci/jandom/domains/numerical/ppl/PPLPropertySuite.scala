@@ -147,4 +147,11 @@ class PPLPropertySuite extends FunSuite {
     expectResult(box) { boxDomain(diamond) }
     expectResult(box) { transform(octDomain, boxDomain)(diamond) }
   }
+
+  test("non integer coefficients") {
+    val obj1 = full.linearInequality(LinearForm(0.5,1,1,0))
+    val obj2 = obj1.linearAssignment(2, LinearForm(0.25,1,0,0))
+    val m = obj2.maximize(LinearForm(0,1,0,-1))
+    expectResult (-0.25) { m }
+  }
 }

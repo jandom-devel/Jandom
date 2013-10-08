@@ -31,7 +31,7 @@ import it.unich.sci.jandom.domains.numerical.LinearForm
 class PPLMacroPropertySuite extends FunSuite {
   val octDomain: PPLDomainMacro[Octagonal_Shape_double] = PPLDomainMacro[Octagonal_Shape_double]
   val boxDomain: PPLDomainMacro[Double_Box] = PPLDomainMacro[Double_Box]
-  
+
   val full = octDomain.top(3)
   val empty = octDomain.bottom(3)
 
@@ -136,5 +136,12 @@ class PPLMacroPropertySuite extends FunSuite {
     val box = boxDomain.top(2).linearInequality(LinearForm(-1, 1, 0)).linearInequality(LinearForm(-1, -1, 0)).
       linearInequality(LinearForm(-1, 0, -1)).linearInequality(LinearForm(-1, 0, 1))
     expectResult(box) { transform(octDomain, boxDomain)(diamond) }
+  }
+
+  test("non integer coefficients") {
+    val obj1 = full.linearInequality(LinearForm(0.5, 1, 1, 0))
+    val obj2 = obj1.linearAssignment(2, LinearForm(0.25, 1, 0, 0))
+    val m = obj2.maximize(LinearForm(0, 1, 0, -1))
+    expectResult(-0.25) { m }
   }
 }

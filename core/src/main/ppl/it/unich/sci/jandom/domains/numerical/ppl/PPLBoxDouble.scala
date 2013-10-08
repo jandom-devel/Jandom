@@ -69,12 +69,13 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
 
   def linearAssignment(n: Int, lf: LinearForm[Double]): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
-    newpplbox.affine_image(new Variable(n), PPLUtils.toPPLLinearExpression(lf), new Coefficient(1))
+    val (le, den) =  PPLUtils.toPPLLinearExpression(lf)
+    newpplbox.affine_image(new Variable(n), le, den)
     new PPLBoxDouble(newpplbox)
   }
 
   def linearInequality(lf: LinearForm[Double]): PPLBoxDouble = {
-    val le = PPLUtils.toPPLLinearExpression(lf)
+    val (le, _) = PPLUtils.toPPLLinearExpression(lf)
     val newpplbox = new Double_Box(pplbox)
     newpplbox.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
     new PPLBoxDouble(newpplbox)
@@ -85,7 +86,7 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
    * @note @inheritdoc
    */
   def linearDisequality(lf: LinearForm[Double]): PPLBoxDouble = {
-    val le = PPLUtils.toPPLLinearExpression(lf)
+    val (le, _) = PPLUtils.toPPLLinearExpression(lf)
     val newpplbox1 = new Double_Box(pplbox)
     val newpplbox2 = new Double_Box(pplbox)
     newpplbox1.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
@@ -95,7 +96,7 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
   }
 
   def minimize(lf: LinearForm[Double]) = {
-    val le = PPLUtils.toPPLLinearExpression(lf)
+    val (le, den) = PPLUtils.toPPLLinearExpression(lf)
     val exact = new By_Reference[java.lang.Boolean](false)
     val val_n = new Coefficient(0)
     val val_d = new Coefficient(0)
@@ -103,11 +104,11 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
     if (!result)
       Double.NegativeInfinity
     else
-      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
+      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())  divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
   }
 
   def maximize(lf: LinearForm[Double]) = {
-    val le = PPLUtils.toPPLLinearExpression(lf)
+    val (le, den) = PPLUtils.toPPLLinearExpression(lf)
     val exact = new By_Reference[java.lang.Boolean](false)
     val val_n = new Coefficient(0)
     val val_d = new Coefficient(0)
@@ -115,11 +116,11 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
     if (!result)
       Double.PositiveInfinity
     else
-      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue()
+      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
   }
 
   def frequency(lf: LinearForm[Double]) = {
-    val le = PPLUtils.toPPLLinearExpression(lf)
+    val (le,den) = PPLUtils.toPPLLinearExpression(lf)
     val freq_n = new Coefficient(0)
     val freq_d = new Coefficient(0)
     val val_n = new Coefficient(0)
@@ -128,7 +129,7 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
     if (!result)
       None
     else
-      Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())).doubleValue())
+      Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue())
   }
 
   def addVariable: PPLBoxDouble = {
