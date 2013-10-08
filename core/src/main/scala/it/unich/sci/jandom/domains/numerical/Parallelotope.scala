@@ -448,12 +448,11 @@ final class Parallelotope (
    * of the linear form over the box.
    */
   def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
-    val BoxDouble = BoxDoubleDomain()
-    val box = BoxDouble(low.toArray, high.toArray)
     val vec = DenseVector(lf.homcoeffs: _*)
     val newvec = A.t \ vec
     val newlf = lf.known +: newvec.valuesIterator.toSeq
-    box.linearEvaluation(LinearForm(newlf: _*))
+    val (min,max) = domain.extremalsInBox(newvec, low, high)
+    (min + lf.known, max + lf.known)
   }
 
   def minimize(lf: LinearForm[Double]) = linearEvaluation(lf)._1

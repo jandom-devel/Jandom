@@ -90,7 +90,7 @@ class ParallelotopeDomain private extends NumericalDomain {
   private [numerical] def extremalsInBox(lf: DenseVector[Double], low: DenseVector[Double], high: DenseVector[Double]): (Double, Double) = {
     var minc = 0.0
     var maxc = 0.0
-    for (i <- 0 to lf.length - 1)
+    for (i <- 0 until lf.length)
       if (lf(i) > 0) {
         minc += lf(i) * low(i)
         maxc += lf(i) * high(i)
