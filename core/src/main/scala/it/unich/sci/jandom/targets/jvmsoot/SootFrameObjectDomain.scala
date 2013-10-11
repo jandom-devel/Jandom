@@ -79,7 +79,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
 
     type Domain = SootFrameObjectDomain.this.type
 
-    def domain =  SootFrameObjectDomain.this
+    def domain = SootFrameObjectDomain.this
 
     invariantCheck
 
@@ -107,9 +107,12 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
 
     def addVariable(tpe: Type) = Property(prop.addVariable, stack.push(tpe), globals)
 
-    def delVariable(m: Int) = ???
+    def delVariable(m: Int) = Property(prop.delVariable(m), stack.take(dimension - 1 - m) ++ stack.takeRight(m), globals)
 
-    def mapVariables(rho: Seq[Int]) = ???
+    def mapVariables(rho: Seq[Int]) = {
+      val newstack = for (i <- rho; if i != -1) yield stack(dimension - 1 - i)
+      Property(prop.mapVariables(rho), Stack(newstack.reverse: _*), globals)
+    }
 
     /**
      * This method check invariants on a numerical abstract frame.
@@ -181,12 +184,6 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def evalLinearForm(lf: Array[Double]) = addUntrackedVariable(DoubleType.v())
     def testLinearCondition(lc: LinearCond) = (this, this)
 
-    def assignLocal(dst: Int, src: Int) =
-      if (stack(0).isInstanceOf[RefType])
-        Property(prop.assignVariable(dst, src), stack, globals)
-      else
-        this
-
     def assignLocal(dst: Int) = {
       if (stack(0).isInstanceOf[RefType])
         Property(prop.assignVariable(dst, size - 1).delVariable(), stack.pop, globals)
@@ -197,7 +194,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def assignField(dst: Int, f: SootField) =
       Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop, globals)
 
-    def assignStaticField(dst: Int, f:SootField)=
+    def assignStaticField(dst: Int, f: SootField) =
       Property(prop.assignVariableToField(dst, f.getNumber(), size - 1).delVariable(), stack.pop, globals)
 
     def mkString(vars: Seq[String]) = prop.mkString(vars) + "types: " + this.stack.toString
@@ -213,13 +210,13 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     }
 
     def extract(n: Int) = {
-      assume (n >= 0 && n <= size, s"Trying to extract ${n} variables in the abstract frame {$this}")
-      Property( prop.delVariables(0 until size-n), stack.dropRight(size-n), globals)
+      assume(n >= 0 && n <= size, s"Trying to extract ${n} variables in the abstract frame {$this}")
+      Property(prop.delVariables(0 until size - n), stack.dropRight(size - n), globals)
     }
 
     def restrict(n: Int) = {
-      assume (n >= 0 && n <= size, s"Trying to restrict {n} top variables in the abstract frame {$this}")
-      Property( prop.delVariables(size-n until size), stack.drop(n), globals)
+      assume(n >= 0 && n <= size, s"Trying to restrict {n} top variables in the abstract frame {$this}")
+      Property(prop.delVariables(size - n until size), stack.drop(n), globals)
     }
 
     def connect(p: Property, common: Int): Property = Property(prop.connect(p.prop, common), p.stack.dropRight(common) ++ stack.drop(common), globals)
@@ -227,10 +224,6 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def widening(that: Property) = this union that
 
     def narrowing(that: Property) = this intersection that
-
-    def enterMonitor(n: Int) = Property(prop.testNotNull(n), stack, globals)
-
-    def exitMonitor(n: Int) = Property(prop.testNotNull(n), stack, globals)
 
     def evalGlobal(o: Constant) = {
       val withGlobal = if (globals contains o) this else evalNew(o.getType())
@@ -245,8 +238,8 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
         this
     }
 
-    def evalInstance (t: Type): Property = {
-    	delUntrackedVariable
+    def evalInstance(t: Type): Property = {
+      delUntrackedVariable
     }
 
     def evalSwap(i: Int, j: Int) = ???
@@ -266,6 +259,11 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
         case other: Property => prop tryCompareTo other.prop
         case _ => None
       }
+
+    override def enterMonitor(n: Int) = Property(prop.testNotNull(n), stack, globals)
+
+    override def exitMonitor(n: Int) = Property(prop.testNotNull(n), stack, globals)
+
   }
 
 }

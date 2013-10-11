@@ -67,6 +67,16 @@ trait SootFrameDomain extends CartesianFiberedDomain {
     this: Property =>
 
     /**
+     * Returns the last `n` dimensions.
+     */
+    def extract(n: Int): Property
+
+    /**
+     * Deletes the last `n` dimensions
+     */
+    def restrict(n: Int): Property
+
+    /**
      * Push a constant into the frame
      * @param c constant to push into the frame
      */
@@ -125,7 +135,7 @@ trait SootFrameDomain extends CartesianFiberedDomain {
     /**
      * Sum an integer constant to the frame variable 'i' and replace the latter with the result
      */
-    def evalInc(i: Int, c: Double): Property = evalLocal(i).evalConstant(c).evalAdd.assignLocal(i)
+    def evalInc(i: Int = dimension - 1, c: Double): Property = evalLocal(i).evalConstant(c).evalAdd.assignLocal(i)
 
     /**
      * Computes the reminder of dividing the element `size`-2 with the top element, and replace them with the result.
@@ -164,38 +174,38 @@ trait SootFrameDomain extends CartesianFiberedDomain {
     def evalLength: Property
 
     /**
-     * Returns the abstract frame obtained by restricting the current frame to the
-     * case when el(size-2) > el(size-1). Remove the the two top elements.
+     * Evaluates the boolean expression el(size-2) > el(size-1), and replace the two
+     * top elements of the stack with the result.
      */
     def evalGt: Property
 
     /**
-     * Returns the abstract frame obtained by restricting the current frame to the
-     * case when el(size-2) >= el(size-1). Remove the the two top elements.
+     * Evaluates the boolean expression el(size-2) >= el(size-1), and replace the two
+     * top elements of the stack with the result.
      */
     def evalGe: Property
 
     /**
-     * Returns the abstract frame obtained by restricting the current frame to the
-     * case when el(size-2) < el(size-1). Remove the the two top elements.
+     * Evaluates the boolean expression el(size-2) < el(size-1), and replace the two
+     * top elements of the stack with the result.
      */
     def evalLt: Property
 
     /**
-     * Returns the abstract frame obtained by restricting the current frame to the
-     * case when el(size-2) <= el(size-1). Remove the the two top elements.
+     * Evaluates the boolean expression el(size-2) <= el(size-1), and replace the two
+     * top elements of the stack with the result.
      */
     def evalLe: Property
 
     /**
-     * Returns the abstract frame obtained by restricting the current frame to the
-     * case when el(size-2) == el(size-1). Remove the the two top elements.
+     * Evaluates the boolean expression el(size-2) == el(size-1), and replace the two
+     * top elements of the stack with the result.
      */
     def evalEq: Property
 
     /**
-     * Returns the abstract frame obtained by restricting the current frame to the
-     * case when el(size-2) != el(size-1). Remove the the two top elements.
+     * Evaluates the boolean expression el(size-2) != el(size-1), and replace the two
+     * top elements of the stack with the result.
      */
     def evalNe: Property
 
@@ -206,25 +216,18 @@ trait SootFrameDomain extends CartesianFiberedDomain {
     def assignLocal(i: Int): Property
 
     /**
-     * Assign the variable `src` to the variable `dst`
-     * @param dst the target variable
-     * @param src the source variable
-     */
-    def assignLocal(dst: Int, src: Int): Property
-
-    /**
      * Assign to  a field of the variable frame `i` the value at the top of the frame, and pop it.
      * @param i the frame variable to assign
      * @param f the field to assign
      */
-    def assignField(i: Int = 0, f: soot.SootField): Property
+    def assignField(i: Int = dimension - 2, f: soot.SootField): Property
 
     /**
      * Assign to a static field of the variable frame `i` the value at the top of the frame, and pop it.
      * @param i the frame variable to assign
      * @param f the field to assign
      */
-    def assignStaticField(i: Int = 0, f: soot.SootField): Property
+    def assignStaticField(i: Int = dimension - 2, f: soot.SootField): Property
 
     /**
      * Returns the result of testing whether el(size-2) > el(size-1) and pops the two top frame
@@ -269,32 +272,10 @@ trait SootFrameDomain extends CartesianFiberedDomain {
     def testNe: (Property, Property)
 
     /**
-     * Returns the result of testing the frame w.r.t. a linear condition.
+     * Returns the result of testing the frame w.r.t. a linear condition. It does not pop the stack.
      * @param lf the linear condition to use for testing.
      */
     def testLinearCondition(lf: LinearCond): (Property, Property)
-
-    /**
-     * Returns the last `n` dimensions.
-     */
-    def extract(n: Int): Property
-
-    /**
-     * Deletes the last `n` dimensions
-     */
-    def restrict(n: Int): Property
-
-    /**
-     * Evaluates the effect of entering a monitor.
-     * @param n the frame variable whose monitor is entered.
-     */
-    def enterMonitor(n: Int = dimension - 1): Property
-
-    /**
-     * Evaluates the effect of exiting a monitor.
-     * @param n the frame variable whose monitor is exited.
-     */
-    def exitMonitor(n: Int = dimension - 1): Property
 
     /**
      * Evaluates a global constant and put the result on the frame.
@@ -303,7 +284,7 @@ trait SootFrameDomain extends CartesianFiberedDomain {
     def evalGlobal(o: soot.jimple.Constant): Property
 
     /**
-     * Evaluate a static field and put the result on the frame.
+     * Evaluate a static field and put the result on the top of the frame.
      * @param v the static field to evaluate.
      */
     def evalStaticField(v: soot.SootField): Property
@@ -348,5 +329,18 @@ trait SootFrameDomain extends CartesianFiberedDomain {
      * @param t the type in which to cast the top of the stack
      */
     def evalInstance(t: soot.Type): Property
+
+    /**
+     * Evaluates the effect of entering a monitor.
+     * @param n the frame variable whose monitor is entered.
+     * @todo really do something instead of returning this
+     */
+    def enterMonitor(n: Int = dimension - 1): Property = this
+
+    /**
+     * Evaluates the effect of exiting a monitor.
+     * @param n the frame variable whose monitor is exited.
+     */
+    def exitMonitor(n: Int = dimension - 1): Property = this
   }
 }
