@@ -29,11 +29,13 @@ import it.unich.sci.jandom.domains.numerical._
  */
 class ProductSuite extends FunSuite {
 
-  val n=2
+  val n = 2
 
   val productDomain = new ProductDomain(BoxDoubleDomain(), ParallelotopeDomain())
   val empty = productDomain.bottom(n)
   val full = productDomain.top(n)
+  val boxEmpty = productDomain.dom1.bottom(n)
+  val ptopeFull = productDomain.dom2.top(n)
 
   test("constructors and extractors for the empty pair") {
     expectResult(n) { empty.dimension }
@@ -47,42 +49,42 @@ class ProductSuite extends FunSuite {
     expectResult(true) { full.isTop }
   }
 
-  val p1= new productDomain.Property(productDomain.dom1.top(n), productDomain.dom2.top(n))
   test("construct a full pair") {
-    expectResult(true) {p1.isTop}
-    expectResult(false) {p1.isEmpty}
+    val p1 = new productDomain.Property(productDomain.dom1.top(n), productDomain.dom2.top(n))
+    expectResult(true) { p1.isTop }
+    expectResult(false) { p1.isEmpty }
   }
 
-  val box = productDomain.dom1(Array(1, 2), Array(5, 4))
-  val p2= new productDomain.Property(box, productDomain.dom2.top(n))
- test("construct a non-empty non-full pair") {
-    expectResult(false) {p2.isTop}
-    expectResult(false) {p2.isEmpty}
+  test("construct a non-empty non-full pair") {
+    val box = productDomain.dom1(Array(1, 2), Array(5, 4))
+    val p2 = new productDomain.Property(box, productDomain.dom2.top(n))
+    expectResult(false) { p2.isTop }
+    expectResult(false) { p2.isEmpty }
   }
 
-
-  val boxEmpty =  productDomain.dom1.bottom(n)
-  val ptopeFull = productDomain.dom2.top(n)
-  val p3= new productDomain.Property(boxEmpty, ptopeFull)
- test("construct an empty product") {
-    expectResult(false) {p3.isTop}
-    expectResult(true) {p3.isEmpty}
+  test("construct an empty product") {
+    val p3 = new productDomain.Property(boxEmpty, ptopeFull)
+    expectResult(false) { p3.isTop }
+    expectResult(true) { p3.isEmpty }
   }
 
-     // assign v0 = 0
-  val x2 = full.linearAssignment(0, 0.0)
   test("assignment on product") {
-    expectResult(true) {new productDomain.Property(
+    val x2 = full.linearAssignment(0, 0.0)
+    expectResult(true) {
+      new productDomain.Property(
         productDomain.dom1.top(2).linearAssignment(0, 0.0),
-        ptopeFull.linearAssignment(0, 0.0)) <=  x2}
-      expectResult(true) {new productDomain.Property(
+        ptopeFull.linearAssignment(0, 0.0)) <= x2
+    }
+    expectResult(true) {
+      new productDomain.Property(
         productDomain.dom1.top(2).linearAssignment(0, 0.0),
-        ptopeFull.linearAssignment(0, 0.0)) >=  x2}
+        ptopeFull.linearAssignment(0, 0.0)) >= x2
+    }
   }
 
   test("dimension on product") {
-    expectResult(3) {x2.addVariable().dimension}
-    expectResult(n+1) {full.addVariable().dimension}
-
+    val x2 = full.linearAssignment(0, 0.0)
+    expectResult(3) { x2.addVariable().dimension }
+    expectResult(n + 1) { full.addVariable().dimension }
   }
 }
