@@ -131,6 +131,38 @@ object PairSharingDomain extends ObjectDomain {
       new Property(ps2, dimension - rho.count { _ == -1 })
     }
 
+    /**
+     * This method is similar to `connect`, but do not remove the common dimensions.
+     */
+    private[domains] def connectFull(that: Property, common: Int) = {
+      assert(common <= dimension && common <= that.dimension)
+      // index of the first common variable in the connected property
+      val firstCommonInThis = dimension - common
+      // remove all pairs in that involving a variable which is null in this. At the
+      // same time, translate index
+      val trimmedTranslatedThat = for {
+        UP(l, r) <- that.ps
+        if l >= common || !isNull(l + firstCommonInThis)
+        if r >= common || !isNull(r + firstCommonInThis)
+      } yield UP(l + firstCommonInThis, r + firstCommonInThis)
+      // remove from this those pairs which only relates common variables
+      val trimmedThis = this.ps filter { case UP(l, r) => l < firstCommonInThis }
+      // join one ps of this with one ps of that
+      val j1 = for {
+        UP(l, r) <- trimmedThis
+        if r >= firstCommonInThis
+        UP(l1, r1) <- trimmedTranslatedThat
+        if r == l1
+      } yield UP(l, r1)
+      // join two ps of this
+      val j2 = for (UP(l, r) <- trimmedThis; if r >= firstCommonInThis; UP(l1, r1) <- j1; if r == r1) yield UP(l, l1)
+      Property(trimmedThis ++ j1 ++ j2 ++ trimmedTranslatedThat, dimension - common + that.dimension)
+    }
+
+    def connect(that: Property, common: Int) = {
+      connectFull(that, common).delVariables(dimension - common until dimension)
+    }
+
     def addFreshVariable = new Property(ps + UP((dimension, dimension)), dimension + 1)
 
     def assignNull(dst: Int) = new Property(removeVariable(ps, dst), dimension)
@@ -167,37 +199,6 @@ object PairSharingDomain extends ObjectDomain {
 
     def testNotNull(v: Int) = if (isNull(v)) bottom else this
 
-    /**
-     * This method is similar to `connect`, but do not remove the common dimensions.
-     */
-    def connectFull(that: Property, common: Int) = {
-      assert(common <= dimension && common <= that.dimension)
-      // index of the first common variable in the connected property
-      val firstCommonInThis = dimension - common
-      // remove all pairs in that involving a variable which is null in this. At the
-      // same time, translate index
-      val trimmedTranslatedThat = for {
-        UP(l, r) <- that.ps
-        if l >= common || !isNull(l + firstCommonInThis)
-        if r >= common || !isNull(r + firstCommonInThis)
-      } yield UP(l + firstCommonInThis, r + firstCommonInThis)
-      // remove from this those pairs which only relates common variables
-      val trimmedThis = this.ps filter { case UP(l, r) => l < firstCommonInThis }
-      // join one ps of this with one ps of that
-      val j1 = for {
-        UP(l, r) <- trimmedThis
-        if r >= firstCommonInThis
-        UP(l1, r1) <- trimmedTranslatedThat
-        if r == l1
-      } yield UP(l, r1)
-      // join two ps of this
-      val j2 = for (UP(l, r) <- trimmedThis; if r >= firstCommonInThis; UP(l1, r1) <- j1; if r == r1) yield UP(l, l1)
-      Property(trimmedThis ++ j1 ++ j2 ++ trimmedTranslatedThat, dimension - common + that.dimension)
-    }
-
-    def connect(that: Property, common: Int) = {
-      connectFull(that, common).delVariables(dimension - common until dimension)
-    }
 
     def mkString(vars: Seq[String]) = {
       val pairs = ps map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }

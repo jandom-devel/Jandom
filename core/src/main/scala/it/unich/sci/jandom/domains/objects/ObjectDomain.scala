@@ -85,14 +85,5 @@ trait ObjectDomain extends DimensionFiberedDomain {
      */
     def testNotNull(v: Int): Property
 
-    /**
-     * The connect method is used for inter-procedural analysis. It takes two properties
-     * such that the last `common` dimensions of `this` corresponds to the first `common`
-     * dimension of `p`, and implemets the Java semantics for method call. It removes
-     * the common dimensions at the end of the operation.
-     * @param common number of common dimensions in `this` and `p`
-     * @return the connected properties, according to the description above
-     */
-    def connect(that: Property, common: Int): Property
   }
 }

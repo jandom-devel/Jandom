@@ -45,8 +45,8 @@ trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <
    * @note `m` should be positive
    */
   def addVariables(m: Int): Property = {
-    require (m >= 0)
-    (0 until m).foldLeft(this) ( (p,i) => p.addVariable() )
+    require(m >= 0)
+    (0 until m).foldLeft(this)((p, i) => p.addVariable())
   }
 
   /**
@@ -61,7 +61,7 @@ trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <
    * @param vs the range of variables to remove
    */
   def delVariables(vs: Range): Property = {
-    vs.foldRight(this) ( (i,p) => p.delVariable(i) )
+    vs.foldRight(this)((i, p) => p.delVariable(i))
   }
 
   /**
@@ -70,6 +70,17 @@ trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <
    * `-1`, then dimension i is removed
    */
   def mapVariables(rho: Seq[Int]): Property
+
+  /**
+   * The connect method is used for inter-procedural analysis. It takes two properties
+   * such that the last `common` dimensions of `this` corresponds to the first `common`
+   * dimension of `other`. The first represents the abstract state before calling a
+   * procedure, the second represents the abstract state at the end of the procedure.
+   * `connect` merge the two abstract states using a call-by-value semantics, and
+   * remove the common dimension.
+   * @todo why not remove the private dimensions before connecting?
+   */
+  def connect(other: Property, common: Int): Property
 
   /**
    * Returns a string representation of the abstract property.

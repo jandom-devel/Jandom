@@ -98,6 +98,13 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * optimization purpose.
    */
 
+  def connect(other: Property, common: Int) = {
+    val newprop = addVariables(other.dimension - common)
+    val seq = (dimension - common until newprop.dimension) ++ (0 until dimension - common)
+    val newp = other.addVariables(dimension - common).mapVariables(seq)
+    (newprop intersection newp).delVariables(dimension - common to dimension - 1)
+  }
+
   /**
    * Constant assignment to a variable `vn := c`.
    * @note $STDINST
@@ -131,7 +138,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note `m` should be within `0` and `dimension-1`.
    */
   def variableSub(n: Int = dimension - 2, m: Int = dimension - 1) =
-    linearAssignment(n,  LinearForm.v[Double](n) - LinearForm.v[Double](m))
+    linearAssignment(n, LinearForm.v[Double](n) - LinearForm.v[Double](m))
 
   /**
    * Assignments of the kind `vn = vn + c`.
@@ -234,19 +241,4 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
   def variableNeg(n: Int = dimension - 1) =
     linearAssignment(n, LinearForm(0, n -> -1.0))
 
-  /**
-   * The connect method is used for inter-procedural analysis. It takes two properties
-   * such that the last `common` dimensions of `this` corresponds to the first `common`
-   * dimension of `p`. It embeds both properties on a common space and intersect, then
-   * remove the common dimensions, implementing a call by value semantics.
-   * @todo why not remove the private dimensions before connecting?
-   * @param common number of common dimensions in `this` and `p`
-   * @return the connected properties, according to the description above
-   */
-  def connect(other: Property, common: Int) = {
-    val newprop = addVariables(other.dimension - common)
-    val seq = (dimension - common until newprop.dimension) ++ (0 until dimension - common)
-    val newp = other.addVariables(dimension - common).mapVariables(seq)
-    (newprop intersection newp).delVariables(dimension - common to dimension - 1)
-  }
 }
