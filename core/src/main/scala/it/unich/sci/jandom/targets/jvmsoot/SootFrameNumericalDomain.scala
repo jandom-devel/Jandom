@@ -71,13 +71,15 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
    * @param vars the stack of variable types in the current frame. Note that stack position are numbered in the
    * opposite way than frame variables, i.e., the frame variable `i` corresponds to stack position `size - 1 - i`.
    */
-  case class Property(val prop: numdom.Property, val vars: Stack[Type]) extends SootFrameProperty[Property] {
+  case class Property(val prop: numdom.Property, val fiber: Stack[Type]) extends SootFrameProperty[Property] {
 
     invariantCheck
 
     type Domain = SootFrameNumericalDomain.this.type
 
     def domain = SootFrameNumericalDomain.this
+
+    def dimension = fiber.length
 
     /**
      * An alternative constructor which returns an abstract frame where all variables are of the same type.
@@ -93,9 +95,9 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      */
     @elidable(ASSERTION)
     private def invariantCheck {
-      assert(prop.dimension == vars.size, "Numerical property and stack of types have different dimensions")
+      assert(prop.dimension == fiber.size, "Numerical property and stack of types have different dimensions")
       if (prop.isEmpty) return
-      for (i <- 0 until prop.dimension) vars(size - 1 - i) match {
+      for (i <- 0 until prop.dimension) fiber(size - 1 - i) match {
         case _: PrimType | _: WordType | _: DoubleWordType =>
         case _ =>
           // TODO: I should check that dimension i is unconstrained. For now I check that it is unbounded
@@ -109,7 +111,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
       other match {
         case other: Property =>
-          assume(other.vars == vars,"The abstract frame have different variables")
+          assume(other.fiber == fiber,"The abstract frame have different variables")
           prop tryCompareTo other.prop
         case _ => None
       }
@@ -118,47 +120,50 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      * Add a new undetermined frame variable.
      * @param tpe the type of the new frame variable.
      */
-    private def addVariable(tpe: Type) = Property(prop.addVariable(), vars.push(tpe))
+    def addVariable(tpe: Type) = Property(prop.addVariable(), fiber.push(tpe))
 
+    def delVariable(m: Int) = ???
+
+    def mapVariables(rho: Seq[Int]) = ???
     /**
      * Remove the top frame variable.
      */
-    private def delVariable = Property(prop.delVariable(), vars.pop)
+    private def delVariable = Property(prop.delVariable(), fiber.pop)
 
- 	def evalConstant(const: Int) = Property(prop.addVariable().constantAssignment(size, const), vars.push(IntType.v()))
- 	def evalConstant(const: Double) = Property(prop.addVariable().constantAssignment(size, const), vars.push(DoubleType.v()))
-    def evalConstant(const: String) = Property(prop.addVariable().nonDeterministicAssignment(size), vars.push(RefType.v(const.getClass().getName())))
+ 	def evalConstant(const: Int) = Property(prop.addVariable().constantAssignment(size, const), fiber.push(IntType.v()))
+ 	def evalConstant(const: Double) = Property(prop.addVariable().constantAssignment(size, const), fiber.push(DoubleType.v()))
+    def evalConstant(const: String) = Property(prop.addVariable().nonDeterministicAssignment(size), fiber.push(RefType.v(const.getClass().getName())))
 
     def evalNull = addVariable(NullType.v())
 
     def evalNew(tpe: Type) = addVariable(tpe)
 
     def evalLocal(v: Int) = {
-      if (vars(size - 1 - v).isInstanceOf[PrimType] || vars(size - 1 - v).isInstanceOf[WordType] || vars(size - 1 - v).isInstanceOf[DoubleWordType])
-        Property(prop.addVariable().variableAssignment(size, v), vars.push(vars(size - 1 - v)))
+      if (fiber(size - 1 - v).isInstanceOf[PrimType] || fiber(size - 1 - v).isInstanceOf[WordType] || fiber(size - 1 - v).isInstanceOf[DoubleWordType])
+        Property(prop.addVariable().variableAssignment(size, v), fiber.push(fiber(size - 1 - v)))
       else
-        addVariable(vars(size - 1 - v))
+        addVariable(fiber(size - 1 - v))
     }
 
     def evalField(v: Int, f: SootField) = {
-      assume(vars(size - 1 - v).isInstanceOf[RefType],"Expected RefType, got "+vars(size - 1 - v))
+      assume(fiber(size - 1 - v).isInstanceOf[RefType],"Expected RefType, got "+fiber(size - 1 - v))
       addVariable(f.getType())
     }
 
     def assignLocal(dst: Int, src: Int) = {
       // TODO: I would like to put an assume, but I am not sure what to check
-      Property(prop.variableAssignment(dst, src), vars)
+      Property(prop.variableAssignment(dst, src), fiber)
     }
 
     def assignLocal(dst: Int) = {
-      if (vars(size - 1 - dst).isInstanceOf[PrimType] || vars(size - 1 - dst).isInstanceOf[WordType] || vars(size - 1 - dst).isInstanceOf[DoubleWordType]) {
-        Property(prop.variableAssignment(dst, size - 1).delVariable(), vars.pop)
+      if (fiber(size - 1 - dst).isInstanceOf[PrimType] || fiber(size - 1 - dst).isInstanceOf[WordType] || fiber(size - 1 - dst).isInstanceOf[DoubleWordType]) {
+        Property(prop.variableAssignment(dst, size - 1).delVariable(), fiber.pop)
       } else
         delVariable
     }
 
     def assignField(dst: Int, f: SootField) = {
-      assume(vars(size - 1 - dst).isInstanceOf[RefType],"Expected RefType, got "+vars(size - 1 - dst))
+      assume(fiber(size - 1 - dst).isInstanceOf[RefType],"Expected RefType, got "+fiber(size - 1 - dst))
       delVariable
     }
 
@@ -171,17 +176,17 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
       delVariable
     }
 
-    def evalAdd = Property(prop.variableAdd().delVariable(), vars.pop)
-    def evalSub = Property(prop.variableSub().delVariable(), vars.pop)
-    def evalMul = Property(prop.variableMul().delVariable(), vars.pop)
-    def evalDiv = Property(prop.variableDiv().delVariable(), vars.pop)
-    def evalRem = Property(prop.variableRem().delVariable(), vars.pop)
-    def evalShl = Property(prop.variableShl().delVariable(), vars.pop)
-    def evalShr = Property(prop.variableShr().delVariable(), vars.pop)
-    def evalUshr = Property(prop.variableUshr().delVariable(), vars.pop)
+    def evalAdd = Property(prop.variableAdd().delVariable(), fiber.pop)
+    def evalSub = Property(prop.variableSub().delVariable(), fiber.pop)
+    def evalMul = Property(prop.variableMul().delVariable(), fiber.pop)
+    def evalDiv = Property(prop.variableDiv().delVariable(), fiber.pop)
+    def evalRem = Property(prop.variableRem().delVariable(), fiber.pop)
+    def evalShl = Property(prop.variableShl().delVariable(), fiber.pop)
+    def evalShr = Property(prop.variableShr().delVariable(), fiber.pop)
+    def evalUshr = Property(prop.variableUshr().delVariable(), fiber.pop)
 
-    def evalBinOp = Property(prop.delVariable().delVariable().addVariable(), vars.pop)
-    def evalNeg = Property(prop.variableNeg(), vars)
+    def evalBinOp = Property(prop.delVariable().delVariable().addVariable(), fiber.pop)
+    def evalNeg = Property(prop.variableNeg(), fiber)
     def evalLength = addVariable(IntType.v())
 
     def evalGt = delVariable
@@ -198,8 +203,8 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     private def testComp(op: AtomicCond.ComparisonOperators.Value) = {
       import AtomicCond.ComparisonOperators._
       val lf = LinearForm(0, size-2 -> 1, size-1 -> -1)
-      val tbranch = Property(AtomicCond(lf, op).analyze(prop).delVariable().delVariable(), vars.pop.pop)
-      val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), vars.pop.pop)
+      val tbranch = Property(AtomicCond(lf, op).analyze(prop).delVariable().delVariable(), fiber.pop.pop)
+      val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), fiber.pop.pop)
       (tbranch, fbranch)
     }
 
@@ -211,29 +216,29 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     def testNe = testComp(AtomicCond.ComparisonOperators.NEQ)
 
     def testLinearCondition(lc: LinearCond) = (
-      Property(lc.analyze(prop), vars), Property(lc.opposite.analyze(prop), vars))
+      Property(lc.analyze(prop), fiber), Property(lc.opposite.analyze(prop), fiber))
 
-    def union(that: Property) = Property(prop union that.prop, vars)
+    def union(that: Property) = Property(prop union that.prop, fiber)
 
-    def intersection(that: Property) = Property(prop intersection that.prop, vars)
+    def intersection(that: Property) = Property(prop intersection that.prop, fiber)
 
-    def widening(that: Property) = Property(prop widening that.prop, vars)
+    def widening(that: Property) = Property(prop widening that.prop, fiber)
 
-    def narrowing(that: Property) = Property(prop widening that.prop, vars)
+    def narrowing(that: Property) = Property(prop widening that.prop, fiber)
 
     def extract(n: Int) = {
       assume (n >= 0 && n <= size, s"Trying to extract ${n} variables in the abstract frame {$this}")
-      Property( prop.delVariables(0 until size-n), vars.dropRight(size-n))
+      Property( prop.delVariables(0 until size-n), fiber.dropRight(size-n))
     }
 
     def restrict(n: Int) = {
       assume (n >= 0 && n <= size, s"Trying to restrict ${n} variables top in the abstract frame {$this}")
-      Property( prop.delVariables(size-n until size), vars.drop(n))
+      Property( prop.delVariables(size-n until size), fiber.drop(n))
     }
 
     def connect(p: Property, common: Int) = {
-      assume ( (vars.dropRight(size-common) zip p.vars.drop(p.size - common)) forall { case (tdst, tsrc) => compatibleTypes(tdst, tsrc) })
-      Property(prop.connect(p.prop, common), p.vars.dropRight(common) ++ vars.drop(common))
+      assume ( (fiber.dropRight(size-common) zip p.fiber.drop(p.size - common)) forall { case (tdst, tsrc) => compatibleTypes(tdst, tsrc) })
+      Property(prop.connect(p.prop, common), p.fiber.dropRight(common) ++ fiber.drop(common))
     }
 
     def enterMonitor(n: Int): Property = this
@@ -244,21 +249,21 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalStaticField(v: SootField): Property = {
       if (v.getType().isInstanceOf[PrimType])
-        Property(prop.addVariable().nonDeterministicAssignment(prop.dimension), vars.push(v.getType()))
+        Property(prop.addVariable().nonDeterministicAssignment(prop.dimension), fiber.push(v.getType()))
       else
         addVariable(v.getType())
     }
 
     def evalSwap(i: Int, j:Int): Property = {
             val seq = ((0 until i-1) :+ j) ++ ((i+1 until j-1) :+ i) ++ (j+1 until size-1)
-            val st1 = vars.updated(i, vars.apply(j))
-    		val st2 = st1.updated(j, vars.apply(i))
+            val st1 = fiber.updated(i, fiber.apply(j))
+    		val st2 = st1.updated(j, fiber.apply(i))
             Property(prop.mapVariables(seq), st2)
     }
 
-    def top = Property(prop.top, vars)
+    def top = Property(prop.top, fiber)
 
-    def bottom = Property(prop.bottom, vars)
+    def bottom = Property(prop.bottom, fiber)
 
     def isTop = prop.isTop
 
@@ -272,6 +277,6 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     	vars.size == that.vars.size &&
     	(vars map canonicalType) == (that.vars map canonicalType)*/
 
-    def mkString(vars: Seq[String]) = prop.mkString(vars) + "types: " + this.vars.reverse.mkString(",")
+    def mkString(vars: Seq[String]) = prop.mkString(vars) + "types: " + this.fiber.reverse.mkString(",")
   }
 }

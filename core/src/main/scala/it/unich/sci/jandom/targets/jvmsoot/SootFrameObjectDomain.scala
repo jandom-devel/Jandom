@@ -73,6 +73,10 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
    */
   case class Property(val prop: dom.Property, val stack: Stack[Type], val globals: Map[AnyRef, Int]) extends SootFrameProperty[Property] {
 
+    def fiber = stack
+
+    def dimension = stack.length
+
     type Domain = SootFrameObjectDomain.this.type
 
     def domain =  SootFrameObjectDomain.this
@@ -100,6 +104,12 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
      * @param tpe the type of the variable.
      */
     private def addUntrackedVariable(tpe: Type) = Property(prop.addFreshVariable.assignNull(size), stack.push(tpe), globals)
+
+    def addVariable(tpe: Type) = Property(prop.addVariable, stack.push(tpe), globals)
+
+    def delVariable(m: Int) = ???
+
+    def mapVariables(rho: Seq[Int]) = ???
 
     /**
      * This method check invariants on a numerical abstract frame.

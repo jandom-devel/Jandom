@@ -23,9 +23,8 @@ import breeze.linalg._
 import it.unich.sci.jandom.domains.numerical._
 
 /**
- * Test suite for domain product.
+ * Test suite for products of numerical domains.
  * @author Francesca Scozzari <fscozzari@unich.it>
- *
  */
 class ProductSuite extends FunSuite {
 
@@ -49,20 +48,20 @@ class ProductSuite extends FunSuite {
     expectResult(true) { full.isTop }
   }
 
-  test("construct a full pair") {
+  test("create a full pair") {
     val p1 = new productDomain.Property(productDomain.dom1.top(n), productDomain.dom2.top(n))
     expectResult(true) { p1.isTop }
     expectResult(false) { p1.isEmpty }
   }
 
-  test("construct a non-empty non-full pair") {
+  test("create a non-empty non-full pair") {
     val box = productDomain.dom1(Array(1, 2), Array(5, 4))
     val p2 = new productDomain.Property(box, productDomain.dom2.top(n))
     expectResult(false) { p2.isTop }
     expectResult(false) { p2.isEmpty }
   }
 
-  test("construct an empty product") {
+  test("create an empty pair") {
     val p3 = new productDomain.Property(boxEmpty, ptopeFull)
     expectResult(false) { p3.isTop }
     expectResult(true) { p3.isEmpty }
@@ -70,15 +69,10 @@ class ProductSuite extends FunSuite {
 
   test("assignment on product") {
     val x2 = full.linearAssignment(0, 0.0)
-    expectResult(true) {
+    expectResult(x2) {
       new productDomain.Property(
         productDomain.dom1.top(2).linearAssignment(0, 0.0),
-        ptopeFull.linearAssignment(0, 0.0)) <= x2
-    }
-    expectResult(true) {
-      new productDomain.Property(
-        productDomain.dom1.top(2).linearAssignment(0, 0.0),
-        ptopeFull.linearAssignment(0, 0.0)) >= x2
+        ptopeFull.linearAssignment(0, 0.0))
     }
   }
 

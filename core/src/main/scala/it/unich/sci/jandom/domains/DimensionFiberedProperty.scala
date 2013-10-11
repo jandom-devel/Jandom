@@ -19,21 +19,13 @@
 package it.unich.sci.jandom.domains
 
 /**
- * A `DimensionFiberedProperty` is an element of a `DimensionFiberedDomain`. Each fiber is characterized by
- * a natural number called `size`, which is the number of dimensions in the object. There are many methods
- * to add and remove dimensions.
- * @tparam Property the real class we are endowing with the DimensionFiberedProperty quality.
+ * A `DimensionFiberedProperty` is an element of a `DimensionFiberedDomain`.
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <: AbstractProperty[Property] {
+trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <: CartesianFiberedProperty[Unit,Property] {
   this: Property =>
 
   type Domain <: DimensionFiberedDomain
-
-  /**
-   * Returns the dimension of the property.
-   */
-  def dimension: Int
 
   /**
    * Add a new variable.
@@ -49,48 +41,7 @@ trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <
     (0 until m).foldLeft(this)((p, i) => p.addVariable())
   }
 
-  /**
-   * Remove the variable `v`, appropriately projecting the property.
-   * @param v variable to remove
-   * @note `v` should be between 0 and `dimension`-1
-   */
-  def delVariable(v: Int = dimension - 1): Property
+  def fiber = Seq.fill[Unit](dimension)()
 
-  /**
-   * Remove variables in the `vs` range.
-   * @param vs the range of variables to remove
-   */
-  def delVariables(vs: Range): Property = {
-    vs.foldRight(this)((i, p) => p.delVariable(i))
-  }
-
-  /**
-   * Map variables according to a partial injective function.
-   * @param rho partial injective function. Each dimension `i` is mapped to `rho(i)`. If `rho(i)` is
-   * `-1`, then dimension i is removed
-   */
-  def mapVariables(rho: Seq[Int]): Property
-
-  /**
-   * The connect method is used for inter-procedural analysis. It takes two properties
-   * such that the last `common` dimensions of `this` corresponds to the first `common`
-   * dimension of `other`. The first represents the abstract state before calling a
-   * procedure, the second represents the abstract state at the end of the procedure.
-   * `connect` merge the two abstract states using a call-by-value semantics, and
-   * remove the common dimension.
-   * @todo why not remove the private dimensions before connecting?
-   */
-  def connect(other: Property, common: Int): Property
-
-  /**
-   * Returns a string representation of the abstract property.
-   * @param vars an array with the name of the variables in the environment
-   */
-  def mkString(vars: Seq[String]): String
-
-  /**
-   * Returns the string representation of the property. It calls `mkString` with the standard
-   * variable names `v1` ... `vn`.
-   */
-  override def toString: String = mkString(for (i <- 0 until dimension) yield "v" + i)
+  def addVariable(t: Unit) = addVariable()
 }

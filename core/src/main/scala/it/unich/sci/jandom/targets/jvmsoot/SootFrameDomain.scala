@@ -18,14 +18,11 @@
 
 package it.unich.sci.jandom.targets.jvmsoot
 
-import scala.collection.immutable.Stack
+import it.unich.sci.jandom.targets.linearcondition.LinearCond
 import it.unich.sci.jandom.domains.AbstractDomain
 import it.unich.sci.jandom.domains.AbstractProperty
-import it.unich.sci.jandom.targets.linearcondition.LinearCond
-import soot._
-import soot.jimple.Constant
-import soot.jimple.FieldRef
-import soot.jimple.StaticFieldRef
+import it.unich.sci.jandom.domains.CartesianFiberedProperty
+import it.unich.sci.jandom.domains.CartesianFiberedDomain
 
 /**
  * This is the base trait domain for the analysis of methods using Soot. It represents
@@ -35,47 +32,45 @@ import soot.jimple.StaticFieldRef
  * @author Gianluca Amato <gamato@unich.it>
  * @author Luca Mangifesta
  */
-trait SootFrameDomain extends AbstractDomain {
+trait SootFrameDomain extends CartesianFiberedDomain {
+
+  type FiberType = soot.Type
+
   type Property <: SootFrameProperty[Property]
 
   /**
    * Returns the top abstract property relative to the fiber `vars`
    */
-  def top(vars: Seq[Type]): Property
+  def top(vars: Seq[FiberType]): Property
 
   /**
    * Returns the bottom abstract property relative to the fiber `vars`
    */
-  def bottom(vars: Seq[Type]): Property
+  def bottom(vars: Seq[FiberType]): Property
 
   /**
-   * This trait represents a single abstract frame. It behaves like a stack, with numbered positions.
-   * Each position is numbered with its index (starting from the bottom, which as index 0).
-   * @tparam Property the target class of F-bounded polymporphism
+   * Determines whether it is possible to assign a variable of type t2
+   * to a variable of type t1. It is only used in debugging assertions.
    */
-  trait SootFrameProperty[Property <: SootFrameProperty[Property]] extends AbstractProperty[Property] {
+  protected def compatibleTypes(t1: soot.Type, t2: soot.Type): Boolean = {
+    t1 == t2 ||
+      (t1.isInstanceOf[soot.PrimType] && t2.isInstanceOf[soot.PrimType]) ||
+      (t1.isInstanceOf[soot.RefType] && t2.isInstanceOf[soot.RefType])
+  }
+
+  /**
+   * This trait represents a single abstract frame.
+   * @author Gianluca Amato <gamato@unich.it>
+   * @author Luca Mangifesta
+   */
+  trait SootFrameProperty[Property <: SootFrameProperty[Property]] extends CartesianFiberedProperty[soot.Type, Property] {
     this: Property =>
-
-    /**
-     * Determines whether it is possible to assign a variable of type t2
-     * to a variable of type t1. It is only used in debugging assertions.
-     */
-    protected def compatibleTypes(t1: Type, t2: Type): Boolean = {
-      t1 == t2 ||
-        (t1.isInstanceOf[PrimType] && t2.isInstanceOf[PrimType]) ||
-        (t1.isInstanceOf[RefType] && t2.isInstanceOf[RefType])
-    }
-
-    /**
-     * Return the numbers of variables in the frame
-     */
-    def size: Int
 
     /**
      * Push a constant into the frame
      * @param c constant to push into the frame
      */
-    def evalConstant(c: Double): Property //era Int
+    def evalConstant(c: Double): Property
 
     /**
      * Push a constant into the frame
@@ -92,7 +87,7 @@ trait SootFrameDomain extends AbstractDomain {
      * Push a new object into the frame
      * @param tpe the type of the new object
      */
-    def evalNew(tpe: Type): Property
+    def evalNew(tpe: soot.Type): Property
 
     /**
      * Evaluate  a frame variable `i` and push a copy into the frame
@@ -105,7 +100,7 @@ trait SootFrameDomain extends AbstractDomain {
      * @param i the frame variable to evaluate
      * @param f the field to evaluate within `i`
      */
-    def evalField(i: Int = size - 1, f: SootField): Property
+    def evalField(i: Int = dimension - 1, f: soot.SootField): Property
 
     /**
      * Sums the two top element of the frame and replace them with the result
@@ -128,7 +123,7 @@ trait SootFrameDomain extends AbstractDomain {
     def evalDiv: Property
 
     /**
-     * Sum an integer constant to the frame variable 'i' and replace this last whit the result
+     * Sum an integer constant to the frame variable 'i' and replace the latter with the result
      */
     def evalInc(i: Int, c: Double): Property = evalLocal(i).evalConstant(c).evalAdd.assignLocal(i)
 
@@ -222,14 +217,14 @@ trait SootFrameDomain extends AbstractDomain {
      * @param i the frame variable to assign
      * @param f the field to assign
      */
-    def assignField(i: Int = 0, f: SootField): Property
+    def assignField(i: Int = 0, f: soot.SootField): Property
 
     /**
-     * Assign to  a static field of the variable frame `i` the value at the top of the frame, and pop it.
+     * Assign to a static field of the variable frame `i` the value at the top of the frame, and pop it.
      * @param i the frame variable to assign
      * @param f the field to assign
      */
-    def assignStaticField(i: Int = 0, f: SootField): Property
+    def assignStaticField(i: Int = 0, f: soot.SootField): Property
 
     /**
      * Returns the result of testing whether el(size-2) > el(size-1) and pops the two top frame
@@ -285,97 +280,73 @@ trait SootFrameDomain extends AbstractDomain {
     def extract(n: Int): Property
 
     /**
-     * Deletes the last `n` dimensions 
-     */   
+     * Deletes the last `n` dimensions
+     */
     def restrict(n: Int): Property
-    
-    /**
-     * Remove the last or the two last dimension of the frame.
-     * @param n the number of dimensions to be removed. We assume n is between 1 and 2
-     */
-   // def restrictTop(n: Int): Property
-    
-    /**
-     * Connect `this` with `p`, keeping in consideration that the last `common` dimensions
-     * in `this` and the first `common` dimensions in `p` are the same. The common dimensions
-     * are removed after the connection is completed.
-     */
-    def connect(p: Property, common: Int): Property
 
     /**
      * Evaluates the effect of entering a monitor.
      * @param n the frame variable whose monitor is entered.
      */
-    def enterMonitor(n: Int = size - 1): Property
+    def enterMonitor(n: Int = dimension - 1): Property
 
     /**
      * Evaluates the effect of exiting a monitor.
      * @param n the frame variable whose monitor is exited.
      */
-    def exitMonitor(n: Int = size - 1): Property
+    def exitMonitor(n: Int = dimension - 1): Property
 
     /**
      * Evaluates a global constant and put the result on the frame.
      * @param o the constant to evaluate.
      */
-    def evalGlobal(o: Constant): Property
+    def evalGlobal(o: soot.jimple.Constant): Property
 
     /**
      * Evaluate a static field and put the result on the frame.
      * @param v the static field to evaluate.
      */
-    def evalStaticField(v: SootField): Property
+    def evalStaticField(v: soot.SootField): Property
 
     /**
-     * Exchange the position of the top element of the frame with that situate in the position i.
+     * Exchange the position of the top element of the frame with that situated in the position i.
      */
-    def evalSwap(i: Int = size - 2, j: Int = size - 1): Property
+    def evalSwap(i: Int = dimension - 2, j: Int = dimension - 1): Property
 
     /**
      * Create a duplicate of the top element of the frame and insert it on the top of the frame
      */
-    def evalDup1(): Property = evalLocal(size - 1)
+    def evalDup1(): Property = evalLocal(dimension - 1)
 
     /**
-     * Create a duplicate of the top element of the frame and insert it two position under the top of the frame
+     * Create a duplicate of the top element of the frame and insert it two positions under the top of the frame
      */
-    def evalDup1_x1(): Property = evalSwap().evalLocal(size - 2)
+    def evalDup1_x1(): Property = evalSwap().evalLocal(dimension - 2)
 
     /**
-     * Create a duplicate of the top element of the frame and insert it three position under the top of the frame
+     * Create a duplicate of the top element of the frame and insert it three positions under the top of the frame
      */
-    def evalDup1_x2(): Property = evalSwap(size - 3, size - 1).evalSwap().evalLocal(size - 3)
+    def evalDup1_x2(): Property = evalSwap(dimension - 3, dimension - 1).evalSwap().evalLocal(dimension - 3)
 
     /**
      * Create two duplicate of the two top element of the frame and insert them on the top of the frame
      */
-    def evalDup2(): Property = evalLocal(size - 2).evalLocal(size - 1)
+    def evalDup2(): Property = evalLocal(dimension - 2).evalLocal(dimension - 1)
 
     /**
-     * Create two duplicate of the two top element of the frame and insert them three position under the top of the frame
+     * Create two duplicate of the two top element of the frame and insert them three positions under the top of the frame
      */
-    def evalDup2_x1(): Property = evalSwap(size - 3, size - 2).evalSwap().evalLocal(size - 3).evalLocal(size - 3)
+    def evalDup2_x1(): Property = evalSwap(dimension - 3, dimension - 2).evalSwap().evalLocal(dimension - 3).evalLocal(dimension - 3)
 
     /**
-     * Create two duplicate of the two top element of the frame and insert them four position under the top of the frame
+     * Create two duplicate of the two top element of the frame and insert them four positions under the top of the frame
      */
-    def evalDup2_x2(): Property = evalSwap(size - 4, size - 2).evalSwap(size - 3, size - 1).evalLocal(size - 4).evalLocal(size - 4)
-
-    def evalInstance(t: Type): Property
+    def evalDup2_x2(): Property = evalSwap(dimension - 4, dimension - 2).evalSwap(dimension - 3, dimension - 1).evalLocal(dimension - 4).evalLocal(dimension - 4)
 
     /**
-     * Returns a string representation of the abstract property.
-     * @param vars an array with the name of the variables in the environment
-     * @return a sequence of strings. The idea is that each string is an atomic piece of information
-     * which should be printed out together, while different strings may be also printed out
-     * separately.
+     * Evaluates the result of a cast of the top of stack to type `t`
+     * @param t the type in which to cast the top of the stack
      */
-    def mkString(vars: Seq[String]): String
-
-    /**
-     * Returns the string representation of the property. It calls `mkString` with the standard
-     * variable names `v1` ... `vn`.
-     */
-    override def toString = mkString(for (i <- 0 until size) yield "v" + i)
+    def evalInstance(t: soot.Type): Property
   }
 }

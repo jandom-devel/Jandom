@@ -173,7 +173,6 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = {
       other match {
         case other: Property => {
-          println()
           val c1 = p1.tryCompareTo(other.p1)
           val c2 = p2.tryCompareTo(other.p2)
           if (c1 == Some(0))
