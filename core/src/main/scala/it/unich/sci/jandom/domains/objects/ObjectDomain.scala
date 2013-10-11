@@ -24,7 +24,7 @@ import it.unich.sci.jandom.domains.DimensionFiberedProperty
 /**
  * This trait represents the interface for a domain which handles objects and their relationship.
  * May be used, for example, for sharing analysis. This is only a draft, and will be probably improved
- * along the development of Jandom.
+ * along the development of Jandom. Also, the concrete domain should be better understood.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
@@ -33,22 +33,66 @@ trait ObjectDomain extends DimensionFiberedDomain {
   type Property <: ObjectProperty[Property]
 
   /**
-   * This trait is the interface for abstract elements in an object domain.
+   * This trait is the interface for abstract elements in the object domain.
    */
   trait ObjectProperty[Property <: ObjectProperty[Property]] extends DimensionFiberedProperty[Property] {
     this: Property =>
 
     type ShareFilter = UP[Int] => Boolean
 
+    /**
+     * Add a new non-null variable which does not share with any other variable.
+     */
     def addFreshVariable: Property
+
+    /**
+     * Assign the null object to variable `dst`.
+     */
     def assignNull(dst: Int = dimension - 1): Property
+
+    /**
+     * Corresponds to the assignment `dst = src`.
+     */
     def assignVariable(dst: Int, src: Int): Property
+
+    /**
+     * Corresponds to the assignment `dst.field = src`.
+     */
     def assignVariableToField(dst: Int, field: Int, src: Int): Property
+
+    /**
+     * Corresponds to the assignment `dst = src.field`.
+     */
     def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: ShareFilter = (_ => true)): Property
+
+    /**
+     * Refine property according to the information provided by the ShareFilter.
+     */
     def filter(mayShare: ShareFilter): Property
+
+    /**
+     * Returns true if variable `v` is definitively null
+     */
     def isNull(v: Int): Boolean
+
+    /**
+     * Returns the property after the successful completion of the test `v == null`
+     */
     def testNull(v: Int): Property
+
+    /**
+     * Returns the property after the successful completion of the test `v != null`
+     */
     def testNotNull(v: Int): Property
+
+    /**
+     * The connect method is used for inter-procedural analysis. It takes two properties
+     * such that the last `common` dimensions of `this` corresponds to the first `common`
+     * dimension of `p`, and implemets the Java semantics for method call. It removes
+     * the common dimensions at the end of the operation.
+     * @param common number of common dimensions in `this` and `p`
+     * @return the connected properties, according to the description above
+     */
     def connect(that: Property, common: Int): Property
   }
 }

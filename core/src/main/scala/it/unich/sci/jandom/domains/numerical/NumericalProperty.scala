@@ -238,7 +238,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * The connect method is used for inter-procedural analysis. It takes two properties
    * such that the last `common` dimensions of `this` corresponds to the first `common`
    * dimension of `p`. It embeds both properties on a common space and intersect, then
-   * remove the common dimensions.
+   * remove the common dimensions, implementing a call by value semantics.
    * @todo why not remove the private dimensions before connecting?
    * @param common number of common dimensions in `this` and `p`
    * @return the connected properties, according to the description above

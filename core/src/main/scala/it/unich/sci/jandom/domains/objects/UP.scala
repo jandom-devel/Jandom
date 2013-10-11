@@ -19,23 +19,35 @@
 package it.unich.sci.jandom.domains.objects
 
 /**
- * Class for unordered pairs. It is essentially a set with one or two elements, but
- * we do no implement that interface yet.
- * @param A the type of the elements in the pair.
+ * Class for unordered pairs.
+ * @tparam A the type of the elements in the pair. It should come with an ordering.
  */
-final class UP[@specialized(Int) A](x: A, y: A)(implicit ordering: Ordering[A]) extends Product2[A, A] {
-
-  def canEqual(that: Any) = that.isInstanceOf[UP[A]]
+final class UP[@specialized(Int) A](x: A, y: A)(implicit ordering: Ordering[A]) extends Product2[A, A]  {
 
   val _1 = ordering.min(x, y)
   val _2 = ordering.max(x, y)
 
+  /**
+   * Replace the element 'oldval` with `newval`
+   */
   def replace(newval: A, oldval: A): UP[A] =
     UP(if (_1 == oldval) newval else _1, if (_2 == oldval) newval else _2)
 
+  /**
+   * Replace elements according to the map 'f`
+   */
   def replace(f: A => A): UP[A] = UP(f(_1),f(_2))
 
+  /**
+   * Returns true if `v` is one of the elements of the pair
+   */
   def contains(v: A) = _1 == v || _2 == v
+
+  /**
+   * @inheritdoc
+   * An unordered pair may be compared onyl with other unordered pairs.
+   */
+  def canEqual(that: Any) = that.isInstanceOf[UP[A]]
 
   override def equals(that: Any) = that match {
     case that: UP[A] => _1 == that._1 && _2 == that._2
@@ -45,8 +57,23 @@ final class UP[@specialized(Int) A](x: A, y: A)(implicit ordering: Ordering[A]) 
   override def toString = (_1, _2).toString
 }
 
+/**
+ * This is the companion object for unordered pairs.
+ */
 object UP {
+  /**
+   * Builds an unordered pair with elements `x` and `y`.
+   */
   def apply[A: Ordering](x: A, y: A) = new UP(x, y)
+
+  /**
+   * Builds an unordered pair whose elements are the components of `p`.
+   */
   def apply[A: Ordering](p: (A, A)) = new UP(p._1, p._2)
+
+  /**
+   * Extracts the elements of `up` as an ordered pair of elements. The first element
+   * in the pair is always less or equal than the second.
+   */
   def unapply[A](up: UP[A]): Option[(A, A)] = Some((up._1, up._2))
 }
