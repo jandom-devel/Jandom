@@ -105,15 +105,15 @@ class PairSharingSuite extends FunSuite {
 
   test("Delete variables in the middle") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
-    expectResult( dom(Set(UP(0, 0), UP(1, 1)) ,2) ) (ps1.delVariables(1 to 2))
+    expectResult(dom(Set(UP(0, 0), UP(1, 1)), 2))(ps1.delVariables(1 to 2))
     val ps2 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
-    expectResult( dom(Set(UP(0, 0), UP(2, 2)) ,3) ) (ps1.delVariable(1))
+    expectResult(dom(Set(UP(0, 0), UP(2, 2)), 3))(ps1.delVariable(1))
   }
 
   test("Map variables") {
-    val ps1 = dom(Set(UP(0,0), UP(0,2), UP(2,2)), 3)
-    val ps2 = ps1.mapVariables(Seq(1,0,-1))
-    assert (ps2 === dom(Set(UP(1,1)), 2))
+    val ps1 = dom(Set(UP(0, 0), UP(0, 2), UP(2, 2)), 3)
+    val ps2 = ps1.mapVariables(Seq(1, 0, -1))
+    assert(ps2 === dom(Set(UP(1, 1)), 2))
   }
 
   test("connectFull: nullness of first property is definitive") {
@@ -157,5 +157,12 @@ class PairSharingSuite extends FunSuite {
     val ps2 = dom(Set(UP(0, 1), UP(0, 0), UP(1, 1), UP(2, 2), UP(1, 3), UP(3, 3)), 4)
     val ps3 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(1, 5), UP(3, 3), UP(3, 5), UP(4, 4), UP(5, 5)), 6)
     expectResult(ps3)(ps1.connectFull(ps2, 2))
+  }
+
+  test("connectFull: null at the output") {
+    val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1)), 2)
+    val ps2 = dom(Set(UP(1, 1), UP(2, 2)), 3)
+    val ps3 = dom(Set(UP(0, 0), UP(3, 3), UP(2,2)), 4)
+    expectResult(ps3)(ps1.connectFull(ps2, 1))
   }
 }

@@ -145,8 +145,13 @@ object PairSharingDomain extends ObjectDomain {
         if l >= common || !isNull(l + firstCommonInThis)
         if r >= common || !isNull(r + firstCommonInThis)
       } yield UP(l + firstCommonInThis, r + firstCommonInThis)
-      // remove from this those pairs which only relates common variables
-      val trimmedThis = this.ps filter { case UP(l, r) => l < firstCommonInThis }
+      // remove from this those pairs which only relates common variables. Moreover,
+      // remove variables which are null in `that` (if a variable is null in that,
+      // since it cannot be forced to be null due to call-by-value semantics, it had
+      // to be null before.
+      val trimmedThis = this.ps filter {
+        case UP(l, r) => l < firstCommonInThis && (r < firstCommonInThis || !that.isNull(r-firstCommonInThis))
+      }
       // join one ps of this with one ps of that
       val j1 = for {
         UP(l, r) <- trimmedThis
