@@ -42,7 +42,9 @@ final class Parallelotope (
   private[domains] val high: DenseVector[Double])
   extends NumericalProperty[Parallelotope] {
 
-  require((low.length == A.rows) && (low.length == A.cols) && normalized)
+  require(low.length == A.rows)
+  require(low.length == A.cols)
+  require(normalized)
 
   type Domain = ParallelotopeDomain
 
@@ -306,6 +308,13 @@ final class Parallelotope (
     }
   }
 
+  
+  private def dotprod(x: DenseVector[Double], y: DenseVector[Double], remove: Int = -1): Double = {
+      var sum: Double = 0
+      for (i <- 0 until x.length if i != remove if x(i) != 0) sum = sum + x(i)*y(i)
+      sum
+    }
+  
   /**
    * @inheritdoc
    * @note @inheritdoc
@@ -313,11 +322,15 @@ final class Parallelotope (
    * @throws ILLEGAL
    */
   def linearInequality(lf: LinearForm[Double]): Parallelotope = {
+  
     require(lf.dimension <= dimension)
+    
+    if (isEmpty) return this
+    
     val tcoeff = lf.homcoeffs
     val known = lf.known
     val coeff = tcoeff.padTo(dimension, 0.0).toArray
-    if (isEmpty) return this
+    
     val y = A.t \ DenseVector(coeff)
     val j = (0 until dimension) find { i => y(i) != 0 && low(i).isInfinity && high(i).isInfinity }
     j match {
@@ -326,12 +339,26 @@ final class Parallelotope (
         val newhigh = high.copy
         val (minc, maxc) = domain.extremalsInBox(y, newlow, newhigh)
         if (minc > -known) return domain.bottom(dimension)
-        for (i <- 0 until dimension) {
-          if (y(i) > 0)
-            newhigh(i) = high(i) min ((-known - minc + y(i) * low(i)) / y(i))
-          else if (y(i) < 0)
-            newlow(i) = low(i) max ((-known - minc + y(i) * low(i)) / y(i))
+       
+       
+        val lfArgmin = (y) mapPairs { case (i, c) => if (c > 0) low(i) else high(i) }
+        
+        val infinities = (tcoeff.indices) filter { i => lfArgmin(i).isInfinity && tcoeff(i) != 0 }
+        infinities.size match {
+        	case 0 =>
+        		for (i <- 0 until dimension) {
+        			if (y(i) > 0) newhigh(i) = high(i) min ((-known - minc + y(i) * low(i)) / y(i))
+        			else if (y(i) < 0) newlow(i) = low(i) max ((-known - minc + y(i) * low(i)) / y(i))
+        		}
+       	    case 1 => {	
+        	val posinf = infinities.head
+        	if (y(posinf) < 0)
+        		newlow(posinf) = low(posinf) max ((-dotprod(y, lfArgmin, posinf) - known) / y(posinf))
+            else
+            	newhigh(posinf) = high(posinf) min ((-dotprod(y, lfArgmin, posinf) - known) / y(posinf))
         }
+        case _ =>
+      }
         return new Parallelotope(false, newlow, A, newhigh)
       }
       case Some(j) => {
