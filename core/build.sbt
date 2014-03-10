@@ -1,14 +1,20 @@
 import EclipseKeys._
 
+resolvers ++= Seq(
+  "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+  "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
+)
+
 libraryDependencies ++= Seq(
   "org.ow2.asm" % "asm-tree" % "4.1",
   "org.ow2.asm" % "asm-util" % "4.1",
-  "org.scalatest" %% "scalatest" % "1.9.1" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
-  "org.scalanlp" %% "breeze-math" % "0.4",
-  "org.rogach" %% "scallop" % "0.9.4",
-  "soot" % "soot" % "2.5.0+git1" from "http://vandyk.st.informatik.tu-darmstadt.de/abc/soot.jar",
-  "org.scala-lang" % "scala-swing" % scalaVersion.value
+  "org.scalatest" %% "scalatest" % "2.2.1" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
+  "org.scalanlp" %% "breeze" % "0.9",
+  "org.rogach" %% "scallop" % "0.9.5",
+  "org.scala-lang.modules" %% "scala-swing" % "1.0.1",
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",
+  "soot" % "soot" % "2.5.0+git1" from "http://vandyk.st.informatik.tu-darmstadt.de/abc/soot.jar"
 )
 
 unmanagedJars in Compile ++= (pplJar.value map file).toSeq
