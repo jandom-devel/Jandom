@@ -49,7 +49,7 @@ import it.unich.sci.jandom.ui.OutputInterface
 
 class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   import frame.Mode._
-
+ 
   private val sootScene: Scene = Scene.v()
   private val editorPane = new EditorPane
   editorPane.editable = false
@@ -142,9 +142,10 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
       } else
         classPathField.foreground = java.awt.Color.red
 
-    case SelectionChanged(`classComboBox`) =>
-      val klass = sootScene.loadClassAndSupport(classComboBox.selection.item)
+    case SelectionChanged(`classComboBox`) =>      
+      val klass = sootScene.loadClassAndSupport(classComboBox.selection.item)         
       klass.setApplicationClass()
+      sootScene.loadNecessaryClasses()
       val methodList = klass.getMethods()
       // these two lines are a mess because Scala Swing does not play well with Java 1.7
       val comboModel = ComboBox.newConstantModel(methodList).asInstanceOf[javax.swing.ComboBoxModel[SootMethod]]

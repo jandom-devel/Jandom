@@ -7,7 +7,7 @@ libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.10.0" % "test",
   "org.scalanlp" %% "breeze-math" % "0.4",
   "org.rogach" %% "scallop" % "0.9.4",
-  "soot" % "soot" % "2.5.0" from "http://www.sable.mcgill.ca/software/soot-2.5.0.jar",
+  "soot" % "soot" % "2.5.0+git1" from "http://vandyk.st.informatik.tu-darmstadt.de/abc/soot.jar",
   "org.scala-lang" % "scala-swing" % scalaVersion.value
 )
 
