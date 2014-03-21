@@ -39,6 +39,7 @@ import scala.swing.event.SelectionEvent
 import scala.swing.event.ActionEvent
 import scala.util.Try
 import it.unich.jandom.ui.OutputInterface
+import soot.SootClass
 
 /**
  * This is the pane used to select the class and method to analyze for
@@ -50,7 +51,9 @@ import it.unich.jandom.ui.OutputInterface
 class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   import frame.Mode._
  
-  private val sootScene: Scene = Scene.v()
+  private val sootScene = Scene.v()
+  sootScene.loadBasicClasses()
+  
   private val editorPane = new EditorPane
   editorPane.editable = false
   private val classPathField = new TextField(new File("examples/Java").getCanonicalPath())
@@ -143,9 +146,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
         classPathField.foreground = java.awt.Color.red
 
     case SelectionChanged(`classComboBox`) =>      
-      val klass = sootScene.loadClassAndSupport(classComboBox.selection.item)         
-      klass.setApplicationClass()
-      sootScene.loadNecessaryClasses()
+      val klass = sootScene.loadClassAndSupport(classComboBox.selection.item)   
       val methodList = klass.getMethods()
       // these two lines are a mess because Scala Swing does not play well with Java 1.7
       val comboModel = ComboBox.newConstantModel(methodList).asInstanceOf[javax.swing.ComboBoxModel[SootMethod]]

@@ -129,7 +129,6 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
 
   private def setParameters(tMethod:AsmMethod, aDomain: JVMEnvFixedFrameDomain, wideningIndex: Int,
 		  	   narrowingIndex: Int, delay:Int, debug: Boolean) = {
-     //type T = AsmMethod
 	 val params = new Parameters[AsmMethod] { val domain = aDomain }
 	 params.setParameters(wideningIndex, narrowingIndex, delay, debug)
    	 params
@@ -138,12 +137,12 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
   private def analyze[T<:SootCFG[T, Block]](method: SootCFG[T, Block], domain: DimensionFiberedDomain, wideningIndex: Int,
 		  	   narrowingIndex: Int, delay:Int, debug: Boolean):String =  {
       try {
-        val sootScene: Scene = Scene.v()
+        val sootScene = Scene.v()
+        sootScene.loadBasicClasses()
         val klassAnalysis = new ClassReachableAnalysis(sootScene)
   	    val sootDomain:SootFrameDomain = domain match {
   	  		case domain:NumericalDomain => new SootFrameNumericalDomain(domain)
   	  		case domain:ObjectDomain    => new SootFrameObjectDomain(domain,klassAnalysis)
-        //case _ => None
         }
         val tMethod = method.asInstanceOf[T]
         val params = setParameters[T](tMethod, sootDomain, wideningIndex, narrowingIndex, delay, debug)
@@ -173,7 +172,7 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
    }
 
   private def getScene(dir: String) = {
-	val scene = Scene.v()
+	val scene = Scene.v()	  
 	scene.setSootClassPath(scene.defaultClassPath + java.io.File.pathSeparator + dir)
 	scene
   }
@@ -254,12 +253,6 @@ def getAnalysisTypeTip = "Choose between an analysis of numerical properties or 
   def analyzeASM(dir:String, klassName:String, methodIndex: Int, domain: Int, widening: Int,
 		  	   narrowing: Int, delay:Int, debug: Boolean) = {
     try {
-      /*
-      val numericalDomain = if(isNumerical)
-    	 			NumericalDomains.values(domain).value
-    	 		   else
-    	 			ObjectDomains.values(domain).value
-    */
     	val numericalDomain = NumericalDomains.values(domain).value
     	val aDomain = new JVMEnvFixedFrameDomain(numericalDomain)
     	val method = new AsmMethod(getASMMethodsList(dir,klassName).get(methodIndex))

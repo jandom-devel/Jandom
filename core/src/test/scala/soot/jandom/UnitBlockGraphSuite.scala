@@ -24,6 +24,7 @@ import soot.Unit
 import soot.toolkits.graph.BriefUnitGraph
 import soot.toolkits.graph.Block
 import soot.options.Options
+import it.unich.jandom.targets.SootTests
 
 /**
  * Test suite for the [[soot.Jandom.BlockGraph]].
@@ -31,13 +32,9 @@ import soot.options.Options
  *
  */
 
-class UnitBlockGraphSuite extends FunSpec {
+class UnitBlockGraphSuite extends FunSpec with SootTests {
   import scala.collection.JavaConversions._
 
-  val scene = Scene.v()
-   scene.setSootClassPath(scene.defaultClassPath() + java.io.File.pathSeparator 
-      +  System.getProperty("java.class.path"))
-  scene.loadBasicClasses()
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
   
   for (m <- c.getMethods(); body = m.retrieveActiveBody()) {

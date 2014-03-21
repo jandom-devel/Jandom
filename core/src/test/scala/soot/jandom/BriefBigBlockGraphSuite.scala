@@ -20,17 +20,14 @@ package soot.jandom
 
 import org.scalatest.FunSpec
 import soot._
+import it.unich.jandom.targets.SootTests
 
 /**
  * Test suite for the [[soot.Jandom.BriefBigBlockGraph]].
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class BriefBigBlockGraphSuite extends FunSpec {
-  val scene = Scene.v()
-  scene.setSootClassPath(scene.defaultClassPath() + java.io.File.pathSeparator 
-      +  System.getProperty("java.class.path"))
-  scene.loadBasicClasses()
+class BriefBigBlockGraphSuite extends FunSpec with SootTests { 
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
 
   describe("The BriefBigBlockGraph for the nested method") {

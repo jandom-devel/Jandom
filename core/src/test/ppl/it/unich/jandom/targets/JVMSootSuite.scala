@@ -34,12 +34,10 @@ import soot._
  * @author Gianluca Amato
  *
  */
-class JVMSootSuite extends FunSuite {
+class JVMSootSuite extends FunSuite with SootTests {
   import scala.collection.JavaConversions._
 
-  val scene = Scene.v()
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
-  c.setApplicationClass()
   val classAnalysis = new ClassReachableAnalysis(scene)
   val numdomain = PPLDomain[C_Polyhedron]()
 
