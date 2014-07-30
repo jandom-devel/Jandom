@@ -347,8 +347,8 @@ final class Parallelotope (
         infinities.size match {
         	case 0 =>
         		for (i <- 0 until dimension) {
-        			if (y(i) > 0) newhigh(i) = high(i) min ((-known - minc + y(i) * low(i)) / y(i))
-        			else if (y(i) < 0) newlow(i) = low(i) max ((-known - minc + y(i) * low(i)) / y(i))
+        			if (y(i) > 0) newhigh(i) = high(i) min (lfArgmin(i) + (-known - minc) / y(i))
+        			else if (y(i) < 0) newlow(i) = low(i) max (lfArgmin(i) + (-known - minc) / y(i))
         		}
        	    case 1 => {	
         	val posinf = infinities.head
