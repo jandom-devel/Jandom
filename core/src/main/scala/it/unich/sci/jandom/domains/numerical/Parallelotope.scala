@@ -343,7 +343,7 @@ final class Parallelotope (
        
         val lfArgmin = (y) mapPairs { case (i, c) => if (c > 0) low(i) else high(i) }
         
-        val infinities = (tcoeff.indices) filter { i => lfArgmin(i).isInfinity && tcoeff(i) != 0 }
+        val infinities = (0 until dimension) filter { i => lfArgmin(i).isInfinity && y(i) != 0 }
         infinities.size match {
         	case 0 =>
         		for (i <- 0 until dimension) {
