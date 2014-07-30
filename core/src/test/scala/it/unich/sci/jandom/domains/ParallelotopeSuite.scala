@@ -129,6 +129,10 @@ class ParallelotopeSuite extends FunSuite {
     expectResult(li1) { diamond.linearInequality(LinearForm(1.0, 2, 0)) }
     expectResult(li1) { diamond.linearInequality(LinearForm(1.0, 2)) }
     assert(empty.linearInequality(LinearForm(-1.0, 1, 0)).isEmpty)
+    val full1 = Parallelotope.top(1)
+    val li2 = Parallelotope(DenseVector(-1), DenseMatrix(1.0), DenseVector(1))
+    expectResult(li2) {
+      full1.linearInequality(LinearForm(-1.0, 1)).linearInequality(LinearForm(-1.0, -1))}
   }
 
   test("linear disequalities") {
