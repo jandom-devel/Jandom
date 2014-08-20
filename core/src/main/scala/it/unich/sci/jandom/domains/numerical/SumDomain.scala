@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato, Francesca Scozzari
+ * Copyright 2014 Gianluca Amato, Francesca Scozzari, Simone Di Nardo Di Maio
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,24 +18,19 @@
 
 package it.unich.sci.jandom.domains.numerical
 
-import it.unich.sci.jandom.domains.DomainTransformation
+/**
+ * This is the class which implements the sum of two abstract domains.
+ * @note This is only a prototype.
+ * @author Gianluca Amato
+ * @author Francesca Scozzari
+ * @author Simone Di Nardo Di Maio
+ */
 
-class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val dom2: D2)(
-  implicit val dom1Todom2: DomainTransformation[D1, D2], val dom2Todom1: DomainTransformation[D2, D1]) extends NumericalDomain {
-
-  private val pr1 = dom1Todom2(dom1, dom2)
-  private val pr2 = dom2Todom1(dom2, dom1)
+class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val dom2: D2) extends NumericalDomain {
 
   type Property = Sum
 
-  /**
-   * This is the class which implements the sum of two abstract properties.
-   * @note This is only a prototype.
-   * @author Gianluca Amato
-   * @author Francesca Scozzari
-   * @author Simone Di Nardo Di Maio
-   */
-  final class Sum(private val p1: dom1.Property, private val p2: dom2.Property) extends NumericalProperty[Sum] {
+  class Sum(private val p1: dom1.Property, private val p2: dom2.Property) extends NumericalProperty[Sum] {
 
     require(p1.dimension == p2.dimension)
 
@@ -54,7 +49,7 @@ class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val 
       require(dimension == that.dimension)
       new Sum(p1 widening that.p1, p2 widening that.p2)
     }
-    
+
     def narrowing(that: Sum): Sum = {
       require(dimension == that.dimension)
       new Sum(p1 narrowing that.p1, p2 narrowing that.p2)
@@ -91,7 +86,7 @@ class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val 
 
       println("p1= " + p1)
       println("p2= " + p2)
-      
+
       println("SUM - linearInequality - lf: " + lf)
       println("SUM - linearInequality - lf.dimension: " + lf.dimension)
       println("SUM - linearInequality - lf.known=" + lf.known)
@@ -116,7 +111,7 @@ class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val 
         val lf_k1 = new DenseLinearForm[Double]((lf.known - w2) +: lf.homcoeffs)
         println("SUM - linearInequality - lf_k1=" + lf_k1)
         new Sum(p1.linearInequality(lf_k1), p2);
-      } else 
+      } else
         this
     }
 
@@ -127,7 +122,7 @@ class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val 
     def maximize(lf: LinearForm[Double]): Double = p1.maximize(lf) + p2.maximize(lf)
 
     def frequency(lf: LinearForm[Double]): Option[Double] = (p1.frequency(lf), p2.frequency(lf)) match {
-      case (Some(v1), Some(v2)) => Some(v1+v2)
+      case (Some(v1), Some(v2)) => Some(v1 + v2)
       case _ => None
     }
 
