@@ -12,25 +12,34 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- * You should have received a copy of the GNU General Public License
+ * You shosuld have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package it.unich.sci.jandom.domains.numerical
 
 /**
- * This is the class which implements the sum of two abstract domains.
- * @note This is only a prototype.
+ * This is the trait which implements the sum of two abstract domains.
  * @author Gianluca Amato
  * @author Francesca Scozzari
  * @author Simone Di Nardo Di Maio
  */
 
-class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val dom2: D2) extends NumericalDomain {
+abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends NumericalDomain {
 
-  type Property = Sum
+  val dom1: D1
 
-  class Sum(private val p1: dom1.Property, private val p2: dom2.Property) extends NumericalProperty[Sum] {
+  val dom2: D2
+
+  type Property <: Sum
+
+  abstract class Sum extends NumericalProperty[Property] {
+
+    this: Property =>
+
+    val p1: dom1.Property
+
+    val p2: dom2.Property
 
     require(p1.dimension == p2.dimension)
 
@@ -42,17 +51,17 @@ class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val 
       require(dimension == that.dimension)
       val q1 = p1 union that.p1
       val q2 = p2 union that.p2
-      new Sum(q1, q2)
+      SumDomain.this(q1, q2)
     }
 
     def widening(that: Property): Property = {
       require(dimension == that.dimension)
-      new Sum(p1 widening that.p1, p2 widening that.p2)
+      SumDomain.this(p1 widening that.p1, p2 widening that.p2)
     }
 
-    def narrowing(that: Sum): Sum = {
+    def narrowing(that: Property): Property = {
       require(dimension == that.dimension)
-      new Sum(p1 narrowing that.p1, p2 narrowing that.p2)
+      SumDomain.this(p1 narrowing that.p1, p2 narrowing that.p2)
     }
 
     def intersection(that: Property): Property = {
@@ -67,18 +76,18 @@ class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val 
       val q1 = p1.nonDeterministicAssignment(n)
       if (q1.isTop) {
         val q2 = p2.nonDeterministicAssignment(n)
-        new Sum(p1, q2)
+        SumDomain.this(p1, q2)
       } else
-        new Sum(q1, p2)
+        SumDomain.this(q1, p2)
     }
 
     def linearAssignment(n: Int, lf: LinearForm[Double]): Property = {
-      // we divide the known coefficient halfway between the two domains
+      // we divide the known coefficient evenly between the two domains
       // a better choice could be performed by knowing some info on the two domains
       val newlf = new DenseLinearForm[Double](lf.known / 2 +: lf.homcoeffs)
       var q1 = p1.linearAssignment(n, newlf)
       var q2 = p2.linearAssignment(n, newlf)
-      return (new Sum(q1, q2))
+      SumDomain.this(q1, q2)
     }
 
     def linearInequality(lf: LinearForm[Double]): Property = {
@@ -90,27 +99,27 @@ class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val 
       println("SUM - linearInequality - lf: " + lf)
       println("SUM - linearInequality - lf.dimension: " + lf.dimension)
       println("SUM - linearInequality - lf.known=" + lf.known)
-
-      var w1 = p1.minimize(lf) - lf.known
-      var w2 = p2.minimize(lf) - lf.known
-
+      
+      var w1 = p1.minimize(lf)
+      var w2 = p2.minimize(lf)
+      
       println("SUM - linearInequality - Minimize su p1: w1= " + w1)
       println("SUM - linearInequality - Miminize su p2: w2= " + w2)
 
       if (!w1.isInfinity && !w2.isInfinity) {
-        val lf_k1 = new DenseLinearForm[Double]((lf.known - w2) +: lf.homcoeffs)
-        val lf_k2 = new DenseLinearForm[Double]((lf.known - w1) +: lf.homcoeffs)
+        val lf_k1 = new DenseLinearForm[Double](w2 +: lf.homcoeffs)
+        val lf_k2 = new DenseLinearForm[Double](w1 +: lf.homcoeffs)
         println("SUM - linearInequality - lf_k1=" + lf_k1)
         println("SUM - linearInequality - lf_k2=" + lf_k2)
-        new Sum(p1.linearInequality(lf_k1), p2.linearInequality(lf_k2))
+        SumDomain.this(p1.linearInequality(lf_k1), p2.linearInequality(lf_k2))
       } else if (!w1.isInfinity) {
-        val lf_k2 = new DenseLinearForm[Double]((lf.known - w1) +: lf.homcoeffs)
+        val lf_k2 = new DenseLinearForm[Double](w1 +: lf.homcoeffs)
         println("SUM - linearInequality - lf_k2=" + lf_k2)
-        new Sum(p1, p2.linearInequality(lf_k2));
+        SumDomain.this(p1, p2.linearInequality(lf_k2));
       } else if (!w2.isInfinity) {
-        val lf_k1 = new DenseLinearForm[Double]((lf.known - w2) +: lf.homcoeffs)
+        val lf_k1 = new DenseLinearForm[Double](w2 +: lf.homcoeffs)
         println("SUM - linearInequality - lf_k1=" + lf_k1)
-        new Sum(p1.linearInequality(lf_k1), p2);
+        SumDomain.this(p1.linearInequality(lf_k1), p2);
       } else
         this
     }
@@ -126,11 +135,11 @@ class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val 
       case _ => None
     }
 
-    def addVariable: Property = new Sum(p1.addVariable, p2.addVariable)
+    def addVariable: Property = SumDomain.this(p1.addVariable, p2.addVariable)
 
-    def delVariable(n: Int): Property = new Sum(p1.delVariable(n), p2.delVariable(n))
+    def delVariable(n: Int): Property = SumDomain.this(p1.delVariable(n), p2.delVariable(n))
 
-    def mapVariables(rho: Seq[Int]): Property = new Sum(p1.mapVariables(rho), p2.mapVariables(rho))
+    def mapVariables(rho: Seq[Int]): Property = SumDomain.this(p1.mapVariables(rho), p2.mapVariables(rho))
 
     def dimension: Int = p1.dimension
 
@@ -140,9 +149,9 @@ class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val 
 
     def isBottom: Boolean = p1.isBottom && p2.isBottom
 
-    def bottom: Property = new Sum(p1.bottom, p2.bottom)
+    def bottom: Property = SumDomain.this(p1.bottom, p2.bottom)
 
-    def top: Property = new Sum(p1.top, p2.top)
+    def top: Property = SumDomain.this(p1.top, p2.top)
 
     def mkString(vars: Seq[String]): String = {
       if (isEmpty)
@@ -166,8 +175,9 @@ class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val 
     }
   }
 
-  def top(n: Int) = new Sum(dom1.top(n), dom2.top(n))
+  def top(n: Int) = SumDomain.this(dom1.top(n), dom2.top(n))
 
-  def bottom(n: Int) = new Sum(dom1.bottom(n), dom2.bottom(n))
+  def bottom(n: Int) = SumDomain.this(dom1.bottom(n), dom2.bottom(n))
 
+  def apply(p1: dom1.Property, p2: dom2.Property): Property
 }
