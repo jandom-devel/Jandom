@@ -20,6 +20,7 @@ package it.unich.sci.jandom.domains.numerical
 
 import breeze.linalg._
 import scala.Array.canBuildFrom
+import scala.util.Try
 
 /**
  * This is an element of the parallelotope domain.
@@ -44,6 +45,7 @@ final class Parallelotope (
 
   require(low.length == A.rows)
   require(low.length == A.cols)
+  require(Try(A \ DenseMatrix.eye[Double](dimension)).isSuccess,s"The shape matrix ${A} is not invertible")
   require(normalized)
 
   type Domain = ParallelotopeDomain
@@ -112,7 +114,7 @@ final class Parallelotope (
    * @throws $ILLEGAL
    */
   def union(that: Parallelotope): Parallelotope = {
-
+  
     /**
      * A PrioritizedConstraint is a tuple `(a, m, M, p)` where `a` is a vector, `m` and `M` are
      * reals and `p` is an integer, whose intended meaning is the constraint `m <= ax <= M`
@@ -196,6 +198,7 @@ final class Parallelotope (
     }
 
     require(dimension == that.dimension)
+    
     if (isEmpty) return that
     if (that.isEmpty) return this
     val thisRotated = this.rotate(that.A)
@@ -207,6 +210,7 @@ final class Parallelotope (
     val min2 = DenseVector.vertcat(thatRotated.low, that.low)
     val max1 = DenseVector.vertcat(this.high, thisRotated.high)
     val max2 = DenseVector.vertcat(thatRotated.high, that.high)
+    
     for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i), 1)
     for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i), 2)
     for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
@@ -308,7 +312,6 @@ final class Parallelotope (
     }
   }
 
-  
   private def dotprod(x: DenseVector[Double], y: DenseVector[Double], remove: Int = -1): Double = {
       var sum: Double = 0
       for (i <- 0 until x.length if i != remove if x(i) != 0) sum = sum + x(i)*y(i)
@@ -326,7 +329,7 @@ final class Parallelotope (
     require(lf.dimension <= dimension)
     
     if (isEmpty) return this
-    
+
     val tcoeff = lf.homcoeffs
     val known = lf.known
     val coeff = tcoeff.padTo(dimension, 0.0).toArray

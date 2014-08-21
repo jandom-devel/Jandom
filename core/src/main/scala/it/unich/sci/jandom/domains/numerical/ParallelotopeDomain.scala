@@ -113,18 +113,18 @@ class ParallelotopeDomain private extends NumericalDomain {
     var pivots = Seq[(DenseVector[Double], Int)]()
     var i = 0
     while (indexes.length < dimension) {
-      val row = m(i).copy
+      val row = m(i).copy	
       for (p <- pivots) row -= p._1 * row(p._2)
-      val col = (0 to row.length - 1) find (row(_) != 0)
+      val col = (0 until row.length) find (row(_) != 0)
       col match {
         case Some(col) =>
           row /= row(col)
-          pivots +:= (row, col)
-          indexes +:= i
+          pivots = pivots :+ (row, col)
+          indexes = indexes :+ i
         case None =>
       }
       i += 1
-    }
+    }  
     indexes
   }
 }

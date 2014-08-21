@@ -163,6 +163,10 @@ class ParallelotopeSuite extends FunSuite {
     val u10 = Parallelotope(DenseVector(2, 0), DenseMatrix.eye(2), DenseVector(2, 0))
     val u11 = Parallelotope(DenseVector(0, 2), DenseMatrix((0.0, 1.0), (1.0, -2.0)), DenseVector(1, 6))
     expectResult(u11) { u10 union u11 }
+    val u12 = Parallelotope(DenseVector(1.0,0.0,0.0), DenseMatrix((1.0,0.0,0.0),(-1.0,1.0,0.0),(-1.0,0.0,1.0)), DenseVector(11.0,0.0,0.0)) 
+    expectResult(box) { box union box }
+    expectResult(diamond) { diamond union diamond }
+    expectResult(u12) { u12 union u12 }
   }
 
   test("minimization, maximization and frequency") {
@@ -172,7 +176,6 @@ class ParallelotopeSuite extends FunSuite {
     expectResult(None)(i.frequency(LinearForm(0, 1, 1, 0)))
     expectResult(Some(0))(i.frequency(LinearForm(0, -1, -1, 1)))
   }
-
 
   test("dimensional variation") {
     val i = diamond
