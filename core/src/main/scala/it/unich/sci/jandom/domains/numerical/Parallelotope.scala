@@ -501,7 +501,7 @@ final class Parallelotope (
 
   def dimension = A.rows
 
-  def isTop = low.forallValues(_.isNegInfinity) && high.forallValues(_.isPosInfinity)
+  def isTop = low.forall(_.isNegInfinity) && high.forall(_.isPosInfinity)
 
   def isBottom = isEmpty
 
