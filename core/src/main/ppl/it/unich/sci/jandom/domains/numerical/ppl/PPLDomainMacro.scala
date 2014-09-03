@@ -18,8 +18,8 @@
 
 package it.unich.sci.jandom.domains.numerical.ppl
 
-import scala.reflect.macros.Context
 import scala.language.experimental.macros
+import scala.reflect.macros.blackbox.Context
 
 import it.unich.sci.jandom.domains.DomainTransformation
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
@@ -68,9 +68,7 @@ object PPLDomainMacro {
    * This is the implementaton of the transformer `method`
    */
   def PPLTransformationImpl[PPLSource: c.WeakTypeTag, PPLDest: c.WeakTypeTag](c: Context): c.Expr[DomainTransformation[PPLDomainMacro[PPLSource], PPLDomainMacro[PPLDest]]] = {
-    import c.universe._
-    import parma_polyhedra_library.Double_Box
-    import parma_polyhedra_library.C_Polyhedron
+    import c.universe._    
 
     val template = reify {
       object PPLtoPPL extends DomainTransformation[PPLDomainMacro[Double_Box], PPLDomainMacro[C_Polyhedron]] {
@@ -84,25 +82,26 @@ object PPLDomainMacro {
     val PPLDestTypeSymbol = implicitly[c.WeakTypeTag[PPLDest]].tpe.typeSymbol
 
     // Here we substitute the placeholders Double_Box and C_Polyhedron with the real types
-    val templateWithSubstitution = template.tree.substituteSymbols(
+    val templateWithSubstitution = internal.substituteSymbols( 
+      template.tree,
       List(typeOf[Double_Box].typeSymbol, typeOf[C_Polyhedron].typeSymbol),
-      List(PPLSourceTypeSymbol, PPLDestTypeSymbol))
+      List(PPLSourceTypeSymbol, PPLDestTypeSymbol)
+    )
 
     // Here we add the resulting domain as output of the tree
     val outputTree = templateWithSubstitution match {
-      case Block(stats, expr) => Block(stats, Ident(newTermName("PPLtoPPL")))
+      case Block(stats, expr) => Block(stats, Ident(TermName("PPLtoPPL")))
     }
 
     c.Expr[DomainTransformation[PPLDomainMacro[PPLSource], PPLDomainMacro[PPLDest]]](outputTree)
   }
-
+  
   /**
    * This is the implementation of the `apply` method.
    * @tparam PPLType the PPL class of the numerical properties handled by this domain
    */
   def PPLDomainImpl[PPLType: c.WeakTypeTag](c: Context): c.Expr[PPLDomainMacro[PPLType]] = {
     import c.universe._
-    import parma_polyhedra_library.Double_Box
     import it.unich.sci.jandom.domains.numerical.LinearForm
 
     val classes = reify {
@@ -281,13 +280,15 @@ object PPLDomainMacro {
     val PPLTypeSymbol = implicitly[c.WeakTypeTag[PPLType]].tpe.typeSymbol
 
     // Here we substitute the placeholder Double_Box symbol with the real type
-    val classesWithSubstitution = classes.tree.substituteSymbols(
+    val classesWithSubstitution = internal.substituteSymbols(
+      classes.tree,
       List(typeOf[Double_Box].typeSymbol),
-      List(PPLTypeSymbol))
+      List(PPLTypeSymbol)
+    )
 
     // Here we add the resulting domain as output of the tree
     val outputTree = classesWithSubstitution match {
-      case Block(stats, expr) => Block(stats, Ident(newTermName("ThisDomain")))
+      case Block(stats, expr) => Block(stats, Ident(TermName("ThisDomain")))
     }
 
     c.Expr[PPLDomainMacro[PPLType]](outputTree)
