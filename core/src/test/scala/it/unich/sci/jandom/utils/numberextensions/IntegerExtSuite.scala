@@ -68,37 +68,37 @@ class IntegerExtSuite extends FunSuite with Checkers {
   } 
   
   test("sum on infinities") {
-    expectResult (PositiveInfinity) { IntegerExt(3) + PositiveInfinity }
-    expectResult (PositiveInfinity) { PositiveInfinity + IntegerExt(3)  }
-    expectResult (PositiveInfinity) { PositiveInfinity + PositiveInfinity  }
-    expectResult (NegativeInfinity) { IntegerExt(3) + NegativeInfinity }
-    expectResult (NegativeInfinity) { NegativeInfinity + IntegerExt(3)  }
-    expectResult (NegativeInfinity) { NegativeInfinity + NegativeInfinity }
-    expectResult (NaN) { NaN + IntegerExt(3) }
-    expectResult (NaN) { IntegerExt(3) + NaN }
-    expectResult (NaN) { PositiveInfinity + NegativeInfinity }
-    expectResult (NaN) { NegativeInfinity + PositiveInfinity }
-    expectResult (NaN) { NaN + NaN }
+    assertResult (PositiveInfinity) { IntegerExt(3) + PositiveInfinity }
+    assertResult (PositiveInfinity) { PositiveInfinity + IntegerExt(3)  }
+    assertResult (PositiveInfinity) { PositiveInfinity + PositiveInfinity  }
+    assertResult (NegativeInfinity) { IntegerExt(3) + NegativeInfinity }
+    assertResult (NegativeInfinity) { NegativeInfinity + IntegerExt(3)  }
+    assertResult (NegativeInfinity) { NegativeInfinity + NegativeInfinity }
+    assertResult (NaN) { NaN + IntegerExt(3) }
+    assertResult (NaN) { IntegerExt(3) + NaN }
+    assertResult (NaN) { PositiveInfinity + NegativeInfinity }
+    assertResult (NaN) { NegativeInfinity + PositiveInfinity }
+    assertResult (NaN) { NaN + NaN }
   }
   
   test("difference on infinities") {
-    expectResult (NegativeInfinity) { IntegerExt(3) - PositiveInfinity }
-    expectResult (PositiveInfinity) { PositiveInfinity - IntegerExt(3)  }
-    expectResult (NaN) { PositiveInfinity - PositiveInfinity  }
-    expectResult (PositiveInfinity) { IntegerExt(3) - NegativeInfinity }
-    expectResult (NegativeInfinity) { NegativeInfinity - IntegerExt(3)  }
-    expectResult (NaN) { NegativeInfinity - NegativeInfinity }
-    expectResult (NaN) { NaN - IntegerExt(3) }
-    expectResult (NaN) { IntegerExt(3) - NaN }
-    expectResult (PositiveInfinity) { PositiveInfinity - NegativeInfinity }
-    expectResult (NegativeInfinity) { NegativeInfinity - PositiveInfinity }
-    expectResult (NaN) { NaN - NaN }
+    assertResult (NegativeInfinity) { IntegerExt(3) - PositiveInfinity }
+    assertResult (PositiveInfinity) { PositiveInfinity - IntegerExt(3)  }
+    assertResult (NaN) { PositiveInfinity - PositiveInfinity  }
+    assertResult (PositiveInfinity) { IntegerExt(3) - NegativeInfinity }
+    assertResult (NegativeInfinity) { NegativeInfinity - IntegerExt(3)  }
+    assertResult (NaN) { NegativeInfinity - NegativeInfinity }
+    assertResult (NaN) { NaN - IntegerExt(3) }
+    assertResult (NaN) { IntegerExt(3) - NaN }
+    assertResult (PositiveInfinity) { PositiveInfinity - NegativeInfinity }
+    assertResult (NegativeInfinity) { NegativeInfinity - PositiveInfinity }
+    assertResult (NaN) { NaN - NaN }
   }   
     
   test ("toString method") {
     check( (w:Int) => IntegerExt(w).toString == w.toString )
-    expectResult ("+Inf") { PositiveInfinity.toString }
-    expectResult ("-Inf") { NegativeInfinity.toString }
-    expectResult ("NaN") { NaN.toString }
+    assertResult ("+Inf") { PositiveInfinity.toString }
+    assertResult ("-Inf") { NegativeInfinity.toString }
+    assertResult ("NaN") { NaN.toString }
   }
 }

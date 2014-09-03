@@ -38,12 +38,12 @@ class LinearExpressionParserSuite extends FunSuite {
     val parser = new TempParser
     val expParsed = parser.parseExpr("3*x+y-z").get
     val expBuild = LinearForm(0, 3, 1, -1)
-    expectResult(expBuild) { expParsed }
+    assertResult(expBuild) { expParsed }
   }
 
   test("unary minus") {
     val parser = new TempParser
     val expParsed = parser.parseExpr("- 2").get
-    expectResult(LinearForm(-2)) { expParsed }
+    assertResult(LinearForm(-2)) { expParsed }
   }
 }

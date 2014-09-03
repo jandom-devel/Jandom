@@ -33,6 +33,6 @@ class DefaultWideningSuite extends FunSuite {
     val wd = DefaultWidening
     val d2 = BoxDouble(Array(1),Array(2))
     val d3 = wd(d1,d2)
-    expectResult ( BoxDouble(Array(0),Array(Double.PositiveInfinity)) ) { d3 }
+    assertResult ( BoxDouble(Array(0),Array(Double.PositiveInfinity)) ) { d3 }
   }
 }

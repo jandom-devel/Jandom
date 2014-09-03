@@ -38,15 +38,15 @@ class DelayedWideningFactorySuite extends FunSpec {
       val d1 = BoxDouble(Array(0),Array(1))
       val d2 = BoxDouble(Array(1),Array(2))
       val d3 = wd(d1,d2)
-      expectResult ( BoxDouble(Array(0),Array(2)) ) { d3 }
+      assertResult ( BoxDouble(Array(0),Array(2)) ) { d3 }
       val wd2 = dwf(0)
       val d4 = BoxDouble(Array(2),Array(3))
       val d5 = wd2(d3,d4)
-      expectResult ( BoxDouble(Array(0),Array(3)) ) { d5 }
+      assertResult ( BoxDouble(Array(0),Array(3)) ) { d5 }
       val wd3 = dwf(1)
       val d6 = BoxDouble(Array(3),Array(4))
       val d7 = wd3(d5,d6)
-      expectResult ( BoxDouble(Array(0),Array(4)) ) { d7 }
+      assertResult ( BoxDouble(Array(0),Array(4)) ) { d7 }
     }
 
     it ("should reject negative delays") {

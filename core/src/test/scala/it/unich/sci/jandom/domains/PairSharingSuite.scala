@@ -15,23 +15,6 @@
  * You should have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
-/**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
- *
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JANDOM. If not, see <http://www.gnu.org/licenses/>.
- */
 
 package it.unich.sci.jandom.domains
 
@@ -94,20 +77,20 @@ class PairSharingSuite extends FunSuite {
   test("Delete last variables") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1)), 2)
-    expectResult(ps2)(ps1.delVariables(2 until 4))
+    assertResult(ps2)(ps1.delVariables(2 until 4))
   }
 
   test("Delete first variables") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(1, 1)), 2)
-    expectResult(ps2)(ps1.delVariables(0 until 2))
+    assertResult(ps2)(ps1.delVariables(0 until 2))
   }
 
   test("Delete variables in the middle") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
-    expectResult(dom(Set(UP(0, 0), UP(1, 1)), 2))(ps1.delVariables(1 to 2))
+    assertResult(dom(Set(UP(0, 0), UP(1, 1)), 2))(ps1.delVariables(1 to 2))
     val ps2 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(3, 1), UP(3, 3)), 4)
-    expectResult(dom(Set(UP(0, 0), UP(2, 2)), 3))(ps1.delVariable(1))
+    assertResult(dom(Set(UP(0, 0), UP(2, 2)), 3))(ps1.delVariable(1))
   }
 
   test("Map variables") {
@@ -156,13 +139,13 @@ class PairSharingSuite extends FunSuite {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(3, 3)), 4)
     val ps2 = dom(Set(UP(0, 1), UP(0, 0), UP(1, 1), UP(2, 2), UP(1, 3), UP(3, 3)), 4)
     val ps3 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1), UP(1, 3), UP(1, 5), UP(3, 3), UP(3, 5), UP(4, 4), UP(5, 5)), 6)
-    expectResult(ps3)(ps1.connectFull(ps2, 2))
+    assertResult(ps3)(ps1.connectFull(ps2, 2))
   }
 
   test("connectFull: null at the output") {
     val ps1 = dom(Set(UP(0, 0), UP(0, 1), UP(1, 1)), 2)
     val ps2 = dom(Set(UP(1, 1), UP(2, 2)), 3)
     val ps3 = dom(Set(UP(0, 0), UP(3, 3), UP(2,2)), 4)
-    expectResult(ps3)(ps1.connectFull(ps2, 1))
+    assertResult(ps3)(ps1.connectFull(ps2, 1))
   }
 }

@@ -36,9 +36,9 @@ class LinearAssignmentSuite extends FunSuite {
     val d = BoxDouble.top(env.size)
     val la1 = LinearAssignment( 0, 0 )
     val d1 = la1.analyze(d)
-    expectResult ( BoxDouble(Array(0,Double.NegativeInfinity), Array(0,Double.PositiveInfinity))) { d1 }
+    assertResult ( BoxDouble(Array(0,Double.NegativeInfinity), Array(0,Double.PositiveInfinity))) { d1 }
     val la2 = LinearAssignment( 1, 1 )
     val d2 = la2.analyze(d1)
-    expectResult ( BoxDouble(Array(0,1), Array(0,1))) { d2 }
+    assertResult ( BoxDouble(Array(0,1), Array(0,1))) { d2 }
   }
 }

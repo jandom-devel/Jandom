@@ -57,6 +57,6 @@ class LPInvParserSuite extends FunSuite {
 	    x := x+1;
 	  end
 	  """
-    expectResult(lts) { LPInvParser().parseProgram(ltsString).get }
+    assertResult(lts) { LPInvParser().parseProgram(ltsString).get }
   }
 }

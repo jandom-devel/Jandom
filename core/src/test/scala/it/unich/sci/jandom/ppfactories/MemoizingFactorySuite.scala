@@ -45,10 +45,10 @@ class MemoizingFactorySuite extends FunSpec {
       val i1 = dwf(0)
       val i2 = dwf(1)
       val i3 = dwf(0)
-      expectResult(1) { i0 }
-      expectResult(1) { i1 }
-      expectResult(2) { i2 }
-      expectResult(1) { i3 }
+      assertResult(1) { i0 }
+      assertResult(1) { i1 }
+      assertResult(2) { i2 }
+      assertResult(1) { i3 }
     }   
   }
 }
