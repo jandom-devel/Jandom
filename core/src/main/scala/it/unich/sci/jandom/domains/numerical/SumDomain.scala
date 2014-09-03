@@ -92,33 +92,19 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def linearInequality(lf: LinearForm[Double]): Property = {
       if (p1.isEmpty || p2.isEmpty) return this
-
-      println("p1= " + p1)
-      println("p2= " + p2)
-
-      println("SUM - linearInequality - lf: " + lf)
-      println("SUM - linearInequality - lf.dimension: " + lf.dimension)
-      println("SUM - linearInequality - lf.known=" + lf.known)
       
       var w1 = p1.minimize(lf)
       var w2 = p2.minimize(lf)
       
-      println("SUM - linearInequality - Minimize su p1: w1= " + w1)
-      println("SUM - linearInequality - Miminize su p2: w2= " + w2)
-
       if (!w1.isInfinity && !w2.isInfinity) {
         val lf_k1 = new DenseLinearForm[Double](w2 +: lf.homcoeffs)
         val lf_k2 = new DenseLinearForm[Double](w1 +: lf.homcoeffs)
-        println("SUM - linearInequality - lf_k1=" + lf_k1)
-        println("SUM - linearInequality - lf_k2=" + lf_k2)
         SumDomain.this(p1.linearInequality(lf_k1), p2.linearInequality(lf_k2))
       } else if (!w1.isInfinity) {
         val lf_k2 = new DenseLinearForm[Double](w1 +: lf.homcoeffs)
-        println("SUM - linearInequality - lf_k2=" + lf_k2)
         SumDomain.this(p1, p2.linearInequality(lf_k2));
       } else if (!w2.isInfinity) {
         val lf_k1 = new DenseLinearForm[Double](w2 +: lf.homcoeffs)
-        println("SUM - linearInequality - lf_k1=" + lf_k1)
         SumDomain.this(p1.linearInequality(lf_k1), p2);
       } else
         this
