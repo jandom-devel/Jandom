@@ -41,7 +41,7 @@ trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <
     (0 until m).foldLeft(this)((p, i) => p.addVariable())
   }
 
-  def fiber = Seq.fill[Unit](dimension)()
+  def fiber = Seq.fill[Unit](dimension)(())
 
   def addVariable(t: Unit) = addVariable()
 }

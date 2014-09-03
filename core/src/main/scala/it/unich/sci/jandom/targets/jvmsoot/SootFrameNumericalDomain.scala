@@ -20,7 +20,6 @@ package it.unich.sci.jandom.targets.jvmsoot
 
 import scala.annotation.elidable
 import scala.annotation.elidable._
-import scala.collection.immutable.Stack
 
 import it.unich.sci.jandom.domains.numerical.NumericalDomain
 import it.unich.sci.jandom.domains.numerical.LinearForm
@@ -41,15 +40,15 @@ import soot.jimple.StaticFieldRef
  */
 class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDomain {
 
-  def top(types: Seq[Type]) = Property(numdom.top(types.size), Stack(types.reverse: _*))
+  def top(types: Seq[Type]) = Property(numdom.top(types.size), List(types.reverse: _*))
 
-  def bottom(types: Seq[Type]) = Property(numdom.bottom(types.size), Stack(types.reverse: _*))
+  def bottom(types: Seq[Type]) = Property(numdom.bottom(types.size), List(types.reverse: _*))
 
   /**
    * A simple helper method for the analogous constructor of abstract numerical frames.
    * @param num
    */
-  def apply(prop: numdom.Property, types: Seq[Type]) = new Property(prop, Stack(types.reverse: _*))
+  def apply(prop: numdom.Property, types: Seq[Type]) = new Property(prop, List(types.reverse: _*))
 
   /**
    * A simple helper method for the analogous constructor of abstract numerical frames.
@@ -68,7 +67,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
    * @param vars the stack of variable types in the current frame. Note that stack position are numbered in the
    * opposite way than frame variables, i.e., the frame variable `i` corresponds to stack position `size - 1 - i`.
    */
-  case class Property(val prop: numdom.Property, val stack: Stack[Type]) extends SootFrameProperty[Property] {
+  case class Property(val prop: numdom.Property, val stack: List[Type]) extends SootFrameProperty[Property] {
 
     invariantCheck
 
@@ -94,7 +93,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      * @param tpe the common type of all frame variables.
      */
     def this(prop: numdom.Property, tpe: Type) = {
-      this(prop, Stack.fill(prop.dimension)(tpe))
+      this(prop, List.fill(prop.dimension)(tpe))
     }
 
     type Domain = SootFrameNumericalDomain.this.type
@@ -133,13 +132,13 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def dimension = prop.dimension
 
-    def addVariable(tpe: Type) = Property(prop.addVariable(), stack.push(tpe))
+    def addVariable(tpe: Type) = Property(prop.addVariable(), tpe :: stack)
 
     def delVariable(m: Int) = Property(prop.delVariable(m), stack.take(dimension - 1 - m) ++ stack.takeRight(m))
 
     def mapVariables(rho: Seq[Int]) = {
       val newstack = for (i <- rho; if i != -1) yield stack(dimension - 1 - i)
-      Property(prop.mapVariables(rho), Stack(newstack.reverse: _*))
+      Property(prop.mapVariables(rho), List(newstack.reverse: _*))
     }
 
     def connect(p: Property, common: Int) = {
@@ -157,9 +156,9 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
       Property(prop.delVariables(dimension - n until dimension), stack.drop(n))
     }
 
-    def evalConstant(const: Double) = Property(prop.addVariable().constantAssignment(dimension, const), stack.push(DoubleType.v()))
+    def evalConstant(const: Double) = Property(prop.addVariable().constantAssignment(dimension, const), DoubleType.v :: stack)
 
-    def evalConstant(const: String) = Property(prop.addVariable(), stack.push(RefType.v(const.getClass().getName())))
+    def evalConstant(const: String) = Property(prop.addVariable(), RefType.v(const.getClass().getName()) :: stack)
 
     def evalNull = addVariable(NullType.v())
 
@@ -167,7 +166,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalLocal(v: Int) = {
       if (isNumeric(stack(dimension - 1 - v)))
-        Property(prop.addVariable().variableAssignment(dimension, v), stack.push(stack(dimension - 1 - v)))
+        Property(prop.addVariable().variableAssignment(dimension, v), stack(dimension - 1 - v) :: stack)
       else
         addVariable(stack(dimension - 1 - v))
     }
@@ -183,7 +182,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def assignLocal(dst: Int) = {
       if (isNumeric(stack(dimension - 1 - dst)))
-        Property(prop.variableAssignment(dst, dimension - 1).delVariable(), stack.pop)
+        Property(prop.variableAssignment(dst, dimension - 1).delVariable(), stack.tail)
       else
         delVariable()
     }
@@ -202,23 +201,23 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
       delVariable()
     }
 
-    def evalAdd = Property(prop.variableAdd().delVariable(), stack.pop)
+    def evalAdd = Property(prop.variableAdd().delVariable(), stack.tail)
 
-    def evalSub = Property(prop.variableSub().delVariable(), stack.pop)
+    def evalSub = Property(prop.variableSub().delVariable(), stack.tail)
 
-    def evalMul = Property(prop.variableMul().delVariable(), stack.pop)
+    def evalMul = Property(prop.variableMul().delVariable(), stack.tail)
 
-    def evalDiv = Property(prop.variableDiv().delVariable(), stack.pop)
+    def evalDiv = Property(prop.variableDiv().delVariable(), stack.tail)
 
-    def evalRem = Property(prop.variableRem().delVariable(), stack.pop)
+    def evalRem = Property(prop.variableRem().delVariable(), stack.tail)
 
-    def evalShl = Property(prop.variableShl().delVariable(), stack.pop)
+    def evalShl = Property(prop.variableShl().delVariable(), stack.tail)
 
-    def evalShr = Property(prop.variableShr().delVariable(), stack.pop)
+    def evalShr = Property(prop.variableShr().delVariable(), stack.tail)
 
-    def evalUshr = Property(prop.variableUshr().delVariable(), stack.pop)
+    def evalUshr = Property(prop.variableUshr().delVariable(), stack.tail)
 
-    def evalBinOp = Property(prop.nonDeterministicAssignment(dimension - 2).delVariable(), stack.pop)
+    def evalBinOp = Property(prop.nonDeterministicAssignment(dimension - 2).delVariable(), stack.tail)
 
     def evalNeg = Property(prop.variableNeg(), stack)
 
@@ -243,8 +242,8 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     private def testComp(op: AtomicCond.ComparisonOperators.Value) = {
       import AtomicCond.ComparisonOperators._
       val lf = LinearForm(0, dimension - 2 -> 1, dimension - 1 -> -1)
-      val tbranch = Property(AtomicCond(lf, op).analyze(prop).delVariable().delVariable(), stack.pop.pop)
-      val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), stack.pop.pop)
+      val tbranch = Property(AtomicCond(lf, op).analyze(prop).delVariable().delVariable(), stack.tail.tail)
+      val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), stack.tail.tail)
       (tbranch, fbranch)
     }
 

@@ -41,7 +41,7 @@ private[jandom] object PPLInitializer {
   } catch {
     case _: UnsatisfiedLinkError =>
       try {
-        val path = Process("ppl-config -l").lines.head
+        val path = Process("ppl-config -l").lineStream.head
         System.load(path + "/ppl/libppl_java.so")
         true
       } catch {
