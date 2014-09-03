@@ -291,7 +291,9 @@ final class Parallelotope (
       val increment = A(::, n) :* known / coeff(n)
       val newlow = low :+ increment
       val newhigh = high :+ increment
-      val ei = SparseVector.zeros[Double](dimension)
+      // in the past (4.0) we could use SparseVector instead of DenseVector, but this does
+      // not work anymore
+      val ei = DenseVector.zeros[Double](dimension)
       ei(n) = 1
       val newA = A :- (A(::, n) * (DenseVector(coeff) - ei).t) / coeff(n)
       new Parallelotope(false, newlow, newA, newhigh)
@@ -303,7 +305,7 @@ final class Parallelotope (
         Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
       val ei = DenseVector.zeros[Double](dimension)
       ei(n) = 1
-      Aprime(j, ::) := ei :- DenseVector(coeff)
+      Aprime(j, ::) := (ei :- DenseVector(coeff)).t
       val newlow = newP.low.copy
       val newhigh = newP.high.copy
       newlow(j) = known
@@ -367,7 +369,7 @@ final class Parallelotope (
       case Some(j) => {
         val newA = A.copy
         val newhigh = high.copy
-        newA(j, ::) := DenseVector(coeff)
+        newA(j, ::) := DenseVector(coeff).t
         newhigh(j) = -known
         return new Parallelotope(false, low, newA, newhigh)
       }
@@ -385,7 +387,7 @@ final class Parallelotope (
     if (tcoeff.forall(_ == 0))
       if (known == 0) bottom else this
     else {
-      val row = (0 until dimension).find(A(_, ::).toDenseVector == DenseVector(tcoeff: _*))
+      val row = (0 until dimension).find(A(_, ::).t == DenseVector(tcoeff: _*))
       row match {
         case None => this
         case Some(row) =>
