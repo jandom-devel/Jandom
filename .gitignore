@@ -7,3 +7,5 @@ target/
 .history
 *.sc
 .settings/
+.idea/
+

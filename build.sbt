@@ -6,9 +6,9 @@ lazy val JandomExtended = project in file("extended") dependsOn Jandom % "compil
 
 lazy val root = project in file(".") aggregate (Jandom, JandomExtended) 
 
-version in ThisBuild := "0.1.2-SNAPSHOT"
+version in ThisBuild := "0.1.3-SNAPSHOT"
 
-scalaVersion in ThisBuild := "2.10.3"
+scalaVersion in ThisBuild := "2.11.2"
 
 executionEnvironment in ThisBuild := Some(EclipseExecutionEnvironment.JavaSE17)
 

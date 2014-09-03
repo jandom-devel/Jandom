@@ -152,6 +152,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
      * returned value.
      */
     def analyzeInvokeExpr(v: InvokeExpr, prop: params.Property): params.Property = {
+      import scala.language.existentials
       val method = v.getMethod()
       val (baseprop, implicitArgs) = v match {
         case v: InstanceInvokeExpr =>

@@ -35,8 +35,11 @@ class UnitBlockGraphSuite extends FunSpec {
   import scala.collection.JavaConversions._
 
   val scene = Scene.v()
+   scene.setSootClassPath(scene.defaultClassPath() + java.io.File.pathSeparator 
+      +  System.getProperty("java.class.path"))
+  scene.loadBasicClasses()
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
-  c.setApplicationClass()
+  
   for (m <- c.getMethods(); body = m.retrieveActiveBody()) {
 
     describe("The UnitBlockGraph for the "+m.getName()+" method") {

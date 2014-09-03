@@ -38,19 +38,19 @@ class ClassReachableAnalysisSuite extends FunSuite {
   val analysis = new ClassReachableAnalysis(scene)
 
   test("reachability") {
-    expectResult(Set(klassA))(analysis.reachablesFrom(klassA))
-    expectResult(Set(klassA))(analysis.reachablesFrom(klassA))
-    expectResult(Set(klassA, klassListA))(analysis.reachablesFrom(klassListA))
-    expectResult(Set(klassA, klassB, klassPair))(analysis.reachablesFrom(klassPair))
+    assertResult(Set(klassA))(analysis.reachablesFrom(klassA))
+    assertResult(Set(klassA))(analysis.reachablesFrom(klassA))
+    assertResult(Set(klassA, klassListA))(analysis.reachablesFrom(klassListA))
+    assertResult(Set(klassA, klassB, klassPair))(analysis.reachablesFrom(klassPair))
   }
 
   test("sharing") {
-    expectResult(true)(analysis.mayShare(klassA, klassA))
-    expectResult(false)(analysis.mayShare(klassA, klassB))
-    expectResult(true)(analysis.mayShare(klassA, klassListA))
-    expectResult(false)(analysis.mayShare(klassB, klassListA))
-    expectResult(true)(analysis.mayShare(klassA, klassPair))
-    expectResult(true)(analysis.mayShare(klassListA, klassPair))
-    expectResult(true)(analysis.mayShare(klassB, klassPair))
+    assertResult(true)(analysis.mayShare(klassA, klassA))
+    assertResult(false)(analysis.mayShare(klassA, klassB))
+    assertResult(true)(analysis.mayShare(klassA, klassListA))
+    assertResult(false)(analysis.mayShare(klassB, klassListA))
+    assertResult(true)(analysis.mayShare(klassA, klassPair))
+    assertResult(true)(analysis.mayShare(klassListA, klassPair))
+    assertResult(true)(analysis.mayShare(klassB, klassPair))
   }
 }

@@ -44,7 +44,7 @@ class SLILProgramSuite extends FunSuite {
           AssignStmt(0, LinearForm(1, 1)))))
     val params = new Parameters[SLILTarget] { val domain = BoxDouble }
     val ann = program.analyze(params)
-    expectResult(BoxDouble(Array(10), Array(11))) { ann((program.stmt, 2)) }
+    assertResult(BoxDouble(Array(10), Array(11))) { ann((program.stmt, 2)) }
   }
 
   test("input vs output widening") {
@@ -67,17 +67,17 @@ class SLILProgramSuite extends FunSuite {
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Output
     program.analyze(params)
-    expectResult(BoxDouble.top(1)) { params.tag(0) }
+    assertResult(BoxDouble.top(1)) { params.tag(0) }
 
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Random
     program.analyze(params)
-    expectResult(BoxDouble.top(1)) { params.tag(0) }
+    assertResult(BoxDouble.top(1)) { params.tag(0) }
 
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.BackEdges
     program.analyze(params)
-    expectResult(BoxDouble(Array(-1), Array(1))) { params.tag(0) }
+    assertResult(BoxDouble(Array(-1), Array(1))) { params.tag(0) }
   }
 
   test("statement without program") {
@@ -88,6 +88,6 @@ class SLILProgramSuite extends FunSuite {
           AssignStmt(0, LinearForm(1, 1))))
      val params = new Parameters[SLILTarget] { val domain = BoxDouble }
      val ann = stmt.analyze(params)
-     expectResult(BoxDouble(Array(10), Array(11))) { ann((stmt, 2)) }
+     assertResult(BoxDouble(Array(10), Array(11))) { ann((stmt, 2)) }
   }
 }

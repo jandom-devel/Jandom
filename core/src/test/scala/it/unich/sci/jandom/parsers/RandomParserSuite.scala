@@ -42,7 +42,7 @@ class RandomParserSuite extends FunSuite with Checkers {
     val env = Environment("x", "y")
     val program = SLILProgram(env, Seq(0, 1), CompoundStmt(AssignStmt(0, LinearForm(1, 0, 0))))
     val parsed = RandomParser().parseProgram(prog).get
-    expectResult(program) { parsed }
+    assertResult(program) { parsed }
   }
 
   test("simple random program") {
@@ -59,7 +59,7 @@ class RandomParserSuite extends FunSuite with Checkers {
         AssignStmt(1, LinearForm(0, 0 -> 1)),
         WhileStmt(AtomicCond(LinearForm(0, -1, 1), AtomicCond.ComparisonOperators.LT),
           CompoundStmt(AssignStmt(1, LinearForm(1, 0, 1))))))
-    expectResult(program) { RandomParser().parseProgram(prog).get }
+    assertResult(program) { RandomParser().parseProgram(prog).get }
   }
 
   val resourceURL = getClass().getResource("/random")

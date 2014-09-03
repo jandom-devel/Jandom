@@ -36,24 +36,24 @@ class PPLMacroPropertySuite extends FunSuite {
   val empty = octDomain.bottom(3)
 
   test("full should be full") {
-    expectResult(true) { full.isTop }
+    assertResult(true) { full.isTop }
   }
 
   test("full should not be empty") {
-    expectResult(false) { full.isEmpty }
+    assertResult(false) { full.isEmpty }
   }
 
   test("empty should be empty") {
-    expectResult(true) { empty.isEmpty }
+    assertResult(true) { empty.isEmpty }
   }
 
   test("empty should not be full") {
-    expectResult(false) { empty.isTop }
+    assertResult(false) { empty.isTop }
   }
 
   test("empty should be strictly less than full") {
-    expectResult(true) { empty < full }
-    expectResult(true) { empty <= full }
+    assertResult(true) { empty < full }
+    assertResult(true) { empty <= full }
   }
 
   test("minimization/maximization/frequency") {
@@ -61,10 +61,10 @@ class PPLMacroPropertySuite extends FunSuite {
       linearAssignment(0, 0.0).
       linearInequality(LinearForm(-1, 0, 1, 1)).
       linearInequality(LinearForm(-1, 0, 1, -1))
-    expectResult(Double.PositiveInfinity) { obj.maximize(LinearForm(0.0, 0, 0, 1)) }
-    expectResult(1) { obj.maximize(LinearForm(0, 1, 1, 0)) }
-    expectResult(None) { obj.frequency(LinearForm(0, 1, 0, 1)) }
-    expectResult(Some(0)) { obj.frequency(LinearForm(0, 1, 0, 0)) }
+    assertResult(Double.PositiveInfinity) { obj.maximize(LinearForm(0.0, 0, 0, 1)) }
+    assertResult(1) { obj.maximize(LinearForm(0, 1, 1, 0)) }
+    assertResult(None) { obj.frequency(LinearForm(0, 1, 0, 1)) }
+    assertResult(Some(0)) { obj.frequency(LinearForm(0, 1, 0, 0)) }
   }
 
   test("various operations") {
@@ -73,11 +73,11 @@ class PPLMacroPropertySuite extends FunSuite {
     val obj3 = full.linearAssignment(2, 0.0)
     val obj4 = full.linearAssignment(2, 1.0)
     val obj5 = obj4 union obj3
-    expectResult(true) { obj5 > obj4 }
+    assertResult(true) { obj5 > obj4 }
     val obj7 = obj5.linearInequality(LinearForm(1, 0, 0, 1))
-    expectResult(empty) { obj7 }
+    assertResult(empty) { obj7 }
     val obj8 = obj4 widening obj3
-    expectResult(obj5) { obj8 }
+    assertResult(obj5) { obj8 }
   }
 
   test("disequality do not crash") {
@@ -89,19 +89,19 @@ class PPLMacroPropertySuite extends FunSuite {
   test("disequality is precise on boxes") {
     val boxDomain: NumericalDomain = PPLDomainMacro[Double_Box]
     val obj = boxDomain.top(3).linearAssignment(0, 0.0)
-    expectResult(boxDomain.bottom(3)) { obj.linearDisequality(LinearForm(0, 1, 0, 0)) }
+    assertResult(boxDomain.bottom(3)) { obj.linearDisequality(LinearForm(0, 1, 0, 0)) }
   }
 
   test("string conversion") {
     val obj = full.linearInequality(LinearForm(1, 1, 1, 0))
     val obj2 = obj.linearInequality(LinearForm(2, 1, 0, 0))
-    expectResult("[ -x >= 2 , -x - y >= 1 ]") { obj2.mkString(Seq("x", "y", "z")) }
-    expectResult("[ -v0 >= 2 , -v0 - v1 >= 1 ]") { obj2.toString }
+    assertResult("[ -x >= 2 , -x - y >= 1 ]") { obj2.mkString(Seq("x", "y", "z")) }
+    assertResult("[ -v0 >= 2 , -v0 - v1 >= 1 ]") { obj2.toString }
   }
 
   test("string conversion for high-dimensional spaces") {
     val obj3 = octDomain.top(33).linearInequality(LinearForm.v(27))
-    expectResult("[ -v27 >= 0 ]") { obj3.toString }
+    assertResult("[ -v27 >= 0 ]") { obj3.toString }
   }
 
   test("map dimensions") {
@@ -109,9 +109,9 @@ class PPLMacroPropertySuite extends FunSuite {
     val obj2 = full.linearInequality(LinearForm(1.0, 1, 1, 0)).linearInequality(LinearForm(2.0, 0, 1, 0))
     val obj3 = octDomain.top(2).linearInequality(LinearForm(2.0, 1, 0))
 
-    expectResult(obj)(obj.mapVariables(Seq(0, 1, 2)))
-    expectResult(obj2)(obj.mapVariables(Seq(1, 0, 2)))
-    expectResult(obj3)(obj2.mapVariables(Seq(-1, 0, 1)))
+    assertResult(obj)(obj.mapVariables(Seq(0, 1, 2)))
+    assertResult(obj2)(obj.mapVariables(Seq(1, 0, 2)))
+    assertResult(obj3)(obj2.mapVariables(Seq(-1, 0, 1)))
   }
 
   test("connect") {
@@ -126,7 +126,7 @@ class PPLMacroPropertySuite extends FunSuite {
       linearAssignment(0, LinearForm(4.0, 0, 0, 0, 0)).
       linearAssignment(2, LinearForm(3.0, 0, 0, 0, 0)).
       linearInequality(LinearForm(0.0, 0, 0, 1, 1))
-    expectResult(obj3)(obj1.connect(obj2, 1))
+    assertResult(obj3)(obj1.connect(obj2, 1))
   }
 
   test("transformers") {
@@ -135,13 +135,13 @@ class PPLMacroPropertySuite extends FunSuite {
       linearInequality(LinearForm(-1, 1, -1)).linearInequality(LinearForm(-1, -1, 1))
     val box = boxDomain.top(2).linearInequality(LinearForm(-1, 1, 0)).linearInequality(LinearForm(-1, -1, 0)).
       linearInequality(LinearForm(-1, 0, -1)).linearInequality(LinearForm(-1, 0, 1))
-    expectResult(box) { transform(octDomain, boxDomain)(diamond) }
+    assertResult(box) { transform(octDomain, boxDomain)(diamond) }
   }
 
   test("non integer coefficients") {
     val obj1 = full.linearInequality(LinearForm(0.5, 1, 1, 0))
     val obj2 = obj1.linearAssignment(2, LinearForm(0.25, 1, 0, 0))
     val m = obj2.maximize(LinearForm(0, 1, 0, -1))
-    expectResult(-0.25) { m }
+    assertResult(-0.25) { m }
   }
 }

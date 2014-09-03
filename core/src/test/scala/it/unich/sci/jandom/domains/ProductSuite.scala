@@ -37,39 +37,39 @@ class ProductSuite extends FunSuite {
   val ptopeFull = productDomain.dom2.top(n)
 
   test("constructors and extractors for the empty pair") {
-    expectResult(n) { empty.dimension }
-    expectResult(true) { empty.isEmpty }
-    expectResult(false) { empty.isTop }
+    assertResult(n) { empty.dimension }
+    assertResult(true) { empty.isEmpty }
+    assertResult(false) { empty.isTop }
   }
 
   test("constructors and extractors for the full pair") {
-    expectResult(n) { full.dimension }
-    expectResult(false) { full.isEmpty }
-    expectResult(true) { full.isTop }
+    assertResult(n) { full.dimension }
+    assertResult(false) { full.isEmpty }
+    assertResult(true) { full.isTop }
   }
 
   test("create a full pair") {
     val p1 = new productDomain.Property(productDomain.dom1.top(n), productDomain.dom2.top(n))
-    expectResult(true) { p1.isTop }
-    expectResult(false) { p1.isEmpty }
+    assertResult(true) { p1.isTop }
+    assertResult(false) { p1.isEmpty }
   }
 
   test("create a non-empty non-full pair") {
     val box = productDomain.dom1(Array(1, 2), Array(5, 4))
     val p2 = new productDomain.Property(box, productDomain.dom2.top(n))
-    expectResult(false) { p2.isTop }
-    expectResult(false) { p2.isEmpty }
+    assertResult(false) { p2.isTop }
+    assertResult(false) { p2.isEmpty }
   }
 
   test("create an empty pair") {
     val p3 = new productDomain.Property(boxEmpty, ptopeFull)
-    expectResult(false) { p3.isTop }
-    expectResult(true) { p3.isEmpty }
+    assertResult(false) { p3.isTop }
+    assertResult(true) { p3.isEmpty }
   }
 
   test("assignment on product") {
     val x2 = full.linearAssignment(0, 0.0)
-    expectResult(x2) {
+    assertResult(x2) {
       new productDomain.Property(
         productDomain.dom1.top(2).linearAssignment(0, 0.0),
         ptopeFull.linearAssignment(0, 0.0))
@@ -78,7 +78,7 @@ class ProductSuite extends FunSuite {
 
   test("dimension on product") {
     val x2 = full.linearAssignment(0, 0.0)
-    expectResult(3) { x2.addVariable().dimension }
-    expectResult(n + 1) { full.addVariable().dimension }
+    assertResult(3) { x2.addVariable().dimension }
+    assertResult(n + 1) { full.addVariable().dimension }
   }
 }

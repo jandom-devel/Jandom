@@ -38,27 +38,27 @@ class BoxDoubleDomainDoubleSuite extends FunSuite {
   test("lattice operation on boxes") {
     val i = BoxDouble(Array(1, 2), Array(5, 4))
     val j = BoxDouble(Array(0, 3), Array(3, 4))
-    expectResult(BoxDouble(Array(0, 2), Array(5, 4))) { i union j }
-    expectResult(BoxDouble(Array(1, 3), Array(3, 4))) { i intersection j }
+    assertResult(BoxDouble(Array(0, 2), Array(5, 4))) { i union j }
+    assertResult(BoxDouble(Array(1, 3), Array(3, 4))) { i intersection j }
   }
 
   test("widening and narrowing") {
 	val i = BoxDouble(Array(1, 2), Array(5, 4))
     val j = BoxDouble(Array(0, 2), Array(3, 6))
     val w = i widening j
-    expectResult(i)(BoxDouble.bottom(2) widening i)
-    expectResult(BoxDouble(Array(Double.NegativeInfinity, 2), Array(5, Double.PositiveInfinity)))(w)
-    expectResult(w narrowing j)(i union j)
+    assertResult(i)(BoxDouble.bottom(2) widening i)
+    assertResult(BoxDouble(Array(Double.NegativeInfinity, 2), Array(5, Double.PositiveInfinity)))(w)
+    assertResult(w narrowing j)(i union j)
   }
 
   test("empty boxes") {
     val i = BoxDouble(Array(-1, -2), Array(-4, 3))
     val j = BoxDouble(Array(0, 0), Array(5, 5))
-    expectResult(BoxDouble.bottom(2)) { i }
-    expectResult(j) { i union j }
-    expectResult(i) { i intersection j }
-    expectResult(i) { i.linearAssignment(1, LinearForm(1,1,1)) }
-    expectResult(i) { i.linearAssignment(1, LinearForm(0)) }
+    assertResult(BoxDouble.bottom(2)) { i }
+    assertResult(j) { i union j }
+    assertResult(i) { i intersection j }
+    assertResult(i) { i.linearAssignment(1, LinearForm(1,1,1)) }
+    assertResult(i) { i.linearAssignment(1, LinearForm(0)) }
     intercept[IllegalArgumentException] { i.linearAssignment(-1, LinearForm(1,1,1)) }
     intercept[IllegalArgumentException] { i.linearAssignment(2, LinearForm(1,1,1)) }
   }
@@ -66,27 +66,27 @@ class BoxDoubleDomainDoubleSuite extends FunSuite {
   test("linear inequations") {
     val i = BoxDouble.top(2).linearInequality(LinearForm(-3, 1, 0))
     val j = BoxDouble(Array(0, 0), Array(5, 5)).linearInequality(LinearForm(-4, 1, 1))
-    expectResult(BoxDouble(Array(Double.NegativeInfinity, Double.NegativeInfinity), Array(3, Double.PositiveInfinity))) { i }
-    expectResult(BoxDouble(Array(0, 0), Array(4, 4))) { j }
+    assertResult(BoxDouble(Array(Double.NegativeInfinity, Double.NegativeInfinity), Array(3, Double.PositiveInfinity))) { i }
+    assertResult(BoxDouble(Array(0, 0), Array(4, 4))) { j }
   }
 
   test("inequalities and disequalities") {
     val i = BoxDouble.top(2).linearInequality(LinearForm.v(0))
-    expectResult(i) { i.linearDisequality(LinearForm.v(0)) }
+    assertResult(i) { i.linearDisequality(LinearForm.v(0)) }
     val j = i.linearInequality(LinearForm(0,-1, 0))
-    expectResult(BoxDouble.bottom(2)) { j.linearDisequality(LinearForm.v(0)) }
-    expectResult(BoxDouble.bottom(2)) { j.linearDisequality(LinearForm(0)) }
-    expectResult(j) { j.linearDisequality(LinearForm(2)) }
-    expectResult(j) { j.linearDisequality(LinearForm(2, 1, 1)) }
-    expectResult(j) { j.linearDisequality(LinearForm(2, 1, 0)) }
+    assertResult(BoxDouble.bottom(2)) { j.linearDisequality(LinearForm.v(0)) }
+    assertResult(BoxDouble.bottom(2)) { j.linearDisequality(LinearForm(0)) }
+    assertResult(j) { j.linearDisequality(LinearForm(2)) }
+    assertResult(j) { j.linearDisequality(LinearForm(2, 1, 1)) }
+    assertResult(j) { j.linearDisequality(LinearForm(2, 1, 0)) }
   }
 
   test("non deterministic assignment") {
     val i = BoxDouble(Array(0, 0), Array(5, 5))
     val j = BoxDouble(Array(0, Double.NegativeInfinity), Array(5, Double.PositiveInfinity))
     val l = BoxDouble(Array(Double.NegativeInfinity, 0), Array(Double.PositiveInfinity, 5))
-    expectResult(j) { i.nonDeterministicAssignment(1) }
-    expectResult(l) { i.nonDeterministicAssignment(0) }
+    assertResult(j) { i.nonDeterministicAssignment(1) }
+    assertResult(l) { i.nonDeterministicAssignment(0) }
     intercept[IllegalArgumentException] { i.nonDeterministicAssignment(-1) }
     intercept[IllegalArgumentException] { i.nonDeterministicAssignment(2) }
   }
@@ -95,9 +95,9 @@ class BoxDoubleDomainDoubleSuite extends FunSuite {
     val i = BoxDouble(Array(0, 0), Array(1, 2))
     val j = BoxDouble(Array(0, 0, Double.NegativeInfinity), Array(1, 2, Double.PositiveInfinity))
     val h = BoxDouble(Array(0, Double.NegativeInfinity), Array(1, Double.PositiveInfinity))
-    expectResult(j)(i.addVariable())
-    expectResult(h)(j.delVariable(1))
-    expectResult(i)(j.delVariable(2))
+    assertResult(j)(i.addVariable())
+    assertResult(h)(j.delVariable(1))
+    assertResult(i)(j.delVariable(2))
     intercept[IllegalArgumentException] { i.delVariable(-1) }
     intercept[IllegalArgumentException] { i.delVariable(2) }
   }
@@ -106,26 +106,26 @@ class BoxDoubleDomainDoubleSuite extends FunSuite {
     val i = BoxDouble(Array(0, 0), Array(1, 2))
     val j = BoxDouble(Array(0, 0), Array(2, 1))
     val h = BoxDouble(Array(0), Array(2))
-    expectResult(j)(i.mapVariables(Seq(1, 0)))
-    expectResult(i)(i.mapVariables(Seq(0, 1)))
-    expectResult(h)(i.mapVariables(Seq(-1, 0)))
+    assertResult(j)(i.mapVariables(Seq(1, 0)))
+    assertResult(i)(i.mapVariables(Seq(0, 1)))
+    assertResult(h)(i.mapVariables(Seq(-1, 0)))
   }
 
   test("minimization, maximization and frequency") {
     val i = BoxDouble(Array(0, 0), Array(1, 2))
-    expectResult(3)(i.maximize(LinearForm(0, 1, 1)))
-    expectResult(0)(i.minimize(LinearForm(0, 1, 1)))
-    expectResult(None)(i.frequency(LinearForm(0, 1, 1)))
+    assertResult(3)(i.maximize(LinearForm(0, 1, 1)))
+    assertResult(0)(i.minimize(LinearForm(0, 1, 1)))
+    assertResult(None)(i.frequency(LinearForm(0, 1, 1)))
     val j = BoxDouble(Array(0, 1, 0), Array(0, 1, 1))
-    expectResult(None)(j.frequency(LinearForm(0, 1, 1, 1)))
-    expectResult(None)(j.frequency(LinearForm(0, 0, 0, 1)))
-    expectResult(Some(0))(j.frequency(LinearForm(0, 1, 0, 0)))
-    expectResult(Some(1))(j.frequency(LinearForm(0, 0, 1, 0)))
+    assertResult(None)(j.frequency(LinearForm(0, 1, 1, 1)))
+    assertResult(None)(j.frequency(LinearForm(0, 0, 0, 1)))
+    assertResult(Some(0))(j.frequency(LinearForm(0, 1, 0, 0)))
+    assertResult(Some(1))(j.frequency(LinearForm(0, 0, 1, 0)))
   }
 
   test("string conversion") {
     val i = BoxDouble(Array(0, -1), Array(2, 3))
-    expectResult("[ 0.0 <= x <= 2.0 , -1.0 <= y <= 3.0 ]") { i.mkString(Seq("x", "y")) }
-    expectResult("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
+    assertResult("[ 0.0 <= x <= 2.0 , -1.0 <= y <= 3.0 ]") { i.mkString(Seq("x", "y")) }
+    assertResult("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
   }
 }

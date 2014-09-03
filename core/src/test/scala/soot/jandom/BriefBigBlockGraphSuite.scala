@@ -28,8 +28,10 @@ import soot._
  */
 class BriefBigBlockGraphSuite extends FunSpec {
   val scene = Scene.v()
-  val c = scene.loadClass("javatest.SimpleTest", 1)
-  c.setApplicationClass()
+  scene.setSootClassPath(scene.defaultClassPath() + java.io.File.pathSeparator 
+      +  System.getProperty("java.class.path"))
+  scene.loadBasicClasses()
+  val c = scene.loadClassAndSupport("javatest.SimpleTest")
 
   describe("The BriefBigBlockGraph for the nested method") {
     import scala.collection.JavaConversions._

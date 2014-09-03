@@ -44,7 +44,7 @@ private[jandom] object PPLUtils {
     if (lf.toPPL != null)
       lf.toPPL.asInstanceOf[(Linear_Expression, Coefficient)]
     else {
-      val coeffs = lf.coeffs map { BigDecimal(_) }
+      val coeffs = lf.coeffs map { BigDecimal.exact(_) }
       val maxScale = (coeffs map { _.scale }).max
       val denumerator = BigDecimal(10) pow maxScale
       val newcoeffs = coeffs map { (x: BigDecimal) => (x * denumerator).toBigIntExact.get.bigInteger }
