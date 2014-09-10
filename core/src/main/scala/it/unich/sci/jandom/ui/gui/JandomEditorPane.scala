@@ -177,7 +177,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
   }
 
   val saveAsAction = new Action("Save As") {
-    def apply() { open() }
+    def apply() { saveAs() }
   }
 
   val cutAction = new Action("Cut") {
