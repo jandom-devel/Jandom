@@ -17,9 +17,8 @@
 
 package it.unich.sci.jandom.ui
 
-import it.unich.sci.jandom.domains.numerical.BoxDoubleDomain
-import it.unich.sci.jandom.domains.numerical.NumericalDomain
-import it.unich.sci.jandom.domains.numerical.ParallelotopeDomain
+import it.unich.sci.jandom.domains.numerical._
+import it.unich.sci.jandom.domains.DomainTransformation._
 import scala.collection.mutable.Buffer
 import scala.util.Try
 
@@ -36,10 +35,12 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
     ParameterValue(BoxDoubleDomain(overReals=true), "BoxDouble over Reals", "This is a native Scala implementation of boxes. It is safe " +
       "w.r.t. reals."),
     ParameterValue(ParallelotopeDomain(), "Parallelotope", "This is a native Scala implementation of parallelotopes. It is " +
-      "not safe and should not be used."))
-  val default = values.head
+      "not safe and should not be used.")
+    ,ParameterValue(SumIntParallelotopeDomain(), "BoxDouble + Parallelotope", "Sum of boxes and parallelotopes.")  
+  )
+  val default = values.last
 
   // Load objects PPLUIInitializer and PPLMacroUIInitializer if available
-  Try ( Class.forName("it.unich.sci.jandom.ui.PPLUIInitializer$") )
-  Try ( Class.forName("it.unich.sci.jandom.ui.PPLMacroUIInitializer$") )
+  Try ( Class.forName ("it.unich.sci.jandom.ui.PPLUIInitializer$") )
+  Try ( Class.forName ("it.unich.sci.jandom.ui.PPLMacroUIInitializer$") )
 }
