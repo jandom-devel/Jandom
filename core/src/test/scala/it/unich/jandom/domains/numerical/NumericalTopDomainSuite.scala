@@ -16,11 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom.domains
+package it.unich.jandom.domains.numerical
 
-import it.unich.jandom.domains.numerical.NumericalTopDomain
 import org.scalatest.FunSpec
-import it.unich.jandom.domains.numerical.LinearForm
 
 /**
  * @author Gianluca Amato <gamato@unich.it>

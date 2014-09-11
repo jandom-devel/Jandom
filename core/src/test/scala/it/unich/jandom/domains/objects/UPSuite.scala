@@ -16,10 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom.domains
+package it.unich.jandom.domains.objects
 
 import org.scalatest.FunSuite
-import it.unich.jandom.domains.objects.UP
 
 /**
  * Test suite for unordered pairs.

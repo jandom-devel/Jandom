@@ -16,12 +16,10 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom.domains
+package it.unich.jandom.domains.numerical
 
 import org.scalatest.FunSuite
-import it.unich.jandom.domains.numerical.ParallelotopeDomain
 import breeze.linalg._
-import it.unich.jandom.domains.numerical.LinearForm
 
 /**
  * Test suite for the parallelotope domain. Disabled at the moment due to non-functionin domain.
@@ -129,9 +127,6 @@ class ParallelotopeSuite extends FunSuite {
     assertResult(li1) { diamond.linearInequality(LinearForm(1.0, 2, 0)) }
     assertResult(li1) { diamond.linearInequality(LinearForm(1.0, 2)) }
     assert(empty.linearInequality(LinearForm(-1.0, 1, 0)).isEmpty)
-    val full1 = Parallelotope.top(1)
-    val li2 = Parallelotope(DenseVector(-1), DenseMatrix(1.0), DenseVector(1))
-    assertResult(li2) {full1.linearInequality(LinearForm(-1.0, 1)).linearInequality(LinearForm(-1.0, -1)) }
   }
 
   test("linear disequalities") {
@@ -162,10 +157,6 @@ class ParallelotopeSuite extends FunSuite {
     val u10 = Parallelotope(DenseVector(2, 0), DenseMatrix.eye(2), DenseVector(2, 0))
     val u11 = Parallelotope(DenseVector(0, 2), DenseMatrix((0.0, 1.0), (1.0, -2.0)), DenseVector(1, 6))
     assertResult(u11) { u10 union u11 }
-    val u12 = Parallelotope(DenseVector(1.0,0.0,0.0), DenseMatrix((1.0,0.0,0.0),(-1.0,1.0,0.0),(-1.0,0.0,1.0)), DenseVector(11.0,0.0,0.0)) 
-    assertResult(box) { box union box }
-    assertResult(diamond) { diamond union diamond }
-    assertResult(u12) { u12 union u12 }
   }
 
   test("minimization, maximization and frequency") {
@@ -175,6 +166,7 @@ class ParallelotopeSuite extends FunSuite {
     assertResult(None)(i.frequency(LinearForm(0, 1, 1, 0)))
     assertResult(Some(0))(i.frequency(LinearForm(0, -1, -1, 1)))
   }
+
 
   test("dimensional variation") {
     val i = diamond

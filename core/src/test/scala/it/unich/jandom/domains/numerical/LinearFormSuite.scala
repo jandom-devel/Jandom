@@ -16,11 +16,9 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom.domains
+package it.unich.jandom.domains.numerical
 
 import org.scalatest.FunSuite
-
-import it.unich.jandom.domains.numerical.LinearForm
 
 /**
  * The test suite for the LinearForm class
