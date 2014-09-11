@@ -210,7 +210,7 @@ object PairSharingDomain extends ObjectDomain {
       s"[ ${pairs.mkString(", ")} ] dimension ${dimension}"
     }
 
-    override def toString = mkString(for (i <- 0 until dimension) yield i.toString).mkString(" ")
+    override def toString = mkString(for (i <- 0 until dimension) yield i.toString)
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
       other match {
