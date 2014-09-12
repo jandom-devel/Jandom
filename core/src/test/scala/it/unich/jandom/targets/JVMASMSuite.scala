@@ -42,10 +42,9 @@ class JVMASMSuite extends FunSuite {
     }
     try {
       val ann = method.analyze(params)
-      println(method.mkString(ann))
     } catch {
       case e: UnsupportedASMInsnException =>
-        println(e.node)
+        fail(e.toString)
     }
     is.close
   }
