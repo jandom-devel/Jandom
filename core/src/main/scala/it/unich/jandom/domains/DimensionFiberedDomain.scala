@@ -19,16 +19,17 @@
 package it.unich.jandom.domains
 
 /**
- * A `DimensionFiberedDomain` is a fibered untyped domain. Hence, each fiber is
- * characterized entirely by its dimension.
+ * A `DimensionFiberedDomain` is an abstract domain where each fiber is identified
+ * by a natural number. It is implemented here as a sub-type of `CartesianFiberedDomain`,
+ * mapping fiber `n` to a sequence of `n` elements of type Unit.
  * @author Gianluca Amato <gamato@unich.it>
  */
 
 trait DimensionFiberedDomain extends CartesianFiberedDomain {
-  type FiberType = Unit
+  type FiberComponent = Unit
 
   type Property <: DimensionFiberedProperty[Property]
-
+  
   /**
    * Returns the top element of the given dimension.
    */
@@ -39,7 +40,7 @@ trait DimensionFiberedDomain extends CartesianFiberedDomain {
    */
   def bottom(dimension: Int): Property
 
-  def top(f: Seq[FiberType]) = top(f.length)
+  def top(f: Fiber) = top(f.length)
 
-  def bottom(f: Seq[FiberType]) = bottom(f.length)
+  def bottom(f: Fiber) = bottom(f.length)
 }

@@ -20,51 +20,30 @@ package it.unich.jandom.domains
 
 /**
  * The base class for all abstract properties, i.e. elements of abstract domains. Abstract
- * properties implements a set of poset-like operations, such as union/intersection
- * (corresponding to meet/join) and widening/narrowing. Moreover, abstract properties are
- * partially ordered. Abstract properties use F-bounded polymorhpism to ensure type safety,
- * hence a concrete class `C` implementing an abstract property should inherit from
- * `AbstractProperty[C]`.
- *
- * Properties are partitioned in fibers. Binary operators are guaranteed to work when
- * both elements are part of the same fiber. Finally, properties are immutable.
- *
- * Analogously to `isTop`, `isBottom` and `isEmpty`, comparison between abstract elements
+ * properties are pre-ordered and support some operations, such as union/intersection (corresponding 
+ * to meet/join) and widening/narrowing. Comparison between abstract elements
  * should return `true` ONLY IF the relationship actually holds between elements. However,
  * it is not required to return `true` every time the relation holds. The `tryCompare`
  * method, in particular, should return `None` each time it cannot (or does not want)
  * determine the relationship between two abstract properties.
+ * 
+ * Abstract properties use F-bounded polymorhpism to ensure type safety,
+ * hence a concrete class `C` implementing an abstract property should inherit from
+ * `AbstractProperty[C]`.
  *
  * @tparam Property the real class we are endowing with the AbstractProperty quality.
- * @define NOTEFIBER `this` and `that` should generally be part of the same fiber.
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait AbstractProperty[Property <: AbstractProperty[Property]] extends PartiallyOrdered[Property] {
   /**
-   * The class of abstract domains which containts this properties.
+   * The class of abstract domains which contains this property.
    */
   type Domain <: AbstractDomain
-
+ 
   /**
    * Returns the abstract domain corresponding to this property.
    */
   def domain: Domain
-
-  /**
-   * The standard widening for two abstract properties.
-   * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
-   * @note $NOTEFIBER
-   * @return the widening of the two abstract properties.
-   */
-  def widening(that: Property): Property
-
-  /**
-   * The standard widening for two abstract properties.
-   * @param that the abstract object to be narrowed with `this`. `that` IS assumed to be smaller than `this`.
-   * @note $NOTEFIBER
-   * @return the narrowing of the two abstract properties.
-   */
-  def narrowing(that: Property): Property
 
   /**
    * Compute an upper bound of two abstract properties. If it is possible and convenient, this should compute
@@ -85,35 +64,23 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   def intersection(that: Property): Property
 
   /**
-   * Returns true ONLY IF this is the top element on the fiber. A top element
-   * is bigger than all the other elements, is neutral for intersection and
-   * narrowing, and is absorbing for widening and union.
+   * The standard widening for two abstract properties.
+   * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
+   * @return the widening of the two abstract properties.
    */
-  def isTop: Boolean
+  def widening(that: Property): Property
 
   /**
-   * Returns true ONLY IF this is the bottom element of the fiber. The
-   * opposite is not always true. A bottom element is smaller than all the other elements,
-   * is neutral for union and widening and is absorbing for intersection and narrowing.
+   * The standard widening for two abstract properties.
+   * @param that the abstract object to be narrowed with `this`. `that` IS assumed to be smaller than `this`.
+   * @return the narrowing of the two abstract properties.
    */
-  def isBottom: Boolean
+  def narrowing(that: Property): Property
 
   /**
-   * Returns true ONLY IF this an empty element, i.e. it represents unreachability. If
-   * `x.isEmpty` is true, the same happens for `x.isBottom`, but the opposite does
-   * not always hold.
+   * Returns true ONLY IF this an empty element, i.e. it represents un-reachability. 
    */
   def isEmpty: Boolean
-
-  /**
-   * Returns the top property on the same fiber as `this`.
-   */
-  def top: Property
-
-  /**
-   * Returns the bottom property on the same fiber as `this`.
-   */
-  def bottom: Property
 
   /**
    * Determines if two properties are the same on the base of `tryCompareTo`

@@ -20,23 +20,55 @@ package it.unich.jandom.domains
 
 /**
  * This class represents a single element in a CartesianFiberedDomain.
+ * Properties are partitioned in fibers. Binary operators are guaranteed to work when
+ * both elements are part of the same fiber. Finally, properties are immutable.
+ *
+ * Analogously to `isTop`, `isBottom` and `isEmpty`, 
+ *
+ * @define NOTEFIBER `this` and `that` should be element of the same fiber
  * @tparam Type the type of the components of a fiber.
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait CartesianFiberedProperty[Type,Property <: CartesianFiberedProperty[Type, Property]] <: AbstractProperty[Property] {
+trait CartesianFiberedProperty[Type, Property <: CartesianFiberedProperty[Type, Property]] <: AbstractProperty[Property] {
   this: Property =>
 
-  type Domain <: CartesianFiberedDomain { type FiberType = Type }
+  type Domain <: CartesianFiberedDomain { type FiberComponent = Type }
 
   /**
-   * Returns the fiber of the property.
+   * Returns the fiber identifier of the current property
    */
-  def fiber: Seq[Type]
+  def fiber: Domain#Fiber
 
   /**
    * Returns the dimension of the property, i.e., the number of variables in its fiber.
    */
   def dimension: Int
+    
+  /**
+   * Returns true ONLY IF this is the top element on the fiber. A top element
+   * is bigger than all the other elements, is neutral for intersection and
+   * narrowing, and is absorbing for widening and union.
+   */
+  def isTop: Boolean
+
+  /**
+   * Returns true ONLY IF this is the bottom element of the fiber. The
+   * opposite is not always true. A bottom element is smaller than all the other elements,
+   * is neutral for union and widening and is absorbing for intersection and narrowing.
+   * If `x.isEmpty` is true, the same happens for `x.isBottom`, but the opposite does
+   * not always hold.
+   */
+  def isBottom: Boolean
+
+  /**
+   * Returns the top property on the same fiber as `this`.
+   */
+  def top: Property
+
+  /**
+   * Returns the bottom property on the same fiber as `this`.
+   */
+  def bottom: Property
 
   /**
    * Add a new variable of the given type.

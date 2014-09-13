@@ -19,7 +19,7 @@
 package it.unich.jandom.domains
 
 /**
- * A `DimensionFiberedProperty` is an element of a `DimensionFiberedDomain`.
+ * This class represents a single element in a DimensionFiberedDomain.
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait DimensionFiberedProperty[Property <: DimensionFiberedProperty[Property]] <: CartesianFiberedProperty[Unit,Property] {

@@ -34,19 +34,9 @@ import it.unich.jandom.domains.CartesianFiberedDomain
  */
 trait SootFrameDomain extends CartesianFiberedDomain {
 
-  type FiberType = soot.Type
+  type FiberComponent = soot.Type
 
   type Property <: SootFrameProperty[Property]
-
-  /**
-   * Returns the top abstract property relative to the fiber `vars`
-   */
-  def top(vars: Seq[FiberType]): Property
-
-  /**
-   * Returns the bottom abstract property relative to the fiber `vars`
-   */
-  def bottom(vars: Seq[FiberType]): Property
 
   /**
    * Determines whether it is possible to assign a variable of type t2

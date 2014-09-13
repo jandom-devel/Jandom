@@ -34,12 +34,12 @@ trait CartesianDomainSuite extends DomainSuite with TableDrivenPropertyChecks {
   /**
    * Some fiber type to use for the tests
    */
-  val someTypes: TableFor1[dom.FiberType]
+  val someTypes: TableFor1[dom.FiberComponent]
 
   /**
    * Some fibers to use for the tests
    */
-  val someFibers: TableFor1[Seq[dom.FiberType]]
+  val someFibers: TableFor1[dom.Fiber]
 
   /**
    * A table of fibers and related valid variables

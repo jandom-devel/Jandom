@@ -19,8 +19,8 @@
 package it.unich.jandom.domains
 
 /**
- * The base class for all abstract domains. An abstract domain is a collection of properties.
- *
+ * The base class for all abstract domains. An abstract domain is a collection of properties,
+ * which may or may not be grouped into fibers.
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait AbstractDomain {

@@ -19,28 +19,27 @@
 package it.unich.jandom.domains
 
 /**
- * This is the trait for a cartesian fibered domain. Objects of a cartesian fibered domain
- * lives in a fiber, which is a finite sequence of elements. Each property is endowed
- * with operations to chanege fiber by adding or removing variables. It  is similar to the
- * concept of a cylindric algebra, but operations are defined only for elements
- * of the same dimension. It is also similar to indexed categories.
+ * This is the trait for a cartesian fibered domain. The fibers of this domain are
+ * identified by finite sequence of elements.
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait CartesianFiberedDomain extends AbstractDomain {
   /**
-   * The type of components of a fiber.
+   * The type of components of a fiber identifier.
    */
-  type FiberType
+  type FiberComponent
 
-  type Property <: CartesianFiberedProperty[FiberType, Property]
+  type Fiber = Seq[FiberComponent]
+
+  type Property <: CartesianFiberedProperty[FiberComponent, Property]
 
   /**
    * Returns the top element of the given fiber.
    */
-  def top(f: Seq[FiberType]): Property
+  def top(f: Fiber): Property
 
   /**
    * Returns the bottom element of the given fiber.
    */
-  def bottom(f: Seq[FiberType]): Property
+  def bottom(f: Fiber): Property
 }
