@@ -27,7 +27,7 @@ import linearcondition._
 
 /**
  * Test suite for linear conditions.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class LinearCondSuite extends FunSuite {

@@ -25,7 +25,7 @@ import it.unich.jandom.domains.numerical.LinearForm
 
 /**
  * Test suite for LinearExpressionParser
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class LinearExpressionParserSuite extends FunSuite {
   class TempParser extends LinearExpressionParser {

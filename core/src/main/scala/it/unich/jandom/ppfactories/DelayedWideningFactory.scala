@@ -26,7 +26,7 @@ import it.unich.jandom.widenings.Widening
  * @tparam ProgramPoint the type of program point
  * @param wideningFactory the original widening factory
  * @param delay the delay of the widening
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class DelayedWideningFactory[ProgramPoint] (private val wideningFactory: PPFactory[ProgramPoint,Widening], private val delay: Int) extends PPFactory[ProgramPoint,Widening] {
   require(delay>=0)

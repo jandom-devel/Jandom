@@ -23,7 +23,7 @@ import it.unich.jandom.domains.numerical.NumericalProperty
 /**
  * This is the abstract class for all linear conditions. Each condition has an opposite method
  * which returns the opposite condition, and an analyze method which performs static analysis.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 abstract class LinearCond {
   /**

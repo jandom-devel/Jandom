@@ -25,7 +25,7 @@ import it.unich.jandom.targets.Environment
 /**
  * A parser for numerical properties.
  * @param env environment to use for parsing the property
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {

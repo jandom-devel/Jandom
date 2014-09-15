@@ -28,7 +28,7 @@ import it.unich.jandom.targets.slil._
 /**
  * Parser for Random programs.
  * @param env the environment for the parser
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {

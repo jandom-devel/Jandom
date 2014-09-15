@@ -34,7 +34,7 @@ import it.unich.jandom.narrowings.NoNarrowing
  * connected to a specific target and domain. Other parameters may be changed freely.
  * @tparam Tgt the type of the target
  * @param tgt the target for the analysis
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 abstract class Parameters[Tgt <: Target[Tgt]]  {

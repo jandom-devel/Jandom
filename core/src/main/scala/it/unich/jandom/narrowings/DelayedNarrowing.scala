@@ -25,7 +25,7 @@ import it.unich.jandom.domains.AbstractProperty
  * narrowing given as an argument.
  * @param narrowing the original narrowing
  * @param delay the number of delayed steps
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 
 class DelayedNarrowing(private val narrowing: Narrowing, private var delay: Int) extends Narrowing {

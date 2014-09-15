@@ -20,7 +20,7 @@ package it.unich.jandom.utils.numberext
 
 /**
  * This is the base class for numeric extensions.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 abstract class NumberExt extends java.lang.Number with Serializable {

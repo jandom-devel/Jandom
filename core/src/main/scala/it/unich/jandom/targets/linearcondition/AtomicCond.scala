@@ -25,7 +25,7 @@ import it.unich.jandom.domains.numerical.LinearForm
  * The class for atomic conditions of the kind \vec c * \vec x <=> 0.
  * @param lf the linear form on the left hand size of the inequation
  * @param op the relation operator of the atomic condition
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.Value) (implicit numeric: Numeric[T]) extends LinearCond {

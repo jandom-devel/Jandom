@@ -34,7 +34,7 @@ import it.unich.jandom.domains.CachedTopBottom
  * @param domain refers to the [[it.unich.jandom.domains.PPLDomain]] object which is the proxy for
  * the interesting methods in PPLNativeProperty.
  * @param pplobject is the PPL property we are encapsulating.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativeProperty], val pplobject: PPLNativeProperty)
   extends NumericalProperty[PPLProperty[PPLNativeProperty]] {

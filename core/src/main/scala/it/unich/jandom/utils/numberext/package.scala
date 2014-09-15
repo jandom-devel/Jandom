@@ -21,7 +21,7 @@ package it.unich.jandom.utils
 /**
  * This is the package for numeric extensions. It is an implementation of
  * numbers with infinities entirely in Scala and transparent to the user.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 package object numberext {
 

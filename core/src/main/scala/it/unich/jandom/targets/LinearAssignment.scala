@@ -26,7 +26,7 @@ import it.unich.jandom.domains.numerical.LinearForm
  * @tparam T the type of variables involved. It should be endowed with an implicit of type Numeric[T]
  * @param variable the variable to assign
  * @param linearForm the linear form representing the right hand side of the assignment
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 

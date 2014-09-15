@@ -24,7 +24,7 @@ import it.unich.jandom.targets.MockTarget
 
 /**
  * Test suite for constant "per program point" factories.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class ConstantFactorySuite extends FunSpec  {
   describe("Constant Factory") {

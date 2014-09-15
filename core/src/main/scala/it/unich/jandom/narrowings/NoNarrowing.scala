@@ -23,7 +23,7 @@ import it.unich.jandom.domains.AbstractProperty
 /**
  * This is a narrowing which does not perform any descending step, it just returns the
  * current value.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 object NoNarrowing extends Narrowing {
 	def apply[Property <: AbstractProperty[Property]] (current: Property, next: Property) = current

@@ -23,7 +23,7 @@ package it.unich.jandom.ppfactories
  * which build objects parameterized by program points.
  * @tparam ProgramPoint the type of program point
  * @tapram T the type of values returned by the factory
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 trait PPFactory[-ProgramPoint, +T] extends Function1[ProgramPoint, T]
 
@@ -33,7 +33,7 @@ object PPFactory {
    * A "per program point" implicit factory which always returns the same value.
    * @tparam T the type of the object built by the factory
    * @param obj the object returned by the factory
-   * @author Gianluca Amato <amato@sci.unich.it>
+   * @author Gianluca Amato <gamato@unich.it>
    */
   implicit class ConstantFactory[T](private val obj: T) extends PPFactory[Any, T] {
     def apply(pp: Any) = obj

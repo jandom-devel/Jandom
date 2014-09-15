@@ -31,7 +31,7 @@ import it.unich.jandom.targets.slil.AnalysisPhase._
  * @param env the environment for the program
  * @param inputVars the input variables
  * @param stmt the body of the program
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SLILStmt) extends SLILTarget {
   def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: PrettyPrinterSpec = new PrettyPrinterSpec(env)) = {

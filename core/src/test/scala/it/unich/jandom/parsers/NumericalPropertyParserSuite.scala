@@ -25,7 +25,7 @@ import it.unich.jandom.targets.Environment
 
 /**
  * Test suite for NumericalProperty
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class NumericalPropertyParserSuite extends FunSuite {
   val env = Environment()

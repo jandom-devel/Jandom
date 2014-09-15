@@ -22,7 +22,7 @@ import org.scalatest.FunSuite
 
 /**
  * The test suite for the Environment class
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 

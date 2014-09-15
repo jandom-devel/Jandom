@@ -24,7 +24,7 @@ import it.unich.jandom.domains.numerical.BoxDoubleDomain
 
 /**
  * Test suite for delayed narrowing.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class DelayedNarrowingSuite extends FunSpec {

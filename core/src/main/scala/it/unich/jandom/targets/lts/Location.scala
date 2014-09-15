@@ -24,7 +24,7 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * A class for locations (i.e. nodes in a linear transition system)
  * @param name name of the location
  * @param conditions linear conditions which should hold at the location
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 case class Location (val name: String, val conditions: Seq[LinearCond])  {

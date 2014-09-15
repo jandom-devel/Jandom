@@ -25,7 +25,7 @@ import it.unich.jandom.domains.numerical.LinearForm
 
 /**
  * The Test Suite for the LinearAssignment class
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class LinearAssignmentSuite extends FunSuite {

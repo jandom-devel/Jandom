@@ -25,7 +25,7 @@ import it.unich.jandom.domains.numerical.NumericalProperty
  * @param cond1 the first condition
  * @param cond2 the second condition
  * @return the logical "and" of cond1 and cond2
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 case class AndCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
@@ -40,7 +40,7 @@ case class AndCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
  * @param cond1 the first condition
  * @param cond2 the second condition
  * @return the logical "or" of cond1 and cond2
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
@@ -55,7 +55,7 @@ case class OrCond(cond1: LinearCond, cond2: LinearCond) extends LinearCond {
  * This is the class for the logical not of a condition.
  * @param cond the original condition
  * @return the logical "not" of cond
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 case class NotCond(cond: LinearCond) extends LinearCond {

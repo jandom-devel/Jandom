@@ -26,7 +26,7 @@ import it.unich.jandom.targets.MockTarget
 
 /**
  * Test suite for delayed narrowing factories.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class DelayedNarrowingFactorySuite extends FunSpec {
   val BoxDouble = BoxDoubleDomain()

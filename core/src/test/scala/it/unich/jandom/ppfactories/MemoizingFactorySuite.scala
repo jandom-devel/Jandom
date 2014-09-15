@@ -24,7 +24,7 @@ import it.unich.jandom.targets.MockTarget
 
 /**
  * A test suite for memoizing factories.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class MemoizingFactorySuite extends FunSpec {

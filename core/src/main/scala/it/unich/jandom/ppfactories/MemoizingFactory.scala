@@ -26,7 +26,7 @@ import it.unich.jandom.targets.Target
  * @tparam ProgramPoint the type of program point
  * @param factory the nested factory for building new objects
  * @param ann an annotation used to memoize the objects
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 
 class MemoizingFactory[ProgramPoint, T](private val factory: PPFactory[ProgramPoint, T],

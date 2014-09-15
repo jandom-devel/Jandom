@@ -23,7 +23,7 @@ import it.unich.jandom.domains.numerical.BoxDoubleDomain
 
 /**
  * A test for the default widening.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class DefaultWideningSuite extends FunSuite {

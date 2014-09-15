@@ -24,7 +24,7 @@ import NumberExt.SpecialValues._
  * This is the class of extended integers.
  * @param val the integer value of the numbers, when special is NORMAL
  * @param special the special value of the number, or NORMAL if it is an integer
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 @SerialVersionUID(1)

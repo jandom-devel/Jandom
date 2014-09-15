@@ -29,7 +29,7 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * @param end the target location of the transition
  * @param guard the conditions which should hold for the transition to be active
  * @param assignments the assignments to apply when the transition is selected
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 case class Transition (val name: String, val start: Location, val end: Location, val guard: Seq[LinearCond], val assignments: Seq[LinearAssignment[_]]) {
   end += this

@@ -22,7 +22,7 @@ import org.scalatest.FunSuite
 
 /**
  * This is a unit test for the BoxDouble numerical domain over doubles.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class BoxDoubleDomainDoubleSuite extends FunSuite {

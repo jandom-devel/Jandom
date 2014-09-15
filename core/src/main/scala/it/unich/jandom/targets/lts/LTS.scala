@@ -27,7 +27,7 @@ import it.unich.jandom.targets.Annotation
  * @param locations the locations which makes the LTS
  * @param transitions the transitions which makes the LTS
  * @param env the environment of the LTS
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 

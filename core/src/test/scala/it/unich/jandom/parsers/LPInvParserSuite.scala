@@ -31,7 +31,7 @@ import it.unich.jandom.targets.lts.Transition
 
 /**
   * Test suite for RandomParser.
-  * @author Gianluca Amato <amato@sci.unich.it>
+  * @author Gianluca Amato <gamato@unich.it>
   *
   */
 class LPInvParserSuite extends FunSuite {

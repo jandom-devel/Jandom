@@ -25,7 +25,7 @@ import scala.collection.mutable.{ArrayBuffer, LinkedHashMap}
  * this means essentially a correspondence between a variable name and a numerical index.
  * Later, we will add also types (integer, floating points, etc...) to the environment.
  *
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 

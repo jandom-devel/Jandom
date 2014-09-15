@@ -23,7 +23,7 @@ package it.unich.jandom
  * two parallel hierarchies: properties and domains. A property is a single abstract
  * object, such as a polyhedron or a box. A domain is essentially a factory for abstract
  * objects.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 
 package object domains {

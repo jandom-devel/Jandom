@@ -23,7 +23,7 @@ import it.unich.jandom.domains.AbstractProperty
 
 /**
  * The standard widening. It use the widening operator defined in the abstract domain.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 
 object DefaultWidening extends Widening {

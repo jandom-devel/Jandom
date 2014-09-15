@@ -28,7 +28,7 @@ import it.unich.jandom.domains.CachedTopBottom
  *
  * This domain is implemented natively in Scala and is a sort of reference implementation for numerical domains.
  * Real domains should be better implemented within $PPL or $APRON.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  * @constructor Builds a box domain using doubles as bounds
  * @param overReals is true if the domain is correct w.r.t. real arithmetic, otherwise it is correct w.r.t.

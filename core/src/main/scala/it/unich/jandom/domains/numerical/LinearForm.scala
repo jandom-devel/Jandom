@@ -21,7 +21,7 @@ package it.unich.jandom.domains.numerical
 /**
  * The LinearForm trait is used to represent an in-homogeneous linear form.
  * @tparam T the type of the coefficients in the linear form.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 trait LinearForm[T] {
   /**

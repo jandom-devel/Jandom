@@ -22,7 +22,7 @@ import it.unich.jandom.domains.numerical.NumericalProperty
 
 /**
  * An atomic condition for a non-deterministic choice.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 object BRandomCond extends LinearCond {
   val opposite = BRandomCond
@@ -33,7 +33,7 @@ object BRandomCond extends LinearCond {
 
 /**
  * The valid condition.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 object TrueCond extends LinearCond {
   val opposite = FalseCond
@@ -44,7 +44,7 @@ object TrueCond extends LinearCond {
 
 /**
  * The false condition.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 object FalseCond extends LinearCond {
   val opposite = TrueCond

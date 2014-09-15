@@ -22,7 +22,7 @@ import org.scalatest.FunSuite
 
 /**
  * Test suite for generic extended numbers
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class GenericNumberExtSuite extends FunSuite { 
    

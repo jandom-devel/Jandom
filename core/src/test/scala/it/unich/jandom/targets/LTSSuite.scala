@@ -28,7 +28,7 @@ import lts._
 
 /**
  * Test suite for LTS.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class LTSSuite extends FunSuite {
   val BoxDouble = BoxDoubleDomain()

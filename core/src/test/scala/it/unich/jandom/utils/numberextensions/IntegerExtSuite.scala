@@ -25,7 +25,7 @@ import org.scalatest.prop.Checkers
 
 /**
  * Test suite for extended integers
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class IntegerExtSuite extends FunSuite with Checkers {

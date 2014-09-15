@@ -22,7 +22,7 @@ import com.google.caliper.SimpleBenchmark
 
 /**
  * The benchmark suite for Jandom. This is currently only a dummy test.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 

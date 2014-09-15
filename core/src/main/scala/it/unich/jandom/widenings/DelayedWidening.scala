@@ -24,7 +24,7 @@ import it.unich.jandom.domains.AbstractProperty
  * Delayed widening.
  * @param widening the original widening
  * @param delay the number of delayed steps
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class DelayedWidening(private val widening: Widening, private var delay: Int) extends Widening {
   require(delay>=0)

@@ -28,7 +28,7 @@ import it.unich.jandom.targets.linearcondition.AtomicCond
 
 /**
  * Test suite for LinearExpressionParser
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class LinearConditionParserSuite extends FunSuite {
   object parser extends LinearConditionParser with LinearExpressionParser {

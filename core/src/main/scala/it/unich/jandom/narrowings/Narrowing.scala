@@ -22,7 +22,7 @@ import it.unich.jandom.domains.AbstractProperty
 
 /**
  * This is the trait for narrowings, operators used to accelerate fixpoint computations.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 trait Narrowing {
   /**

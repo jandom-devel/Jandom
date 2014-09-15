@@ -28,7 +28,7 @@ import parma_polyhedra_library._
  * This benchmark compare some operations on the interval domain. This 
  * shows that PPL is very slow in Jandom, and Reflexive PPL is even
  * slower.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 

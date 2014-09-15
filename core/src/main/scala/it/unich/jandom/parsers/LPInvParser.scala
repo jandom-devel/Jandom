@@ -33,7 +33,7 @@ import it.unich.jandom.targets.lts.Transition
   * invariant generator by Sriram Sankaranarayanan. It generates an LTS (Linear Transition System) target.
   * It actually parser a super-set of the LPInv transitions systems, since it possible to specify complex
   * conditions with &&, || and ! in the locations.
-  * @author Gianluca Amato <amato@sci.unich.it>
+  * @author Gianluca Amato <gamato@unich.it>
   */
 class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
   private val location_env = new HashMap[String, Location]

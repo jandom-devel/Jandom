@@ -25,7 +25,7 @@ import it.unich.jandom.domains.AbstractDomain
 /**
  * The abstract class for targets, which are the static analyzers for the
  * different target languages.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 abstract class Target[Tgt <: Target[Tgt]] {

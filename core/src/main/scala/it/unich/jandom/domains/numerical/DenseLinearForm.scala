@@ -23,7 +23,7 @@ package it.unich.jandom.domains.numerical
  * quite convenient for dense linear forms.
  * @tparam T the type of the coefficients in the linear form. It should be endowed with an implicit Numeric[T] object.
  * @param coeffs the coefficients of the linear form. The first element is the known element.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 
 class DenseLinearForm[T](val coeffs: Seq[T])(implicit numeric: Numeric[T]) extends LinearForm[T] {

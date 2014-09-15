@@ -22,7 +22,7 @@ import it.unich.jandom.domains.AbstractProperty
 
 /**
  * The standard narrowing. It use the narrowing operator defined in the abstract domain.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 
 object DefaultNarrowing extends Narrowing {

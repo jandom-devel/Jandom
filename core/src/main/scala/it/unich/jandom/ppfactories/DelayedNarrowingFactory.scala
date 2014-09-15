@@ -26,7 +26,7 @@ import it.unich.jandom.narrowings.Narrowing
  * @tparam ProgramPoint the type of program point
  * @param narrowingFactory the original narrowing factory
  * @param delay the delay of the narrowing
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class DelayedNarrowingFactory[ProgramPoint] (private val narrowingFactory: PPFactory[ProgramPoint,Narrowing], private val delay: Int) extends PPFactory[ProgramPoint,Narrowing] {
   require(delay>=0)

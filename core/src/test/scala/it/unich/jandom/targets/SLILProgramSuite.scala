@@ -29,7 +29,7 @@ import slil._
 
 /**
  * Test suite for SLIL programs.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 class SLILProgramSuite extends FunSuite {

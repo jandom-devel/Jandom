@@ -29,7 +29,7 @@ import it.unich.jandom.targets.linearcondition._
  * ''operator_alias'' of type ''Parser[String]'' for atomic operators additional w.r.t.
  * the standard ones. It provides a parser ''condition'' for the parsing of linear conditions
  * in C/Java notation.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 trait LinearConditionParser extends JavaTokenParsers {

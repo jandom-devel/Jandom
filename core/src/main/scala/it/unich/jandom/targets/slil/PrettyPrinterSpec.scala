@@ -23,7 +23,7 @@ import it.unich.jandom.targets.Environment
 
 /**
  * This is a class containing parameters for pretty printing a SLILProgram with annotations.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 class PrettyPrinterSpec(val env: Environment) {
   /**

@@ -27,7 +27,7 @@ import it.unich.jandom.domains.numerical.LinearForm
  * should define a parser ''variable'' of type ''Parser[Int]'' and provide a variable ''env''
  * of type ''Environment''. The result of variable is the id of the variable in the environment
  * ''env''. It provides a parser ''expr'' for linear expressions.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 trait LinearExpressionParser extends JavaTokenParsers {

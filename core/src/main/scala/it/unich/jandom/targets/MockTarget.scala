@@ -20,7 +20,7 @@ package it.unich.jandom.targets
 
 /**
  * A mock target only used for test suites. It is private for the jandom package.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  *
  */
 private[jandom] class MockTarget extends Target[MockTarget] {
@@ -32,7 +32,7 @@ private[jandom] class MockTarget extends Target[MockTarget] {
 
 /**
  * The companion object for the MockTarget.
- * @author Gianluca Amato <amato@sci.unich.it>
+ * @author Gianluca Amato <gamato@unich.it>
  */
 private[jandom] object MockTarget {
   /**
