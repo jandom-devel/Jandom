@@ -29,6 +29,8 @@ unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory
 
 createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Managed
 
+managedSourceDirectories in Test := Seq()
+
 // BuildInfo plugin
 
 buildInfoSettings
