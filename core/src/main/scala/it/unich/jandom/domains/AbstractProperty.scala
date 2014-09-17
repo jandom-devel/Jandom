@@ -19,14 +19,23 @@
 package it.unich.jandom.domains
 
 /**
- * The base class for all abstract properties, i.e. elements of abstract domains. Abstract
- * properties are pre-ordered and support some operations, such as union/intersection (corresponding 
- * to meet/join) and widening/narrowing. Comparison between abstract elements
- * should return `true` ONLY IF the relationship actually holds between elements. However,
- * it is not required to return `true` every time the relation holds. The `tryCompare`
- * method, in particular, should return `None` each time it cannot (or does not want)
- * determine the relationship between two abstract properties.
+ * The base class for all abstract properties, i.e. elements of abstract domains. 
  * 
+ * Abstract properties theoretically corresponds to concrete one by means of a concretization map 
+ * \gamma. Two abstract properties are equal when the corresponding concretizations are equal.
+ * Since may be difficult to compare, we require abstract equality to only respect the property
+ * "a1 == a2 implies \gamma(a1) == \gamma(a2)" (definite equality). As always, "a1 != a2 iff ! (a1 == a2)". 
+ * Note that a completely different choice would be "a1 != a2 implies \gamma(a1) \cap \gamma(a2) = \emptyset",
+ * which is "definite disequality". 
+ *
+ * We assume concrete elements are partially ordered, which induces a partial order on abstract
+ * properties: "a1 <= a2 iff \gamma(a1) <= \gamma(a2)". Since computing "a1 <= a2" may not
+ * be easy, we only approximatethe real induced ordering. Therefore, we request that 
+ * "a1 <= a2 implies \gamma(a1) <= \gamma(a2)" (definite inequality). The same for a1 >= a2. This
+ * means that the `tryCompareTo` returns `None` each time it cannot (or does not want)
+ * determine the relationship between two abstract properties. Finally ==, <= >=, <, > are
+ * related by the usual pre-order equations. 
+ *
  * Abstract properties use F-bounded polymorhpism to ensure type safety,
  * hence a concrete class `C` implementing an abstract property should inherit from
  * `AbstractProperty[C]`.

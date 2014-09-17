@@ -19,11 +19,10 @@
 package it.unich.jandom.domains
 
 /**
- * This class represents a single element in a CartesianFiberedDomain.
- * Properties are partitioned in fibers. Binary operators are guaranteed to work when
- * both elements are part of the same fiber. Finally, properties are immutable.
- *
- * Analogously to `isTop`, `isBottom` and `isEmpty`, 
+ * This class represents a single element in a CartesianFiberedDomain. Properties are partitioned 
+ * in fibers, which also exists in the implicit concrete domain. Each fiber has a top and bottom element.
+ * Binary operators are guaranteed to work when both elements are part of the same fiber. Some operations
+ * allows to move from one fiber to another.
  *
  * @define NOTEFIBER `this` and `that` should be element of the same fiber
  * @tparam Type the type of the components of a fiber.
@@ -113,6 +112,7 @@ trait CartesianFiberedProperty[Type, Property <: CartesianFiberedProperty[Type, 
    * `connect` merge the two abstract states using a call-by-value semantics, and
    * remove the common dimension.
    * @todo why not remove the private dimensions before connecting?
+   * @todo we should better understand the concrete semantic of this operation
    */
   def connect(other: Property, common: Int): Property
 
