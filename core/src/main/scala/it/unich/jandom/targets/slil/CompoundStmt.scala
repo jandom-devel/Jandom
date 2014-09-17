@@ -42,20 +42,24 @@ case class CompoundStmt(stmts: SLILStmt*) extends SLILStmt {
     current
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], level: Int, ppspec: PrettyPrinterSpec): String = {
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec, row: Int, level: Int): String = {
     val spaces = ppspec.indent(level)
     val result = new StringBuilder()
     var index = 0
+    var decorations = 0
     for (stmt <- stmts) {
-      if (ann.get(this, index) != None)
-        result ++= spaces + ppspec.decorator(ann(this, index)) + '\n'
-      result ++= stmt.mkString(ann, level, ppspec) 
+      for (p <- ann.get(this, index); deco <- ppspec.decorator(p, row + result.count(_ == '\n'), spaces.size)) {
+        result ++= spaces + deco + '\n'
+        decorations += 1
+      }
+      result ++= stmt.mkString(ann, ppspec, row + result.count(_ == '\n'), level)
       index += 1
     }
-    if (ann.get(this, index) != None)
-      result ++= spaces + ppspec.decorator(ann(this, index)) + '\n'
+    for (p <- ann.get(this, index); deco <- ppspec.decorator(p, row + result.count(_ == '\n'), spaces.size)) {
+      result ++= spaces + deco + '\n'
+    }
     result.toString
   }
-  
-  val numvars = (stmts map { _.numvars}).max
+
+  val numvars = (stmts map { _.numvars }).max
 }

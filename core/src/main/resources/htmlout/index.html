@@ -1,0 +1,217 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<!--- 
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014 Mattia Di Giuseppe
+ *
+ * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+ * JANDOM is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * JANDOM is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+ -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Jandom output</title>
+<script src="http://code.jquery.com/jquery-1.11.1.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+function SortDesc(x,y) {
+  return y.colonna - x.colonna; 
+}
+
+function SortPallinoId(x,y) {
+	if (x[2] < y[2])
+		return -1;
+	else if (x[2] > y[2])
+		return 1;
+	else 
+		return x[3]-y[3];
+}
+
+function escapeHTML(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function addSpan(riga,colonna,str_originale)
+{
+	var stringa_finale = "";
+
+	for (i=0; i<str_originale.length; i++)
+	{
+		var codId = "txt"+riga+"-"+colonna;
+		if (i == colonna)
+		{
+			stringa_finale += "<span id = '"+codId+"'>"+escapeHTML(str_originale[i])+"</span>"
+		}
+		else
+		{
+			stringa_finale += str_originale[i];
+		}
+	}
+	
+	if (str_originale.length <= colonna) {
+		stringa_finale += "<span id = '"+codId+"'> </span>"
+	}
+	return stringa_finale;
+}
+
+function stampaPallini(spanIds)
+{
+	//stampo i tooltip	
+	spanIds.sort(SortPallinoId);
+    for (var k in spanIds){
+    	var nota = spanIds[k][1]
+    	var codId = $('#'+spanIds[k][0]);
+    	var offset = codId.offset();
+    	var left = offset.left-2;
+    	var top = offset.top;
+    	var numNota = k;
+    	var inserimento = '<span class="palletta" style="position:absolute; left:'+left+'px; top:'+top+'px">'+numNota+'</span>';
+    	var note = '<div class="nota"><em>'+numNota+': '+nota+'</em></div>';
+    	$( "#posPallini" ).append(inserimento);
+    	$( "#note" ).append(note);			  
+   	}
+}
+
+function renderEditor()
+{
+	var cod_arr = new Array( %%PROG%% );	
+	var ident = [ %%ANN%% ];
+	
+	ident.sort(SortDesc);	
+	
+	var spanIds = new Array();
+	
+	for (var i in cod_arr)
+	{		
+		var str = cod_arr[i];
+		var str_final = str;
+
+		for (var j=0; j<ident.length; j++)
+		{
+			//recupero le info 
+			var colonna = ident[j].colonna;
+			var nota = ident[j].nota;
+			var riga = ident[j].riga;
+			
+			//corrispondenza tra funzione e nota
+			if (riga == i)
+			{					
+				str_final = addSpan(riga,colonna,str_final);				
+				var toArray = new Array("txt"+riga+"-"+colonna,nota,riga,colonna);
+				spanIds.push(toArray);				
+			}
+		}
+				
+		var stringa = "<div class='linea'>";
+		stringa += "<div class='out'>"+str_final+"</div>";
+		stringa +="</div>";			
+		
+		document.getElementById('testo').innerHTML  += stringa;
+	 }
+	
+	$( document ).ready(function() {
+		stampaPallini(spanIds);
+	});
+		
+	$( window ).resize(function() {
+		$( "#posPallini" ).html("");
+		$( "#note" ).html("");
+		stampaPallini(spanIds);
+	});
+}
+</script>
+
+<style type="text/css">
+/*reponsive layout*/
+* {
+	-webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	*behavior: url(boxsizing.htc);
+}
+
+/* CSS Document */
+body {
+	font-family: Verdana, Geneva, sans-serif;
+	text-align: center;
+}
+
+#testo {
+	border-right: 1px solid;
+	text-align: left;
+	font-family: monospace;
+	white-space: pre;
+}
+
+#note {
+	padding: 10px;
+	text-align: left;
+}
+
+.riga {
+	
+}
+
+.linea {
+	
+}
+
+a {
+	text-decoration: none;
+}
+
+.palletta {
+	font-size: 8px;
+	border: 1px solid #999;
+	border-radius: 10px;
+	padding: 1px;
+	background: yellow;
+	color: #000;
+	text-align: center
+}
+
+.nota {
+	
+}
+
+[class*='colonna-'] {
+	float: left;
+	display: block;
+	padding: 15px;
+	border-top: 1px solid;
+}
+
+.colonna-1-2 {
+	width: 50%;
+}
+
+[class*="colonna-"]+[class*="colonna-"]:last-child {
+	float: right;
+}
+</style>
+</head>
+
+<body onload="renderEditor()">
+
+	<h3>Jandom Output</h3>
+
+	<div class="riga">
+		<div class="colonna-1-2" id="testo"></div>
+		<div class="colonna-1-2" id="note"></div>
+	</div>
+
+	<div id="posPallini"></div>
+
+</body>
+</html>

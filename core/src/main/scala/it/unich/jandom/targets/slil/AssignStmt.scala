@@ -35,7 +35,7 @@ case class AssignStmt[T](variable: Int, expr: NumericExpression) extends SLILStm
   override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property =
     expr.assignTo(variable)(input)
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], level: Int, ppspec: PrettyPrinterSpec) =
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec, row: Int, level: Int) =
     ppspec.indent(level) + ppspec.env(variable) + " = " + expr.mkString(ppspec.env.names) + '\n'
 
   val numvars = expr.dimension

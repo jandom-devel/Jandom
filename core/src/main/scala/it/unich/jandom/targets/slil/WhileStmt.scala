@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
    */
   var lastBodyResult: NumericalProperty[_] = null
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property = {
     import it.unich.jandom.targets.WideningScope._
     import it.unich.jandom.targets.NarrowingStrategy._
 
@@ -99,7 +99,7 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
         // If we were in AscendingRestart phase, move to Ascending phase
         currentPhase = Ascending
 
-        // Debug     
+        // Debug
         params.log(s"Body Result: $bodyResult\n")
         params.log(s"Invariant: $newinvariant\n")
 
@@ -120,19 +120,18 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
       params.log(s"Starting Invariant: $invariant\n")
       params.log(s"Starting Body Result: $bodyResult\n")
       params.log(s"Input: $input\n")
-      
-      
+
       // For narrowing, we only consider output scope
       newinvariant = narrowing(invariant, input union bodyResult)
-            
+
       // Debug
       params.log(s"Entering Invariant: $newinvariant\n")
-      
+
       // Determines the phase for the inner loops
       val newphase = if (params.narrowingStrategy == Restart) AscendingRestart else Descending
       do {
         invariant = newinvariant
-        
+
         bodyResult = body.analyzeStmt(params)(condition.analyze(invariant), newphase, ann)
         newinvariant = invariant narrowing (input union bodyResult)
 
@@ -140,14 +139,14 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
         params.log(s"Body Result: $bodyResult\n")
         params.log(s"Invariant: $newinvariant\n")
       } while (newinvariant < invariant)
-        
+
       params.log(s"Final descending invariant: $newinvariant\n")
     }
-    
+
     // Save current values for later iterations of the loop
     lastInvariant = invariant
     lastBodyResult = bodyResult
-    
+
     // Annotate results
     ann((this, 1)) = invariant
 
@@ -157,13 +156,14 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
     return condition.opposite.analyze(invariant)
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String = {
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec, row: Int, level: Int): String = {
     val spaces = ppspec.indent(level)
-    spaces + "while (" + condition.mkString(ppspec.env.names) + ")" +
-      (if (ann contains (this, 1)) " " + ppspec.decorator(ann(this, 1)) else "") + " {\n" +
-      body.mkString(ann, level + 1, ppspec) +
+    val firstLine = spaces + "while (" + condition.mkString(ppspec.env.names) + ")"
+    val annotation = for (p <- ann.get(this, 1); deco <- ppspec.decorator(p, row, firstLine.size + 1)) yield " " + deco
+    firstLine + annotation.getOrElse("") + " {\n" +
+      body.mkString(ann, ppspec, row + 1, level + 1) +
       spaces + "}\n"
   }
-  
+
   val numvars = condition.dimension max body.numvars
 }
