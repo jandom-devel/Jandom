@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,14 +18,14 @@
 
 package it.unich.jandom.domains.numerical
 
-import org.scalatest.FunSpec
-
 /**
+ * The test suite for the NumericalTop domain.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class NumericalTopDomainSuite extends FunSpec {
-
+class NumericalTopDomainSuite extends  NumericalDomainSuite {
+  lazy val dom = NumericalTopDomain
+  
   val dims = Seq(0, 1, 2, 5)
 
   for (dim <- dims) {
@@ -35,10 +35,10 @@ class NumericalTopDomainSuite extends FunSpec {
       val x = NumericalTopDomain.top(dim)
 
       describe(s"has an unique element which") {
-        it("should be full") { assert(x.isTop) }
+        it("should be top") { assert(x.isTop) }
         it("should be bottom") { assert(x.isBottom) }
         it("should not be empty") { assert(!x.isEmpty) }
-        it(s"should have dimension $dim") { assertResult(dim) (x.dimension)}
+        it(s"should have dimension $dim") { assertResult(dim)(x.dimension) }
       }
 
       describe(s"has several operations on elements which") {
@@ -83,8 +83,8 @@ class NumericalTopDomainSuite extends FunSpec {
 
       describe(s"has dimension changing operators which") {
         if (dim > 0) they("reduce size of an element") {
-            if (dim >= 2) assertResult(NumericalTopDomain.top(dim - 1))(x.delVariable(1))
-            assertResult(NumericalTopDomain.top(dim - 1))(x.delVariable())
+          if (dim >= 2) assertResult(NumericalTopDomain.top(dim - 1))(x.delVariable(1))
+          assertResult(NumericalTopDomain.top(dim - 1))(x.delVariable())
         }
         they("increase size of an element") {
           assertResult(NumericalTopDomain.top(dim + 1))(x.addVariable)

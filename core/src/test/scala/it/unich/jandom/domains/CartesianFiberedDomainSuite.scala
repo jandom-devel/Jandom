@@ -18,52 +18,57 @@
 
 package it.unich.jandom.domains
 
-import org.scalatest.FunSpec
 import org.scalatest.prop.TableFor1
-import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.matchers.ShouldMatchers
 
 /**
- * This is a common trait for test suites of cartesian abstract domains.
+ * This is a base trait for testing cartesian fibered abstract domains. Some of these
+ * test are not required of any correct implementation of cartesian domains, but we leave
+ * them here until some domain actually violates them.
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait CartesianDomainSuite extends DomainSuite with TableDrivenPropertyChecks {
+trait CartesianFiberedDomainSuite extends AbstractDomainSuite {
 
   val dom: CartesianFiberedDomain
 
   /**
-   * Some fiber type to use for the tests
+   * Some fiber components to use for the tests.
    */
   val someTypes: TableFor1[dom.FiberComponent]
 
   /**
-   * Some fibers to use for the tests
+   * Some fibers to use for the tests.
    */
   val someFibers: TableFor1[dom.Fiber]
 
   /**
    * A table of fibers and related valid variables
    */
-  val someFibersAndVars = Table((someFibers.heading, "var"),
+  lazy val someFibersAndVars = Table((someFibers.heading, "var"),
     (for (fiber <- someFibers; v <- 0 until fiber.size) yield (fiber, v)): _*)
 
   /**
    * A table of fibers and two valid variables
    */
-  val someFibersAndTwoVars = Table((someFibers.heading, "v1", "v2"),
+  lazy val someFibersAndTwoVars = Table((someFibers.heading, "v1", "v2"),
     (for (fiber <- someFibers; v <- 0 until fiber.size; w <- 0 until fiber.size) yield (fiber, v, w)): _*)
 
   /**
    * A table of properties and related valid variables
    */
-  val somePropertiesAndVars = Table((someProperties.heading, "var"),
+  lazy val somePropertiesAndVars = Table((someProperties.heading, "var"),
     (for (p <- someProperties; v <- 0 until p.dimension) yield (p, v)): _*)
 
   /**
    * A table of properties and two valid variables
    */
-  val somePropertiesAndTwoVars = Table((someProperties.heading, "v1", "v2"),
+  lazy val somePropertiesAndTwoVars = Table((someProperties.heading, "v1", "v2"),
     (for (p <- someProperties; v <- 0 until p.dimension; w <- 0 until p.dimension) yield (p, v, w)): _*)
+
+  /**
+   * A table for a couple of compatible properties
+   */
+  lazy val someCoupleProperties = Table((someProperties.heading + " 1", someProperties.heading + " 2"),
+    (for (p1 <- someProperties; p2 <- someProperties; if p1.fiber == p2.fiber) yield (p1, p2)): _*)
 
   /**
    * This may be used to check that `p` is a non-extremal property, i.e. it is not
@@ -77,20 +82,22 @@ trait CartesianDomainSuite extends DomainSuite with TableDrivenPropertyChecks {
     it("is smaller than top") { assert(p < p.top) }
   }
 
-  describe("The bottom element for a given fiber") {
+  describe("The bottom element for a given fiber")({
     it("is smaller than top") { forAll(someFibers) { (fiber) => dom.bottom(fiber) <= dom.top(fiber) } }
     it("is bottom") { forAll(someFibers) { (fiber) => assert(dom.bottom(fiber).isBottom) } }
     it("has dimension equal to the size of the fiber") { forAll(someFibers) { (fiber) => assert(dom.bottom(fiber).dimension === fiber.size) } }
-  }
+    it("is smaller than all other elements") { (forAll(someProperties) { ((p) => assert(dom.bottom(p.fiber) <= p)) }) }
+  })
 
-  describe("The top element for a given fiber") {
+  describe("The top element for a given fiber")({
     it("is bigger than bottom") { forAll(someFibers) { (fiber) => dom.top(fiber) >= dom.bottom(fiber) } }
     it("is top") { forAll(someFibers) { (fiber) => assert(dom.top(fiber).isTop) } }
     it("is not empty") { forAll(someFibers) { (fiber) => assert(!dom.top(fiber).isEmpty) } }
     it("has dimension equal to the size of the fiber") { forAll(someFibers) { (fiber) => assert(dom.top(fiber).dimension === fiber.size) } }
-  }
+    it("is bigger than all other elements") { (forAll(someProperties) { ((p) => assert(p <= dom.top(p.fiber))) }) }
+  })
 
-  describe("The addVariable method") {
+  describe("The addVariable method")({
     it("transforms top to top") {
       forAll(someFibers) { (fiber) =>
         forAll(someTypes) { t =>
@@ -99,13 +106,16 @@ trait CartesianDomainSuite extends DomainSuite with TableDrivenPropertyChecks {
       }
     }
     it("adds a dimension") {
-      forAll(someProperties) { (p) =>
-        forAll(someTypes) { (t) =>
-          assert(p.addVariable(t).dimension === p.dimension + 1)
-        }
-      }
+      (
+        forAll(someProperties) {
+          ((p) =>
+            forAll(someTypes) {
+              ((t) =>
+                assert(p.addVariable(t).dimension === p.dimension + 1))
+            })
+        })
     }
-  }
+  })
 
   describe("The delVariable method") {
     it("transforms top to top") {
@@ -125,7 +135,7 @@ trait CartesianDomainSuite extends DomainSuite with TableDrivenPropertyChecks {
     it("transforms top to top") {
       forAll(someFibers) { (fiber) =>
         whenever(fiber.size == 4) {
-          forAll(rhos) { (rho) => 
+          forAll(rhos) { (rho) =>
             val mapped = dom.top(fiber).mapVariables(rho)
             assert(mapped.isTop, s"for ${mapped}")
           }
@@ -146,30 +156,26 @@ trait CartesianDomainSuite extends DomainSuite with TableDrivenPropertyChecks {
   describe("The union method") {
     it("is idempotent") {
       forAll(someProperties) {
-        (p) => assert((p union p) === p)
+        (p) => assertResult(p)(p union p)
       }
     }
     it("returns an upper bound") {
-      forAll(someProperties) { (p1) =>
-        forAll(someProperties) { (p2) =>
-          whenever(p1.fiber == p2.fiber) {
-            assert((p1 union p2) >= p2)
-            assert((p1 union p2) >= p1)
-          }
-        }
+      forAll(someCoupleProperties) { (p1, p2) =>
+        assert((p1 union p2) >= p2)
+        assert((p1 union p2) >= p1)
       }
     }
-    /*it("is associative") {
+    it("is associative") {
       forAll(someProperties) { (p1) =>
         forAll(someProperties) { (p2) =>
           forAll(someProperties) { (p3) =>
             whenever(p1.fiber == p2.fiber && p2.fiber == p3.fiber) {
-              assert( ((p1 union p2) union p3) === (p1 union (p2 union p3)))
+              assert(((p1 union p2) union p3) === (p1 union (p2 union p3)))
             }
           }
         }
       }
-    }*/
+    }
     it("has bottom as neutral element") {
       forAll(someProperties) { (p) =>
         assert((p union p.bottom) === p)
@@ -184,17 +190,24 @@ trait CartesianDomainSuite extends DomainSuite with TableDrivenPropertyChecks {
     }
   }
 
-  describe("The intersection method") {    
+  describe("The intersection method") {
     it("is idempotent") {
       forAll(someProperties) { (p) =>
         assert((p intersection p) === p)
       }
     }
     it("returns a lower bound") {
+      forAll(someCoupleProperties) { (p1, p2) =>
+        assert((p1 intersection p2) <= p2)
+      }
+    }
+    it("is associative") {
       forAll(someProperties) { (p1) =>
         forAll(someProperties) { (p2) =>
-          whenever(p1.fiber == p2.fiber) {
-            assert((p1 intersection p2) <= p2)
+          forAll(someProperties) { (p3) =>
+            whenever(p1.fiber == p2.fiber && p2.fiber == p3.fiber) {
+              assert(((p1 intersection p2) intersection p3) === (p1 intersection (p2 intersection p3)))
+            }
           }
         }
       }

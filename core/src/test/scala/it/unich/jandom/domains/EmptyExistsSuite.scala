@@ -18,21 +18,17 @@
 
 package it.unich.jandom.domains
 
-import org.scalatest.FunSpec
-import org.scalatest.prop.TableFor1
-
 /**
- * This is a common trait for test suites of abstract domains.
+ * This is a trait for testing those domains where the bottom element
+ * represents emptyness in each fiber.
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait DomainSuite extends FunSpec {
-  /**
-   * The abstract domain to test
-   */
-  val dom: AbstractDomain
-  
-  /**
-   * A table of some properties upon which tests should be applied
-   */
-  val someProperties: TableFor1[dom.Property] 
+trait EmptyExistsSuite extends CartesianFiberedDomainSuite {
+  describe("The bottom") {
+    it("is empty") {
+      forAll(someFibers) { (f) =>
+        assert(dom.bottom(f).isEmpty)        
+      }
+    }
+  }
 }

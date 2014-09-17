@@ -16,67 +16,64 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom.domains
-
-import org.scalatest.FunSuite
-import breeze.linalg._
-import it.unich.jandom.domains.numerical._
+package it.unich.jandom.domains.numerical
 
 /**
  * Test suite for products of numerical domains.
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
-class ProductSuite extends FunSuite {
-
+class ProductDomainSuite extends NumericalDomainSuite {
+ 
+  val dom = new ProductDomain(BoxDoubleDomain(), ParallelotopeDomain())
+  
   val n = 2
 
-  val productDomain = new ProductDomain(BoxDoubleDomain(), ParallelotopeDomain())
-  val empty = productDomain.bottom(n)
-  val full = productDomain.top(n)
-  val boxEmpty = productDomain.dom1.bottom(n)
-  val ptopeFull = productDomain.dom2.top(n)
+  val empty = dom.bottom(n)
+  val full = dom.top(n)
+  val boxEmpty = dom.dom1.bottom(n)
+  val ptopeFull = dom.dom2.top(n)
 
-  test("constructors and extractors for the empty pair") {
+  describe("constructors and extractors for the empty pair") {
     assertResult(n) { empty.dimension }
     assertResult(true) { empty.isEmpty }
     assertResult(false) { empty.isTop }
   }
 
-  test("constructors and extractors for the full pair") {
+  describe("constructors and extractors for the full pair") {
     assertResult(n) { full.dimension }
     assertResult(false) { full.isEmpty }
     assertResult(true) { full.isTop }
   }
 
-  test("create a full pair") {
-    val p1 = new productDomain.Property(productDomain.dom1.top(n), productDomain.dom2.top(n))
+  describe("create a full pair") {
+    val p1 = new dom.Property(dom.dom1.top(n), dom.dom2.top(n))
     assertResult(true) { p1.isTop }
     assertResult(false) { p1.isEmpty }
   }
 
-  test("create a non-empty non-full pair") {
-    val box = productDomain.dom1(Array(1, 2), Array(5, 4))
-    val p2 = new productDomain.Property(box, productDomain.dom2.top(n))
+  describe("create a non-empty non-full pair") {
+    val box = dom.dom1(Array(1, 2), Array(5, 4))
+    val p2 = new dom.Property(box, dom.dom2.top(n))
     assertResult(false) { p2.isTop }
     assertResult(false) { p2.isEmpty }
   }
 
-  test("create an empty pair") {
-    val p3 = new productDomain.Property(boxEmpty, ptopeFull)
+  describe("create an empty pair") {
+    val p3 = new dom.Property(boxEmpty, ptopeFull)
     assertResult(false) { p3.isTop }
     assertResult(true) { p3.isEmpty }
   }
 
-  test("assignment on product") {
+  describe("assignment on product") {
     val x2 = full.linearAssignment(0, 0.0)
     assertResult(x2) {
-      new productDomain.Property(
-        productDomain.dom1.top(2).linearAssignment(0, 0.0),
+      new dom.Property(
+        dom.dom1.top(2).linearAssignment(0, 0.0),
         ptopeFull.linearAssignment(0, 0.0))
     }
   }
 
-  test("dimension on product") {
+  describe("dimension on product") {
     val x2 = full.linearAssignment(0, 0.0)
     assertResult(3) { x2.addVariable().dimension }
     assertResult(n + 1) { full.addVariable().dimension }

@@ -18,45 +18,50 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
-import org.scalatest.FunSuite
-import parma_polyhedra_library.Octagonal_Shape_double
-import parma_polyhedra_library.Double_Box
+import org.scalatest.FunSpec
+import org.scalatest.prop.Tables.Table
+
+import it.unich.jandom.domains.{ DomainTransformation, EmptyExistsSuite, SeparatedTopAndBottomSuite }
 import it.unich.jandom.domains.numerical.LinearForm
-import it.unich.jandom.domains.DomainTransformation
+import it.unich.jandom.domains.numerical.LinearForm.c
+import it.unich.jandom.domains.numerical.NumericalDomainSuite
+
+import parma_polyhedra_library.{ Double_Box, Octagonal_Shape_double }
 
 /**
- * Test suite for the PPLProperty numerical domain.
- * @author Gianluca Amato <g.amato@unich.it>
+ * These are configuration parameters for all the tests relative the PPL-based
+ * domains.
+ * @author Gianluca Amato <gamato@unich.it>
  */
-class PPLPropertySuite extends FunSuite {
-  val octDomain = PPLDomain[Octagonal_Shape_double]()
-  val boxDomain = PPLDomain[Double_Box]()
+private[ppl] trait PPLDomainSuiteParameters[Shape <: AnyRef] {
+  val dom: PPLDomain[Shape]
+}
 
-  val full = octDomain.top(3)
-  val empty = octDomain.bottom(3)
+/**
+ * Test suite for the PPLProperty numerical domain, instantiated with the Double_Box shape
+ * @author Gianluca Amato <gamato@unich.it>
+ */
+class PPLDomainSuiteBox extends { val dom = PPLDomain[Double_Box]() } with FunSpec
+  with PPLDomainSuiteParameters[Double_Box] with NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite {
 
-  test("full should be full") {
-    assertResult(true) { full.isTop }
+  describe("Test on disequality") {
+    val obj = dom.top(3).linearAssignment(0, 0.0)
+    assertResult(dom.bottom(3)) { obj.linearDisequality(LinearForm(0, 1, 0, 0)) }
   }
 
-  test("full should not be empty") {
-    assertResult(false) { full.isEmpty }
-  }
+}
 
-  test("empty should be empty") {
-    assertResult(true) { empty.isEmpty }
-  }
+/**
+ * Test suite for the PPLProperty numerical domain, instantiated with the Double_Box shape
+ * @author Gianluca Amato <gamato@unich.it>
+ */
+class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double]() } with FunSpec
+  with PPLDomainSuiteParameters[Octagonal_Shape_double] with NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite {
 
-  test("empty should not be full") {
-    assertResult(false) { empty.isTop }
-  }
+  val full = dom.top(3)
+  val empty = dom.bottom(3)
 
-  test("empty should be strictly less than full") {
-    assertResult(true) { empty < full }
-    assertResult(true) { empty <= full }
-  }
-
-  test("minimization/maximization") {
+  describe("Test for minimization/maximization") {
     val obj = full.
       linearAssignment(0, 0.0).
       linearInequality(LinearForm(-1, 0, 1, 1)).
@@ -67,7 +72,7 @@ class PPLPropertySuite extends FunSuite {
     assertResult(Some(0)) { obj.frequency(LinearForm(0, 1, 0, 0)) }
   }
 
-  test("various operations") {
+  describe("Test for various operations") {
     val obj = full.linearAssignment(0, 0.0)
     val obj2 = full.linearAssignment(1, 0.0)
     val obj3 = full.linearAssignment(2, 0.0)
@@ -80,50 +85,43 @@ class PPLPropertySuite extends FunSuite {
     assertResult(obj5) { obj8 }
   }
 
-  test("disequality do not crash") {
+  describe("Test that disequality do not crash") {
     val obj = full.linearAssignment(0, 0.0)
     val dis = obj.linearDisequality(LinearForm(0, 1, 0, 0))
-    assert(true)
   }
 
-  test("disequality is precise on boxes") {
-    val boxDomain = PPLDomain[Double_Box]()
-    val obj = boxDomain.top(3).linearAssignment(0, 0.0)
-    assertResult(boxDomain.bottom(3)) { obj.linearDisequality(LinearForm(0, 1, 0, 0)) }
-  }
-
-  test("string conversion") {
+  describe("Test string conversion") {
     val obj = full.linearInequality(LinearForm(1, 1, 1, 0))
     val obj2 = obj.linearInequality(LinearForm(2, 1, 0, 0))
     assertResult("[ -x >= 2 , -x - y >= 1 ]") { obj2.mkString(Seq("x", "y", "z")) }
     assertResult("[ -v0 >= 2 , -v0 - v1 >= 1 ]") { obj2.toString }
   }
 
-  test("string conversion for high-dimensional spaces") {
+  describe("Test string conversion for high-dimensional spaces") {
     val a = Array.fill(34)(0.0)
     a(27) = 1.0
-    val obj3 = octDomain.top(33).linearInequality(LinearForm.v(27))
+    val obj3 = dom.top(33).linearInequality(LinearForm.v(27))
     assertResult("[ -v27 >= 0 ]") { obj3.toString }
   }
 
-  test("map dimensions") {
+  describe("Test map dimensions") {
     val obj = full.linearInequality(LinearForm(1, 1, 1, 0)).linearInequality(LinearForm(2, 1, 0, 0))
     val obj2 = full.linearInequality(LinearForm(1, 1, 1, 0)).linearInequality(LinearForm(2, 0, 1, 0))
-    val obj3 = octDomain.top(2).linearInequality(LinearForm(2, 1, 0))
+    val obj3 = dom.top(2).linearInequality(LinearForm(2, 1, 0))
 
     assertResult(obj)(obj.mapVariables(Seq(0, 1, 2)))
     assertResult(obj2)(obj.mapVariables(Seq(1, 0, 2)))
     assertResult(obj3)(obj2.mapVariables(Seq(-1, 0, 1)))
   }
 
-  test("multiplication") {
+  describe("Test multiplication") {
     val obj = full.linearInequality(LinearForm(1, 1, 1, 0)).linearInequality(LinearForm(2, 0, 1, 1)).linearAssignment(0, LinearForm(2, 0, 0, 0))
-    assertResult( obj.linearAssignment(0, LinearForm(0, 0, 0, 2)) ) {  obj.variableMul(0, 2) }
-    assertResult( obj.linearAssignment(2, LinearForm(0, 0, 0, 2)) ) {  obj.variableMul(2, 0) }
-    assert ( obj.nonDeterministicAssignment(1) >= obj.variableMul(1,2) )
+    assertResult(obj.linearAssignment(0, LinearForm(0, 0, 0, 2))) { obj.variableMul(0, 2) }
+    assertResult(obj.linearAssignment(2, LinearForm(0, 0, 0, 2))) { obj.variableMul(2, 0) }
+    assert(obj.nonDeterministicAssignment(1) >= obj.variableMul(1, 2))
   }
 
-  test("connect") {
+  describe("Test connect") {
     val obj1 = full.
       linearAssignment(0, LinearForm(3, 0, 0, 1)).
       linearInequality(LinearForm(-10, 0, 0, 1))
@@ -131,27 +129,30 @@ class PPLPropertySuite extends FunSuite {
       linearAssignment(0, 1.0).
       linearAssignment(1, 3.0).
       linearInequality(LinearForm(0, 0, 1, 1))
-    val obj3 = octDomain.top(4).
+    val obj3 = dom.top(4).
       linearAssignment(0, LinearForm(4, 0, 0, 0, 0)).
       linearAssignment(2, LinearForm(3, 0, 0, 0, 0)).
       linearInequality(LinearForm(0, 0, 0, 1, 1))
     assertResult(obj3)(obj1.connect(obj2, 1))
   }
 
-  test("constructor from other domains and transformers") {
-    val transform = implicitly[DomainTransformation[PPLDomain[_ <: AnyRef], PPLDomain[_ <: AnyRef]]]
-    val diamond = octDomain.top(2).linearInequality(LinearForm(-1, 1, 1)).linearInequality(LinearForm(-1,-1,-1)).
-                  linearInequality(LinearForm(-1,1,-1)).linearInequality(LinearForm(-1,-1,1))
-    val box = boxDomain.top(2).linearInequality(LinearForm(-1, 1, 0)).linearInequality(LinearForm(-1,-1,0)).
-                  linearInequality(LinearForm(-1,0,-1)).linearInequality(LinearForm(-1,0,1))
-    assertResult(box) { boxDomain(diamond) }
-    assertResult(box) { transform(octDomain, boxDomain)(diamond) }
+  describe("Test non integer coefficients") {
+    val obj1 = full.linearInequality(LinearForm(0.5, 1, 1, 0))
+    val obj2 = obj1.linearAssignment(2, LinearForm(0.25, 1, 0, 0))
+    val m = obj2.maximize(LinearForm(0, 1, 0, -1))
+    assertResult(-0.25) { m }
   }
 
-  test("non integer coefficients") {
-    val obj1 = full.linearInequality(LinearForm(0.5,1,1,0))
-    val obj2 = obj1.linearAssignment(2, LinearForm(0.25,1,0,0))
-    val m = obj2.maximize(LinearForm(0,1,0,-1))
-    assertResult (-0.25) { m }
+  describe("Test constructor from other domains and transformers") {
+    val octDomain = PPLDomain[Octagonal_Shape_double]()
+    val boxDomain = PPLDomain[Double_Box]()
+
+    val transform = implicitly[DomainTransformation[PPLDomain[_ <: AnyRef], PPLDomain[_ <: AnyRef]]]
+    val diamond = octDomain.top(2).linearInequality(LinearForm(-1, 1, 1)).linearInequality(LinearForm(-1, -1, -1)).
+      linearInequality(LinearForm(-1, 1, -1)).linearInequality(LinearForm(-1, -1, 1))
+    val box = boxDomain.top(2).linearInequality(LinearForm(-1, 1, 0)).linearInequality(LinearForm(-1, -1, 0)).
+      linearInequality(LinearForm(-1, 0, -1)).linearInequality(LinearForm(-1, 0, 1))
+    assertResult(box) { boxDomain(diamond) }
+    assertResult(box) { transform(octDomain, boxDomain)(diamond) }
   }
 }
