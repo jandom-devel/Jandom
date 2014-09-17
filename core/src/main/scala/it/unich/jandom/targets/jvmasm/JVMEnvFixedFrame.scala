@@ -105,9 +105,8 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
   def mkString(vars: Seq[String]) =
     property.mkString(vars ++ ((maxLocals until property.dimension) map { i => "s" + i }))
 
-  override def toString =
-    mkString((0 until maxLocals) map { i => "i" + i }).mkString(",")
-
+  override def toString = mkString((0 until maxLocals) map { i => "i" + i })
+  
   def isTop = property.isTop
 
   def isBottom = property.isBottom
