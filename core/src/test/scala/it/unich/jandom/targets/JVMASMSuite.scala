@@ -18,13 +18,14 @@
 
 package it.unich.jandom.targets
 
+import scala.collection.JavaConversions.asScalaBuffer
+
 import org.objectweb.asm.ClassReader
-import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.MethodNode
+import org.objectweb.asm.tree.{ClassNode, MethodNode}
 import org.scalatest.FunSuite
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
-import it.unich.jandom.targets.jvmasm._
+import it.unich.jandom.targets.jvmasm.{AsmMethod, JVMEnvFixedFrame, JVMEnvFixedFrameDomain, UnsupportedASMInsnException}
 
 class JVMASMSuite extends FunSuite {
   import scala.collection.JavaConversions.asScalaBuffer
@@ -36,16 +37,19 @@ class JVMASMSuite extends FunSuite {
     val node = new ClassNode()
     cr.accept(node, ClassReader.SKIP_DEBUG)
     val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
-    val method = new AsmMethod(methodList.find(_.name == "loop").get)
+    val method = new AsmMethod(methodList.find(_.name == "conditional").get)
     val params = new Parameters[AsmMethod] {
       val domain = new JVMEnvFixedFrameDomain(BoxDouble)
     }
     try {
       val ann = method.analyze(params)
+      val result = new JVMEnvFixedFrame(params.domain, 2, BoxDouble(Array(0.0, 2.0), Array(0.0, 2.0)))
+      assertResult(result) { ann(method.lastPP.get) }
     } catch {
       case e: UnsupportedASMInsnException =>
         fail(e.toString)
+    } finally {
+      is.close
     }
-    is.close
   }
 }
