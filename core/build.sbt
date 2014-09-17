@@ -11,6 +11,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
   "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
   "org.scalanlp" %% "breeze" % "0.9",
+  // for using native linear algebra libraries
+  // "org.scalanlp" %% "breeze-natives" % "0.9",
   "org.rogach" %% "scallop" % "0.9.5",
   "org.scala-lang.modules" %% "scala-swing" % "1.0.1",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",

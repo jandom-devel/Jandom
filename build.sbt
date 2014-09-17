@@ -10,9 +10,15 @@ version in ThisBuild := "0.1.3-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.11.2"
 
+fork in ThisBuild := true
+
 executionEnvironment in ThisBuild := Some(EclipseExecutionEnvironment.JavaSE17)
 
-fork in ThisBuild := true
+// for removing warnings when Breeze does not find native libraries
+//
+// javaOptions in ThisBuild ++= Seq("-Dcom.github.fommil.netlib.BLAS=com.github.fommil.netlib.F2jBLAS",
+//   "-Dcom.github.fommil.netlib.LAPACK=com.github.fommil.netlib.F2jLAPACK",
+//   "-Dcom.github.fommil.netlib.ARPACK=com.github.fommil.netlib.F2jARPACK")
 
 val optionalPPLPathName = try {
     val PPLPathName = Process("ppl-config -l").lines.head+"/ppl/ppl_java.jar"
