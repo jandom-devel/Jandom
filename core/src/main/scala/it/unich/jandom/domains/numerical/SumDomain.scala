@@ -49,9 +49,15 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def union(that: Property): Property = {
       require(dimension == that.dimension)
-      val q1 = p1 union that.p1
-      val q2 = p2 union that.p2
-      SumDomain.this(q1, q2)
+      if (isEmpty)
+        that
+      else if (that.isEmpty)
+        this
+      else {
+        val q1 = p1 union that.p1
+        val q2 = p2 union that.p2
+        SumDomain.this(q1, q2)
+      }
     }
 
     def widening(that: Property): Property = {
@@ -66,8 +72,11 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def intersection(that: Property): Property = {
       require(dimension == that.dimension)
-      // correct, but bad precision
-      this
+      if (isEmpty)
+        this
+      else
+        // correct but bad precision
+        that
     }
 
     def nonDeterministicAssignment(n: Int): Property = {
@@ -92,10 +101,10 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def linearInequality(lf: LinearForm[Double]): Property = {
       if (p1.isEmpty || p2.isEmpty) return this
-      
+
       var w1 = p1.minimize(lf)
       var w2 = p2.minimize(lf)
-      
+
       if (!w1.isInfinity && !w2.isInfinity) {
         val lf_k1 = new DenseLinearForm[Double](w2 +: lf.homcoeffs)
         val lf_k2 = new DenseLinearForm[Double](w1 +: lf.homcoeffs)
@@ -112,13 +121,22 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def linearDisequality(lf: LinearForm[Double]): Property = this
 
-    def minimize(lf: LinearForm[Double]): Double = p1.minimize(lf) + p2.minimize(lf)
+    def minimize(lf: LinearForm[Double]): Double = {
+      val homlf = DenseLinearForm(lf.coeffs.updated(0, 0.0))
+      p1.minimize(homlf) + p2.minimize(homlf) + lf.known
+    }
 
-    def maximize(lf: LinearForm[Double]): Double = p1.maximize(lf) + p2.maximize(lf)
+    def maximize(lf: LinearForm[Double]): Double = {
+      val homlf = DenseLinearForm(lf.coeffs.updated(0, 0.0))
+      p1.maximize(homlf) + p2.maximize(homlf) + lf.known
+    }
 
-    def frequency(lf: LinearForm[Double]): Option[Double] = (p1.frequency(lf), p2.frequency(lf)) match {
-      case (Some(v1), Some(v2)) => Some(v1 + v2)
-      case _ => None
+    def frequency(lf: LinearForm[Double]): Option[Double] = {
+      val homlf = DenseLinearForm(lf.coeffs.updated(0, 0.0))
+      (p1.frequency(homlf), p2.frequency(homlf)) match {
+        case (Some(v1), Some(v2)) => Some(v1 + v2 + lf.known)
+        case _ => None
+      }
     }
 
     def addVariable: Property = SumDomain.this(p1.addVariable, p2.addVariable)

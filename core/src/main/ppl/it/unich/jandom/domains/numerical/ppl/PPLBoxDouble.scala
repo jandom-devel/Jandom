@@ -69,7 +69,7 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
 
   def linearAssignment(n: Int, lf: LinearForm[Double]): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
-    val (le, den) =  PPLUtils.toPPLLinearExpression(lf)
+    val (le, den) = PPLUtils.toPPLLinearExpression(lf)
     newpplbox.affine_image(new Variable(n), le, den)
     new PPLBoxDouble(newpplbox)
   }
@@ -96,40 +96,61 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
   }
 
   def minimize(lf: LinearForm[Double]) = {
-    val (le, den) = PPLUtils.toPPLLinearExpression(lf)
-    val exact = new By_Reference[java.lang.Boolean](false)
-    val val_n = new Coefficient(0)
-    val val_d = new Coefficient(0)
-    val result = pplbox.minimize(le, val_n, val_d, exact)
-    if (!result)
-      Double.NegativeInfinity
-    else
-      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger())  divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+    if (isEmpty) {
+      if (lf.homcoeffs.forall(_ == 0.0))
+        lf.known
+      else
+        Double.PositiveInfinity
+    } else {
+      val (le, den) = PPLUtils.toPPLLinearExpression(lf)
+      val exact = new By_Reference[java.lang.Boolean](false)
+      val val_n = new Coefficient(0)
+      val val_d = new Coefficient(0)
+      val result = pplbox.minimize(le, val_n, val_d, exact)
+      if (!result)
+        Double.NegativeInfinity
+      else
+        (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+    }
   }
 
   def maximize(lf: LinearForm[Double]) = {
-    val (le, den) = PPLUtils.toPPLLinearExpression(lf)
-    val exact = new By_Reference[java.lang.Boolean](false)
-    val val_n = new Coefficient(0)
-    val val_d = new Coefficient(0)
-    val result = pplbox.maximize(le, val_n, val_d, exact)
-    if (!result)
-      Double.PositiveInfinity
-    else
-      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+    if (isEmpty) {
+      if (lf.homcoeffs.forall(_ == 0.0))
+        lf.known
+      else
+        Double.NegativeInfinity
+    } else {
+      val (le, den) = PPLUtils.toPPLLinearExpression(lf)
+      val exact = new By_Reference[java.lang.Boolean](false)
+      val val_n = new Coefficient(0)
+      val val_d = new Coefficient(0)
+      val result = pplbox.maximize(le, val_n, val_d, exact)
+      if (!result)
+        Double.PositiveInfinity
+      else
+        (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+    }
   }
 
   def frequency(lf: LinearForm[Double]) = {
-    val (le,den) = PPLUtils.toPPLLinearExpression(lf)
-    val freq_n = new Coefficient(0)
-    val freq_d = new Coefficient(0)
-    val val_n = new Coefficient(0)
-    val val_d = new Coefficient(0)
-    val result = pplbox.frequency(le, freq_n, freq_d, val_n, val_d)
-    if (!result)
-      None
-    else
-      Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue())
+    if (isEmpty) {
+      if (lf.homcoeffs.forall(_ == 0.0))
+        Option(lf.known)
+      else
+        None
+    } else {
+      val (le, den) = PPLUtils.toPPLLinearExpression(lf)
+      val freq_n = new Coefficient(0)
+      val freq_d = new Coefficient(0)
+      val val_n = new Coefficient(0)
+      val val_d = new Coefficient(0)
+      val result = pplbox.frequency(le, freq_n, freq_d, val_n, val_d)
+      if (!result)
+        None
+      else
+        Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue())
+    }
   }
 
   def addVariable: PPLBoxDouble = {

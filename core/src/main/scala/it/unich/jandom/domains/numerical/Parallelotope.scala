@@ -36,7 +36,7 @@ import scala.util.Try
  * square or if `A` has not the same size of `low`.
  */
 
-final class Parallelotope (
+final class Parallelotope(
   val isEmpty: Boolean,
   private[domains] val low: DenseVector[Double],
   private[domains] val A: DenseMatrix[Double],
@@ -45,7 +45,7 @@ final class Parallelotope (
 
   require(low.length == A.rows)
   require(low.length == A.cols)
-  require(Try(A \ DenseMatrix.eye[Double](dimension)).isSuccess,s"The shape matrix ${A} is not invertible")
+  require(Try(A \ DenseMatrix.eye[Double](dimension)).isSuccess, s"The shape matrix ${A} is not invertible")
   require(normalized)
 
   type Domain = ParallelotopeDomain
@@ -86,15 +86,18 @@ final class Parallelotope (
    */
   def narrowing(that: Parallelotope): Parallelotope = {
     require(dimension == that.dimension)
-    if (isEmpty) this
-    val thatRotated = that.rotate(A)
-    val newlow = low.copy
-    val newhigh = high.copy
-    for (i <- 0 to dimension - 1) {
-      if (low(i).isInfinity) newlow(i) = thatRotated.low(i) else newlow(i) = newlow(i) min thatRotated.low(i)
-      if (high(i).isInfinity) newhigh(i) = thatRotated.high(i) else newhigh(i) = newhigh(i) max thatRotated.high(i)
+    if (that.isEmpty) {
+      that
+    } else {
+      val thatRotated = that.rotate(A)
+      val newlow = low.copy
+      val newhigh = high.copy
+      for (i <- 0 to dimension - 1) {
+        if (low(i).isInfinity) newlow(i) = thatRotated.low(i) else newlow(i) = newlow(i) min thatRotated.low(i)
+        if (high(i).isInfinity) newhigh(i) = thatRotated.high(i) else newhigh(i) = newhigh(i) max thatRotated.high(i)
+      }
+      new Parallelotope(false, newlow, A, newhigh)
     }
-    new Parallelotope(false, newlow, A, newhigh)
   }
 
   /**
@@ -114,7 +117,7 @@ final class Parallelotope (
    * @throws $ILLEGAL
    */
   def union(that: Parallelotope): Parallelotope = {
-  
+
     /**
      * A PrioritizedConstraint is a tuple `(a, m, M, p)` where `a` is a vector, `m` and `M` are
      * reals and `p` is an integer, whose intended meaning is the constraint `m <= ax <= M`
@@ -198,9 +201,12 @@ final class Parallelotope (
     }
 
     require(dimension == that.dimension)
-    
+
+    // special cases
     if (isEmpty) return that
     if (that.isEmpty) return this
+    if (dimension == 0) return this;
+
     val thisRotated = this.rotate(that.A)
     val thatRotated = that.rotate(this.A)
     val Q = scala.collection.mutable.ArrayBuffer[PrioritizedConstraint]()
@@ -210,7 +216,7 @@ final class Parallelotope (
     val min2 = DenseVector.vertcat(thatRotated.low, that.low)
     val max1 = DenseVector.vertcat(this.high, thisRotated.high)
     val max2 = DenseVector.vertcat(thatRotated.high, that.high)
-    
+
     for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i), 1)
     for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i), 2)
     for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
@@ -315,11 +321,11 @@ final class Parallelotope (
   }
 
   private def dotprod(x: DenseVector[Double], y: DenseVector[Double], remove: Int = -1): Double = {
-      var sum: Double = 0
-      for (i <- 0 until x.length if i != remove if x(i) != 0) sum = sum + x(i)*y(i)
-      sum
-    }
-  
+    var sum: Double = 0
+    for (i <- 0 until x.length if i != remove if x(i) != 0) sum = sum + x(i) * y(i)
+    sum
+  }
+
   /**
    * @inheritdoc
    * @note @inheritdoc
@@ -327,15 +333,16 @@ final class Parallelotope (
    * @throws ILLEGAL
    */
   def linearInequality(lf: LinearForm[Double]): Parallelotope = {
-  
+
     require(lf.dimension <= dimension)
-    
+
     if (isEmpty) return this
+    if (dimension == 0) return this
 
     val tcoeff = lf.homcoeffs
     val known = lf.known
     val coeff = tcoeff.padTo(dimension, 0.0).toArray
-    
+
     val y = A.t \ DenseVector(coeff)
     val j = (0 until dimension) find { i => y(i) != 0 && low(i).isInfinity && high(i).isInfinity }
     j match {
@@ -344,26 +351,25 @@ final class Parallelotope (
         val newhigh = high.copy
         val (minc, maxc) = domain.extremalsInBox(y, newlow, newhigh)
         if (minc > -known) return domain.bottom(dimension)
-       
-       
+
         val lfArgmin = (y) mapPairs { case (i, c) => if (c > 0) low(i) else high(i) }
-        
+
         val infinities = (0 until dimension) filter { i => lfArgmin(i).isInfinity && y(i) != 0 }
         infinities.size match {
-        	case 0 =>
-        		for (i <- 0 until dimension) {
-        			if (y(i) > 0) newhigh(i) = high(i) min (lfArgmin(i) + (-known - minc) / y(i))
-        			else if (y(i) < 0) newlow(i) = low(i) max (lfArgmin(i) + (-known - minc) / y(i))
-        		}
-       	    case 1 => {	
-        	val posinf = infinities.head
-        	if (y(posinf) < 0)
-        		newlow(posinf) = low(posinf) max ((-dotprod(y, lfArgmin, posinf) - known) / y(posinf))
+          case 0 =>
+            for (i <- 0 until dimension) {
+              if (y(i) > 0) newhigh(i) = high(i) min (lfArgmin(i) + (-known - minc) / y(i))
+              else if (y(i) < 0) newlow(i) = low(i) max (lfArgmin(i) + (-known - minc) / y(i))
+            }
+          case 1 => {
+            val posinf = infinities.head
+            if (y(posinf) < 0)
+              newlow(posinf) = low(posinf) max ((-dotprod(y, lfArgmin, posinf) - known) / y(posinf))
             else
-            	newhigh(posinf) = high(posinf) min ((-dotprod(y, lfArgmin, posinf) - known) / y(posinf))
+              newhigh(posinf) = high(posinf) min ((-dotprod(y, lfArgmin, posinf) - known) / y(posinf))
+          }
+          case _ =>
         }
-        case _ =>
-      }
         return new Parallelotope(false, newlow, A, newhigh)
       }
       case Some(j) => {
@@ -480,14 +486,20 @@ final class Parallelotope (
    * of the linear form over the box.
    */
   def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
-    
+
     val tcoeff = lf.homcoeffs
-    val coeff = tcoeff.padTo(dimension, 0.0).toArray
-    val vec = DenseVector(coeff)
-    val newvec = A.t \ vec
-    val newlf = lf.known +: newvec.valuesIterator.toSeq
-    val (min,max) = domain.extremalsInBox(newvec, low, high)
-    (min + lf.known, max + lf.known)
+    if (isEmpty && tcoeff.exists { _ != 0 })
+      (Double.PositiveInfinity, Double.NegativeInfinity)
+    else if (dimension == 0)
+      (lf.known, lf.known)
+    else {
+      val coeff = tcoeff.padTo(dimension, 0.0).toArray
+      val vec = DenseVector(coeff)
+      val newvec = A.t \ vec
+      val newlf = lf.known +: newvec.valuesIterator.toSeq
+      val (min, max) = domain.extremalsInBox(newvec, low, high)
+      (min + lf.known, max + lf.known)
+    }
   }
 
   def minimize(lf: LinearForm[Double]) = linearEvaluation(lf)._1
@@ -525,7 +537,7 @@ final class Parallelotope (
   }
 
   /**
-   * It computes the smallest parallelotope which containts `this` and is definable
+   * It computes the smallest parallelotope which contains `this` and is definable
    * over a new shape matrix `Aprime`.
    * @param Aprime the new shape matrix.
    * @note `Aprime` should be an invertible matrix of the same dimension as `this`.

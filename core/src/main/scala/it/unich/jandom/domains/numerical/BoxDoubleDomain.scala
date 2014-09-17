@@ -34,19 +34,20 @@ import it.unich.jandom.domains.CachedTopBottom
  * @param overReals is true if the domain is correct w.r.t. real arithmetic, otherwise it is correct w.r.t.
  * double arithmetics.
  */
-class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
+class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
   /**
    * This is the class representing a single box.
    *
    * @constructor Creates a box with given lower and upper bounds.
    * @param low the lower bounds of the box.
    * @param high the upper bounds of the box.
-   * @note `low` and `high` should be normalized according to the method `normalized`
+   * @param isEmpty is true when the box is empty. It is needed for the case of 0-dimensional boxes.
+   * @note `low`, `high` and `isEmpty` should be normalized according to the method `normalized`
    * @throws IllegalArgumentException if parameters are not correct.
    */
 
-  final class Property(private[domains] val low: Array[Double], private[domains] val high: Array[Double]) extends NumericalProperty[Property] {
-    require(normalized, "The parameters low:" + low.mkString(",") + " and high: " + high.mkString(",") + " are not normalized")
+  final class Property(val low: Array[Double], val high: Array[Double], val isEmpty: Boolean) extends NumericalProperty[Property] {
+    require(normalized, s"The parameters low: ${low.mkString(",")}, high: ${high.mkString(",")} and isEmpty: ${isEmpty} are not normalized")
 
     type Domain = BoxDoubleDomain
 
@@ -55,9 +56,9 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
     /**
      * This checks whether the box is normalized. This should always be the case. A box is normalized when
      * the lower and higher bounds are of the same length, and either
-     *   1. there are no lower bounds equal to +Inf,
-     *      there are no upper bounds equal to -Inf, the lower bounds are smaller of the corresponding upper bounds or
-     *   2. all the lower bound are +Inf and all the upper bounds are -Inf.
+     *   1. there are no lower bounds equal to +Inf, there are no upper bounds equal to -Inf,
+     *       the lower bounds are smaller of the corresponding upper bounds, isEmpty is false, or
+     *   2. all the lower bound are +Inf and all the upper bounds are -Inf, isEmpty is true.
      * @return whether the box is normalized.
      */
     private def normalized: Boolean =
@@ -65,18 +66,22 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
         (
           low.forall { (x) => !(x.isPosInfinity) } &&
           high.forall { (x) => !(x.isNegInfinity) } &&
-          (low, high).zipped.forall(_ <= _)
+          (low, high).zipped.forall(_ <= _) &&
+          !isEmpty
           ||
           low.forall { _.isPosInfinity } &&
-          high.forall { _.isNegInfinity })
+          high.forall { _.isNegInfinity } &&
+          isEmpty)
 
     /**
-     * This computes the smallest y > x which is representable as a Double.
+     * This computes the smallest y > x which is representable as a Double. Note that
+     * x should not be -Infinity.
      */
     private def nextfp(x: Double): Double = {
+      require(!x.isNegInfinity)
       if (x == 0)
         java.lang.Double.longBitsToDouble(1);
-      else if (x < java.lang.Double.POSITIVE_INFINITY) {
+      else if (!x.isPosInfinity) {
         val xx: Long = java.lang.Double.doubleToLongBits(x);
         java.lang.Double.longBitsToDouble(
           if (x > 0) xx + 1
@@ -99,22 +104,22 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
     /**
      * Returns the sum of `x` and `y`, rounded towards +Inf.
      */
-    private def add_hi(x: Double, y: Double): Double = if (overReals) nextfp(x + y) else x + y
+    private def add_hi(x: Double, y: Double): Double = if (overReals && x != 0) nextfp(x + y) else x + y
 
     /**
      * Returns the sum of `x` and `y`, rounded towards -Inf.
      */
-    private def add_lo(x: Double, y: Double): Double = if (overReals) prevfp(x + y) else x + y
+    private def add_lo(x: Double, y: Double): Double = if (overReals && x != 0) prevfp(x + y) else x + y
 
     /**
      * Returns the product of `x` and `y`, rounded towards +Inf.
      */
-    private def mul_hi(x: Double, y: Double): Double = if (overReals) nextfp(x * y) else x * y
+    private def mul_hi(x: Double, y: Double): Double = if (overReals && x != 0 && x != 1) nextfp(x * y) else x * y
 
     /**
      * Returns the product of `x` and `y`, rounded towards -Inf.
      */
-    private def mul_lo(x: Double, y: Double): Double = if (overReals) prevfp(x * y) else x * y
+    private def mul_lo(x: Double, y: Double): Double = if (overReals && x != 0 && x != 1) prevfp(x * y) else x * y
 
     /**
      * Return the dot product of `x` and `y`, rounded towards `+Inf`.
@@ -149,7 +154,7 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
       require(dimension == that.dimension)
       val newlow = (this.low, that.low).zipped.map(_ min _)
       val newhigh = (this.high, that.high).zipped.map(_ max _)
-      new Property(newlow, newhigh)
+      new Property(newlow, newhigh, isEmpty && that.isEmpty)
     }
 
     /**
@@ -161,7 +166,7 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
       require(dimension == that.dimension)
       val newlow = (this.low, that.low).zipped.map(_ max _)
       val newhigh = (this.high, that.high).zipped.map(_ min _)
-      new Property(newlow, newhigh)
+      BoxDoubleDomain.this(newlow, newhigh)
     }
 
     /**
@@ -173,7 +178,7 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
       require(dimension == that.dimension)
       val newlow = (low, that.low).zipped.map((l1, l2) => if (l1 == Double.PositiveInfinity) l2 else if (l1 <= l2) l1 else Double.NegativeInfinity)
       val newhigh = (high, that.high).zipped.map((l1, l2) => if (l1 == Double.NegativeInfinity) l2 else if (l1 >= l2) l1 else Double.PositiveInfinity)
-      new Property(newlow, newhigh)
+      new Property(newlow, newhigh, isEmpty && that.isEmpty)
     }
 
     /**
@@ -183,9 +188,13 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
      */
     def narrowing(that: Property) = {
       require(dimension == that.dimension)
-      val newlow = (low, that.low).zipped.map((l1, l2) => if (l1 == Double.NegativeInfinity) l2 else l1 min l2)
-      val newhigh = (high, that.high).zipped.map((l1, l2) => if (l1 == Double.PositiveInfinity) l2 else l1 max l2)
-      new Property(newlow, newhigh)
+      if (that.isEmpty) {
+        that
+      } else {
+        val newlow = (low, that.low).zipped.map((l1, l2) => if (l1 == Double.NegativeInfinity) l2 else l1 min l2)
+        val newhigh = (high, that.high).zipped.map((l1, l2) => if (l1 == Double.PositiveInfinity) l2 else l1 max l2)
+        BoxDoubleDomain.this(newlow, newhigh)
+      }
     }
 
     /**
@@ -199,16 +208,20 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
       var newlow: Double = lf.known
       var newhigh: Double = lf.known
       val coeffs = lf.homcoeffs
-      for (i <- coeffs.indices) {
-        if (coeffs(i) < 0) {
-          newlow = add_lo(newlow, mul_lo(coeffs(i), high(i)))
-          newhigh = add_hi(newhigh, mul_hi(coeffs(i), low(i)))
-        } else if (coeffs(i) > 0) {
-          newlow = add_lo(newlow, mul_lo(coeffs(i), low(i)))
-          newhigh = add_hi(newhigh, mul_hi(coeffs(i), high(i)))
+      if (isEmpty && coeffs.exists { _ != 0 })
+        (Double.PositiveInfinity, Double.NegativeInfinity)
+      else {
+        for (i <- coeffs.indices) {
+          if (coeffs(i) < 0) {
+            newlow = add_lo(newlow, mul_lo(coeffs(i), high(i)))
+            newhigh = add_hi(newhigh, mul_hi(coeffs(i), low(i)))
+          } else if (coeffs(i) > 0) {
+            newlow = add_lo(newlow, mul_lo(coeffs(i), low(i)))
+            newhigh = add_hi(newhigh, mul_hi(coeffs(i), high(i)))
+          }
         }
+        (newlow, newhigh)
       }
-      (newlow, newhigh)
     }
 
     def minimize(lf: LinearForm[Double]) = linearEvaluation(lf)._1
@@ -249,7 +262,10 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
      */
     def nonDeterministicAssignment(n: Int): Property = {
       require(n < low.length && n >= 0)
-      new Property(low.updated(n, Double.NegativeInfinity), high.updated(n, Double.PositiveInfinity))
+      if (isEmpty)
+        this
+      else
+        new Property(low.updated(n, Double.NegativeInfinity), high.updated(n, Double.PositiveInfinity), false)
     }
 
     /**
@@ -260,9 +276,13 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
      */
     def linearAssignment(n: Int, lf: LinearForm[Double]): Property = {
       require(n < low.length && n >= 0 && lf.dimension <= dimension)
-      if (isEmpty) return this
-      val interval = linearEvaluation(lf)
-      new Property(low.updated(n, interval._1), high.updated(n, interval._2))
+      if (isEmpty)
+        this
+      else {
+        val interval = linearEvaluation(lf)
+        new Property(low.updated(n, interval._1), high.updated(n, interval._2), false)
+      }
+
     }
 
     /**
@@ -304,7 +324,7 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
         }
         case _ =>
       }
-      new Property(newlow, newhigh)
+      BoxDoubleDomain.this(newlow, newhigh)
     }
 
     /**
@@ -331,7 +351,7 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
       if (isEmpty)
         BoxDoubleDomain.this.bottom(dimension + 1)
       else
-        new Property(low :+ Double.NegativeInfinity, high :+ Double.PositiveInfinity)
+        BoxDoubleDomain.this(low :+ Double.NegativeInfinity, high :+ Double.PositiveInfinity)
 
     /**
      * @inheritdoc
@@ -347,7 +367,7 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
       Array.copy(high, 0, newhigh, 0, n)
       Array.copy(low, n + 1, newlow, n, dimension - n - 1)
       Array.copy(high, n + 1, newhigh, n, dimension - n - 1)
-      new Property(newlow, newhigh)
+      new Property(newlow, newhigh, isEmpty)
     }
 
     /**
@@ -367,7 +387,7 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
         newlow(newi) = low(i)
         newhigh(newi) = high(i)
       }
-      new Property(newlow, newhigh)
+      new Property(newlow, newhigh, isEmpty)
     }
 
     /**
@@ -390,11 +410,9 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
 
     val dimension: Int = low.length
 
-    def isEmpty = (low, high).zipped.exists(_ > _)
-
     def isBottom = isEmpty
 
-    def isTop = low.forall(_.isNegInfinity) && high.forall(_.isPosInfinity)
+    def isTop = !isEmpty && low.forall(_.isNegInfinity) && high.forall(_.isPosInfinity)
 
     def bottom = BoxDoubleDomain.this.bottom(low.length)
 
@@ -402,16 +420,22 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
       case other: Property =>
-        val lowpairs = (this.low, other.low).zipped
-        val highpairs = (this.high, other.high).zipped
-        if (lowpairs.forall(_ == _) && highpairs.forall(_ <= _))
-          Some(0)
-        else if (lowpairs.forall(_ <= _) && highpairs.forall(_ >= _))
-          Some(1)
-        else if (lowpairs.forall(_ >= _) && highpairs.forall(_ <= _))
-          Some(-1)
-        else
-          None
+        (isEmpty, other.isEmpty) match {
+          case (true, true) => Some(0)
+          case (false, true) => Some(1)
+          case (true, false) => Some(-1)
+          case (false, false) =>
+            val lowpairs = (this.low, other.low).zipped
+            val highpairs = (this.high, other.high).zipped
+            if (lowpairs.forall(_ == _) && highpairs.forall(_ == _))
+              Some(0)
+            else if (lowpairs.forall(_ <= _) && highpairs.forall(_ >= _))
+              Some(1)
+            else if (lowpairs.forall(_ >= _) && highpairs.forall(_ <= _))
+              Some(-1)
+            else
+              None
+        }
       case _ => None
     }
 
@@ -431,7 +455,7 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
     if ((low, high).zipped.exists(_ > _))
       bottom(low.length)
     else
-      new Property(low, high)
+      new Property(low, high, false)
   }
 
   /**
@@ -445,7 +469,7 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
    * @throws $ILLEGAL
    */
   def top(n: Int): Property =
-    new Property(Array.fill(n)(Double.NegativeInfinity), Array.fill(n)(Double.PositiveInfinity))
+    new Property(Array.fill(n)(Double.NegativeInfinity), Array.fill(n)(Double.PositiveInfinity), false)
 
   /**
    * @inheritdoc
@@ -453,7 +477,7 @@ class BoxDoubleDomain (val overReals: Boolean) extends NumericalDomain {
    * @throws $ILLEGAL
    */
   def bottom(n: Int): Property =
-    new Property(Array.fill(n)(Double.PositiveInfinity), Array.fill(n)(Double.NegativeInfinity))
+    new Property(Array.fill(n)(Double.PositiveInfinity), Array.fill(n)(Double.NegativeInfinity), true)
 }
 
 object BoxDoubleDomain {

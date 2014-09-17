@@ -82,7 +82,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
   }
 
   def linearAssignment(n: Int, lf: LinearForm[Double]): PPLProperty[PPLNativeProperty] = {
-    val (le,den)= PPLUtils.toPPLLinearExpression(lf)
+    val (le, den) = PPLUtils.toPPLLinearExpression(lf)
     val newpplobject = domain.copyConstructor(pplobject)
     domain.affine_image(newpplobject, new Variable(n), le, den)
     new PPLProperty(domain, newpplobject)
@@ -111,40 +111,61 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
   }
 
   def minimize(lf: LinearForm[Double]) = {
-    val (le, den) = PPLUtils.toPPLLinearExpression(lf)
-    val exact = new By_Reference[java.lang.Boolean](false)
-    val val_n = new Coefficient(0)
-    val val_d = new Coefficient(0)
-    val result = domain.minimize(pplobject, le, val_n, val_d, exact)
-    if (!result)
-      Double.NegativeInfinity
-    else
-      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+    if (isEmpty) {
+      if (lf.homcoeffs.forall(_ == 0.0))
+        lf.known
+      else
+        Double.PositiveInfinity
+    } else {
+      val (le, den) = PPLUtils.toPPLLinearExpression(lf)
+      val exact = new By_Reference[java.lang.Boolean](false)
+      val val_n = new Coefficient(0)
+      val val_d = new Coefficient(0)
+      val result = domain.minimize(pplobject, le, val_n, val_d, exact)
+      if (!result)
+        Double.NegativeInfinity
+      else
+        (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+    }
   }
 
   def maximize(lf: LinearForm[Double]) = {
-    val (le, den) = PPLUtils.toPPLLinearExpression(lf)
-    val exact = new By_Reference[java.lang.Boolean](false)
-    val val_n = new Coefficient(0)
-    val val_d = new Coefficient(0)
-    val result = domain.maximize(pplobject, le, val_n, val_d, exact)
-    if (!result)
-      Double.PositiveInfinity
-    else
-      (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+    if (isEmpty) {
+      if (lf.homcoeffs.forall(_ == 0.0))
+        lf.known
+      else
+        Double.NegativeInfinity
+    } else {
+      val (le, den) = PPLUtils.toPPLLinearExpression(lf)
+      val exact = new By_Reference[java.lang.Boolean](false)
+      val val_n = new Coefficient(0)
+      val val_d = new Coefficient(0)
+      val result = domain.maximize(pplobject, le, val_n, val_d, exact)
+      if (!result)
+        Double.PositiveInfinity
+      else
+        (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+    }
   }
 
   def frequency(lf: LinearForm[Double]) = {
-    val (le, den) = PPLUtils.toPPLLinearExpression(lf)
-    val freq_n = new Coefficient(0)
-    val freq_d = new Coefficient(0)
-    val val_n = new Coefficient(0)
-    val val_d = new Coefficient(0)
-    val result = domain.frequency(pplobject, le, freq_n, freq_d, val_n, val_d)
-    if (!result)
-      None
-    else
-      Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue())
+    if (isEmpty) {
+      if (lf.homcoeffs.forall(_ == 0.0))
+        Option(lf.known)
+      else
+        None
+    } else {
+      val (le, den) = PPLUtils.toPPLLinearExpression(lf)
+      val freq_n = new Coefficient(0)
+      val freq_d = new Coefficient(0)
+      val val_n = new Coefficient(0)
+      val val_d = new Coefficient(0)
+      val result = domain.frequency(pplobject, le, freq_n, freq_d, val_n, val_d)
+      if (!result)
+        None
+      else
+        Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue())
+    }
   }
 
   def addVariable = {
@@ -171,7 +192,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
 
   def dimension: Int = domain.space_dimension(pplobject).toInt
 
-  def isEmpty  = domain.is_empty(pplobject)
+  def isEmpty = domain.is_empty(pplobject)
 
   def isTop = domain.is_universe(pplobject)
 
