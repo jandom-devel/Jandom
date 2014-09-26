@@ -10,6 +10,7 @@ libraryDependencies ++= Seq(
   "org.ow2.asm" % "asm-util" % "4.1",
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
   "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
+  "org.mockito" % "mockito-core" % "1.9.5" % "test",
   "org.scalanlp" %% "breeze" % "0.9",
   // for using native linear algebra libraries
   // "org.scalanlp" %% "breeze-natives" % "0.9",
