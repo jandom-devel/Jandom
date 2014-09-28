@@ -420,6 +420,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
       case other: Property =>
+        require(dimension == other.dimension)
         (isEmpty, other.isEmpty) match {
           case (true, true) => Some(0)
           case (false, true) => Some(1)
