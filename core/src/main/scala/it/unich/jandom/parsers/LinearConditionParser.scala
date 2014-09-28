@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -34,32 +34,42 @@ import it.unich.jandom.targets.linearcondition._
  */
 trait LinearConditionParser extends JavaTokenParsers {
   /**
-   * A parser for linear expressions. Should be provided in a real implementation
+   * A parser for linear expressions. Should be provided in a real implementation.
    */
   protected val linexpr: Parser[LinearForm[Int]]
 
   /**
-   * Parser for comparison operators
+   * Parser for comparison operators.
    */
-  protected def comparison: Parser[AtomicCond.ComparisonOperators.Value] =
-    ("==" | "<=" | ">=" | "!=" | "<" | ">" ) ^^ { AtomicCond.ComparisonOperators.withName(_) } |
+  protected val comparison: Parser[AtomicCond.ComparisonOperators.Value] =
+    ("==" | "<=" | ">=" | "!=" | "<" | ">") ^^ { AtomicCond.ComparisonOperators.withName(_) } |
+      "=" ^^ { s => AtomicCond.ComparisonOperators.withName("==") } |
+      "<>" ^^ { s => AtomicCond.ComparisonOperators.withName("!=") } |
       failure("invalid comparison operator")
 
   /**
-   * Parser for atomic conditions
+   * Parser for atomic conditions.
    */
-  protected def atomic_condition: Parser[LinearCond] =
-    "FALSE" ^^ { s => FalseCond } |
-    "TRUE" ^^ { s => TrueCond } |
-    "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
-    linexpr ~ comparison ~ linexpr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1 - lf2, op) }
+  protected val atomic_condition: Parser[LinearCond] =
+    ("FALSE" | "false") ^^ { s => FalseCond } |
+      ("TRUE" | "true") ^^ { s => TrueCond } |
+      "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
+      linexpr ~ comparison ~ linexpr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1 - lf2, op) }
+
+  protected val basic_condition: Parser[LinearCond] =
+    "!" ~> condition ^^ { case c => NotCond(c) } |
+      "(" ~> condition <~ ")" |
+      atomic_condition
+
+  protected val conjunction_condition: Parser[LinearCond] =
+    basic_condition ~ "&&" ~ conjunction_condition ^^ { case c1 ~ _ ~ c2 => AndCond(c1, c2) } |
+      basic_condition
 
   /**
-   * Parser for linear conditions
+   * Parser for linear conditions.
    */
-  protected def condition: Parser[LinearCond] =
-    atomic_condition ~ "&&" ~ condition ^^ { case c1 ~ _ ~ c2 => AndCond(c1, c2) } |
-    atomic_condition ~ "||" ~ condition ^^ { case c1 ~ _ ~ c2 => OrCond(c1, c2) } |
-    "!" ~> condition ^^ { case c => NotCond(c) } |
-    atomic_condition
+  protected val condition: Parser[LinearCond] =
+    conjunction_condition ~ "||" ~ condition ^^ { case c1 ~ _ ~ c2 => OrCond(c1, c2) } |
+      conjunction_condition
 }
+

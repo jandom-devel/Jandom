@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -24,26 +24,32 @@ import it.unich.jandom.targets.Environment
 import it.unich.jandom.domains.numerical.LinearForm
 
 /**
- * Test suite for LinearExpressionParser
+ * Test suite for LinearExpressionParser.
  * @author Gianluca Amato <gamato@unich.it>
  */
 class LinearExpressionParserSuite extends FunSuite {
+
+  val parser = new TempParser
+
   class TempParser extends LinearExpressionParser {
     val env = Environment()
     val variable = ident ^^ { env.getBindingOrAdd(_) }
     def parseExpr(s: String) = parseAll(linexpr, s)
   }
 
-  test("linear expression parser") {
-    val parser = new TempParser
+  test("constant") { 
+    assertResult(LinearForm(0)) { parser.parseExpr("0").get }
+  }
+
+  test("unary minus") {
+    assertResult(LinearForm(-2)) { parser.parseExpr("-2").get }
+  }
+
+  test("linear expression") {
     val expParsed = parser.parseExpr("3*x+y-z").get
     val expBuild = LinearForm(0, 3, 1, -1)
     assertResult(expBuild) { expParsed }
   }
 
-  test("unary minus") {
-    val parser = new TempParser
-    val expParsed = parser.parseExpr("- 2").get
-    assertResult(LinearForm(-2)) { expParsed }
-  }
 }
+

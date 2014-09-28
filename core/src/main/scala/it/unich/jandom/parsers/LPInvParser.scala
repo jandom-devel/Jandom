@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  * 
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -43,10 +43,6 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpr
   val variable: Parser[Int] =
     ident ^^ { env(_) }
 
-  override val comparison: Parser[AtomicCond.ComparisonOperators.Value] =
-    "=" ^^ { _ => AtomicCond.ComparisonOperators.EQ } |
-      super.comparison
-
   private val var_declaration: Parser[Any] =
     ident ^^ { case v => env.addBinding(v) }
 
@@ -88,14 +84,14 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpr
     }
 
   /**
-    * The parse function
+    * The parse function.
     * @param s the string containing the linear transition system
     * @return a ParseResult with the transition system parsed in the target LTS
     */
   def parseProgram(s: String) = parseAll(prog, s)
 }
 
-/** Factory for [[it.unich.jandom.LPInvParser]] instances. */
+/** Factory for [[it.unich.jandom.parsers.LPInvParser]] instances. */
 object LPInvParser {
   /** 
    * Create a parser for LPInv transition systems with a given environment.

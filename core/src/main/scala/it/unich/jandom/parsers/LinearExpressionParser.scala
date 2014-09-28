@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -32,15 +32,20 @@ import it.unich.jandom.domains.numerical.LinearForm
  */
 trait LinearExpressionParser extends JavaTokenParsers {
   /**
-   * Parser for variables
+   * Parser for variables.
    */
   protected val variable: Parser[Int]
 
   /**
-   * Parser for terms
+   * Parser for multiplication operator.
+   */    
+  protected val mulExpr: Parser[Any] = "*"
+  
+  /**
+   * Parser for terms.
    */
   private val term: Parser[LinearForm[Int]] =
-    (opt(wholeNumber <~ "*") ~ variable) ^^ {
+    (opt(wholeNumber <~ mulExpr) ~ variable) ^^ {
       case Some(coeff) ~ v => LinearForm(0, v -> coeff.toInt)
       case None ~ v => LinearForm.v[Int](v)
     } |
@@ -51,7 +56,7 @@ trait LinearExpressionParser extends JavaTokenParsers {
     "-" ~> term ^^ { lf => -lf }
 
   /**
-   * Parser for integer linear expressions
+   * Parser for integer linear expressions.
    */
   protected val linexpr: Parser[LinearForm[Int]] =
     (term_with_operator | term) ~ rep(term_with_operator) ^^ {
