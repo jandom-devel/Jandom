@@ -21,6 +21,8 @@ package it.unich.jandom.targets.lts
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.targets.NumericAssignment
 import it.unich.jandom.targets.NumericCondition
+import it.unich.jandom.targets.NumericAssignment
+import it.unich.jandom.targets.NumericAssignmentMultiple
 
 /**
  * The class for transitions.
@@ -31,19 +33,19 @@ import it.unich.jandom.targets.NumericCondition
  * @param assignments the assignments to apply when the transition is selected
  * @author Gianluca Amato <gamato@unich.it>
  */
-case class Transition(val name: String, val start: Location, val end: Location, val guard: Seq[NumericCondition], val assignments: Seq[NumericAssignment]) {
+case class Transition(val name: String, val start: Location, val end: Location, val guard: Seq[NumericCondition], val assignments: NumericAssignmentMultiple) {
   end += this
 
   def mkString(vars: Seq[String]) = {
-     "transition " + name + " " + start.name + " -> " + end.name + " with Guard( " +
-    (guard map { _.mkString(vars) }).mkString(", ") + " )\n" +      
-    (assignments map { _.mkString(vars) }).mkString(start = "  ", sep = "\n  ", end = "") + ";"
+    "transition " + name + " " + start.name + " -> " + end.name + " with Guard( " +
+      (guard map { _.mkString(vars) }).mkString(", ") + " )\n" +	
+      assignments.mkString(vars).mkString(start = "  ", sep = "\n  ", end = "") + ";"
   }
 
   override def toString = mkString(Stream.from(0).map { "v" + _ })
 
   def analyze[Property <: NumericalProperty[Property]](input: Property): Property = {
     val filtered = (input /: guard) { (current, cond) => cond.analyze(current) }
-    (filtered /: assignments) { (current, assgn) => assgn.analyze(current) }
+    assignments.analyze(filtered)
   }
 }
