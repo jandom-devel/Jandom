@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,18 +27,18 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-case class Location (val name: String, val conditions: Seq[LinearCond])  {
+case class Location(val name: String, val conditions: Seq[LinearCond]) {
   /**
    * The set of incoming transitions.  Used internally by the analyzer
    */
   private[this] var inc: List[Transition] = Nil
-      
-  /** 
+
+  /**
    * A numeric id for the location. Used internally by the analyzer. The value
    * -1 means it has never been assigned a valid id.
    */
   private[lts] var id: Int = -1
-  
+
   /**
    * Returns the incoming transitions. Used internally by the analyzer
    * @return the incoming transitions
@@ -50,13 +50,16 @@ case class Location (val name: String, val conditions: Seq[LinearCond])  {
    * @param t the transition to add
    * @return the transition t
    */
-  private [lts] def += (t: Transition): Transition = {
+  private[lts] def +=(t: Transition): Transition = {
     inc = t :: inc
     t
   }
 
-  override def toString =
+  def mkString(vars: Seq[String]) =
     "location " + name + " with (\n" +
-      conditions.mkString(start = "  ", sep = "\n  ", end = "\n") +
+      (conditions map { _.mkString(vars) }).mkString(start = "  ", sep = "\n  ", end = "\n") +
       ");"
+
+  override def toString = mkString(Stream.from(0).map { "v" + _ })
+
 }

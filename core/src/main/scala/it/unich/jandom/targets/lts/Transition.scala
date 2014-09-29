@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,15 +31,19 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * @param assignments the assignments to apply when the transition is selected
  * @author Gianluca Amato <gamato@unich.it>
  */
-case class Transition (val name: String, val start: Location, val end: Location, val guard: Seq[LinearCond], val assignments: Seq[NumericAssignment]) {
+case class Transition(val name: String, val start: Location, val end: Location, val guard: Seq[LinearCond], val assignments: Seq[NumericAssignment]) {
   end += this
-  
-  override def toString = "transition "+name+" "+start.name+" -> "+end.name + " with Guard( " + 
-	guard.mkString(", ") + " )\n" +
-	assignments.mkString(start="  ", sep="\n  ", end="")+";"
 
-  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
+  def mkString(vars: Seq[String]) = {
+     "transition " + name + " " + start.name + " -> " + end.name + " with Guard( " +
+    (guard map { _.mkString(vars) }).mkString(", ") + " )\n" +      
+    (assignments map { _.mkString(vars) }).mkString(start = "  ", sep = "\n  ", end = "") + ";"
+  }
+
+  override def toString = mkString(Stream.from(0).map { "v" + _ })
+
+  def analyze[Property <: NumericalProperty[Property]](input: Property): Property = {
     val filtered = (input /: guard) { (current, cond) => cond.analyze(current) }
-	(filtered /: assignments)  { (current, assgn) => assgn.analyze(current) }
-  }     
+    (filtered /: assignments) { (current, assgn) => assgn.analyze(current) }
+  }
 }

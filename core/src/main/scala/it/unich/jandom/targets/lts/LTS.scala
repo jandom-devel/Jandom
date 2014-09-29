@@ -101,5 +101,5 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
     return ann
   }
 
-  override def toString = locations.mkString("\n") + "\n" + transitions.mkString("\n")
+  override def toString = locations.mkString("\n") + "\n" + (transitions map {_.mkString(env.variables)}).mkString("\n")
 }
