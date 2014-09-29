@@ -29,7 +29,7 @@ import it.unich.jandom.targets.Environment
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with LinearFormParser with LinearConditionParser {
+class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with LinearConditionParser {
   /**
    * If this variable is false, unrecognized variables will be treated as errors, otherwise they will be
    * added to the environment.

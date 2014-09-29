@@ -20,6 +20,7 @@ package it.unich.jandom.targets.linearcondition
 
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.domains.numerical.LinearForm
+import it.unich.jandom.targets.NumericExpression
 
 /**
  * The class for atomic conditions of the kind \vec c * \vec x <=> 0.
@@ -28,23 +29,22 @@ import it.unich.jandom.domains.numerical.LinearForm
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.Value) (implicit numeric: Numeric[T]) extends LinearCond {
-  import numeric._;
+case class AtomicCond(numexpr: NumericExpression, op: AtomicCond.ComparisonOperators.Value) extends LinearCond {
 
-  override def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = op match {
-    case AtomicCond.ComparisonOperators.LTE => input.linearInequality( lf.toDouble )
-    case AtomicCond.ComparisonOperators.LT => input.linearInequality( lf.toDouble )
-    case AtomicCond.ComparisonOperators.GTE => input.linearInequality( -lf.toDouble )
-    case AtomicCond.ComparisonOperators.GT => input.linearInequality( -lf.toDouble )
-    case AtomicCond.ComparisonOperators.NEQ => input.linearDisequality( lf.toDouble )
-    case AtomicCond.ComparisonOperators.EQ => input.linearInequality( lf.toDouble ).linearInequality( -lf.toDouble )
+  override def analyze[Property <: NumericalProperty[Property]](input: Property): Property = op match {
+    case AtomicCond.ComparisonOperators.LTE => numexpr.lteZero(input)
+    case AtomicCond.ComparisonOperators.LT => numexpr.ltZero(input)
+    case AtomicCond.ComparisonOperators.GTE => (-numexpr).lteZero(input)
+    case AtomicCond.ComparisonOperators.GT => (-numexpr).ltZero(input)
+    case AtomicCond.ComparisonOperators.NEQ => numexpr.neqZero(input)
+    case AtomicCond.ComparisonOperators.EQ => (-numexpr).lteZero(numexpr.lteZero(input))
   }
 
-  lazy val opposite = new AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op))
+  lazy val opposite = new AtomicCond(numexpr, AtomicCond.ComparisonOperators.opposite(op))
 
-  val dimension = lf.dimension
+  lazy val dimension = numexpr.dimension
 
-  override def mkString(vars: Seq[String]) = lf.mkString(vars) + op + "0"
+  override def mkString(vars: Seq[String]) = s"${numexpr.mkString(vars)}${op}0"
 }
 
 /**
@@ -53,6 +53,15 @@ case class AtomicCond[T](lf: LinearForm[T], op: AtomicCond.ComparisonOperators.V
  * It contains the Enumeration of the comparison/relational operators.
  */
 object AtomicCond {
+
+  def apply(e1: NumericExpression, op: AtomicCond.ComparisonOperators.Value, e2: NumericExpression): AtomicCond = {
+    if (e2.isZero)
+      AtomicCond(e1, op)
+    else if (e1.isZero)
+      AtomicCond(e2, ComparisonOperators.negate(op))
+    else
+      AtomicCond(e1 - e2, op)
+  }
 
   /**
    * The comparison operator.
@@ -69,14 +78,30 @@ object AtomicCond {
      * Returns the opposite comparison symbol.
      * @return the opposite comparison symbol
      */
-    def opposite(v: Value):Value = {
-      return v match {
+    def opposite(v: Value): Value = {
+      v match {
         case EQ => NEQ
         case GT => LTE
         case GTE => LT
         case LT => GTE
         case LTE => GT
         case NEQ => EQ
+      }
+    }
+
+    /**
+     * Returns the negated comparison symbol. The negated comparison symbol is the
+     * one obtained when reading it right-to-left.
+     * @return the negated comparison symbol
+     */
+    def negate(v: Value): Value = {
+      v match {
+        case EQ => EQ
+        case GT => LT
+        case GTE => LTE
+        case LT => GT
+        case LTE => GTE
+        case NEQ => NEQ
       }
     }
   }

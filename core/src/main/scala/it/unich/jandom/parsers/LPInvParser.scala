@@ -20,22 +20,21 @@ package it.unich.jandom.parsers
 
 import scala.collection.mutable.HashMap
 import scala.util.parsing.combinator.JavaTokenParsers
-
 import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.LinearAssignment
 import it.unich.jandom.targets.linearcondition.AtomicCond
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.targets.lts.Location
 import it.unich.jandom.targets.lts.Transition
+import it.unich.jandom.targets.NumericAssignment
 
 /**
   * Parser for transition systems as they appear in the [[http://www.cs.colorado.edu/~srirams/Software/lpinv.html LPInv]]
   * invariant generator by Sriram Sankaranarayanan. It generates an LTS (Linear Transition System) target.
   * It actually parser a super-set of the LPInv transitions systems, since it possible to specify complex
-  * conditions with &&, || and ! in the locations.
+  * conditions with &&, || and ! in the locations, and non-linear expressions.
   * @author Gianluca Amato <gamato@unich.it>
   */
-class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearFormParser with LinearConditionParser {
+class LPInvParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with LinearConditionParser {
   private val location_env = new HashMap[String, Location]
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
@@ -64,9 +63,9 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearForm
         }
       }
 
-  private val assignment: Parser[LinearAssignment[Double]] =
-    (ident <~ ":=") ~ linform ^^ {
-      case v ~ lf => LinearAssignment(env.getBindingOrAdd(v), lf)
+  private val assignment: Parser[NumericAssignment] =
+    (ident <~ ":=") ~ numexpr ^^ {
+      case v ~ e => NumericAssignment(env.getBindingOrAdd(v), e)
     }
 
   private val transition: Parser[Transition] =

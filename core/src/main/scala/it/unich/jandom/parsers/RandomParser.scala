@@ -31,13 +31,15 @@ import it.unich.jandom.targets.slil._
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class RandomParser(val env: Environment) extends JavaTokenParsers with LinearFormParser with LinearConditionParser {
+class RandomParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with LinearConditionParser {
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
 
   override def stringLiteral = "\"[^\"]*\"".r // allow CR in string literals
     
   override val ident = not(literal("function")) ~> """[a-zA-Z._][\w.]*""".r  // allow . in identifiers
+  
+  override val divExpr = "/" | "%/%"
   
   private val funCall = ident ~ "(" ~ repsep(expr,",") ~ ")" ^^ { _.toString }
   
@@ -46,7 +48,7 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearFor
   private val variableFollow = not("""[\[(]""".r) // follow a valid variable
   
   val variable: Parser[Int] = ident <~ variableFollow  ^^ { env.getBindingOrAdd(_) }
-
+  
   private val atom =
     ( wholeNumber | 
       funCall |
@@ -89,11 +91,10 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearFor
       } |
       ("return" ~ "(" ~ expr ~ ")") ^^ { _ => NopStmt } |
       "{" ~> rep(stmt) <~ "}" ^^ { CompoundStmt(_: _*) } |
-      ident ~ ("=" | "<-") ~ linform <~ opt(";") ^^ { case v ~ _ ~ lf => AssignStmt(env.getBindingOrAdd(v), lf) } | 
-      ident <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { case v => NondetStmt(env.getBindingOrAdd(v)) }  |   
-       expr <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { _ => NopStmt }      
-  
-  /*
+      ident ~ ("=" | "<-") ~ numexpr <~ opt(";") ^^ { case v ~ _ ~ e => AssignStmt(env.getBindingOrAdd(v), e) } | 
+      expr <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { _ => NopStmt }      
+
+  /**
    * This is used to parse a statement but force it to be returned as a
    * compound statement. 
    */

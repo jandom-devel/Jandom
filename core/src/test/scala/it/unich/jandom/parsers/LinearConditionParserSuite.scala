@@ -24,24 +24,30 @@ import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.Environment
 import it.unich.jandom.targets.linearcondition.AndCond
 import it.unich.jandom.targets.linearcondition.AtomicCond
+import it.unich.jandom.targets.NumericExpression._
 
 /**
  * Test suite for LinearExpressionParser.
  * @author Gianluca Amato <gamato@unich.it>
  */
 class LinearConditionParserSuite extends FunSuite {
-  object LocalParser extends LinearConditionParser with LinearFormParser {
+  object LocalParser extends LinearConditionParser with NumericExpressionParser {
     val env = Environment()
     val variable = ident ^^ { env.getBindingOrAdd(_) }
     def parseExpr(s: String) = parseAll(condition, s)
   }
 
-  test("linear condition parser") {
+  test("Linear expressions") {
     val expParsed = LocalParser.parseExpr("3*x+y-z==0 && x<=z").get
     val exp1Build = LinearForm(0, 3, 1, -1)
     val exp2Build = LinearForm(0, 1, 0, -1)
     val expCond = AndCond(AtomicCond(exp1Build, AtomicCond.ComparisonOperators.EQ), AtomicCond(exp2Build, AtomicCond.ComparisonOperators.LTE))
     assertResult(expCond) { expParsed }
   }
+  
+  test("Non-linear expressions") {    
+    val x = VariableExpression[Double](0)
+    assertResult( AtomicCond(x*x, AtomicCond.ComparisonOperators.LTE)) {  LocalParser.parseExpr("x*x <= 0").get } 
+    assertResult( AtomicCond(x*x, AtomicCond.ComparisonOperators.GTE)) {  LocalParser.parseExpr("0 <= x*x").get }
+  }
 }
-

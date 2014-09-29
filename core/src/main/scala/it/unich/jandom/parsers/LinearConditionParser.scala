@@ -19,9 +19,9 @@
 package it.unich.jandom.parsers
 
 import scala.util.parsing.combinator.JavaTokenParsers
-
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.linearcondition._
+import it.unich.jandom.targets.NumericExpression
 
 /**
  * A trait for parsing integer linear conditions. To be inherited by real parsers. An implementation
@@ -36,7 +36,7 @@ trait LinearConditionParser extends JavaTokenParsers {
   /**
    * A parser for linear forms. Should be provided in a real implementation.
    */
-  protected val linform: Parser[LinearForm[Double]]
+  protected val numexpr: Parser[NumericExpression]
 
   /**
    * Parser for comparison operators.
@@ -54,7 +54,7 @@ trait LinearConditionParser extends JavaTokenParsers {
     ("FALSE" | "false") ^^ { s => FalseCond } |
       ("TRUE" | "true") ^^ { s => TrueCond } |
       "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
-      linform ~ comparison ~ linform ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1 - lf2, op) }
+      numexpr ~ comparison ~ numexpr ^^ { case e1 ~ op ~ e2 => AtomicCond(e1, op, e2) }
 
   protected val basic_condition: Parser[LinearCond] =
     "!" ~> condition ^^ { case c => NotCond(c) } |
