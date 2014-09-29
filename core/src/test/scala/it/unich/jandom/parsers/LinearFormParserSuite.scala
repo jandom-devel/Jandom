@@ -24,17 +24,17 @@ import it.unich.jandom.targets.Environment
 import it.unich.jandom.domains.numerical.LinearForm
 
 /**
- * Test suite for LinearExpressionParser.
+ * Test suite for LinearFormParser.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class LinearExpressionParserSuite extends FunSuite {
+class LinearFormParserSuite extends FunSuite {
 
   val parser = new TempParser
 
-  class TempParser extends LinearExpressionParser {
+  class TempParser extends LinearFormParser {
     val env = Environment()
     val variable = ident ^^ { env.getBindingOrAdd(_) }
-    def parseExpr(s: String) = parseAll(linexpr, s)
+    def parseExpr(s: String) = parseAll(linform, s)
   }
 
   test("constant") { 

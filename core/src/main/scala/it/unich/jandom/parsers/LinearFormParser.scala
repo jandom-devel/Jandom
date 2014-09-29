@@ -23,14 +23,13 @@ import scala.util.parsing.combinator.JavaTokenParsers
 import it.unich.jandom.domains.numerical.LinearForm
 
 /**
- * A trait for parsing integer linear expressions. To be inherited by real parsers. An implementation
+ * A trait for parsing linear forms. To be inherited by real parsers. An implementation
  * should define a parser ''variable'' of type ''Parser[Int]'' and provide a variable ''env''
- * of type ''Environment''. The result of variable is the id of the variable in the environment
- * ''env''. It provides a parser ''expr'' for linear expressions.
+ * of type ''Environment''. The result of the `variable` parser should be the id of the 
+ * variable in the environmen ''env''. It provides a parser ''linform'' for linear forms.
  * @author Gianluca Amato <gamato@unich.it>
- *
  */
-trait LinearExpressionParser extends JavaTokenParsers {
+trait LinearFormParser extends JavaTokenParsers {
   /**
    * Parser for variables.
    */
@@ -58,7 +57,7 @@ trait LinearExpressionParser extends JavaTokenParsers {
   /**
    * Parser for integer linear expressions.
    */
-  protected val linexpr: Parser[LinearForm[Int]] =
+  protected val linform: Parser[LinearForm[Int]] =
     (term_with_operator | term) ~ rep(term_with_operator) ^^ {
       case lf1 ~ lfarr => (lf1 /: lfarr) { (lfa, lfb) => lfa + lfb }
     }

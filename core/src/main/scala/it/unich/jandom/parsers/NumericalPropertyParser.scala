@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -17,6 +17,7 @@
  */
 
 package it.unich.jandom.parsers
+
 import scala.util.parsing.combinator.JavaTokenParsers
 
 import it.unich.jandom.domains.numerical.NumericalDomain
@@ -24,19 +25,19 @@ import it.unich.jandom.targets.Environment
 
 /**
  * A parser for numerical properties.
- * @param env environment to use for parsing the property
+ * @param env environment to use for parsing the property.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
+class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with LinearFormParser with LinearConditionParser {
   /**
    * If this variable is false, unrecognized variables will be treated as errors, otherwise they will be
-   * added to the environment
+   * added to the environment.
    */
   var closedVariables = false
 
   /**
-   * Parser for variables
+   * Parser for variables.
    */
   override val variable: Parser[Int] = new Parser[Int] {
     def apply(in: Input) = ident(in) match {
@@ -49,16 +50,16 @@ class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers wit
   }
 
   /**
-   * Parser for properties
+   * Parser for properties.
    */
   protected def property(domain: NumericalDomain) = condition ^^ { _.analyze(domain.top(env.size)) }
 
   /**
    * Parsing function.
-   * @tparam Property the type of the numerical property we want
    * @param s string to parse
    * @param domain the numerical domain corresponding to the type Property
-   * @return a ParseResult[Property] with the result with the parsed property, or corresponding error condition
+   * @return a ParseResult[dom.Property] with the parsed property, or corresponding error condition
    */
   def parseProperty(s: String, domain: NumericalDomain) = parseAll(property(domain),s)
 }
+

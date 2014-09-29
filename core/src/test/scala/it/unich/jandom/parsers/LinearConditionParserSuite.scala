@@ -30,7 +30,7 @@ import it.unich.jandom.targets.linearcondition.AtomicCond
  * @author Gianluca Amato <gamato@unich.it>
  */
 class LinearConditionParserSuite extends FunSuite {
-  object LocalParser extends LinearConditionParser with LinearExpressionParser {
+  object LocalParser extends LinearConditionParser with LinearFormParser {
     val env = Environment()
     val variable = ident ^^ { env.getBindingOrAdd(_) }
     def parseExpr(s: String) = parseAll(condition, s)

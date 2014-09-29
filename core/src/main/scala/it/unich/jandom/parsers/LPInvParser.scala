@@ -35,7 +35,7 @@ import it.unich.jandom.targets.lts.Transition
   * conditions with &&, || and ! in the locations.
   * @author Gianluca Amato <gamato@unich.it>
   */
-class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
+class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearFormParser with LinearConditionParser {
   private val location_env = new HashMap[String, Location]
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
@@ -65,7 +65,7 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpr
       }
 
   private val assignment: Parser[LinearAssignment[Int]] =
-    (ident <~ ":=") ~ linexpr ^^ {
+    (ident <~ ":=") ~ linform ^^ {
       case v ~ lf => LinearAssignment(env.getBindingOrAdd(v), lf)
     }
 

@@ -34,9 +34,9 @@ import it.unich.jandom.targets.linearcondition._
  */
 trait LinearConditionParser extends JavaTokenParsers {
   /**
-   * A parser for linear expressions. Should be provided in a real implementation.
+   * A parser for linear forms. Should be provided in a real implementation.
    */
-  protected val linexpr: Parser[LinearForm[Int]]
+  protected val linform: Parser[LinearForm[Int]]
 
   /**
    * Parser for comparison operators.
@@ -54,7 +54,7 @@ trait LinearConditionParser extends JavaTokenParsers {
     ("FALSE" | "false") ^^ { s => FalseCond } |
       ("TRUE" | "true") ^^ { s => TrueCond } |
       "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
-      linexpr ~ comparison ~ linexpr ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1 - lf2, op) }
+      linform ~ comparison ~ linform ^^ { case lf1 ~ op ~ lf2 => AtomicCond(lf1 - lf2, op) }
 
   protected val basic_condition: Parser[LinearCond] =
     "!" ~> condition ^^ { case c => NotCond(c) } |
