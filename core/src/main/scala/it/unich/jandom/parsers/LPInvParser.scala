@@ -64,7 +64,7 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearForm
         }
       }
 
-  private val assignment: Parser[LinearAssignment[Int]] =
+  private val assignment: Parser[LinearAssignment[Double]] =
     (ident <~ ":=") ~ linform ^^ {
       case v ~ lf => LinearAssignment(env.getBindingOrAdd(v), lf)
     }

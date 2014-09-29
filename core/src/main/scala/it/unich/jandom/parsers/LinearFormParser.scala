@@ -43,21 +43,21 @@ trait LinearFormParser extends JavaTokenParsers {
   /**
    * Parser for terms.
    */
-  private val term: Parser[LinearForm[Int]] =
+  private val term: Parser[LinearForm[Double]] =
     (opt(wholeNumber <~ mulExpr) ~ variable) ^^ {
-      case Some(coeff) ~ v => LinearForm(0, v -> coeff.toInt)
-      case None ~ v => LinearForm.v[Int](v)
+      case Some(coeff) ~ v => LinearForm[Double](0, v -> coeff.toDouble)
+      case None ~ v => LinearForm.v[Double](v)
     } |
-    wholeNumber ^^ { case coeff => coeff.toInt }
+    wholeNumber ^^ { case coeff => coeff.toDouble }
 
-  private val term_with_operator: Parser[LinearForm[Int]] =
+  private val term_with_operator: Parser[LinearForm[Double]] =
     "+" ~> term |
     "-" ~> term ^^ { lf => -lf }
 
   /**
    * Parser for integer linear expressions.
    */
-  protected val linform: Parser[LinearForm[Int]] =
+  protected val linform: Parser[LinearForm[Double]] =
     (term_with_operator | term) ~ rep(term_with_operator) ^^ {
       case lf1 ~ lfarr => (lf1 /: lfarr) { (lfa, lfb) => lfa + lfb }
     }

@@ -36,7 +36,7 @@ trait LinearConditionParser extends JavaTokenParsers {
   /**
    * A parser for linear forms. Should be provided in a real implementation.
    */
-  protected val linform: Parser[LinearForm[Int]]
+  protected val linform: Parser[LinearForm[Double]]
 
   /**
    * Parser for comparison operators.
