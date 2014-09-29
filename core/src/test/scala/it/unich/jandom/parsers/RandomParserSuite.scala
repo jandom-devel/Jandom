@@ -26,13 +26,12 @@ import org.scalatest.prop.Checkers
 
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.linearcondition.AtomicCond
+import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.slil._
 
 /**
  * Test suite for RandomParser.
  * @author Gianluca Amato <gamato@unich.it>
- *
  */
 class RandomParserSuite extends FunSuite with Checkers {
   test("very simple random program") {
@@ -57,7 +56,7 @@ class RandomParserSuite extends FunSuite with Checkers {
     val program = SLILProgram(env, List(0),
       CompoundStmt(
         AssignStmt(1, LinearForm(0, 0 -> 1)),
-        WhileStmt(AtomicCond(LinearForm(0, -1, 1), AtomicCond.ComparisonOperators.LT),
+        WhileStmt(AtomicCond(LinearForm(0, -1, 1), ComparisonOperators.LT),
           CompoundStmt(AssignStmt(1, LinearForm(1, 0, 1))))))
     assertResult(program) { RandomParser().parseProgram(prog).get }
   }

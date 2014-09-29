@@ -20,8 +20,7 @@ package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.targets.Annotation
-import it.unich.jandom.targets.linearcondition.LinearCond
-
+import it.unich.jandom.targets.NumericCondition
 import AnalysisPhase.AnalysisPhase
 
 /**
@@ -29,7 +28,7 @@ import AnalysisPhase.AnalysisPhase
  * somewhat equivalent to "if (not cond) loop-forever".
  * @param cond the linear condition
  */
-case class AssumeStmt(cond: LinearCond) extends SLILStmt {
+case class AssumeStmt(cond: NumericCondition) extends SLILStmt {
   import AnalysisPhase._
   
   override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property =

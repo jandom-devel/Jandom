@@ -29,7 +29,7 @@ import it.unich.jandom.targets.Environment
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with LinearConditionParser {
+class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
   /**
    * If this variable is false, unrecognized variables will be treated as errors, otherwise they will be
    * added to the environment.
@@ -52,7 +52,7 @@ class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers wit
   /**
    * Parser for properties.
    */
-  protected def property(domain: NumericalDomain) = condition ^^ { _.analyze(domain.top(env.size)) }
+  protected def property(domain: NumericalDomain) = numcondition ^^ { _.analyze(domain.top(env.size)) }
 
   /**
    * Parsing function.

@@ -30,7 +30,7 @@ import org.objectweb.asm.util._
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.targets.Annotation
 import it.unich.jandom.targets.Target
-import it.unich.jandom.targets.linearcondition.AtomicCond
+import it.unich.jandom.targets.NumericCondition._
 
 /**
  * This class analyzes a method of a Java class. It uses the ASM library.
@@ -114,9 +114,9 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
             op match {
               case IF_ICMPGT => {
                 val scopy = s.clone
-                scopy.if_icmp(AtomicCond.ComparisonOperators.GT)
+                scopy.if_icmp(ComparisonOperators.GT)
                 exits :+= (jumpBlock.get, scopy)
-                s.if_icmp(AtomicCond.ComparisonOperators.LTE)
+                s.if_icmp(ComparisonOperators.LTE)
               }
               case GOTO => exits :+= (jumpBlock.get, s)
               case _ => throw UnsupportedASMInsnException(node)

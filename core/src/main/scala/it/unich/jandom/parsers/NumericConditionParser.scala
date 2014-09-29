@@ -20,8 +20,9 @@ package it.unich.jandom.parsers
 
 import scala.util.parsing.combinator.JavaTokenParsers
 import it.unich.jandom.domains.numerical.LinearForm
-import it.unich.jandom.targets.linearcondition._
 import it.unich.jandom.targets.NumericExpression
+import it.unich.jandom.targets.NumericCondition
+import it.unich.jandom.targets.NumericCondition._
 
 /**
  * A trait for parsing integer linear conditions. To be inherited by real parsers. An implementation
@@ -32,7 +33,7 @@ import it.unich.jandom.targets.NumericExpression
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-trait LinearConditionParser extends JavaTokenParsers {
+trait NumericConditionParser extends JavaTokenParsers {
   /**
    * A parser for linear forms. Should be provided in a real implementation.
    */
@@ -41,35 +42,35 @@ trait LinearConditionParser extends JavaTokenParsers {
   /**
    * Parser for comparison operators.
    */
-  protected val comparison: Parser[AtomicCond.ComparisonOperators.Value] =
-    ("==" | "<=" | ">=" | "!=" | "<" | ">") ^^ { AtomicCond.ComparisonOperators.withName(_) } |
-      "=" ^^ { s => AtomicCond.ComparisonOperators.withName("==") } |
-      "<>" ^^ { s => AtomicCond.ComparisonOperators.withName("!=") } |
+  protected val comparison: Parser[ComparisonOperators.Value] =
+    ("==" | "<=" | ">=" | "!=" | "<" | ">") ^^ { ComparisonOperators.withName(_) } |
+      "=" ^^ { s => ComparisonOperators.withName("==") } |
+      "<>" ^^ { s => ComparisonOperators.withName("!=") } |
       failure("invalid comparison operator")
 
   /**
    * Parser for atomic conditions.
    */
-  protected val atomic_condition: Parser[LinearCond] =
+  private val atomic_condition: Parser[NumericCondition] =
     ("FALSE" | "false") ^^ { s => FalseCond } |
       ("TRUE" | "true") ^^ { s => TrueCond } |
       "brandom" ~ "(" ~ ")" ^^ { s => BRandomCond } |
       numexpr ~ comparison ~ numexpr ^^ { case e1 ~ op ~ e2 => AtomicCond(e1, op, e2) }
 
-  protected val basic_condition: Parser[LinearCond] =
-    "!" ~> condition ^^ { case c => NotCond(c) } |
-      "(" ~> condition <~ ")" |
+  private val basic_condition: Parser[NumericCondition] =
+    "!" ~> numcondition ^^ { case c => NotCond(c) } |
+      "(" ~> numcondition <~ ")" |
       atomic_condition
 
-  protected val conjunction_condition: Parser[LinearCond] =
+  private val conjunction_condition: Parser[NumericCondition] =
     basic_condition ~ "&&" ~ conjunction_condition ^^ { case c1 ~ _ ~ c2 => AndCond(c1, c2) } |
       basic_condition
 
   /**
    * Parser for linear conditions.
    */
-  protected val condition: Parser[LinearCond] =
-    conjunction_condition ~ "||" ~ condition ^^ { case c1 ~ _ ~ c2 => OrCond(c1, c2) } |
+  protected val numcondition: Parser[NumericCondition] =
+    conjunction_condition ~ "||" ~ numcondition ^^ { case c1 ~ _ ~ c2 => OrCond(c1, c2) } |
       conjunction_condition
 }
 

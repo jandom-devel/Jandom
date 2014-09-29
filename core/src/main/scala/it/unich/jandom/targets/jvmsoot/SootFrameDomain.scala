@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets.jvmsoot
 
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
 import it.unich.jandom.domains.AbstractDomain
 import it.unich.jandom.domains.AbstractProperty
 import it.unich.jandom.domains.CartesianFiberedProperty
@@ -265,7 +265,7 @@ trait SootFrameDomain extends CartesianFiberedDomain {
      * Returns the result of testing the frame w.r.t. a linear condition. It does not pop the stack.
      * @param lf the linear condition to use for testing.
      */
-    def testLinearCondition(lf: LinearCond): (Property, Property)
+    def testLinearCondition(lf: NumericCondition): (Property, Property)
 
     /**
      * Evaluates a global constant and put the result on the frame.

@@ -20,8 +20,8 @@ package it.unich.jandom.parsers
 import scala.util.parsing.combinator.JavaTokenParsers
 
 import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.linearcondition.BRandomCond
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
+import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.slil._
 
 
@@ -31,7 +31,7 @@ import it.unich.jandom.targets.slil._
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class RandomParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with LinearConditionParser {
+class RandomParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
 
@@ -70,8 +70,8 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with NumericEx
     	"brandom" |
         expr ~ comparison ~ expr ) ^^ { _.toString }
   
-  private val general_condition: Parser[LinearCond] =
-    condition |
+  private val general_condition: Parser[NumericCondition] =
+    numcondition |
     (general_atomic_condition |
         general_atomic_condition ~ "&&" ~ general_condition |
         general_atomic_condition ~ "||" ~ general_condition |
@@ -81,7 +81,7 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with NumericEx
   private val stmt: Parser[SLILStmt] =
     "tag" ~> "(" ~> wholeNumber <~ ")" <~ opt(";") ^^ { case s => TagStmt(s.toInt) } |
       ".tracetag" ~ "(" ~ wholeNumber ~ ")" <~ opt(";") ^^ { _ => NopStmt } |
-      "assume" ~> "(" ~> condition <~ ")" <~ opt(";") ^^ { AssumeStmt(_) } |
+      "assume" ~> "(" ~> numcondition <~ ")" <~ opt(";") ^^ { AssumeStmt(_) } |
       ("if" ~> "(" ~> general_condition <~ ")") ~ compoundStmt ~ opt("else" ~> compoundStmt)  ^^ {
         case c ~ s1 ~ Some(s2) => IfStmt(c, s1, s2)
         case c ~ s1 ~ None => IfStmt(c, s1, NopStmt)

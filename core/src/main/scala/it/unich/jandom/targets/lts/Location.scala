@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets.lts
 
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
 
 /**
  * A class for locations (i.e. nodes in a linear transition system)
@@ -27,7 +27,7 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-case class Location(val name: String, val conditions: Seq[LinearCond]) {
+case class Location(val name: String, val conditions: Seq[NumericCondition]) {
   /**
    * The set of incoming transitions.  Used internally by the analyzer
    */

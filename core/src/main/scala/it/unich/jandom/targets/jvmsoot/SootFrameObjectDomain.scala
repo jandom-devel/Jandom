@@ -23,7 +23,7 @@ import scala.annotation.elidable._
 
 import it.unich.jandom.domains.objects.PairSharingDomain
 import it.unich.jandom.domains.objects.UP
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
 import soot._
 import soot.jimple.Constant
 import soot.jimple.StaticFieldRef
@@ -182,7 +182,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
     def testNe = evalNe.test
 
     def evalLinearForm(lf: Array[Double]) = addUntrackedVariable(DoubleType.v())
-    def testLinearCondition(lc: LinearCond) = (this, this)
+    def testLinearCondition(lc: NumericCondition) = (this, this)
 
     def assignLocal(dst: Int) = {
       if (stack(0).isInstanceOf[RefType])

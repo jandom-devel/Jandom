@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets.lts
 
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
 
 /**
  * This is a region in an LTS. A region is a named pair made of an optional location and a numeric condition.
@@ -26,7 +26,7 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * At the moment, it is not used for the analysis.
  * @author Gianluca Amato <gamato@unich.it>
  */
-case class Region(val name: String, val state: Option[Location], val condition: LinearCond) {
+case class Region(val name: String, val state: Option[Location], val condition: NumericCondition) {
 
   def mkString(vars: Seq[String]) = if (state.isEmpty)
     s"region ${name} with ( ${condition.mkString(vars)} );"

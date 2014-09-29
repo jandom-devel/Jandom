@@ -19,7 +19,7 @@
 package it.unich.jandom.targets.jvmasm
 
 import scala.collection.mutable.ArrayStack
-import it.unich.jandom.targets.linearcondition.AtomicCond
+import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.widenings.Widening
 import it.unich.jandom.narrowings.Narrowing
 import it.unich.jandom.domains.numerical.NumericalProperty
@@ -66,8 +66,8 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
     property = property.constantAdd(v, c)
   }
 
-  def if_icmp(op: AtomicCond.ComparisonOperators.Value) {
-    import AtomicCond.ComparisonOperators._
+  def if_icmp(op: ComparisonOperators.Value) {
+    import ComparisonOperators._
     val lfm = LinearForm.v[Int](property.dimension - 1)
     val lfn = LinearForm.v[Int](property.dimension - 2)
     val condition = op match {

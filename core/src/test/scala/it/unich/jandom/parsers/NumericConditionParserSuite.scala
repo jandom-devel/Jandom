@@ -22,32 +22,31 @@ import org.scalatest.FunSuite
 
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.linearcondition.AndCond
-import it.unich.jandom.targets.linearcondition.AtomicCond
+import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.NumericExpression._
 
 /**
  * Test suite for LinearExpressionParser.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class LinearConditionParserSuite extends FunSuite {
-  object LocalParser extends LinearConditionParser with NumericExpressionParser {
+class NumericConditionParserSuite extends FunSuite {
+  object LocalParser extends NumericConditionParser with NumericExpressionParser {
     val env = Environment()
     val variable = ident ^^ { env.getBindingOrAdd(_) }
-    def parseExpr(s: String) = parseAll(condition, s)
+    def parseExpr(s: String) = parseAll(numcondition, s)
   }
 
   test("Linear expressions") {
     val expParsed = LocalParser.parseExpr("3*x+y-z==0 && x<=z").get
     val exp1Build = LinearForm(0, 3, 1, -1)
     val exp2Build = LinearForm(0, 1, 0, -1)
-    val expCond = AndCond(AtomicCond(exp1Build, AtomicCond.ComparisonOperators.EQ), AtomicCond(exp2Build, AtomicCond.ComparisonOperators.LTE))
+    val expCond = AndCond(AtomicCond(exp1Build, ComparisonOperators.EQ), AtomicCond(exp2Build, ComparisonOperators.LTE))
     assertResult(expCond) { expParsed }
   }
   
   test("Non-linear expressions") {    
     val x = VariableExpression[Double](0)
-    assertResult( AtomicCond(x*x, AtomicCond.ComparisonOperators.LTE)) {  LocalParser.parseExpr("x*x <= 0").get } 
-    assertResult( AtomicCond(x*x, AtomicCond.ComparisonOperators.GTE)) {  LocalParser.parseExpr("0 <= x*x").get }
+    assertResult( AtomicCond(x*x, ComparisonOperators.LTE)) {  LocalParser.parseExpr("x*x <= 0").get } 
+    assertResult( AtomicCond(x*x, ComparisonOperators.GTE)) {  LocalParser.parseExpr("0 <= x*x").get }
   }
 }

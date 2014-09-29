@@ -20,7 +20,7 @@ package it.unich.jandom.targets.lts
 
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.targets.NumericAssignment
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
 
 /**
  * The class for transitions.
@@ -31,7 +31,7 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * @param assignments the assignments to apply when the transition is selected
  * @author Gianluca Amato <gamato@unich.it>
  */
-case class Transition(val name: String, val start: Location, val end: Location, val guard: Seq[LinearCond], val assignments: Seq[NumericAssignment]) {
+case class Transition(val name: String, val start: Location, val end: Location, val guard: Seq[NumericCondition], val assignments: Seq[NumericAssignment]) {
   end += this
 
   def mkString(vars: Seq[String]) = {

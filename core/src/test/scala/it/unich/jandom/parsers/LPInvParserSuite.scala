@@ -21,8 +21,7 @@ package it.unich.jandom.parsers
 import org.scalatest.FunSuite
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.linearcondition.AtomicCond
-import it.unich.jandom.targets.linearcondition.FalseCond
+import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.targets.lts.Location
 import it.unich.jandom.targets.lts.Transition
@@ -42,7 +41,7 @@ class LPInvParserSuite extends FunSuite {
       guard = Nil,
       assignments = List(NumericAssignment(0, LinearForm(0))))
     val t2 = Transition("loop", l2, l2,
-      guard = List(AtomicCond(LinearForm(-10, 1), AtomicCond.ComparisonOperators.LTE)),
+      guard = List(AtomicCond(LinearForm(-10, 1), ComparisonOperators.LTE)),
       assignments = List(NumericAssignment(0, LinearForm(1, 1))))
     val lts = LTS(IndexedSeq(l1, l2), Seq(t1, t2), env)
 

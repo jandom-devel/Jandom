@@ -23,20 +23,20 @@ import org.scalatest.FunSuite
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.LinearForm
 
-import linearcondition._
+import NumericCondition._
 
 /**
  * Test suite for linear conditions.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class LinearCondSuite extends FunSuite {
+class NumericConditionSuite extends FunSuite {
   val BoxDouble = BoxDoubleDomain()
   val env = Environment("x","y")
   val lf1 = LinearForm(-3,1,0)
   val lf2 = LinearForm(-6,1,0)
-  val cond1 = AtomicCond(lf1,AtomicCond.ComparisonOperators.LTE)
-  val cond2 = AtomicCond(lf2,AtomicCond.ComparisonOperators.GTE)
+  val cond1 = AtomicCond(lf1,ComparisonOperators.LTE)
+  val cond2 = AtomicCond(lf2,ComparisonOperators.GTE)
   val full = BoxDouble.top(env.size)
 
   test("atomic conditions") {

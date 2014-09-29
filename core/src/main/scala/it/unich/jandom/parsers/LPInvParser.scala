@@ -21,7 +21,6 @@ package it.unich.jandom.parsers
 import scala.collection.mutable.HashMap
 import scala.util.parsing.combinator.JavaTokenParsers
 import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.linearcondition.AtomicCond
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.targets.lts.Location
 import it.unich.jandom.targets.lts.Transition
@@ -34,7 +33,7 @@ import it.unich.jandom.targets.NumericAssignment
   * conditions with &&, || and ! in the locations, and non-linear expressions.
   * @author Gianluca Amato <gamato@unich.it>
   */
-class LPInvParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with LinearConditionParser {
+class LPInvParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
   private val location_env = new HashMap[String, Location]
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
@@ -54,7 +53,7 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with NumericExp
 
   private val location: Parser[Location] =
     (literal("location") ~> ident <~ literal("with") <~ "(") ~
-      rep(condition) <~
+      rep(numcondition) <~
       ")" <~ ";" ^^ {
         case name ~ condition => {
           val loc = Location(name, condition)
@@ -70,7 +69,7 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with NumericExp
 
   private val transition: Parser[Transition] =
     (literal("transition") ~> ident) ~ (ident <~ "->") ~ (ident <~ literal("with") <~ literal("Guard")) ~
-      ("(" ~> rep(condition) <~ ")") ~
+      ("(" ~> rep(numcondition) <~ ")") ~
       rep(assignment) <~ ";" ^^ {
         case name ~ lstart ~ lend ~ guards ~ assignments => {
           Transition(name, location_env(lstart), location_env(lend), guards, assignments)
