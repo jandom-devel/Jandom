@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -27,11 +27,12 @@ import it.unich.jandom.targets.Annotation
  * @param locations the locations which makes the LTS
  * @param transitions the transitions which makes the LTS
  * @param env the environment of the LTS
+ * @param regions the regions which are part of the LTS description
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
 
-case class LTS(private val locations: IndexedSeq[Location], private val transitions: Seq[Transition], private val env: Environment) extends Target[LTS] {
+case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transition],  val env: Environment, val regions: Seq[Region] = Seq()) extends Target[LTS] {
 
   // fill locations with their numerical index.. this is used to speed up execution
   locations.zipWithIndex.foreach { case (loc, index) => loc.id = index }
@@ -100,6 +101,7 @@ case class LTS(private val locations: IndexedSeq[Location], private val transiti
     locations.foreach { loc => ann(loc) = current(loc.id) }
     return ann
   }
-
-  override def toString = locations.mkString("\n") + "\n" + (transitions map {_.mkString(env.variables)}).mkString("\n")
+  
+  override def toString = locations.mkString("\n") + "\n" + (transitions map {_.mkString(env.variables)}).mkString("\n") + "\n" +
+		  (regions map  { _.mkString(env.variables) }).mkString("\n")
 }
