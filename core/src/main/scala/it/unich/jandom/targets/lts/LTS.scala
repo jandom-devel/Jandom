@@ -19,8 +19,11 @@
 package it.unich.jandom.targets.lts
 
 import it.unich.jandom.domains.numerical.NumericalDomain
-import it.unich.jandom.targets.{Environment, Target}
+import it.unich.jandom.targets.{ Environment, Target }
 import it.unich.jandom.targets.Annotation
+import it.unich.jandom.domains.CartesianFiberedProperty
+import it.unich.jandom.domains.DimensionFiberedDomain
+import it.unich.jandom.domains.DimensionFiberedProperty
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -32,7 +35,7 @@ import it.unich.jandom.targets.Annotation
  *
  */
 
-case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transition],  val env: Environment, val regions: Seq[Region] = Seq()) extends Target[LTS] {
+case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transition], val env: Environment, val regions: Seq[Region] = Seq()) extends Target[LTS] {
 
   // fill locations with their numerical index.. this is used to speed up execution
   locations.zipWithIndex.foreach { case (loc, index) => loc.id = index }
@@ -64,7 +67,7 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
 
   override def getAnnotation[Property] = new LTSAnnotation[Property]
 
-  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
+  def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     // build widening and narrowing for each program point
     val widenings = locations map params.wideningFactory
     val narrowings = locations map params.narrowingFactory
@@ -101,7 +104,11 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
     locations.foreach { loc => ann(loc) = current(loc.id) }
     return ann
   }
-  
-  override def toString = locations.mkString("\n") + "\n" + (transitions map {_.mkString(env.variables)}).mkString("\n") + "\n" +
-		  (regions map  { _.mkString(env.variables) }).mkString("\n")
+
+  def mkString[U <: DimensionFiberedProperty[U]](ann: Annotation[ProgramPoint, U]): String = {    
+    (for ( (loc,prop) <- ann ) yield loc.name + " => "+ prop.mkString(env.variables)).mkString(", ")
+  }
+
+  override def toString = locations.mkString("\n") + "\n" + (transitions map { _.mkString(env.variables) }).mkString("\n") + "\n" +
+    (regions map { _.mkString(env.variables) }).mkString("\n")
 }
