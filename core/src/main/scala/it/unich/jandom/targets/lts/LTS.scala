@@ -62,6 +62,7 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
       buffer(key.id) = None
       return this
     }
+
     override def empty = new LTSAnnotation[Property]
   }
 
@@ -74,32 +75,38 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
 
     // build an empty property.. it is used several times, so we speed execution
     val empty = params.domain.bottom(env.size)
+    val initRegion = regions find { _.name == "init" }
 
-    var current = locations map { _ => empty }
-    var next = locations map { loc =>
-      (params.domain.top(env.size) /: loc.conditions) {
-        (prop, cond) => cond.analyze(prop)
+    // this are the initial non empty states of the LTS
+    val initial = initRegion match {
+      case Some(Region(_, Some(initloc), initcond)) =>
+        locations map { loc => if (loc == initloc) initcond.analyze(params.domain.top(env.size)) else empty }
+      case _ =>
+        locations map { loc => (params.domain.top(env.size) /: loc.conditions) {
+          (prop, cond) => cond.analyze(prop)
+        } }
       }
-    }
 
-    while (current != next) {
+    var next = initial
+    var current = initial
+
+    do {
       current = next
       next = for (loc <- locations) yield {
         val propnew = for (t <- loc.incomings) yield t.analyze(current(t.start.id))
         val unionednew = propnew.fold(empty)(_ union _)
         widenings(loc.id)(current(loc.id), unionednew)
       }
-    }
+    } while (current != next)
 
-    current = null
-    while (current != next) {
+    do {
       current = next
       next = for (loc <- locations) yield {
         val propnew = for (t <- loc.incomings) yield t.analyze(current(t.start.id))
-        val unionednew = propnew.fold(empty)(_ union _)
+        val unionednew = (propnew.fold(empty)(_ union _)) union initial(loc.id)
         narrowings(loc.id)(current(loc.id), unionednew)
       }
-    }
+    } while (current != next)
     val ann = getAnnotation[params.Property]
     locations.foreach { loc => ann(loc) = current(loc.id) }
     return ann
