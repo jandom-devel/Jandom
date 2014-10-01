@@ -29,31 +29,32 @@ import it.unich.jandom.targets.NumericCondition
  */
 case class Location(val name: String, val conditions: Seq[NumericCondition]) {
   /**
-   * The set of incoming transitions.  Used internally by the analyzer
+   * The set of incoming transitions. Used internally by the analyzer.
    */
-  private[this] var inc: List[Transition] = Nil
+  private[lts] var incoming = Seq[Transition]()
+  
+  /**
+   * The set of outgoing transitions. Used internally by the analyzer.
+   */
+  private[lts] var outgoing = Seq[Transition]()
 
   /**
    * A numeric id for the location. Used internally by the analyzer. The value
    * -1 means it has never been assigned a valid id.
    */
   private[lts] var id: Int = -1
-
+  
   /**
-   * Returns the incoming transitions. Used internally by the analyzer
-   * @return the incoming transitions
+   * The position of this location in the depth-first order. The value -1
+   * means that the dfo has not been computed yet.
    */
-  private[lts] def incomings = inc
-
+  private[lts] var dfo: Int = -1
+  
   /**
-   * Add a transition to the set of incoming transitions.  Used internally by the analyzer
-   * @param t the transition to add
-   * @return the transition t
+   * Used internally by several visit algorithms. 
    */
-  private[lts] def +=(t: Transition): Transition = {
-    inc = t :: inc
-    t
-  }
+  private[lts] var visited: Boolean = false
+  
 
   def mkString(vars: Seq[String]) =
     "location " + name + " with (\n" +
@@ -61,5 +62,4 @@ case class Location(val name: String, val conditions: Seq[NumericCondition]) {
       ");"
 
   override def toString = mkString(Stream.from(0).map { "v" + _ })
-
 }

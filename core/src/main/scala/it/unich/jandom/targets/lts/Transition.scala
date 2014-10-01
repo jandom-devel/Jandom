@@ -34,7 +34,8 @@ import it.unich.jandom.targets.NumericAssignmentMultiple
  * @author Gianluca Amato <gamato@unich.it>
  */
 case class Transition(val name: String, val start: Location, val end: Location, val guard: Seq[NumericCondition], val assignments: NumericAssignmentMultiple) {
-  end += this
+  end.incoming +:= this
+  start.outgoing +:= this
 
   def mkString(vars: Seq[String]) = {
     "transition " + name + " " + start.name + " -> " + end.name + " with Guard( " +
