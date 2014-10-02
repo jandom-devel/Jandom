@@ -73,12 +73,27 @@ abstract class Parameters[Tgt <: Target[Tgt]]  {
    * by the SLSL target.
    */
   var wideningScope = WideningScope.Output
-
+  
+  /**
+   * This parameter determines where to put widenings.
+   */
+  var wideningLocation = WideningNarrowingLocation.Loop
+  
+  /**
+   * This parameter determines where to put narrowings.
+   */
+  var narrowingLocation = WideningNarrowingLocation.Loop
+  
   /**
    * This parameter determine the interlacing strategy between narrowing and widening
    */
   var narrowingStrategy = NarrowingStrategy.Restart
 
+  /**
+   * This parameter specify the strategy used to compute data-flow equations.
+   */
+  var iterationStrategy = IterationStrategy.Worklist
+  
   /**
    * If it is true, computes an io semantic
    */

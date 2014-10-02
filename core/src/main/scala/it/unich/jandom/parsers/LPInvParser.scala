@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  * 
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -20,32 +20,27 @@ package it.unich.jandom.parsers
 
 import scala.collection.mutable.HashMap
 import scala.util.parsing.combinator.JavaTokenParsers
-
 import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.LinearAssignment
-import it.unich.jandom.targets.linearcondition.AtomicCond
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.targets.lts.Location
 import it.unich.jandom.targets.lts.Transition
+import it.unich.jandom.targets.NumericAssignment
+import it.unich.jandom.targets.NumericAssignmentMultiple
 
 /**
   * Parser for transition systems as they appear in the [[http://www.cs.colorado.edu/~srirams/Software/lpinv.html LPInv]]
   * invariant generator by Sriram Sankaranarayanan. It generates an LTS (Linear Transition System) target.
   * It actually parser a super-set of the LPInv transitions systems, since it possible to specify complex
-  * conditions with &&, || and ! in the locations.
+  * conditions with &&, || and ! in the locations, and non-linear expressions.
   * @author Gianluca Amato <gamato@unich.it>
   */
-class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
+class LPInvParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
   private val location_env = new HashMap[String, Location]
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
 
   val variable: Parser[Int] =
     ident ^^ { env(_) }
-
-  override val comparison: Parser[AtomicCond.ComparisonOperators.Value] =
-    "=" ^^ { _ => AtomicCond.ComparisonOperators.EQ } |
-      super.comparison
 
   private val var_declaration: Parser[Any] =
     ident ^^ { case v => env.addBinding(v) }
@@ -59,7 +54,7 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpr
 
   private val location: Parser[Location] =
     (literal("location") ~> ident <~ literal("with") <~ "(") ~
-      rep(condition) <~
+      rep(numcondition) <~
       ")" <~ ";" ^^ {
         case name ~ condition => {
           val loc = Location(name, condition)
@@ -68,14 +63,14 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpr
         }
       }
 
-  private val assignment: Parser[LinearAssignment[Int]] =
-    (ident <~ ":=") ~ linexpr ^^ {
-      case v ~ lf => LinearAssignment(env.getBindingOrAdd(v), lf)
+  private val assignment: Parser[NumericAssignment] =
+    (ident <~ ":=") ~ numexpr ^^ {
+      case v ~ e => NumericAssignment(env.getBindingOrAdd(v), e)
     }
 
   private val transition: Parser[Transition] =
     (literal("transition") ~> ident) ~ (ident <~ "->") ~ (ident <~ literal("with") <~ literal("Guard")) ~
-      ("(" ~> rep(condition) <~ ")") ~
+      ("(" ~> rep(numcondition) <~ ")") ~
       rep(assignment) <~ ";" ^^ {
         case name ~ lstart ~ lend ~ guards ~ assignments => {
           Transition(name, location_env(lstart), location_env(lend), guards, assignments)
@@ -88,14 +83,14 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with LinearExpr
     }
 
   /**
-    * The parse function
+    * The parse function.
     * @param s the string containing the linear transition system
     * @return a ParseResult with the transition system parsed in the target LTS
     */
   def parseProgram(s: String) = parseAll(prog, s)
 }
 
-/** Factory for [[it.unich.jandom.LPInvParser]] instances. */
+/** Factory for [[it.unich.jandom.parsers.LPInvParser]] instances. */
 object LPInvParser {
   /** 
    * Create a parser for LPInv transition systems with a given environment.

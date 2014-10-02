@@ -17,8 +17,6 @@
 
 package it.unich.jandom.targets.jvmsoot
 
-import it.unich.jandom.targets.linearcondition.AtomicCond
-
 import soot._
 import soot.baf._
 import soot.jimple._

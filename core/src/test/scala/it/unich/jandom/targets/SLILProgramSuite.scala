@@ -24,7 +24,7 @@ import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.parsers.RandomParser
 
-import linearcondition.AtomicCond
+import NumericCondition._
 import slil._
 
 /**
@@ -40,7 +40,7 @@ class SLILProgramSuite extends FunSuite {
     val program = SLILProgram(env, Seq(1),
       CompoundStmt(
         AssignStmt(0, 0),
-        WhileStmt(AtomicCond(LinearForm(-10, 1), AtomicCond.ComparisonOperators.LT),
+        WhileStmt(AtomicCond(LinearForm(-10, 1), ComparisonOperators.LT),
           AssignStmt(0, LinearForm(1, 1)))))
     val params = new Parameters[SLILTarget] { val domain = BoxDouble }
     val ann = program.analyze(params)
@@ -84,7 +84,7 @@ class SLILProgramSuite extends FunSuite {
      val stmt: SLILTarget =
       CompoundStmt(
         AssignStmt(0, 0),
-        WhileStmt(AtomicCond(LinearForm(-10, 1), AtomicCond.ComparisonOperators.LT),
+        WhileStmt(AtomicCond(LinearForm(-10, 1), ComparisonOperators.LT),
           AssignStmt(0, LinearForm(1, 1))))
      val params = new Parameters[SLILTarget] { val domain = BoxDouble }
      val ann = stmt.analyze(params)

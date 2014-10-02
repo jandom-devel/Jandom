@@ -20,7 +20,7 @@ package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.targets.Annotation
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
 
 /**
  * The class for a while statement. Each while statement has a corresponding program
@@ -28,7 +28,7 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * @param condition the guard of the statement
  * @param body the body of the statement
  */
-case class WhileStmt(condition: LinearCond, body: SLILStmt) extends SLILStmt {
+case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILStmt {
   import AnalysisPhase._
 
   /**

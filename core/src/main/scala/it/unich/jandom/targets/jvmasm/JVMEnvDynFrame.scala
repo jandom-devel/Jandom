@@ -17,10 +17,11 @@
  */
 
 package it.unich.jandom.targets.jvmasm
+
 import scala.collection.mutable.ArrayStack
 
 import it.unich.jandom.narrowings.Narrowing
-import it.unich.jandom.targets.linearcondition.AtomicCond
+import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.widenings.Widening
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.domains.numerical.NumericalDomain
@@ -109,8 +110,8 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
     property = property.constantAdd(vn, 1)
   }
 
-  def if_icmp(op: AtomicCond.ComparisonOperators.Value) {
-    import AtomicCond.ComparisonOperators._
+  def if_icmp(op: ComparisonOperators.Value) {
+    import ComparisonOperators._
     val vm = stack.pop
     val vn = stack.pop
     val lfm = LinearForm.v[Int](vm)

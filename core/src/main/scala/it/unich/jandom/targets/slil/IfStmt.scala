@@ -20,7 +20,7 @@ package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.targets.Annotation
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
 
 /**
  * The class for an if/then/else statement
@@ -29,7 +29,7 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * @param else the statement to execute when the guard is false
  */
 
-case class IfStmt(condition: LinearCond, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
+case class IfStmt(condition: NumericCondition, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
   import AnalysisPhase._
 
   override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {

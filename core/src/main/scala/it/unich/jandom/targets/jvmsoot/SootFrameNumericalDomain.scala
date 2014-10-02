@@ -23,8 +23,8 @@ import scala.annotation.elidable._
 
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.numerical.LinearForm
-import it.unich.jandom.targets.linearcondition.AtomicCond
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
+import it.unich.jandom.targets.NumericCondition._
 
 import soot._
 import soot.baf.WordType
@@ -239,27 +239,26 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      * A generic test operation which depends on a comparison operator.
      * @param op the comparison operator to use
      */
-    private def testComp(op: AtomicCond.ComparisonOperators.Value) = {
-      import AtomicCond.ComparisonOperators._
+    private def testComp(op: ComparisonOperators.Value) = {
       val lf = LinearForm(0, dimension - 2 -> 1, dimension - 1 -> -1)
       val tbranch = Property(AtomicCond(lf, op).analyze(prop).delVariable().delVariable(), stack.tail.tail)
-      val fbranch = Property(AtomicCond(lf, AtomicCond.ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), stack.tail.tail)
+      val fbranch = Property(AtomicCond(lf, ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), stack.tail.tail)
       (tbranch, fbranch)
     }
 
-    def testGt = testComp(AtomicCond.ComparisonOperators.GT)
+    def testGt = testComp(ComparisonOperators.GT)
 
-    def testGe = testComp(AtomicCond.ComparisonOperators.GTE)
+    def testGe = testComp(ComparisonOperators.GTE)
 
-    def testLe = testComp(AtomicCond.ComparisonOperators.LTE)
+    def testLe = testComp(ComparisonOperators.LTE)
 
-    def testLt = testComp(AtomicCond.ComparisonOperators.LT)
+    def testLt = testComp(ComparisonOperators.LT)
 
-    def testEq = testComp(AtomicCond.ComparisonOperators.EQ)
+    def testEq = testComp(ComparisonOperators.EQ)
 
-    def testNe = testComp(AtomicCond.ComparisonOperators.NEQ)
+    def testNe = testComp(ComparisonOperators.NEQ)
 
-    def testLinearCondition(lc: LinearCond) = (
+    def testLinearCondition(lc: NumericCondition) = (
       Property(lc.analyze(prop), stack), Property(lc.opposite.analyze(prop), stack))
 
     def evalSwap(i: Int, j: Int): Property = {

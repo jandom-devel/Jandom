@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -20,24 +20,26 @@ package it.unich.jandom.parsers
 import scala.util.parsing.combinator.JavaTokenParsers
 
 import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.linearcondition.BRandomCond
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
+import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.slil._
 
 
 /**
  * Parser for Random programs.
- * @param env the environment for the parser
+ * @param env the environment for the parser.
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExpressionParser with LinearConditionParser {
+class RandomParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
 
   override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
 
   override def stringLiteral = "\"[^\"]*\"".r // allow CR in string literals
     
   override val ident = not(literal("function")) ~> """[a-zA-Z._][\w.]*""".r  // allow . in identifiers
+  
+  override val divExpr = "/" | "%/%"
   
   private val funCall = ident ~ "(" ~ repsep(expr,",") ~ ")" ^^ { _.toString }
   
@@ -46,7 +48,7 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
   private val variableFollow = not("""[\[(]""".r) // follow a valid variable
   
   val variable: Parser[Int] = ident <~ variableFollow  ^^ { env.getBindingOrAdd(_) }
-
+  
   private val atom =
     ( wholeNumber | 
       funCall |
@@ -68,8 +70,8 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
     	"brandom" |
         expr ~ comparison ~ expr ) ^^ { _.toString }
   
-  private val general_condition: Parser[LinearCond] =
-    condition |
+  private val general_condition: Parser[NumericCondition] =
+    numcondition |
     (general_atomic_condition |
         general_atomic_condition ~ "&&" ~ general_condition |
         general_atomic_condition ~ "||" ~ general_condition |
@@ -79,7 +81,7 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
   private val stmt: Parser[SLILStmt] =
     "tag" ~> "(" ~> wholeNumber <~ ")" <~ opt(";") ^^ { case s => TagStmt(s.toInt) } |
       ".tracetag" ~ "(" ~ wholeNumber ~ ")" <~ opt(";") ^^ { _ => NopStmt } |
-      "assume" ~> "(" ~> condition <~ ")" <~ opt(";") ^^ { AssumeStmt(_) } |
+      "assume" ~> "(" ~> numcondition <~ ")" <~ opt(";") ^^ { AssumeStmt(_) } |
       ("if" ~> "(" ~> general_condition <~ ")") ~ compoundStmt ~ opt("else" ~> compoundStmt)  ^^ {
         case c ~ s1 ~ Some(s2) => IfStmt(c, s1, s2)
         case c ~ s1 ~ None => IfStmt(c, s1, NopStmt)
@@ -89,10 +91,9 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
       } |
       ("return" ~ "(" ~ expr ~ ")") ^^ { _ => NopStmt } |
       "{" ~> rep(stmt) <~ "}" ^^ { CompoundStmt(_: _*) } |
-      ident ~ ("=" | "<-") ~ linexpr <~ opt(";") ^^ { case v ~ _ ~ lf => AssignStmt(env.getBindingOrAdd(v), lf) } | 
-      ident <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { case v => NondetStmt(env.getBindingOrAdd(v)) }  |   
-       expr <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { _ => NopStmt }      
-  
+      ident ~ ("=" | "<-") ~ numexpr <~ opt(";") ^^ { case v ~ _ ~ e => AssignStmt(env.getBindingOrAdd(v), e) } | 
+      expr <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { _ => NopStmt }      
+
   /**
    * This is used to parse a statement but force it to be returned as a
    * compound statement. 
@@ -120,14 +121,16 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with LinearExp
     opt("if" ~ "(" ~ "FALSE" ~ ")" ~ stringLiteral) ~> prog <~ skip
 
   /**
-   * The parse function
+   * The parse function.
    * @param s the string containing the Random Program
    * @return a ParseResult with the program parsed in the target SLILProgram
    */
   def parseProgram(s: String) = parseAll(progWithCases, s)
 }
 
-/** Factory for [[it.unich.jandom.RandomParser]] instances. */
+/** 
+ * Companion object for [[it.unich.jandom.parsers.RandomParser]].
+  */
 object RandomParser {
   /**
    * Create a parser for Random programs with a given environment.
@@ -135,3 +138,4 @@ object RandomParser {
    */
   def apply(env: Environment = new Environment()) = new RandomParser(env)
 }
+

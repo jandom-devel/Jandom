@@ -19,15 +19,13 @@
 package it.unich.jandom.parsers
 
 import org.scalatest.FunSuite
-
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.LinearAssignment
-import it.unich.jandom.targets.linearcondition.AtomicCond
-import it.unich.jandom.targets.linearcondition.FalseCond
+import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.targets.lts.Location
 import it.unich.jandom.targets.lts.Transition
+import it.unich.jandom.targets.NumericAssignment
 
 /**
   * Test suite for RandomParser.
@@ -41,10 +39,10 @@ class LPInvParserSuite extends FunSuite {
     val l2 = Location("ciclo", List(FalseCond))
     val t1 = Transition("init", l1, l2,
       guard = Nil,
-      assignments = List(LinearAssignment(0, LinearForm(0))))
+      assignments = NumericAssignment(0, LinearForm(0)))
     val t2 = Transition("loop", l2, l2,
-      guard = List(AtomicCond(LinearForm(-10, 1), AtomicCond.ComparisonOperators.LTE)),
-      assignments = List(LinearAssignment(0, LinearForm(1, 1))))
+      guard = List(AtomicCond(LinearForm(-10, 1), ComparisonOperators.LTE)),
+      assignments = NumericAssignment(0, LinearForm(1, 1)))
     val lts = LTS(IndexedSeq(l1, l2), Seq(t1, t2), env)
 
     val ltsString = """

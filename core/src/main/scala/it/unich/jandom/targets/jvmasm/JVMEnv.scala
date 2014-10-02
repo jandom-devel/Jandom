@@ -19,10 +19,10 @@
 package it.unich.jandom.targets.jvmasm
 
 import it.unich.jandom.domains.AbstractDomain
-import it.unich.jandom.targets.linearcondition.AtomicCond
 import it.unich.jandom.narrowings.Narrowing
 import it.unich.jandom.widenings.Widening
 import it.unich.jandom.domains.AbstractProperty
+import it.unich.jandom.targets.NumericCondition._
 
 /**
  * This is the base class for abstractions of the JVM environment. It uses F-bounded polymorhpism to
@@ -54,7 +54,7 @@ abstract class JVMEnv[Property <: JVMEnv[Property]] extends AbstractProperty[Pro
 
   def iinc(v: Int, c: Int)
 
-  def if_icmp(op: AtomicCond.ComparisonOperators.Value)
+  def if_icmp(op: ComparisonOperators.Value)
 
 }
 

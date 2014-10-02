@@ -1,6 +1,6 @@
 /**
- * Copyright 2013 Gianluca Amato
- * 
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,10 @@
 package it.unich.jandom.targets.lts
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.LinearAssignment
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericAssignment
+import it.unich.jandom.targets.NumericCondition
+import it.unich.jandom.targets.NumericAssignment
+import it.unich.jandom.targets.NumericAssignmentMultiple
 
 /**
  * The class for transitions.
@@ -31,15 +33,20 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * @param assignments the assignments to apply when the transition is selected
  * @author Gianluca Amato <gamato@unich.it>
  */
-case class Transition (val name: String, val start: Location, val end: Location, val guard: Seq[LinearCond], val assignments: Seq[LinearAssignment[_]]) {
-  end += this
-  
-  override def toString = "transition "+name+" "+start.name+" -> "+end.name + " with Guard( " + 
-	guard.mkString(", ") + " )\n" +
-	assignments.mkString(start="  ", sep="\n  ", end="")+";"
+case class Transition(val name: String, val start: Location, val end: Location, val guard: Seq[NumericCondition], val assignments: NumericAssignmentMultiple) {
+  end.incoming +:= this
+  start.outgoing +:= this
 
-  def analyze[Property <: NumericalProperty[Property]] (input: Property): Property = {
+  def mkString(vars: Seq[String]) = {
+    "transition " + name + " " + start.name + " -> " + end.name + " with Guard( " +
+      (guard map { _.mkString(vars) }).mkString(", ") + " )\n" +	
+      assignments.mkString(vars).mkString(start = "  ", sep = "\n  ", end = "") + ";"
+  }
+
+  override def toString = mkString(Stream.from(0).map { "v" + _ })
+
+  def analyze[Property <: NumericalProperty[Property]](input: Property): Property = {
     val filtered = (input /: guard) { (current, cond) => cond.analyze(current) }
-	(filtered /: assignments)  { (current, assgn) => assgn.analyze(current) }
-  }     
+    assignments.analyze(filtered)
+  }
 }

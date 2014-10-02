@@ -46,6 +46,16 @@ trait LinearForm[T] {
   def homcoeffs: Seq[T]
 
   /**
+   * Returns true when the linear form is constant
+   */
+  def isConstant: Boolean
+  
+  /**
+   * Returns thether the linear form is the zero constant
+   */
+  def isZero: Boolean
+
+  /**
    * Returns the number of dimensions of the linear form
    */
   def dimension: Int

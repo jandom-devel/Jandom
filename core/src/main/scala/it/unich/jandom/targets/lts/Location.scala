@@ -1,6 +1,6 @@
 /**
- * Copyright 2013 Gianluca Amato
- * 
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets.lts
 
-import it.unich.jandom.targets.linearcondition.LinearCond
+import it.unich.jandom.targets.NumericCondition
 
 /**
  * A class for locations (i.e. nodes in a linear transition system)
@@ -27,36 +27,39 @@ import it.unich.jandom.targets.linearcondition.LinearCond
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-case class Location (val name: String, val conditions: Seq[LinearCond])  {
+case class Location(val name: String, val conditions: Seq[NumericCondition]) {
   /**
-   * The set of incoming transitions.  Used internally by the analyzer
+   * The set of incoming transitions. Used internally by the analyzer.
    */
-  private[this] var inc: List[Transition] = Nil
-      
-  /** 
+  private[lts] var incoming = Seq[Transition]()
+  
+  /**
+   * The set of outgoing transitions. Used internally by the analyzer.
+   */
+  private[lts] var outgoing = Seq[Transition]()
+
+  /**
    * A numeric id for the location. Used internally by the analyzer. The value
    * -1 means it has never been assigned a valid id.
    */
   private[lts] var id: Int = -1
   
   /**
-   * Returns the incoming transitions. Used internally by the analyzer
-   * @return the incoming transitions
+   * The position of this location in the depth-first order. The value -1
+   * means that the dfo has not been computed yet.
    */
-  private[lts] def incomings = inc
-
+  private[lts] var dfo: Int = -1
+  
   /**
-   * Add a transition to the set of incoming transitions.  Used internally by the analyzer
-   * @param t the transition to add
-   * @return the transition t
+   * Used internally by several visit algorithms. 
    */
-  private [lts] def += (t: Transition): Transition = {
-    inc = t :: inc
-    t
-  }
+  private[lts] var visited: Boolean = false
+  
 
-  override def toString =
+  def mkString(vars: Seq[String]) =
     "location " + name + " with (\n" +
-      conditions.mkString(start = "  ", sep = "\n  ", end = "\n") +
+      (conditions map { _.mkString(vars) }).mkString(start = "  ", sep = "\n  ", end = "\n") +
       ");"
+
+  override def toString = mkString(Stream.from(0).map { "v" + _ })
 }

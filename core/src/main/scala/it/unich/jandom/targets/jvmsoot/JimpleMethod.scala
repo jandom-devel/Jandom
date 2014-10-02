@@ -20,7 +20,7 @@ package it.unich.jandom.targets.jvmsoot
 
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets._
-import it.unich.jandom.targets.linearcondition._
+import it.unich.jandom.targets.NumericCondition._
 
 import soot._
 import soot.jimple._
@@ -75,8 +75,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
      * @param v the Value to convert.
      * @return the corresponding linear condition, or `None` if `v` is not a linear condition.
      */
-    def jimpleExprToLinearCond(v: Value): Option[LinearCond] = {
-      import AtomicCond.ComparisonOperators
+    def jimpleExprToLinearCond(v: Value): Option[NumericCondition] = {
       val newcond = v match {
         case v: ConditionExpr =>
           val res1 = jimpleExprToLinearForm(v.getOp1())
@@ -85,11 +84,11 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
             res2 flatMap { res2 =>
               val lf = LinearForm(res1: _*) - LinearForm(res2: _*)
               v match {
-                case _: GtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GT))
-                case _: GeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.GTE))
-                case _: LtExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.LT))
-                case _: LeExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.LTE))
-                case _: EqExpr => Some(AtomicCond(lf, AtomicCond.ComparisonOperators.EQ))
+                case _: GtExpr => Some(AtomicCond(lf, ComparisonOperators.GT))
+                case _: GeExpr => Some(AtomicCond(lf, ComparisonOperators.GTE))
+                case _: LtExpr => Some(AtomicCond(lf, ComparisonOperators.LT))
+                case _: LeExpr => Some(AtomicCond(lf, ComparisonOperators.LTE))
+                case _: EqExpr => Some(AtomicCond(lf, ComparisonOperators.EQ))
                 case _ => None
               }
             }

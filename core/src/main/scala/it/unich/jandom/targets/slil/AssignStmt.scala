@@ -21,8 +21,8 @@ package it.unich.jandom.targets.slil
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.Annotation
-
 import AnalysisPhase.AnalysisPhase
+import it.unich.jandom.targets.NumericExpression
 
 /**
  * The class for the assignment statement "variable := linearForm".
@@ -31,15 +31,12 @@ import AnalysisPhase.AnalysisPhase
  * @param linearForm the linear form of the assignment
  * @param numeric the implicit Numeric[T] object
  */
-case class AssignStmt[T](variable: Int, linearForm: LinearForm[T])(implicit numeric: Numeric[T]) extends SLILStmt {
-  import numeric._
-  import AnalysisPhase._
+case class AssignStmt[T](variable: Int, expr: NumericExpression) extends SLILStmt {
+  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property =
+    expr.assignTo(variable)(input)
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property =
-    input.linearAssignment(variable, linearForm.toDouble)
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], level: Int, ppspec: PrettyPrinterSpec) =
+    ppspec.indent(level) + ppspec.env(variable) + " = " + expr.mkString(ppspec.env.names) + '\n'
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec) =
-    ppspec.indent(level) + ppspec.env(variable) + " = " + linearForm.mkString(ppspec.env.names) + '\n'
-
-  val numvars = linearForm.dimension
+  val numvars = expr.dimension
 }
