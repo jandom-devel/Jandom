@@ -24,7 +24,8 @@ import it.unich.jandom.targets.Annotation
 import it.unich.jandom.domains.CartesianFiberedProperty
 import it.unich.jandom.domains.DimensionFiberedDomain
 import it.unich.jandom.domains.DimensionFiberedProperty
-import it.unich.jandom.targets.WideningLocation
+import it.unich.jandom.targets.IterationStrategy
+import it.unich.jandom.targets.WideningNarrowingLocation
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -102,13 +103,15 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     // build widening and narrowing for each program point
     val widenings = locations map { l =>
-      if (params.wideningLocation == WideningLocation.All || isJoinNode(l))
+      if (params.wideningLocation == WideningNarrowingLocation.All ||
+        (params.wideningLocation == WideningNarrowingLocation.Loop && isJoinNode(l)))
         Some(params.wideningFactory(l))
       else
         None
     }
     val narrowings = locations map { l =>
-      if (params.wideningLocation == WideningLocation.All || isJoinNode(l))
+      if (params.narrowingLocation == WideningNarrowingLocation.All ||
+        (params.narrowingLocation == WideningNarrowingLocation.Loop && isJoinNode(l)))
         Some(params.narrowingFactory(l))
       else
         None
@@ -129,30 +132,72 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
           }
         }
     }
+    val ann = getAnnotation[params.Property]
 
-    var next = initial
-    var current = initial
+    if (params.iterationStrategy == IterationStrategy.Kleene) {
+      var next = initial
+      var current = initial
 
-    do {
-      current = next
-      next = for ((loc, w) <- locations zip widenings) yield {
+      do {
+        current = next
+        next = for ((loc, w) <- locations zip widenings) yield {
+          val propnew = for (t <- loc.incoming) yield t.analyze(current(t.start.id))
+          val unionednew = propnew.fold(empty)(_ union _)
+          if (w.isEmpty) unionednew else w.get(current(loc.id), unionednew)
+        }
+      } while (current != next)
+
+      do {
+        current = next
+        next = for ((loc, n) <- locations zip narrowings) yield {
+          val propnew = for (t <- loc.incoming) yield t.analyze(current(t.start.id))
+          val unionednew = (propnew.fold(empty)(_ union _)) union initial(loc.id)
+          if (n.isEmpty) unionednew else n.get(current(loc.id), unionednew)
+        }
+      } while (current != next)
+      locations.foreach { loc => ann(loc) = current(loc.id) }
+
+    } else {
+      val current = initial.toBuffer
+      val workList = collection.mutable.Queue[Int]()
+
+      params.log("Beginning ascending chain\n")
+      workList ++= 0 until numlocs
+      while (!workList.isEmpty) {
+        val locid = workList.dequeue()
+        val loc = locations(locid)
+        val w = widenings(locid)
         val propnew = for (t <- loc.incoming) yield t.analyze(current(t.start.id))
         val unionednew = propnew.fold(empty)(_ union _)
-        if (w.isEmpty) unionednew else w.get(current(loc.id), unionednew)
+        params.log(s"Node: ${loc.name} Oldvalue: ${current(loc.id).mkString(env.variables)} Newinput: ${unionednew.mkString(env.variables)}")
+        val newvalue = if (w.isEmpty) unionednew else w.get(current(locid), unionednew)
+        params.log(s" Newvalue: ${newvalue.mkString(env.variables)}\n")
+        if (newvalue > current(locid)) {
+          current(locid) = newvalue
+          for (t <- loc.outgoing) { if (!workList.contains(t.end.id)) workList.enqueue(t.end.id) }
+        }
       }
-    } while (current != next)
 
-    do {
-      current = next
-      next = for ((loc, n) <- locations zip narrowings) yield {
+      params.log("Beginning descending chain\n")
+
+      workList ++= 0 until numlocs
+      while (!workList.isEmpty) {
+        val locid = workList.dequeue()
+        val loc = locations(locid)
+        val n = narrowings(locid)
         val propnew = for (t <- loc.incoming) yield t.analyze(current(t.start.id))
-        val unionednew = (propnew.fold(empty)(_ union _)) union initial(loc.id)
-        if (n.isEmpty) unionednew else n.get(current(loc.id), unionednew)
+        val unionednew = propnew.fold(empty)(_ union _) union initial(locid)
+        params.log(s"Node: ${loc.name} Oldvalue: ${current(loc.id).mkString(env.variables)} Newinput: ${unionednew}.mkString(env.variables)}")
+        val newvalue = if (n.isEmpty) unionednew else n.get(current(locid), unionednew)
+        params.log(s"Newvalue: ${newvalue.mkString(env.variables)}\n")
+        if (newvalue < current(locid)) {
+          current(locid) = newvalue
+          for (t <- loc.outgoing) { if (!workList.contains(t.end.id)) workList.enqueue(t.end.id) }
+        }
       }
-    } while (current != next)
-    val ann = getAnnotation[params.Property]
-    locations.foreach { loc => ann(loc) = current(loc.id) }
-    return ann
+      locations.foreach { loc => ann(loc) = current(loc.id) }
+    }
+    ann
   }
 
   def mkString[U <: DimensionFiberedProperty[U]](ann: Annotation[ProgramPoint, U]): String = {
