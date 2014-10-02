@@ -90,6 +90,11 @@ abstract class Parameters[Tgt <: Target[Tgt]]  {
   var narrowingStrategy = NarrowingStrategy.Restart
 
   /**
+   * This parameter specify the strategy used to compute data-flow equations.
+   */
+  var iterationStrategy = IterationStrategy.Worklist
+  
+  /**
    * If it is true, computes an io semantic
    */
   var io = false
