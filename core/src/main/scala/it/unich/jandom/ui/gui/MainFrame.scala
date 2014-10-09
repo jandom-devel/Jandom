@@ -27,27 +27,41 @@ import javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE
 
 class MainFrame extends Frame {
 
+
   object Mode extends Enumeration {
     type Mode = Value
     val Random, Asm, Soot = Value
+    val default = Random
   }
 
   import Mode._
 
-  private var realMode: Mode = Mode.Random
+  private var realMode: Mode = Mode.default
+  private var currentEditorPane: TargetPane = modeToPane(realMode)
 
-  val jandomEditorPane = new JandomEditorPane(this)
-  val asmEditorPane = new ASMEditorPane(this)
-  val sootEditorPane = new SootEditorPane(this)
-  val outputPane = new OutputPane
-  val parametersPane = new ParametersPane
-  var currentEditorPane: TargetPane = jandomEditorPane
   val tabbedPane = new TabbedPane {
     pages += new TabbedPane.Page("Editor", currentEditorPane)
     pages += new TabbedPane.Page("Output", new ScrollPane(outputPane))
     pages += new TabbedPane.Page("Parameters", parametersPane)
   }
-  var buttonGroups: ButtonGroup = null
+
+  /**
+   * The panes which compose the GUI
+   */
+  lazy val jandomEditorPane = new JandomEditorPane(this)
+  lazy val asmEditorPane = new ASMEditorPane(this)
+  lazy val sootEditorPane = new SootEditorPane(this)
+  lazy val outputPane = new OutputPane
+  lazy val parametersPane = new ParametersPane
+
+  /**
+   * Map a mode to a corresponding editor pane
+   */
+  def modeToPane(m: Mode) = m match {
+    case Random => jandomEditorPane
+    case Soot => sootEditorPane
+    case Asm  => asmEditorPane
+  }
 
   /**
    * This is the Action to invoke when user wants to quit the application
@@ -98,12 +112,13 @@ class MainFrame extends Frame {
 
   val sootAction: Action = new Action("Soot") {
     toolTip = "Analysis of Java bytecode thorugh the Soot library"
-     def apply() {
+    def apply() {
       mode = Soot
     }
   }
 
   init()
+
 
   def init() {
     title = "Jandom"
@@ -116,7 +131,7 @@ class MainFrame extends Frame {
     setMenuBar()
     bounds = new Rectangle(100, 100, 800, 600)
     peer.setDefaultCloseOperation(DO_NOTHING_ON_CLOSE)
-
+    mode = Mode.Random
   }
 
   def setFileMenu() {
@@ -146,7 +161,7 @@ class MainFrame extends Frame {
     val sootMode = new RadioMenuItem("")
     sootMode.action = sootAction
 
-    buttonGroups = new ButtonGroup(randomMode, asmMode, sootMode)
+    val buttonGroups = new ButtonGroup(randomMode, asmMode, sootMode)
     menuBar = new MenuBar {
       contents += new Menu("File")
       contents += new Menu("Edit")
@@ -159,7 +174,12 @@ class MainFrame extends Frame {
         contents += new MenuItem(aboutAction)
       }
     }
-    sootMode.peer.doClick
+
+    buttonGroups.select(realMode match {
+      case Random => randomMode
+      case Asm => asmMode
+      case Soot => sootMode
+    })
   }
 
   /**
@@ -171,7 +191,7 @@ class MainFrame extends Frame {
 
   def mode = realMode
 
-  def mode_= (m: Mode) {
+  def mode_=(m: Mode) {
     realMode = m
     currentEditorPane = m match {
       case Asm => asmEditorPane
