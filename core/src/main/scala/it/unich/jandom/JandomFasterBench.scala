@@ -19,10 +19,8 @@
 package it.unich.jandom
 
 import java.io.{ File, FileReader }
-
 import scala.collection.immutable.PagedSeq
 import scala.util.parsing.input.PagedSeqReader
-
 import it.unich.jandom.domains.numerical.ppl.PPLDomain
 import it.unich.jandom.narrowings.DefaultNarrowing
 import it.unich.jandom.parsers.FastParser
@@ -31,36 +29,41 @@ import it.unich.jandom.targets.IterationStrategy
 import it.unich.jandom.targets.WideningNarrowingLocation
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.widenings.DefaultWidening
-
 import parma_polyhedra_library.Double_Box
+import it.unich.jandom.domains.numerical.BoxDoubleDomain
 
 /**
  * Example program using ''Jandom'' to analyze the Alice benchmarks and
- * compare the results with different parameters
+ * compare the results with different parameters. In this moment, it compares
+ * the result of the analyisis with standard Kleene iteration and worklist
+ * based ones.
  */
-object JandomFasterBench extends App {  
+object JandomFasterBench extends App {
 
   def fastModelAnalyze(model: File) = {
+    println(s"------>${model}")
+
     val fr = new FileReader(model)
     val source = new PagedSeqReader(PagedSeq.fromReader(fr))
     val parsed = FastParser().parse(source)
     fr.close()
     val program = parsed.get
-    val params = new targets.Parameters[LTS] { val domain = PPLDomain[Double_Box] }
+    val params = new targets.Parameters[LTS] { val domain = BoxDoubleDomain(false) }
 
     // We specify some parameters for the analysis, although these are the standard ones.
     params.wideningFactory = DefaultWidening
     params.narrowingFactory = DefaultNarrowing
     params.iterationStrategy = IterationStrategy.Worklist
-    //params.debugWriter = new java.io.PrintWriter(System.out)    
-
+    //params.debugWriter = new java.io.PrintWriter(System.out)
     program.analyze(params) // warmup JVM
 
     val t1 = System.currentTimeMillis
     val ann = program.analyze(params)
     val tann1 = System.currentTimeMillis - t1
-    params.narrowingLocation = WideningNarrowingLocation.None
-    params.iterationStrategy  = IterationStrategy.Kleene
+
+    // disable narrowing, if we want to check the improvements we obtain
+    // params.narrowingLocation = WideningNarrowingLocation.None
+    params.iterationStrategy = IterationStrategy.Kleene
     val t2 = System.currentTimeMillis
     val ann2 = program.analyze(params)
     val tann2 = System.currentTimeMillis - t2
@@ -79,10 +82,10 @@ object JandomFasterBench extends App {
   }
 
   val resources = getClass.getResource("/fast/").toURI;
- 
-  // This analyzes all models
-  // for (model <- new File(resources).listFiles()) fastModelAnalyze(model)
-  
+
+  // This analyzes all models (does not terminate for descending2 with
+  for (model <- new File(resources).listFiles()) fastModelAnalyze(model)
+
   // This is if we want to analyze a specificic model
-  fastModelAnalyze(new File(resources.resolve("descending.fst")))
+  // fastModelAnalyze(new File(resources.resolve("descending.fst")))
 }
