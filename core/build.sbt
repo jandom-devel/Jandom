@@ -17,7 +17,7 @@ libraryDependencies ++= Seq(
   "org.rogach" %% "scallop" % "0.9.5",
   "org.scala-lang.modules" %% "scala-swing" % "1.0.1",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",
-  "soot" % "soot" % "2.5.0+git1" from "http://vandyk.st.informatik.tu-darmstadt.de/abc/soot.jar"
+  "soot" % "soot" % "2.5.0+git1" from "https://ssebuild.cased.de/nightly/soot/lib/soot-trunk.jar"
 )
 
 unmanagedJars in Compile ++= (pplJar.value map file).toSeq
