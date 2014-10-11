@@ -1,5 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html>
 <!--- 
  * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  * Copyright 2014 Mattia Di Giuseppe
@@ -25,11 +25,11 @@
 <title>Jandom output</title>
 <script src="http://code.jquery.com/jquery-1.11.1.min.js" type="text/javascript"></script>
 <script type="text/javascript">
-function SortDesc(x,y) {
-  return y.colonna - x.colonna; 
+function SortNoteDesc(x,y) {
+  return y.col - x.col; 
 }
 
-function SortPallinoId(x,y) {
+function SortTooltipId(x,y) {
 	if (x[2] < y[2])
 		return -1;
 	else if (x[2] > y[2])
@@ -42,92 +42,84 @@ function escapeHTML(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function addSpan(riga,colonna,str_originale)
+function addSpan(row, col, str)
 {
-	var stringa_finale = "";
+	var finalString = "";
 
-	for (i=0; i<str_originale.length; i++)
+	for (i=0; i<str.length; i++)
 	{
-		var codId = "txt"+riga+"-"+colonna;
-		if (i == colonna)
+		var codId = "txt" + row + "-" +col;
+		if (i == col)
 		{
-			stringa_finale += "<span id = '"+codId+"'>"+escapeHTML(str_originale[i])+"</span>"
+			finalString += "<span id = '"+codId+"'>"+escapeHTML(str[i])+"</span>"
 		}
 		else
 		{
-			stringa_finale += str_originale[i];
+			finalString += escapeHTML(str[i]);
 		}
 	}
 	
-	if (str_originale.length <= colonna) {
-		stringa_finale += "<span id = '"+codId+"'> </span>"
+	if (str.length <= col) {
+		finalString += "<span id = '"+codId+"'> </span>"
 	}
-	return stringa_finale;
+	return finalString;
 }
 
-function stampaPallini(spanIds)
+function printTooltip(spanIds)
 {
-	//stampo i tooltip	
-	spanIds.sort(SortPallinoId);
+    spanIds.sort(SortTooltipId);
     for (var k in spanIds){
-    	var nota = spanIds[k][1]
     	var codId = $('#'+spanIds[k][0]);
     	var offset = codId.offset();
     	var left = offset.left-2;
     	var top = offset.top;
-    	var numNota = k;
-    	var inserimento = '<span class="palletta" style="position:absolute; left:'+left+'px; top:'+top+'px">'+numNota+'</span>';
-    	var note = '<div class="nota"><em>'+numNota+': '+nota+'</em></div>';
-    	$( "#posPallini" ).append(inserimento);
-    	$( "#note" ).append(note);			  
+    	var tip = '<span class="tip" style="position:absolute; left:'+left+'px; top:'+top+'px">' + k + '</span>';
+    	var note = '<div class="note">' + k + ': '+escapeHTML(spanIds[k][1]) + '</div>';
+    	$( "#tips" ).append(tip);
+    	$( "#notes" ).append(note);			  
    	}
 }
 
 function renderEditor()
 {
-	var cod_arr = new Array( %%PROG%% );	
-	var ident = [ %%ANN%% ];
+	var code = new Array( %%PROG%% );	
+	var notes = [ %%ANN%% ];
 	
-	ident.sort(SortDesc);	
+	notes.sort(SortNoteDesc);	
 	
 	var spanIds = new Array();
 	
-	for (var i in cod_arr)
+	for (var i in code)
 	{		
-		var str = cod_arr[i];
-		var str_final = str;
+		var str_final = escapeHTML(code[i]);
 
-		for (var j=0; j<ident.length; j++)
+		for (var j=0; j<notes.length; j++)
 		{
-			//recupero le info 
-			var colonna = ident[j].colonna;
-			var nota = ident[j].nota;
-			var riga = ident[j].riga;
+			// get info on the i-th note 
+			var col = notes[j].col;
+			var note = notes[j].note;
+			var row = notes[j].row;
 			
-			//corrispondenza tra funzione e nota
-			if (riga == i)
+			// check correspondence on the note and current row
+			if (row == i)
 			{					
-				str_final = addSpan(riga,colonna,str_final);				
-				var toArray = new Array("txt"+riga+"-"+colonna,nota,riga,colonna);
+				str_final = addSpan(row, col, code[i]);				
+				var toArray = new Array("txt"+row+"-"+col,note,row,col);
 				spanIds.push(toArray);				
 			}
 		}
-				
-		var stringa = "<div class='linea'>";
-		stringa += "<div class='out'>"+str_final+"</div>";
-		stringa +="</div>";			
-		
-		document.getElementById('testo').innerHTML  += stringa;
+
+		document.getElementById('code').innerHTML  += "<div class='row'>" + str_final + "</div>";
 	 }
 	
 	$( document ).ready(function() {
-		stampaPallini(spanIds);
+		printTooltip(spanIds);
 	});
 		
 	$( window ).resize(function() {
-		$( "#posPallini" ).html("");
-		$( "#note" ).html("");
-		stampaPallini(spanIds);
+		$( "#tips" ).html("");
+		$( "#notes" ).html("");
+		printTooltip(spanIds);
 	});
 }
 </script>
@@ -141,37 +133,21 @@ function renderEditor()
 	*behavior: url(boxsizing.htc);
 }
 
-/* CSS Document */
-body {
-	font-family: Verdana, Geneva, sans-serif;
-	text-align: center;
-}
-
-#testo {
+#code {
 	border-right: 1px solid;
-	text-align: left;
 	font-family: monospace;
-	white-space: pre;
+	white-space: pre;	
 }
 
-#note {
-	padding: 10px;
-	text-align: left;
+#notes {
+	width: 50%;
+	font-style: italic;
 }
 
-.riga {
-	
+.row {	
 }
 
-.linea {
-	
-}
-
-a {
-	text-decoration: none;
-}
-
-.palletta {
+.tip {
 	font-size: 8px;
 	border: 1px solid #999;
 	border-radius: 10px;
@@ -181,23 +157,14 @@ a {
 	text-align: center
 }
 
-.nota {
-	
+.note {
 }
 
-[class*='colonna-'] {
+.col {
 	float: left;
-	display: block;
+	width: 50%;
 	padding: 15px;
 	border-top: 1px solid;
-}
-
-.colonna-1-2 {
-	width: 50%;
-}
-
-[class*="colonna-"]+[class*="colonna-"]:last-child {
-	float: right;
 }
 </style>
 </head>
@@ -206,12 +173,9 @@ a {
 
 	<h3>Jandom Output</h3>
 
-	<div class="riga">
-		<div class="colonna-1-2" id="testo"></div>
-		<div class="colonna-1-2" id="note"></div>
-	</div>
-
-	<div id="posPallini"></div>
+	<div class="col" id="code"></div>
+	<div class="col" id="notes"></div>
+	<div id="tips"></div>
 
 </body>
 </html>

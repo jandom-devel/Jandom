@@ -19,6 +19,7 @@
 package it.unich.jandom.ui
 
 import java.io.File
+
 import scala.io.Source
 
 /**
@@ -32,7 +33,7 @@ object HTMLOutput {
 
   def apply(out: String, ann: Seq[(Int,Int,String)]): String = {
     val prog = out.split('\n').map { '"' + _ + '"' }
-    val jsonAnn = for ((row, col, s) <- ann) yield s"""{ colonna: ${col}, riga: ${row}, nota: "${s}" }"""
+    val jsonAnn = for ((row, col, s) <- ann) yield s"""{ row: ${row}, col: ${col}, note: "${s}" }"""
 
     html.replace("%%PROG%%", prog.mkString(",")).replace("%%ANN%%",jsonAnn.mkString(",\n"))
   }

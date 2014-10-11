@@ -36,6 +36,8 @@ import java.nio.file.Files
 import it.unich.jandom.ui.HTMLOutput
 
 class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane {
+  import scala.language.existentials
+
   val editorPane = new EditorPane
   contents = editorPane
 
@@ -241,7 +243,11 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     }
   }
 
-  def analyze = {
+  /**
+   * This method perform the actual analysis for analyze() and outputHTML(). It
+   * returns the relevant information with an existential type.
+   */
+  def performAnalysis() = {
     val parser = parsers.RandomParser()
     parser.parseProgram(editorPane.text) match {
       case parser.Success(program, _) =>
@@ -249,7 +255,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
         val params = new Parameters[SLILTarget] { val domain = numericalDomain }
         frame.parametersPane.setParameters(params)
         val ann = program.analyze(params)
-        Some(params.debugWriter.toString + program.mkString(ann))
+        Option((params, program, ann))
       case parser.NoSuccess(msg, next) =>
         Dialog.showMessage(JandomEditorPane.this, msg + " in line " + next.pos.line + " column " + next.pos.column,
           "Error in parsing source code", Dialog.Message.Error)
@@ -257,22 +263,21 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     }
   }
 
+  def analyze = {
+    for ((params, program, ann) <- performAnalysis()) yield params.debugWriter.toString + program.mkString(ann)
+  }
+
   def outputHTML() {
-    val parser = parsers.RandomParser()
-    parser.parseProgram(editorPane.text) match {
-      case parser.Success(program, _) =>
-        val numericalDomain = frame.parametersPane.selectedNumericalDomain
-        val params = new Parameters[SLILTarget] { val domain = numericalDomain }
-        frame.parametersPane.setParameters(params)
-        val ann = program.analyze(params)
-        val ppspec = SLILPrinterSpecOffline(program.env)
-        val out = program.mkString(ann, ppspec)
-        val HTMLout = HTMLOutput(out, ppspec.annotations)
-        Files.write(Paths.get("output.html"), HTMLout.getBytes(StandardCharsets.UTF_8))
-      case parser.NoSuccess(msg, next) =>
-        Dialog.showMessage(JandomEditorPane.this, msg + " in line " + next.pos.line + " column " + next.pos.column,
-          "Error in parsing source code", Dialog.Message.Error)
-        None
+    for ((params, program, ann) <- performAnalysis()) {
+      val chooser = new FileChooser()
+      chooser.selectedFile = new File("output.html")
+      if (chooser.showDialog(this, "Select output file") == FileChooser.Result.Approve) {
+        val file = chooser.selectedFile.getPath()
+        val pp = SLILPrinterSpecOffline(program.env)
+        val out = program.mkString(ann, pp)
+        val HTMLout = HTMLOutput(out, pp.annotations)
+        Files.write(Paths.get(file), HTMLout.getBytes(StandardCharsets.UTF_8))
+      }
     }
   }
 
