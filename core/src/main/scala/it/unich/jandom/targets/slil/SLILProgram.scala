@@ -34,11 +34,11 @@ import it.unich.jandom.targets.slil.AnalysisPhase._
  * @author Gianluca Amato <gamato@unich.it>
  */
 case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SLILStmt) extends SLILTarget {
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: PrettyPrinterSpec = new PrettyPrinterSpec(env)) = {
+  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: SLILPrinterSpec = SLILPrinterSpecInline(env)) = {
     val spaces = ppspec.indent(0)
     val innerspaces = ppspec.indent(1)
     spaces + "function (" + (inputVars map { v: Int => env(v) }).mkString(",") + ") {\n" +
-      stmt.mkString(ann, 1, ppspec)  +
+      stmt.mkString(ann, ppspec, 1, 1)  +
       spaces + "}\n"
   }
 

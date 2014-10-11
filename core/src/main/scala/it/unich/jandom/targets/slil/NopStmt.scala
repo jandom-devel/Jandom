@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ import it.unich.jandom.targets.Annotation
  * The class for the empty statement.
  */
 case object NopStmt extends SLILStmt {
-  override def mkString[U <: NumericalProperty[_]] (ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String =
+  override def mkString[U <: NumericalProperty[_]] (ann: Annotation[ProgramPoint,U], ppspec: SLILPrinterSpec, row: Int,  level: Int): String =
     ppspec.indent(level) + "<no-op>\n"
-    
+
   val numvars = 0
 }
