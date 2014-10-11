@@ -29,13 +29,14 @@ abstract class SLILStmt extends SLILTarget {
   import AnalysisPhase._
 
   /**
-   * A method to pretty print a SLILStmt with corresponding annotations
+   * A method to pretty print a SLILStmt with corresponding annotations.
    * @param ann the annotation to print together with the program
-   * @param level the current indentation level
    * @param ppspec the specification object for pretty printing
+   * @param row the current row
+   * @param level the current indentation level
    * @return the string representation of the program
    */
-  def mkString[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint,T], level: Int = 0, ppspec: PrettyPrinterSpec): String
+  def mkString[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint,T], ppspec: SLILPrinterSpec, row: Int, level: Int): String
 
   /**
    * The analyzer for a SLIL statement. This methods is different from the one declared in Target since it takes

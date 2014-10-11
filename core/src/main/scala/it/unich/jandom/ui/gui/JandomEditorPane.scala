@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -20,20 +20,24 @@ package it.unich.jandom.ui.gui
 
 import java.awt.event.{ InputEvent, KeyEvent }
 import java.io.{ File, FileWriter, IOException }
-
 import scala.Array.canBuildFrom
-import scala.swing.{Action, Dialog, EditorPane, FileChooser, MenuItem, Separator}
+import scala.swing.{ Action, Dialog, EditorPane, FileChooser, MenuItem, Separator }
 import scala.swing.ScrollPane
-
 import it.unich.jandom._
 import it.unich.jandom.targets.Parameters
 import it.unich.jandom.targets.slil.SLILTarget
-
 import javax.swing.KeyStroke
 import javax.swing.event.{ DocumentEvent, DocumentListener, UndoableEditEvent, UndoableEditListener }
 import javax.swing.undo.UndoManager
+import it.unich.jandom.targets.slil.SLILPrinterSpecOffline
+import java.nio.charset.StandardCharsets
+import java.nio.file.Paths
+import java.nio.file.Files
+import it.unich.jandom.ui.HTMLOutput
 
 class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane {
+  import scala.language.existentials
+
   val editorPane = new EditorPane
   contents = editorPane
 
@@ -195,6 +199,10 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     def apply() { actionMap("copy-to-clipboard").actionPerformed(null) }
   }
 
+  val outputHTMLAction = new Action("HTML output") {
+    def apply() { outputHTML() }
+  }
+
   object undoAction extends Action("Undo") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK))
 
@@ -235,7 +243,11 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     }
   }
 
-  def analyze = {
+  /**
+   * This method perform the actual analysis for analyze() and outputHTML(). It
+   * returns the relevant information with an existential type.
+   */
+  def performAnalysis() = {
     val parser = parsers.RandomParser()
     parser.parseProgram(editorPane.text) match {
       case parser.Success(program, _) =>
@@ -243,7 +255,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
         val params = new Parameters[SLILTarget] { val domain = numericalDomain }
         frame.parametersPane.setParameters(params)
         val ann = program.analyze(params)
-        Some(params.debugWriter.toString + program.mkString(ann))
+        Option((params, program, ann))
       case parser.NoSuccess(msg, next) =>
         Dialog.showMessage(JandomEditorPane.this, msg + " in line " + next.pos.line + " column " + next.pos.column,
           "Error in parsing source code", Dialog.Message.Error)
@@ -251,8 +263,26 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     }
   }
 
+  def analyze = {
+    for ((params, program, ann) <- performAnalysis()) yield params.debugWriter.toString + program.mkString(ann)
+  }
+
+  def outputHTML() {
+    for ((params, program, ann) <- performAnalysis()) {
+      val chooser = new FileChooser()
+      chooser.selectedFile = new File("output.html")
+      if (chooser.showDialog(this, "Select output file") == FileChooser.Result.Approve) {
+        val file = chooser.selectedFile.getPath()
+        val pp = SLILPrinterSpecOffline(program.env)
+        val out = program.mkString(ann, pp)
+        val HTMLout = HTMLOutput(out, pp.annotations)
+        Files.write(Paths.get(file), HTMLout.getBytes(StandardCharsets.UTF_8))
+      }
+    }
+  }
+
   val fileMenuItems = Seq(new MenuItem(newAction), new MenuItem(openAction), new Separator, new MenuItem(saveAction),
-    new MenuItem(saveAsAction))
+    new MenuItem(saveAsAction), new Separator, new MenuItem(outputHTMLAction))
   val editMenuItems = Seq(new MenuItem(undoAction), new MenuItem(redoAction), new Separator,
     new MenuItem(cutAction), new MenuItem(copyAction), new MenuItem(pasteAction))
 

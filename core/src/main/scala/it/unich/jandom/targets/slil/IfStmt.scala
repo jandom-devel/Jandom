@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ case class IfStmt(condition: NumericCondition, then_branch: SLILStmt, else_branc
   import AnalysisPhase._
 
   override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property = {
-    
+
     val thenStart = condition.analyze(input)
     val elseStart = condition.opposite.analyze(input)
     val thenEnd = then_branch.analyzeStmt(params)(thenStart, phase, ann)
@@ -41,16 +41,18 @@ case class IfStmt(condition: NumericCondition, then_branch: SLILStmt, else_branc
     return thenEnd union elseEnd
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec): String = {
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: SLILPrinterSpec, row: Int, level: Int): String = {
     val spaces = ppspec.indent(level)
     val innerspaces = ppspec.indent(level+1)
+    val then_string = then_branch.mkString(ann, ppspec, row + 1, level + 1)
+    val else_string = else_branch.mkString(ann, ppspec, row + 2 + then_string.count(_ == '\n'), level + 1)
     val s = spaces + "if (" + condition.mkString(ppspec.env.names) + ") {\n" +
-      then_branch.mkString(ann,level+1,ppspec) +
+      then_string +
       spaces + "} else {\n" +
-      else_branch.mkString(ann,level+1,ppspec) +
+      else_string +
       spaces + "}\n"
     return s
   }
-  
+
   val numvars = condition.dimension max then_branch.numvars max else_branch.numvars
 }

@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,12 +30,12 @@ import AnalysisPhase.AnalysisPhase
  */
 case class AssumeStmt(cond: NumericCondition) extends SLILStmt {
   import AnalysisPhase._
-  
+
   override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint,params.Property]): params.Property =
     cond.analyze(input)
-    
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level:Int, ppspec: PrettyPrinterSpec) =
+
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U],  ppspec: SLILPrinterSpec, row: Int, level:Int) =
     ppspec.indent(level) + "assume(" + cond + ")\n"
-    
+
   val numvars = cond.dimension
 }

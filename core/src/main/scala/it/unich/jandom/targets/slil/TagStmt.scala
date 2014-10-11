@@ -1,6 +1,6 @@
 /**
  * Copyright 2013 Gianluca Amato
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@ import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.targets.Annotation
 
 /**
- * The class for tags, i.e. fake statements only used to mark program points. The 
+ * The class for tags, i.e. fake statements only used to mark program points. The
  * analysis at this point is reported trough the `tag` array in the `Parameters`
  * object.
  * @param tag an integer which is the index of this tag in the `tag` array
@@ -35,8 +35,8 @@ case class TagStmt(tag: Int) extends SLILStmt {
     input
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], level: Int, ppspec: PrettyPrinterSpec) =
+  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: SLILPrinterSpec, row: Int,  level: Int) =
     ppspec.indent(level) + "tag(" + tag + ")\n"
-    
+
   val numvars = 0
 }
