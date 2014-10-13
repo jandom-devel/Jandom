@@ -1,10 +1,14 @@
 import EclipseKeys._
 
-lazy val Jandom = project in file("core")
+val Jandom = project in file("core")
 
-lazy val JandomExtended = project in file("extended") dependsOn Jandom % "compile->compile;test->test"
+val JandomExtended = project in file("extended") dependsOn Jandom % "compile->compile;test->test"
 
-lazy val root = project in file(".") aggregate (Jandom, JandomExtended) 
+// Add a new benchmark configuration...
+// val Bench = config("bench") extend(Test)
+// val root = project in file(".") configs(Bench) settings( inConfig(Bench) (Defaults.testSettings):_*) aggregate (Jandom, JandomExtended) 
+
+val root = project in file(".") aggregate (Jandom, JandomExtended) 
 
 version in ThisBuild := "0.1.3-SNAPSHOT"
 
@@ -32,4 +36,6 @@ pplJar in ThisBuild := optionalPPLPathName
 // This delegates the root run task to the run task in JandomCore
 
 run <<= run in ("Jandom", Compile)
+
+run in Test <<= run in ("Jandom", Test)
 

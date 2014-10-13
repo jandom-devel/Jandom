@@ -27,6 +27,7 @@ import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.narrowings.DefaultNarrowing
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.ppfactories._
+import it.unich.jandom.ppfactories.PPFactory.ConstantFactory
 import it.unich.jandom.targets.IterationStrategy
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.widenings.DefaultWidening
