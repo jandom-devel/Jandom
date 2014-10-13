@@ -19,18 +19,17 @@
 package it.unich.jandom
 
 import java.io.{ File, FileReader }
+
 import scala.collection.immutable.PagedSeq
 import scala.util.parsing.input.PagedSeqReader
-import it.unich.jandom.domains.numerical.ppl.PPLDomain
+
+import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.narrowings.DefaultNarrowing
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.ppfactories._
 import it.unich.jandom.targets.IterationStrategy
-import it.unich.jandom.targets.WideningNarrowingLocation
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.widenings.DefaultWidening
-import parma_polyhedra_library.Double_Box
-import it.unich.jandom.domains.numerical.BoxDoubleDomain
 
 /**
  * Example program using ''Jandom'' to analyze the Alice benchmarks and
