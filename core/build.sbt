@@ -6,8 +6,6 @@ resolvers ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "org.ow2.asm" % "asm-tree" % "4.1",
-  "org.ow2.asm" % "asm-util" % "4.1",
   "org.scalatest" %% "scalatest" % "2.2.1" % "test",
   "org.scalacheck" %% "scalacheck" % "1.11.5" % "test",
   "org.mockito" % "mockito-core" % "1.9.5" % "test",
@@ -17,7 +15,8 @@ libraryDependencies ++= Seq(
   "org.rogach" %% "scallop" % "0.9.5",
   "org.scala-lang.modules" %% "scala-swing" % "1.0.1",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.2",
-  "soot" % "soot" % "2.5.0+git1" from "https://ssebuild.cased.de/nightly/soot/lib/soot-trunk.jar"
+  // ASM 5.0 is included in the Soot Jar
+  "soot" % "soot" % "2.5.0+git2" from "https://ssebuild.cased.de/nightly/soot/lib/soot-trunk.jar"
 )
 
 unmanagedJars in Compile ++= (pplJar.value map file).toSeq
