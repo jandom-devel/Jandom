@@ -187,9 +187,9 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
         val n = narrowings(locid)
         val propnew = for (t <- loc.incoming) yield t.analyze(current(t.start.id))
         val unionednew = propnew.fold(empty)(_ union _) union initial(locid)
-        params.log(s"Node: ${loc.name} Oldvalue: ${current(loc.id).mkString(env.variables)} Newinput: ${unionednew}.mkString(env.variables)}")
+        params.log(s"Node: ${loc.name} Oldvalue: ${current(loc.id).mkString(env.variables)} Newinput: ${unionednew.mkString(env.variables)}")
         val newvalue = if (n.isEmpty) unionednew else n.get(current(locid), unionednew)
-        params.log(s"Newvalue: ${newvalue.mkString(env.variables)}\n")
+        params.log(s" Newvalue: ${newvalue.mkString(env.variables)}\n")
         if (newvalue < current(locid)) {
           current(locid) = newvalue
           for (t <- loc.outgoing) { if (!workList.contains(t.end.id)) workList.enqueue(t.end.id) }
