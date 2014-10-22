@@ -134,7 +134,7 @@ object LinearForm {
    * @param coeffs the coefficient of the linear form. The first coefficient
    * is the constant term.
    */
-  def apply[T: Numeric](coeffs: T*) = DenseLinearForm(coeffs)
+  def apply[T: Numeric](coeffs: T*): LinearForm[T] = DenseLinearForm(coeffs)
 
   /**
    * Builds a linear form given the non-null coefficients and constant term. Each pair
@@ -143,16 +143,16 @@ object LinearForm {
    * pairs are in the `restpair` parameter.
    * @param known the constant term of the linear form.
    */
-  def apply[T: Numeric](known: T, firstpair: (Int,T), restpairs: (Int,T)*) = DenseLinearForm(known,firstpair +: restpairs)
+  def apply[T: Numeric](known: T, firstpair: (Int,T), restpairs: (Int,T)*): LinearForm[T] = DenseLinearForm(known,firstpair +: restpairs)
 
   /**
    * Builds the linear form `vi`
    * @param i index of the variable vi
    */
-  def v[T: Numeric](i: Int) = DenseLinearForm.v(i: Int)
+  def v[T: Numeric](i: Int): LinearForm[T] = DenseLinearForm.v(i: Int)
 
   /**
    * Builds the constant linear form `c`
    */
-  implicit def c[T: Numeric](known: T) = DenseLinearForm(Seq(known))
+  implicit def c[T: Numeric](known: T): LinearForm[T] = DenseLinearForm(Seq(known))
 }
