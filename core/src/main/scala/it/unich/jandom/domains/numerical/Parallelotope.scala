@@ -453,14 +453,18 @@ final class Parallelotope(
    * @throws $ILLEGAL
    */
   def delVariable(n: Int): Parallelotope = {
+    def rowToSeq(M: DenseMatrix[Double], i: Int, n: Int): Seq[Double] =
+      for (j <- 0 until A.rows; if j != n) yield M(i,j)
+
     if (isEmpty)
       domain.bottom(A.rows - 1)
     else {
-      val slice = (0 until n) ++ (n + 1 until dimension)
-      val newA = A(slice, slice).toDenseMatrix
-      val newlow = low(slice).toDenseVector
-      val newhigh = high(slice).toDenseVector
-      new Parallelotope(false, newlow, newA, newhigh)
+      val forgot = this.nonDeterministicAssignment(n)
+      val set1 = for (i <- 0 until dimension; if ! forgot.low(i).isInfinity; if forgot.A(i,n)==0) yield
+        -LinearForm(-forgot.low(i) +: rowToSeq(forgot.A,i,n) : _*)
+      val set2 = for (i <- 0 until dimension; if ! forgot.high(i).isInfinity; if forgot.A(i,n)==0) yield
+        LinearForm(-forgot.high(i) +: rowToSeq(forgot.A,i,n) : _*)
+      (set1 ++ set2).foldLeft (domain.top(A.rows-1)) { (p, lf) => p.linearInequality(lf) }
     }
   }
 
