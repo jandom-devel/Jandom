@@ -122,17 +122,17 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
     def linearDisequality(lf: LinearForm[Double]): Property = this
 
     def minimize(lf: LinearForm[Double]): Double = {
-      val homlf = DenseLinearForm(lf.coeffs.updated(0, 0.0))
+      val homlf = lf.hom
       p1.minimize(homlf) + p2.minimize(homlf) + lf.known
     }
 
     def maximize(lf: LinearForm[Double]): Double = {
-      val homlf = DenseLinearForm(lf.coeffs.updated(0, 0.0))
+      val homlf = lf.hom
       p1.maximize(homlf) + p2.maximize(homlf) + lf.known
     }
 
     def frequency(lf: LinearForm[Double]): Option[Double] = {
-      val homlf = DenseLinearForm(lf.coeffs.updated(0, 0.0))
+      val homlf = lf.hom
       (p1.frequency(homlf), p2.frequency(homlf)) match {
         case (Some(v1), Some(v2)) => Some(v1 + v2 + lf.known)
         case _ => None

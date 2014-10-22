@@ -46,10 +46,15 @@ trait LinearForm[T] {
   def homcoeffs: Seq[T]
 
   /**
+   * Returns the homogeneous linear form associated
+   */
+  def hom: LinearForm[T]
+
+  /**
    * Returns true when the linear form is constant
    */
   def isConstant: Boolean
-  
+
   /**
    * Returns thether the linear form is the zero constant
    */

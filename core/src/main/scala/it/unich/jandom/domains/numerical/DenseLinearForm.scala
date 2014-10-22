@@ -36,8 +36,10 @@ class DenseLinearForm[T](val coeffs: Seq[T])(implicit numeric: Numeric[T]) exten
 
   def homcoeffs = coeffs.tail
 
+  def hom = DenseLinearForm(zero +: coeffs.tail)
+
   def isConstant = homcoeffs.forall( _ == zero )
-  
+
   def isZero = isConstant && known == zero
 
   def pairs = for { (ci, i) <- homcoeffs.zipWithIndex ; if ci != 0 } yield (i,ci)
