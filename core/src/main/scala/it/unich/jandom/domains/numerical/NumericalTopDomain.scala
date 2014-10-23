@@ -64,6 +64,10 @@ object NumericalTopDomain extends NumericalDomain {
       else
         Some(lf.known)
 
+    def constraints = Seq()
+
+    def isPolyhedral = true
+
     def addVariable = new Property(dimension + 1)
     def delVariable(n: Int) = new Property(dimension - 1)
     def mapVariables(rho: Seq[Int]) = new Property(rho count { _ != -1 })

@@ -451,6 +451,18 @@ final class Parallelotope(
     }
   }
 
+  def constraints = {
+    if (isEmpty)
+      Seq(LinearForm(1))
+    else {
+      val set1 = for (i <- 0 until dimension; if !low(i).isInfinity) yield -LinearForm(-low(i) +: A(i, ::).t.toScalaVector: _*)
+      val set2 = for (i <- 0 until dimension; if !high(i).isInfinity) yield LinearForm(-high(i) +: A(i, ::).t.toScalaVector: _*)
+      set1 ++ set2
+    }
+  }
+
+  def isPolyhedral = true
+
   /**
    * @inheritdoc
    * @note @inheritdoc

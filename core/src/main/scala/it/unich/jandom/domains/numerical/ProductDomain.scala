@@ -137,6 +137,10 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
     	}
     }
 
+    def constraints = p1.constraints ++ p2.constraints
+
+    def isPolyhedral = p1.isPolyhedral && p2.isPolyhedral
+
     def addVariable: Property =
       new Property(p1.addVariable, p2.addVariable)
 

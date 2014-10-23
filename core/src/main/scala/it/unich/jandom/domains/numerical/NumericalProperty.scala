@@ -93,6 +93,19 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    */
   def frequency(lf: LinearForm[Double]): Option[Double]
 
+  /**
+   * Returns a set of constraints which are bounding hyperplanes for the property.
+   * The constraints may be redundant. Moreover, they exactly describe the property
+   * only when `isPolyhedral` is true.
+   */
+  def constraints: Seq[LinearForm[Double]]
+
+  /**
+   * Returns whether the `constraints` methods returns an exact representation of the
+   * property.
+   */
+   def isPolyhedral: Boolean
+
   /*
    * Now some concrete methods, which may be overriden in subclasses for
    * optimization purpose.

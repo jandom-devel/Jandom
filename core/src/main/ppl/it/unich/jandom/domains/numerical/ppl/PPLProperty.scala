@@ -168,6 +168,21 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
     }
   }
 
+  def constraints = {
+    import collection.JavaConversions._
+
+    val cs = domain.minimized_constraints(pplobject)
+    cs flatMap PPLUtils.fromPPLConstraint
+  }
+
+  def isPolyhedral = {
+    import collection.JavaConversions._
+    val cs = domain.minimized_constraints(pplobject)
+    // we explicitly check if the object is empty since, in this case, it has a unsatisfiable
+    // congruence.
+    isEmpty || ((cs forall PPLUtils.isRepresentableAsLinearForms) && domain.minimized_congruences(pplobject).isEmpty())
+  }
+
   def addVariable = {
     val newpplobject = domain.copyConstructor(pplobject)
     domain.add_space_dimensions_and_embed(newpplobject, 1)

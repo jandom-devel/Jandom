@@ -327,6 +327,18 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
       BoxDoubleDomain.this(newlow, newhigh)
     }
 
+    def constraints = {
+      if (isEmpty)
+        Seq(LinearForm(1))
+      else {
+        val set1 = for (i <- 0 until dimension; if !low(i).isInfinity) yield -LinearForm.v[Double](i) + low(i)
+        val set2 = for (i <- 0 until dimension; if !high(i).isInfinity) yield LinearForm.v[Double](i) - high(i)
+        set1 ++ set2
+      }
+    }
+
+    def isPolyhedral = true
+
     /**
      * @inheritdoc
      * @note @inheritdoc

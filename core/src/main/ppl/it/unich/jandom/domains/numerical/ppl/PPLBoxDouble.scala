@@ -153,6 +153,19 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
     }
   }
 
+  def constraints = {
+    import collection.JavaConversions._
+
+    val cs = pplbox.constraints()
+    cs flatMap PPLUtils.fromPPLConstraint
+  }
+
+  def isPolyhedral = {
+    import collection.JavaConversions._
+    val cs = pplbox.constraints()
+    cs forall PPLUtils.isRepresentableAsLinearForms
+  }
+
   def addVariable: PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
     newpplbox.add_space_dimensions_and_embed(1)

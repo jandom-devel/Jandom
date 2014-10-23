@@ -142,6 +142,20 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
       }
     }
 
+    def constraints = {
+      if (isEmpty)
+        Seq(LinearForm(1))
+      else {
+        val cs1 = p1.constraints
+        val cs2 = p2.constraints
+        val set1 = for (c <- cs1 ++ cs2; max = maximize(c.hom); if !max.isInfinity) yield LinearForm(-max +: c.homcoeffs: _*)
+        val set2 = for (c <- cs1 ++ cs2; min = minimize(c.hom); if !min.isInfinity) yield LinearForm(min +: (-c).homcoeffs: _*)
+        set1 ++ set2
+      }
+    }
+
+    def isPolyhedral = p1.isPolyhedral && p2.isPolyhedral
+
     def addVariable: Property = SumDomain.this(p1.addVariable, p2.addVariable)
 
     def delVariable(n: Int): Property = SumDomain.this(p1.delVariable(n), p2.delVariable(n))

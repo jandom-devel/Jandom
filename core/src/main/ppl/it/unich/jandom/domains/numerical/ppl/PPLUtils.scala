@@ -20,14 +20,7 @@ package it.unich.jandom.domains.numerical.ppl
 
 import it.unich.jandom.domains.numerical.LinearForm
 
-import parma_polyhedra_library.Coefficient
-import parma_polyhedra_library.Constraint_System
-import parma_polyhedra_library.Linear_Expression
-import parma_polyhedra_library.Linear_Expression_Coefficient
-import parma_polyhedra_library.Linear_Expression_Variable
-import parma_polyhedra_library.Partial_Function
-import parma_polyhedra_library.Variable
-import parma_polyhedra_library.Variable_Stringifier
+import parma_polyhedra_library._
 
 /**
  * This is a collection of methods used by the PPL-based numerical domains.
@@ -55,6 +48,45 @@ private[jandom] object PPLUtils {
       val result = (le, new Coefficient(denumerator.toBigIntExact.get.bigInteger))
       lf.toPPL = result
       result
+    }
+  }
+
+  /**
+   * Converts a PPL linear expression couple with a coefficient for the denominator into a LinearForm.
+   */
+  def fromPPLExpression(e: Linear_Expression): LinearForm[Double] = {
+	 e match {
+	   case e: Linear_Expression_Coefficient => LinearForm.c(e.argument().getBigInteger().doubleValue())
+	   case e: Linear_Expression_Difference => fromPPLExpression(e.left_hand_side()) - fromPPLExpression(e.right_hand_side())
+	   case e: Linear_Expression_Sum => fromPPLExpression(e.left_hand_side()) - fromPPLExpression(e.right_hand_side())
+	   case e: Linear_Expression_Times => fromPPLExpression(e.linear_expression()) * e.coefficient().getBigInteger().doubleValue()
+	   case e: Linear_Expression_Unary_Minus => - fromPPLExpression(e.argument())
+	   case e: Linear_Expression_Variable => LinearForm.v(e.argument().id().toInt)
+	 }
+  }
+
+  /**
+   * Converts a PPL Constraints into a sequence of LinearForms. The conversion in only
+   * approximate since we cannot represent open constraints.
+   */
+  def fromPPLConstraint(c: Constraint): Seq[LinearForm[Double]] = {
+	 val exp = c.left_hand_side().subtract(c.right_hand_side())
+	 val lf = fromPPLExpression(exp)
+	 c.kind match {
+	   case Relation_Symbol.EQUAL => Seq(lf, -lf)
+	   case Relation_Symbol.LESS_OR_EQUAL | Relation_Symbol.LESS_THAN => Seq(lf)
+	   case Relation_Symbol.GREATER_THAN | Relation_Symbol.GREATER_OR_EQUAL => Seq(-lf)
+	   case Relation_Symbol.NOT_EQUAL => Seq()
+	 }
+  }
+
+  /**
+   * Determines whether a PPL constraint has an exact representation as a sequence of linear form.
+   */
+  def isRepresentableAsLinearForms(c: Constraint): Boolean = {
+    c.kind match {
+      case Relation_Symbol.EQUAL | Relation_Symbol.LESS_OR_EQUAL | Relation_Symbol.GREATER_OR_EQUAL => true
+      case _ => false
     }
   }
 

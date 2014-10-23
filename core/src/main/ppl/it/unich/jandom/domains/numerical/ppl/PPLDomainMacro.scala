@@ -208,6 +208,19 @@ object PPLDomainMacro {
             Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue())
         }
 
+        def constraints = {
+          import collection.JavaConversions._
+
+          val cs = pplobject.minimized_constraints()
+          cs flatMap PPLUtils.fromPPLConstraint
+        }
+
+        def isPolyhedral = {
+          import collection.JavaConversions._
+          val cs = pplobject.minimized_constraints()
+          (cs forall PPLUtils.isRepresentableAsLinearForms) && pplobject.minimized_congruences().isEmpty()
+        }
+
         def addVariable: ThisProperty = {
           val newpplobject = new Double_Box(pplobject)
           newpplobject.add_space_dimensions_and_embed(1)

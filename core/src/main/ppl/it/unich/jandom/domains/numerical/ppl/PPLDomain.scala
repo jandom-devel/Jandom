@@ -32,6 +32,7 @@ import parma_polyhedra_library.Variables_Set
 import it.unich.jandom.domains.DomainTransformation
 import parma_polyhedra_library.Complexity_Class
 import java.lang.reflect.Constructor
+import parma_polyhedra_library.Congruence_System
 
 /**
  * This is the domain of PPL properties.  It is able to represent (almost) any property
@@ -80,6 +81,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private val isEmptyHandle = myClass.getMethod("is_empty")
   private val isUniverseHandle = myClass.getMethod("is_universe")
   private val minimizedConstraintsHandle = myClass.getMethod("minimized_constraints")
+  private val minimizedCongruencesHandle = myClass.getMethod("minimized_congruences")
   private val unconstrainSpaceDimensionHandle = myClass.getMethod("unconstrain_space_dimension", classOf[Variable])
   private val addSpaceDimensionsAndEmbedHandle = myClass.getMethod("add_space_dimensions_and_embed", classOf[Long])
   private val removeSpaceDimensionsHandle = myClass.getMethod("remove_space_dimensions", classOf[Variables_Set])
@@ -106,6 +108,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private[domains] def is_empty(me: PPLNativeProperty) = isEmptyHandle.invoke(me).asInstanceOf[Boolean]
   private[domains] def is_universe(me: PPLNativeProperty) = isUniverseHandle.invoke(me).asInstanceOf[Boolean]
   private[domains] def minimized_constraints(me: PPLNativeProperty) = minimizedConstraintsHandle.invoke(me).asInstanceOf[Constraint_System]
+  private[domains] def minimized_congruences(me: PPLNativeProperty) = minimizedCongruencesHandle.invoke(me).asInstanceOf[Congruence_System]
   private[domains] def unconstrain_space_dimension(me: PPLNativeProperty, v: Variable) = unconstrainSpaceDimensionHandle.invoke(me, v)
   private[domains] def add_space_dimensions_and_embed(me: PPLNativeProperty, l: Long) = addSpaceDimensionsAndEmbedHandle.invoke(me, l: java.lang.Long)
   private[domains] def remove_space_dimensions(me: PPLNativeProperty, vars: Variables_Set) = removeSpaceDimensionsHandle.invoke(me, vars)
@@ -118,7 +121,7 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private[domains] def frequency(me: PPLNativeProperty, le: Linear_Expression, freq_n: Coefficient, freq_d: Coefficient, val_n: Coefficient, val_d: Coefficient) =
     frequencyHandle.invoke(me, le, freq_n, freq_d, val_n, val_d).asInstanceOf[java.lang.Boolean].booleanValue()
 
-  /**
+    /**
    * It is true if `PPLNativeProperty` has the `CC76_narrowing_assign` method.
    */
   val supportsNarrowing = narrowingAssignHandle != null
