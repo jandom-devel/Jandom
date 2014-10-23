@@ -188,8 +188,6 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
     new PPLProperty(domain, newpplobject)
   }
 
-  def minimized_constraints = domain.minimized_constraints(pplobject)
-
   def dimension: Int = domain.space_dimension(pplobject).toInt
 
   def isEmpty = domain.is_empty(pplobject)
