@@ -337,7 +337,11 @@ final class Parallelotope(
     require(lf.dimension <= dimension)
 
     if (isEmpty) return this
-    if (dimension == 0) return this
+    if (dimension == 0)
+      if (lf.known > 0)
+        return bottom
+      else
+        return this
 
     val tcoeff = lf.homcoeffs
     val known = lf.known
