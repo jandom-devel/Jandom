@@ -137,7 +137,9 @@ private[numerical] trait BoxDoubleDomainSuite extends NumericalDomainSuite with 
 }
 
 /**
- * This is a unit test for the BoxDouble domain over doubles.
+ * This is a unit test for the BoxDouble domain over doubles. These properties
+ * do not work for reals due to the artificial enlargements which happens in
+ * that domain.
  * @author Gianluca Amato <gamato@unich.it>
  */
 class BoxDoubleDomainDoubleSuite extends BoxDoubleDomainSuite {

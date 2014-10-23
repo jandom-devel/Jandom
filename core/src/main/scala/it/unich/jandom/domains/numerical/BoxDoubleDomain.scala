@@ -104,22 +104,22 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
     /**
      * Returns the sum of `x` and `y`, rounded towards +Inf.
      */
-    private def add_hi(x: Double, y: Double): Double = if (overReals && x != 0) nextfp(x + y) else x + y
+    private def add_hi(x: Double, y: Double): Double = if (overReals && x != 0 && y != 0) nextfp(x + y) else x + y
 
     /**
      * Returns the sum of `x` and `y`, rounded towards -Inf.
      */
-    private def add_lo(x: Double, y: Double): Double = if (overReals && x != 0) prevfp(x + y) else x + y
+    private def add_lo(x: Double, y: Double): Double = if (overReals && x != 0 && y != 0) prevfp(x + y) else x + y
 
     /**
      * Returns the product of `x` and `y`, rounded towards +Inf.
      */
-    private def mul_hi(x: Double, y: Double): Double = if (overReals && x != 0 && x != 1) nextfp(x * y) else x * y
+    private def mul_hi(x: Double, y: Double): Double = if (overReals && x != 0 && x != 1 && y != 0 && y != 1) nextfp(x * y) else x * y
 
     /**
      * Returns the product of `x` and `y`, rounded towards -Inf.
      */
-    private def mul_lo(x: Double, y: Double): Double = if (overReals && x != 0 && x != 1) prevfp(x * y) else x * y
+    private def mul_lo(x: Double, y: Double): Double = if (overReals && x != 0 && x != 1 && y != 0 && y != 1) prevfp(x * y) else x * y
 
     /**
      * Return the dot product of `x` and `y`, rounded towards `+Inf`.
@@ -487,7 +487,6 @@ object BoxDoubleDomain {
    * double arithmetic, according to the parameter `overReals`.
    */
   def apply(overReals: Boolean = false) = if (overReals) this.overReals else this.overDoubles
-
   /**
    * The domain of boxes correct w.r.t. reals and with cached top and bottom.
    */

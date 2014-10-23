@@ -74,8 +74,11 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
       require(dimension == that.dimension)
       if (isEmpty)
         this
+      else if (that.isEmpty)
+        that
+      else if (that.isTop)
+        this
       else
-        // correct but bad precision
         that
     }
 
@@ -147,7 +150,7 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def dimension: Int = p1.dimension
 
-    def isTop: Boolean = p1.isTop || p2.isTop
+    def isTop: Boolean = (p1.isTop || p2.isTop) && (!p1.isEmpty && !p2.isEmpty)
 
     def isEmpty = p1.isEmpty || p2.isEmpty
 
@@ -166,20 +169,33 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def tryCompareTo[B >: Property](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = that match {
       case that: Sum => {
-        if (p1 == that.p1)
-          return (p2.tryCompareTo(that.p2))
+        if (this.isTop && that.isTop)
+          Some(0)
+        else if (this.isTop)
+          Some(1)
+        else if (that.isTop)
+          Some(-1)
+        else if (this.isBottom && that.isBottom)
+          Some(0)
+        else if (this.isBottom)
+          Some(-1)
+        else if (that.isBottom)
+          Some(1)
+        else if (p1 == that.p1)
+          p2.tryCompareTo(that.p2)
         else if (p1 > that.p1)
-          if (p2 >= that.p2) return Some(1)
-          else return None
-        else if (p2 <= that.p2) return Some(-1)
-        else return None
-        None
+          if (p2 >= that.p2) Some(1) else None
+        else if (p2 <= that.p2) Some(-1)
+        else None
       }
       case _ => None
     }
   }
 
-  def top(n: Int) = SumDomain.this(dom1.top(n), dom2.top(n))
+  def top(n: Int) = {
+    val dom1Zero = (0 until n).foldLeft(dom1.top(n)) { (p, i) => p.linearAssignment(i, LinearForm.c(0)) }
+    SumDomain.this(dom1Zero, dom2.top(n))
+  }
 
   def bottom(n: Int) = SumDomain.this(dom1.bottom(n), dom2.bottom(n))
 

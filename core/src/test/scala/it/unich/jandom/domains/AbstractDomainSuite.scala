@@ -105,16 +105,6 @@ trait AbstractDomainSuite extends FunSpec with TableDrivenPropertyChecks {
     }
   }
 
-  describe("The intersection method") {
-    it("it returns an abstract object which is a possible lower bound of the parameters") {
-      forAll(someCoupleProperties) { (p1, p2) =>
-        // the check is convoluted since we only have an approximation of the abstract ordering
-        assert(!((p1 intersection p2) > p2))
-        assert(!((p1 intersection p2) > p1))
-      }
-    }
-  }
-
   describe("The widening method") {
     it("it returns an abstract object which is a possible upper bound of the parameters") {
       forAll(someCoupleProperties) { (p1, p2) =>

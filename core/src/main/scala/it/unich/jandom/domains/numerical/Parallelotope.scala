@@ -337,7 +337,11 @@ final class Parallelotope(
     require(lf.dimension <= dimension)
 
     if (isEmpty) return this
-    if (dimension == 0) return this
+    if (dimension == 0)
+      if (lf.known > 0)
+        return bottom
+      else
+        return this
 
     val tcoeff = lf.homcoeffs
     val known = lf.known
@@ -350,7 +354,7 @@ final class Parallelotope(
         val newlow = low.copy
         val newhigh = high.copy
         val (minc, maxc) = domain.extremalsInBox(y, newlow, newhigh)
-        if (minc > -known) return domain.bottom(dimension)
+        if (minc > -known) return bottom
 
         val lfArgmin = (y) mapPairs { case (i, c) => if (c > 0) low(i) else high(i) }
 
@@ -370,14 +374,14 @@ final class Parallelotope(
           }
           case _ =>
         }
-        return new Parallelotope(false, newlow, A, newhigh)
+        new Parallelotope(false, newlow, A, newhigh)
       }
       case Some(j) => {
         val newA = A.copy
         val newhigh = high.copy
         newA(j, ::) := DenseVector(coeff).t
         newhigh(j) = -known
-        return new Parallelotope(false, low, newA, newhigh)
+        new Parallelotope(false, low, newA, newhigh)
       }
     }
   }
