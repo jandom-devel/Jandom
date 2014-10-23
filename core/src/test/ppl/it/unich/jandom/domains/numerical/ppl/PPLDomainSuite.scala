@@ -49,6 +49,15 @@ class PPLDomainSuiteBox extends { val dom = PPLDomain[Double_Box]() } with FunSp
     assertResult(dom.bottom(3)) { obj.linearDisequality(LinearForm(0, 1, 0, 0)) }
   }
 
+  describe("All PPLBoxes are polyhedral") {
+    forAll(someProperties) { (p) => assert(p.isPolyhedral) }
+  }
+
+  describe("All PPLBoxes may be rebuilt from constraints") {
+    forAll(someProperties) { (p) =>
+      assertResult(p) { p.constraints.foldLeft(p.top) { (prop, lf) => prop.linearInequality(lf) } }
+    }
+  }
 }
 
 /**
@@ -83,6 +92,17 @@ class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double
     assertResult(empty) { obj7 }
     val obj8 = obj4 widening obj3
     assertResult(obj5) { obj8 }
+  }
+
+  describe("Test constraints / isPolyhedral methods") {
+    val lf1 = LinearForm[Double](-1, 0, 1, 1)
+    val lf2 = LinearForm[Double](-1, 0, 1, -1)
+    assertResult(Seq()) { full.constraints }
+    assertResult(true) { full.isPolyhedral }
+    val obj = full.
+      linearInequality(lf1).
+      linearInequality(lf2)
+    assertResult(Set(lf1, lf2)) { obj.constraints.toSet }
   }
 
   describe("Test that disequality do not crash") {
@@ -154,5 +174,15 @@ class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double
       linearInequality(LinearForm(-1, 0, -1)).linearInequality(LinearForm(-1, 0, 1))
     assertResult(box) { boxDomain(diamond) }
     assertResult(box) { transform(octDomain, boxDomain)(diamond) }
+  }
+
+  describe("All PPLOctagons are polyhedral") {
+    forAll(someProperties) { (p) => assert(p.isPolyhedral) }
+  }
+
+  describe("All PPLOctagons may be rebuilt from constraints") {
+    forAll(someProperties) { (p) =>
+      assertResult(p) { p.constraints.foldLeft(p.top) { (prop, lf) => prop.linearInequality(lf) } }
+    }
   }
 }

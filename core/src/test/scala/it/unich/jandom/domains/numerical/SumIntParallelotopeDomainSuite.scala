@@ -39,4 +39,8 @@ class SumIntParallelotopeDomainSuite extends FunSpec  with NumericalDomainSuite 
 
   override lazy val someProperties = Table("property", dom.bottom(0), dom.bottom(1), dom.bottom(2), dom.bottom(3), dom.bottom(4), dom.bottom(4),
     dom.top(0), dom.top(1), dom.top(2), dom.top(3), dom.top(4), dom.top(5), dom(box1, par1), dom(box1, par2))
+
+  describe("All objects in Int + Parallelotope are polyhedral") {
+    forAll(someProperties) { (p) => assert(p.isPolyhedral) }
+  }
 }

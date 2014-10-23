@@ -164,6 +164,17 @@ class BoxDoubleDomainDoubleSuite extends BoxDoubleDomainSuite {
     val j = dom(Array(0, 0), Array(5, 5)).linearInequality(LinearForm(-4, 1, 1))
     assert(dom(Array(0, 0), Array(4, 4)) == j)
   }
+
+  describe("All boxes are polyhedral") {
+    forAll(someProperties) { (p) => p.isPolyhedral }
+  }
+
+  // I am not sure it works for all possible cases due to rounding errors.
+  describe("All boxes may be rebuilt from constraints") {
+    forAll(someProperties) { (p) =>
+      assertResult(p) { p.constraints.foldLeft(p.top) { (prop, lf) => prop.linearInequality(lf) } }
+    }
+  }
 }
 
 /**

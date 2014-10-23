@@ -195,4 +195,16 @@ class ParallelotopeDomainSuite extends NumericalDomainSuite with SeparatedTopAnd
     assertResult("empty") { empty.toString }
     assertResult("[ -Infinity <= v0 <= Infinity , -Infinity <= v1 <= Infinity ]") { full.toString }
   }
+
+  describe("all parallelotopes are polyhedral") {
+     forAll(someProperties) { (p) => assert(p.isPolyhedral) }
+  }
+
+  // I am not sure it works for all possible cases due to rounding errors.
+  describe("all parallelotopes may be rebuilt from constraints") {
+    forAll(someProperties) { (p) =>
+      assertResult(p) { p.constraints.foldLeft(p.top) { (prop, lf) => prop.linearInequality(lf) } }
+    }
+  }
+
 }

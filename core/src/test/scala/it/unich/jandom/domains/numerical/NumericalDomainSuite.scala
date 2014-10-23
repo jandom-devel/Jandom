@@ -45,7 +45,28 @@ trait NumericalDomainSuite extends CartesianFiberedDomainSuite {
    */
   lazy val someLinearForms = Table[LinearForm[Double]]("linear form", LinearForm(1, 1, 1), LinearForm(0), LinearForm(2), LinearForm(0, -1, 0),
     LinearForm(2, 1, 1), LinearForm(2, 1, 0), LinearForm(-1, 0, 1, 1), LinearForm(-1, 0, 1, -1), LinearForm(0.25, 1, 0, 0),
-    LinearForm(0.5, 1, 1, 0))  
+    LinearForm(0.5, 1, 1, 0))
+
+  describe("Top") {
+    it("is polyhedral") {
+      forAll(someFibers) { (f) =>
+        assertResult(true) { dom.top(f).isPolyhedral }
+      }
+    }
+    it("is represented by the empty sequence of constraints") {
+      forAll(someFibers) { (f) =>
+        assert(dom.top(f).constraints.isEmpty)
+      }
+    }
+  }
+
+  describe("Bottom") {
+    it("is polyhedral") {
+      forAll(someFibers) { (f) =>
+        assertResult(true) { dom.top(f).isPolyhedral }
+      }
+    }
+  }
 
   describe("Non deterministic assignment") {
     it("returns an upper bound") {
