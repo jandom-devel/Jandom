@@ -150,7 +150,7 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def dimension: Int = p1.dimension
 
-    def isTop: Boolean = p1.isTop || p2.isTop
+    def isTop: Boolean = (p1.isTop || p2.isTop) && (!p1.isEmpty && !p2.isEmpty)
 
     def isEmpty = p1.isEmpty || p2.isEmpty
 
