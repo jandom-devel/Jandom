@@ -100,6 +100,11 @@ trait NumericalDomainSuite extends CartesianFiberedDomainSuite {
         }
       }
     }
+    it("maps everything to bottom on unsatisfiable constraints") {
+      forAll(someProperties) { (p) =>
+        assert ( p.linearInequality(LinearForm(1)).isBottom )
+      }
+    }
   }
 
   describe("The identity linear assignment") {
