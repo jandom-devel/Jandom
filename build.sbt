@@ -18,6 +18,8 @@ fork in ThisBuild := true
 
 executionEnvironment in ThisBuild := Some(EclipseExecutionEnvironment.JavaSE17)
 
+eclipseOutput in ThisBuild := Some(".target")
+
 // for removing warnings when Breeze does not find native libraries
 //
 // javaOptions in ThisBuild ++= Seq("-Dcom.github.fommil.netlib.BLAS=com.github.fommil.netlib.F2jBLAS",
