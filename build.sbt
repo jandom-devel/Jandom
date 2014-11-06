@@ -12,7 +12,7 @@ val root = project in file(".") aggregate (Jandom, JandomExtended)
 
 version in ThisBuild := "0.1.3-SNAPSHOT"
 
-scalaVersion in ThisBuild := "2.11.2"
+scalaVersion in ThisBuild := "2.11.4"
 
 fork in ThisBuild := true
 
