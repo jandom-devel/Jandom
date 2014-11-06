@@ -18,27 +18,21 @@
 
 package it.unich.jandom.domains.numerical
 
-import breeze.linalg.DenseMatrix
-import breeze.linalg.DenseVector
-import it.unich.jandom.domains.CachedTopBottom
 import scala.util.Try
+
+import it.unich.jandom.domains.CachedTopBottom
+import it.unich.jandom.utils.breeze.countNonZero
+
+import breeze.linalg._
 
 /**
  * This is the abstract domain of parallelotopes as appears in the NSAD 2012 paper. It is written
- * using the Breeze Math library. It is not safe, due to rounding problem of Arithmetic.
- * It is declared private so that we can be sure to build a single instance of it. We do not
- * directly use Scala objects because we want to keep a uniform behaviour with other
- * non-singleton abstract domains.
+ * using the Breeze Math library. It is not safe, due to rounding problem of arithmetic.
  *
  * @author Gianluca Amato <g.amato@unich.it>
  * @author Francesca Scozzari <fscozzari@unich.it>
- *
- * @constructor builds an abstract domain for parallelotopes.
- * @param avoidAxes determines whether the heuristics into the domain should avoid to generate
- * constraints which are parallel to the coordinate axes. This is used especially when combining
- * the parallelotope domain with other domains using the reduced product and sum combinators.
  */
-class ParallelotopeDomain private extends NumericalDomain {
+class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
 
   /**
    * Build a non-empty parallelotope. If the parallelotope is not empty, the result is undetermined.
@@ -102,7 +96,7 @@ class ParallelotopeDomain private extends NumericalDomain {
         minc += lf(i) * high(i)
         maxc += lf(i) * low(i)
       }
-    return (minc, maxc)
+    (minc, maxc)
   }
 
   /**
@@ -145,7 +139,7 @@ class ParallelotopeDomain private extends NumericalDomain {
    * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
    * square or if `A` has not the same size of `low`.
    */
-  final class Property (
+  final class Property(
     val isEmpty: Boolean,
     val low: DenseVector[Double],
     val A: DenseMatrix[Double],
@@ -227,7 +221,7 @@ class ParallelotopeDomain private extends NumericalDomain {
      */
     def union(that: Property): Property = {
 
-      /**
+      /*
        * A PrioritizedConstraint is a tuple `(a, m, M, p)` where `a` is a vector, `m` and `M` are
        * reals and `p` is an integer, whose intended meaning is the constraint `m <= ax <= M`
        * with a given priority `p`.
@@ -240,7 +234,6 @@ class ParallelotopeDomain private extends NumericalDomain {
        * that (2). This is used to refine priorities.
        */
       def priority(v: DenseVector[Double], ownedBy: Int = 0): PrioritizedConstraint = {
-
         val y1 = A.t \ v
         val (l1, u1) = domain.extremalsInBox(y1, low, high)
         val y2 = that.A.t \ v
@@ -248,30 +241,32 @@ class ParallelotopeDomain private extends NumericalDomain {
         val p =
           if (l1 == l2 && l2 == u1 && u1 == u2)
             0
+          else if (favorAxes && countNonZero(v) == 1)
+            10
           else if (!l1.isInfinity && !l2.isInfinity && !u1.isInfinity && !u2.isInfinity) {
             if (l1 == l2 && u1 == u2)
-              1
+              10
             else if (l1 >= l2 && u1 <= u2)
-              if (ownedBy == 2) 2 else 3
+              if (ownedBy == 2) 20 else 30
             else if (l2 >= l1 && u2 <= u1)
-              if (ownedBy == 1) 2 else 3
+              if (ownedBy == 1) 20 else 30
             else if (l2 <= u1 && l2 >= l1 && u2 >= u1)
-              3
+              30
             else if (l2 <= l1 && u2 >= l1 && u2 <= u1)
-              3
-            else 4
+              30
+            else 40
           } else if (l1 == l2 && !l1.isInfinity && !l2.isInfinity)
-            5
+            50
           else if (u1 == u2 && !u1.isInfinity && !u2.isInfinity)
-            5
+            50
           else if (!l1.isInfinity && !l2.isInfinity)
-            6
+            60
           else if (!u1.isInfinity && !u2.isInfinity)
-            6
+            60
           else 100
-        return (v, l1 min l2, u1 max u2, p)
+        (v, l1 min l2, u1 max u2, p)
       }
-
+      
       /**
        * Determines whether `v1` and `v2` are linearly dependent.
        * @return `None` if `v1` and `v2` are not linearly dependent, otherwise it is
@@ -283,7 +278,7 @@ class ParallelotopeDomain private extends NumericalDomain {
         if (i == dimension)
           Some(1)
         else if (v1 / v1(i) == v2 / v2(i))
-          return Some(v1(i) / v2(i))
+          Some(v1(i) / v2(i))
         else
           None
       }
@@ -403,16 +398,17 @@ class ParallelotopeDomain private extends NumericalDomain {
       if (isEmpty) return this
       val coeff = tcoeff.padTo(dimension, 0.0).toArray
       if (coeff(n) != 0) {
+        // invertible assignment
         val increment = A(::, n) :* known / coeff(n)
         val newlow = low :+ increment
         val newhigh = high :+ increment
-        // in the past (4.0) we could use SparseVector instead of DenseVector, but this does
-        // not work anymore
+        // in the past we could use SparseVector instead of DenseVector, but this does not work anymore
         val ei = DenseVector.zeros[Double](dimension)
         ei(n) = 1
         val newA = A :- (A(::, n) * (DenseVector(coeff) - ei).t) / coeff(n)
         new Property(false, newlow, newA, newhigh)
       } else {
+        // non-invertible assignment
         val newP = nonDeterministicAssignment(n)
         val Aprime = newP.A.copy
         val j = ((0 to Aprime.rows - 1) find { Aprime(_, n) != 0 }).get
@@ -425,7 +421,7 @@ class ParallelotopeDomain private extends NumericalDomain {
         val newhigh = newP.high.copy
         newlow(j) = known
         newhigh(j) = known
-        return new Property(false, newlow, Aprime, newhigh)
+        new Property(false, newlow, Aprime, newhigh)
       }
     }
 
@@ -442,9 +438,7 @@ class ParallelotopeDomain private extends NumericalDomain {
      * @throws ILLEGAL
      */
     def linearInequality(lf: LinearForm[Double]): Property = {
-
       require(lf.dimension <= dimension)
-
       if (isEmpty) return this
       if (dimension == 0)
         if (lf.known > 0)
@@ -452,44 +446,44 @@ class ParallelotopeDomain private extends NumericalDomain {
         else
           return this
 
-      val tcoeff = lf.homcoeffs
       val known = lf.known
-      val coeff = tcoeff.padTo(dimension, 0.0).toArray
+      val coeffs = DenseVector(lf.homcoeffs.padTo(dimension, 0.0): _*)
+      val coeffsTransformed = A.t \ coeffs
 
-      val y = A.t \ DenseVector(coeff)
-      val j = (0 until dimension) find { i => y(i) != 0 && low(i).isInfinity && high(i).isInfinity }
-      j match {
+      val removeCandidates = (0 until dimension) find { i => coeffsTransformed(i) != 0 && low(i).isInfinity && high(i).isInfinity }
+      removeCandidates match {
         case None => {
           val newlow = low.copy
           val newhigh = high.copy
-          val (minc, maxc) = domain.extremalsInBox(y, newlow, newhigh)
+          val (minc, maxc) = domain.extremalsInBox(coeffsTransformed, newlow, newhigh)
           if (minc > -known) return bottom
 
-          val lfArgmin = (y) mapPairs { case (i, c) => if (c > 0) low(i) else high(i) }
+          val lfArgmin = coeffsTransformed mapPairs { case (i, c) => if (c > 0) low(i) else high(i) }
 
-          val infinities = (0 until dimension) filter { i => lfArgmin(i).isInfinity && y(i) != 0 }
+          val infinities = (0 until dimension) filter { i => lfArgmin(i).isInfinity && coeffsTransformed(i) != 0 }
           infinities.size match {
             case 0 =>
               for (i <- 0 until dimension) {
-                if (y(i) > 0) newhigh(i) = high(i) min (lfArgmin(i) + (-known - minc) / y(i))
-                else if (y(i) < 0) newlow(i) = low(i) max (lfArgmin(i) + (-known - minc) / y(i))
+                if (coeffsTransformed(i) > 0) newhigh(i) = high(i) min (lfArgmin(i) + (-known - minc) / coeffsTransformed(i))
+                else if (coeffsTransformed(i) < 0) newlow(i) = low(i) max (lfArgmin(i) + (-known - minc) / coeffsTransformed(i))
               }
             case 1 => {
               val posinf = infinities.head
-              if (y(posinf) < 0)
-                newlow(posinf) = low(posinf) max ((-dotprod(y, lfArgmin, posinf) - known) / y(posinf))
+              if (coeffsTransformed(posinf) < 0)
+                newlow(posinf) = low(posinf) max ((-dotprod(coeffsTransformed, lfArgmin, posinf) - known) / coeffsTransformed(posinf))
               else
-                newhigh(posinf) = high(posinf) min ((-dotprod(y, lfArgmin, posinf) - known) / y(posinf))
+                newhigh(posinf) = high(posinf) min ((-dotprod(coeffsTransformed, lfArgmin, posinf) - known) / coeffsTransformed(posinf))
             }
             case _ =>
           }
           new Property(false, newlow, A, newhigh)
         }
-        case Some(j) => {
+        case Some(chosen) => {
+          // TODO: check.. I think this may generate non-invertible matrices
           val newA = A.copy
           val newhigh = high.copy
-          newA(j, ::) := DenseVector(coeff).t
-          newhigh(j) = -known
+          newA(chosen, ::) := coeffs.t
+          newhigh(chosen) = -known
           new Property(false, low, newA, newhigh)
         }
       }
@@ -522,28 +516,40 @@ class ParallelotopeDomain private extends NumericalDomain {
      */
     def nonDeterministicAssignment(n: Int): Property = {
       require(n <= dimension)
-      if (isEmpty) return this;
-      val j = (0 to dimension - 1).filter { i => A(i, n) != 0 && (!low(i).isNegInfinity || !high(i).isPosInfinity) }
-      if (j.isEmpty) return this
+      if (isEmpty) return this
+
+      val unsortedCandidates = (0 until dimension) filter { i => A(i, n) != 0 && (!low(i).isNegInfinity || !high(i).isPosInfinity) }
+      if (unsortedCandidates.isEmpty) return this
+
+      // We prever to use as a pivot a simple constraint. Therefore, we order constraints by the number of
+      // non-zero coefficients.
+      val countNonZeroInRows = countNonZero(A(*, ::))
+      val removeCandidates = unsortedCandidates.sortBy({ i => countNonZeroInRows(i) })
+      val removeCandidatesEq = removeCandidates filter { i => low(i) == high(i) }
+      val removeCandidatesBounded = removeCandidates filter { i => !low(i).isInfinity && !high(i).isInfinity }
+
+      val pivot =
+        if (!removeCandidatesEq.isEmpty) removeCandidatesEq.head
+        else if (!removeCandidatesBounded.isEmpty) removeCandidatesBounded.head
+        else removeCandidates.head
+      val rowPivot = A(pivot, ::)
+
       val newA = A.copy
       val newlow = low.copy
       val newhigh = high.copy
-      val j0 = j.filter { i => low(i) == high(i) }
-      val j1 = j.filter { i => !low(i).isInfinity && !high(i).isInfinity }
-      val r = if (!j0.isEmpty) j0(0) else if (!j1.isEmpty) j1(0) else j(0)
-      val rowr = A(r, ::)
-      for (i <- j if i != r) {
-        val value1 = A(r, n)
+
+      for (i <- removeCandidates if i != pivot) {
+        val value1 = rowPivot(n)
         val value2 = A(i, n)
         val rowi = A(i, ::)
-        newA(i, ::) := rowr * value2 - rowi * value1
-        val (minr, maxr) = if (A(i, n) < 0) (high(r), low(r)) else (low(r), high(r))
-        val (mini, maxi) = if (-A(r, n) < 0) (high(i), low(i)) else (low(i), high(i))
-        newlow(i) = minr * value2 - mini * value1
-        newhigh(i) = maxr * value2 - maxi * value1
+        newA(i, ::) := rowPivot * value2 - rowi * value1
+        val (minPivot, maxPivot) = if (A(i, n) < 0) (high(pivot), low(pivot)) else (low(pivot), high(pivot))
+        val (mini, maxi) = if (-A(pivot, n) < 0) (high(i), low(i)) else (low(i), high(i))
+        newlow(i) = minPivot * value2 - mini * value1
+        newhigh(i) = maxPivot * value2 - maxi * value1
       }
-      newlow(r) = Double.NegativeInfinity
-      newhigh(r) = Double.PositiveInfinity
+      newlow(pivot) = Double.NegativeInfinity
+      newhigh(pivot) = Double.PositiveInfinity
       new Property(false, newlow, newA, newhigh)
     }
 
@@ -582,7 +588,7 @@ class ParallelotopeDomain private extends NumericalDomain {
         for (j <- 0 until A.rows; if j != n) yield M(i, j)
 
       if (isEmpty)
-         ParallelotopeDomain.this.bottom(A.rows - 1)
+        ParallelotopeDomain.this.bottom(A.rows - 1)
       else {
         val forgot = this.nonDeterministicAssignment(n)
         val set1 = for (i <- 0 until dimension; if !forgot.low(i).isInfinity; if forgot.A(i, n) == 0) yield -LinearForm(-forgot.low(i) +: rowToSeq(forgot.A, i, n): _*)
@@ -644,9 +650,9 @@ class ParallelotopeDomain private extends NumericalDomain {
 
     def isBottom = isEmpty
 
-    def bottom =  ParallelotopeDomain.this.bottom(dimension)
+    def bottom = ParallelotopeDomain.this.bottom(dimension)
 
-    def top =  ParallelotopeDomain.this.top(dimension)
+    def top = ParallelotopeDomain.this.top(dimension)
 
     def tryCompareTo[B >: Property](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = that match {
       case that: Property =>
@@ -686,7 +692,7 @@ class ParallelotopeDomain private extends NumericalDomain {
             newlow(i) += v * high(j)
           }
       }
-      return new Property(false, newlow, Aprime, newhigh)
+      new Property(false, newlow, Aprime, newhigh)
     }
 
     def <=[B >: Property](that: Property)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean = {
@@ -753,9 +759,14 @@ class ParallelotopeDomain private extends NumericalDomain {
  * Companion class for the parallelotope domain
  */
 object ParallelotopeDomain {
+  private lazy val standard = new ParallelotopeDomain(false) with CachedTopBottom
+  private lazy val favoring = new ParallelotopeDomain(true) with CachedTopBottom
+
   /**
-   *  Return the parallelotope domain
+   * Returns an abstract domain for parallelotopes.
+   * @param favorAxes determines whether the heuristics built into the domain should try to keep the variability
+   * along axes at the minimum. This is generally useful when the domain is one of the component of the sum
+   * combinator.
    */
-  def apply() = v
-  private val v = new ParallelotopeDomain() with CachedTopBottom
+  def apply(favorAxes: Boolean = false) = if (favorAxes) favoring else standard
 }

@@ -38,8 +38,8 @@ class SumIntParallelotopeDomain(val dom1: BoxDoubleDomain, val dom2: Paralleloto
       } else {
         val q1 = p1.linearAssignment(n, homlf)
         val q2 = p2.linearAssignment(n,lf)
-        SumIntParallelotopeDomain.this(q1, q2)     
-      }
+        SumIntParallelotopeDomain.this(q1, q2)
+      }  
     }
   }
 
@@ -54,5 +54,5 @@ object SumIntParallelotopeDomain {
    *  Returns the standard Int+Parallelotope Domain
    */
   def apply() = v
-  private val v = new SumIntParallelotopeDomain(BoxDoubleDomain(), ParallelotopeDomain())
+  private lazy val v = new SumIntParallelotopeDomain(BoxDoubleDomain(), ParallelotopeDomain(favorAxes = true))
 }
