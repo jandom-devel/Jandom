@@ -19,7 +19,6 @@
 package it.unich.jandom.domains
 
 import org.scalatest.FunSuite
-import it.unich.jandom.domains.numerical.Parallelotope
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.numerical.ParallelotopeDomain
