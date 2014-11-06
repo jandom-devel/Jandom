@@ -73,7 +73,7 @@ object JandomSumBench extends App {
     println("WIDENINGS: " + program.locations.filter(program.isJoinNode).map(_.name).mkString(", "))
 
     val params = new targets.Parameters[LTS] { val domain = BoxDoubleDomain(false) }
-    params.wideningFactory = DelayedWideningFactory(DefaultWidening, 2) // needed for parallelotopes
+    params.wideningFactory = DelayedWideningFactory(DefaultWidening, 3) // needed for parallelotopes
     program.analyze(params) // warmup JVM
 
     val t1 = System.currentTimeMillis
@@ -92,7 +92,7 @@ object JandomSumBench extends App {
 
 
     val params3 = new targets.Parameters[LTS] { val domain = ParallelotopeDomain() }
-    params3.wideningFactory = DelayedWideningFactory(DefaultWidening, 2) // needed for parallelotopes
+    params3.wideningFactory = DelayedWideningFactory(DefaultWidening, 3) // needed for parallelotopes
     //params3.debugWriter = new java.io.PrintWriter(System.out)
 
     program.analyze(params3) // warmup JVM
