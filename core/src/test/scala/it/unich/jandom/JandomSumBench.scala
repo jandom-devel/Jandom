@@ -117,6 +117,12 @@ object JandomSumBench extends App {
     // SOSTITUIRE cann1 con cann3 se si vuole il confronto con i Parallelotopi.
     val comp = cann2 map { case (loc, v) => (loc -> v.tryCompareTo(cann1(loc) intersection cann3(loc))) }
 
+    //comparing sum with box
+    //val comp = cann2 map { case (loc, v) => (loc -> v.tryCompareTo(cann1(loc))) }
+
+    //comparing sum with parallelotope
+    //val comp = cann2 map { case (loc, v) => (loc -> v.tryCompareTo(cann3(loc))) }
+
     println("COUNT EQUALS: " + comp.count(_._2 == Some(0)))
     println("COUNT BETTER SUM: " + comp.count(_._2 == Some(-1)))
     println("COUNT BETTER OTHER: " + comp.count(_._2 == Some(1)))

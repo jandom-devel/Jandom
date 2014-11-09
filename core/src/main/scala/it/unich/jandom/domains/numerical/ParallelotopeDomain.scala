@@ -242,7 +242,7 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
           if (l1 == l2 && l2 == u1 && u1 == u2)
             0
           else if (favorAxes && countNonZero(v) == 1)
-            10
+              25 //  previous value for test: 10
           else if (!l1.isInfinity && !l2.isInfinity && !u1.isInfinity && !u2.isInfinity) {
             if (l1 == l2 && u1 == u2)
               10
@@ -266,7 +266,7 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
           else 100
         (v, l1 min l2, u1 max u2, p)
       }
-      
+
       /**
        * Determines whether `v1` and `v2` are linearly dependent.
        * @return `None` if `v1` and `v2` are not linearly dependent, otherwise it is

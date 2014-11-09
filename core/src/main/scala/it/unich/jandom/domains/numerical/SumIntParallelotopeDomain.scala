@@ -39,7 +39,7 @@ class SumIntParallelotopeDomain(val dom1: BoxDoubleDomain, val dom2: Paralleloto
         val q1 = p1.linearAssignment(n, homlf)
         val q2 = p2.linearAssignment(n,lf)
         SumIntParallelotopeDomain.this(q1, q2)
-      }  
+      }
     }
   }
 
