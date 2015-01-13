@@ -199,7 +199,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
     def apply() { actionMap("copy-to-clipboard").actionPerformed(null) }
   }
 
-  val outputHTMLAction = new Action("HTML output") {
+  val outputHTMLAction = new Action("HTML output...") {
     def apply() { outputHTML() }
   }
 
