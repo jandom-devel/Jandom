@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<!--- 
+<!---
  * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
  * Copyright 2014 Mattia Di Giuseppe
  *
@@ -18,62 +18,54 @@
  * You should have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
-
  -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Jandom output</title>
 <script src="http://code.jquery.com/jquery-1.11.1.min.js" type="text/javascript"></script>
 <script type="text/javascript">
-function SortNoteDesc(x,y) {
-  return y.col - x.col; 
-}
-
-function SortTooltipId(x,y) {
-	if (x[2] < y[2])
-		return -1;
-	else if (x[2] > y[2])
-		return 1;
-	else 
-		return x[3]-y[3];
-}
 
 function escapeHTML(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function addSpan(row, col, str)
+function addSpan(str, row, cols, spanIds)
 {
 	var finalString = "";
+	
+	if (str.length in cols) {
+		str += " ";
+    }
+	
 
-	for (i=0; i<str.length; i++)
+	for (var j=0; j<str.length; j++)
 	{
-		var codId = "txt" + row + "-" +col;
-		if (i == col)
+		if (j in cols)
 		{
-			finalString += "<span id = '"+codId+"'>"+escapeHTML(str[i])+"</span>"
+			
+		   var codId = "txt" + row + "-" + j;
+			finalString += "<span id = '"+codId+"'>"+escapeHTML(str[j])+"</span>";
+			var toArray = new Array(codId,cols[j]);
+			spanIds.push(toArray);
 		}
 		else
 		{
-			finalString += escapeHTML(str[i]);
+			finalString += escapeHTML(str[j]);
 		}
 	}
-	
-	if (str.length <= col) {
-		finalString += "<span id = '"+codId+"'> </span>"
-	}
+
 	return finalString;
 }
 
 function printTooltip(spanIds)
 {
-    spanIds.sort(SortTooltipId);
     for (var k in spanIds){
     	var codId = $('#'+spanIds[k][0]);
     	var offset = codId.offset();
     	var left = offset.left-2;
     	var top = offset.top;
-    	var tip = '<span class="tip" style="position:absolute; left:'+left+'px; top:'+top+'px">' + k + '</span>';
+    	var stile = "position:absolute; left:"+left+"px; top:"+top+"px";
+    	var tip = '<span class="tip" style="'+stile+'">' + k + '</span>';
     	var note = '<div class="note">' + k + ': '+escapeHTML(spanIds[k][1]) + '</div>';
     	$( "#tips" ).append(tip);
     	$( "#notes" ).append(note);			  
@@ -82,31 +74,30 @@ function printTooltip(spanIds)
 
 function renderEditor()
 {
-	var code = new Array( %%PROG%% );	
-	var notes = [ %%ANN%% ];
-	
-	notes.sort(SortNoteDesc);	
-	
+       var code = new Array( %%PROG%% );       
+       var notes = [ %%ANN%% ];
+
 	var spanIds = new Array();
 	
-	for (var i in code)
+	var cols = new Array();
+	for (i=0; i < notes.length; i++)
+	{
+		var n = notes[i]; 
+		if (!(n.row in cols)) 
+			cols[n.row] = new Array(); //creates new nested array
+		cols[n.row][n.col] = n.note; //association between row col and notes
+	}
+	
+	
+	
+	for (i=0; i < code.length; i++)
 	{		
-		var str_final = escapeHTML(code[i]);
-
-		for (var j=0; j<notes.length; j++)
-		{
-			// get info on the i-th note 
-			var col = notes[j].col;
-			var note = notes[j].note;
-			var row = notes[j].row;
-			
-			// check correspondence on the note and current row
-			if (row == i)
-			{					
-				str_final = addSpan(row, col, code[i]);				
-				var toArray = new Array("txt"+row+"-"+col,note,row,col);
-				spanIds.push(toArray);				
-			}
+	    var str_final = "";
+		
+	    if (i in cols) {
+		   str_final = addSpan( code[i], i, cols[i], spanIds );		
+	    } else  {
+		   str_final = escapeHTML(code[i]);
 		}
 
 		document.getElementById('code').innerHTML  += "<div class='row'>" + str_final + "</div>";
@@ -179,3 +170,4 @@ function renderEditor()
 
 </body>
 </html>
+
