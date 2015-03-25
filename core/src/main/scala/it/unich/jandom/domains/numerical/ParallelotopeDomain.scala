@@ -117,7 +117,7 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
       col match {
         case Some(col) =>
           row /= row(col)
-          pivots = pivots :+ (row, col)
+          pivots = pivots :+ Tuple2(row, col)
           indexes = indexes :+ i
         case None =>
       }

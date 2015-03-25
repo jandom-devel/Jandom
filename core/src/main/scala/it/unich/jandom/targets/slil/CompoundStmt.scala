@@ -48,14 +48,14 @@ case class CompoundStmt(stmts: SLILStmt*) extends SLILStmt {
     var index = 0
     var decorations = 0
     for (stmt <- stmts) {
-      for (p <- ann.get(this, index); deco <- ppspec.decorator(p, row + result.count(_ == '\n'), spaces.size)) {
+      for (p <- ann.get((this, index)); deco <- ppspec.decorator(p, row + result.count(_ == '\n'), spaces.size)) {
         result ++= spaces + deco + '\n'
         decorations += 1
       }
       result ++= stmt.mkString(ann, ppspec, row + result.count(_ == '\n'), level)
       index += 1
     }
-    for (p <- ann.get(this, index); deco <- ppspec.decorator(p, row + result.count(_ == '\n'), spaces.size)) {
+    for (p <- ann.get((this, index)); deco <- ppspec.decorator(p, row + result.count(_ == '\n'), spaces.size)) {
       result ++= spaces + deco + '\n'
     }
     result.toString

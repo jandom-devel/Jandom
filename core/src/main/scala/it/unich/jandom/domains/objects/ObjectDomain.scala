@@ -35,40 +35,40 @@ trait ObjectDomain extends DimensionFiberedDomain {
   /**
    * This trait is the interface for abstract elements in the object domain.
    */
-  trait ObjectProperty[Property <: ObjectProperty[Property]] extends DimensionFiberedProperty[Property] {
-    this: Property =>
+  trait ObjectProperty[P <: ObjectProperty[P]] extends DimensionFiberedProperty[P] {
+    this: P =>
 
     type ShareFilter = UP[Int] => Boolean
 
     /**
      * Add a new non-null variable which does not share with any other variable.
      */
-    def addFreshVariable: Property
+    def addFreshVariable: P
 
     /**
      * Assign the null object to variable `dst`.
      */
-    def assignNull(dst: Int = dimension - 1): Property
+    def assignNull(dst: Int = dimension - 1): P
 
     /**
      * Corresponds to the assignment `dst = src`.
      */
-    def assignVariable(dst: Int, src: Int): Property
+    def assignVariable(dst: Int, src: Int): P
 
     /**
      * Corresponds to the assignment `dst.field = src`.
      */
-    def assignVariableToField(dst: Int, field: Int, src: Int): Property
+    def assignVariableToField(dst: Int, field: Int, src: Int): P
 
     /**
      * Corresponds to the assignment `dst = src.field`.
      */
-    def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: ShareFilter = (_ => true)): Property
+    def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: ShareFilter = (_ => true)): P
 
     /**
      * Refine property according to the information provided by the ShareFilter.
      */
-    def filter(mayShare: ShareFilter): Property
+    def filter(mayShare: ShareFilter): P
 
     /**
      * Returns true if variable `v` is definitively null
@@ -78,12 +78,12 @@ trait ObjectDomain extends DimensionFiberedDomain {
     /**
      * Returns the property after the successful completion of the test `v == null`
      */
-    def testNull(v: Int): Property
+    def testNull(v: Int): P
 
     /**
      * Returns the property after the successful completion of the test `v != null`
      */
-    def testNotNull(v: Int): Property
+    def testNotNull(v: Int): P
 
   }
 }

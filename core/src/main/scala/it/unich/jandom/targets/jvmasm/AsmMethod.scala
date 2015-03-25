@@ -115,10 +115,10 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
               case IF_ICMPGT => {
                 val scopy = s.clone
                 scopy.if_icmp(ComparisonOperators.GT)
-                exits :+= (jumpBlock.get, scopy)
+                exits :+= Tuple2(jumpBlock.get, scopy)
                 s.if_icmp(ComparisonOperators.LTE)
               }
-              case GOTO => exits :+= (jumpBlock.get, s)
+              case GOTO => exits :+= Tuple2(jumpBlock.get, s)
               case _ => throw UnsupportedASMInsnException(node)
             }
           case node: LabelNode =>

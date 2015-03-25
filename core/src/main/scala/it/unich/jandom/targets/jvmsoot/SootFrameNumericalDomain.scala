@@ -75,7 +75,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      * This method check invariants on a numerical abstract frame.
      */
     @elidable(ASSERTION)
-    private def invariantCheck {
+    private def invariantCheck() {
       assert(prop.dimension == stack.size, "Numerical property and stack have different dimensions")
       if (prop.isEmpty) return
       for (i <- 0 until prop.dimension) stack(dimension - 1 - i) match {
