@@ -18,7 +18,7 @@ fork in ThisBuild := true
 
 executionEnvironment in ThisBuild := Some(EclipseExecutionEnvironment.JavaSE17)
 
-eclipseOutput in ThisBuild := Some(".target")
+eclipseOutput in ThisBuild := Some("target.eclipse")
 
 // for removing warnings when Breeze does not find native libraries
 //
