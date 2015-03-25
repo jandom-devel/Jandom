@@ -14,7 +14,7 @@ version in ThisBuild := "0.1.3-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.11.4"
 
-scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-Xlint")
+scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-Xlint", "-Xlint:-delayedinit-select", "-Xlint:-missing-interpolator")
 
 fork in ThisBuild := true
 
