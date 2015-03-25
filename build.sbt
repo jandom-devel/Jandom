@@ -14,6 +14,8 @@ version in ThisBuild := "0.1.3-SNAPSHOT"
 
 scalaVersion in ThisBuild := "2.11.4"
 
+scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-Xlint")
+
 fork in ThisBuild := true
 
 executionEnvironment in ThisBuild := Some(EclipseExecutionEnvironment.JavaSE17)
