@@ -1,17 +1,10 @@
-import AssemblyKeys._
-
-resolvers ++= Seq(
-  "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
-  "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
-)
+//*** Additional source directories for PPL
 
 unmanagedSourceDirectories in Compile ++= (pplJar.value map { _ => (sourceDirectory in Compile).value / "ppl" }).toSeq
 
 unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory in Test).value / "ppl" }).toSeq
 
-// Assembly plugin configuration
-
-assemblySettings
+//*** Assembly plugin
 
 test in assembly := {}
 
@@ -22,7 +15,7 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   }
 }
 
-// Cappi plugin configurations
+//*** Cappi plugin
 
 cappiSettings
 
