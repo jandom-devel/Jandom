@@ -26,6 +26,7 @@ import it.unich.jandom.domains.DimensionFiberedDomain
 import it.unich.jandom.domains.DimensionFiberedProperty
 import it.unich.jandom.targets.IterationStrategy
 import it.unich.jandom.targets.WideningNarrowingLocation
+import it.unich.jandom.fixpoint._
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -96,6 +97,21 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
     }
 
     override def empty = new LTSAnnotation[Property]
+  }
+
+  /**
+   * Converts an LTS into a finite equation system, given a numerical domain.
+   */
+  def toEQS(dom: NumericalDomain) = new FiniteEquationSystem {
+    type Unknown = Location
+    type Value = dom.Property
+    def apply(env: Assignment) = {
+      x: Unknown =>
+         val incomingValues = for ( t <- x.incoming ) yield t.analyze(env(t.start))
+         incomingValues reduce { _ union _ }
+    }
+    val unknowns = locations
+    def infl(x: Unknown) = x.outgoing.map( _.end )
   }
 
   override def getAnnotation[Property] = new LTSAnnotation[Property]
