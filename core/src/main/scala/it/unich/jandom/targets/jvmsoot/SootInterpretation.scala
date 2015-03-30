@@ -65,7 +65,7 @@ class JimpleInterpretation[Params <: Parameters[JimpleMethod]](val params: Param
   private val jmethodCache = scala.collection.mutable.HashMap[SootMethod, JimpleMethod]()
 
   def apply(method: SootMethod, input: params.Property): params.Property = {
-    if (inte contains (method, input)) inte(method, input) match {
+    if (inte contains ((method, input))) inte((method, input)) match {
       case (output, true) => output
       case (output, false) => throw new IllegalArgumentException("Recursive")
     }

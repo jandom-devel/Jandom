@@ -49,8 +49,8 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
     params.nestingLevel += 1
 
     // Determines widening/narrowing operators to use
-    val widening = params.wideningFactory(this, 1)
-    val narrowing = params.narrowingFactory(this, 1)
+    val widening = params.wideningFactory((this, 1))
+    val narrowing = params.narrowingFactory((this, 1))
 
     // Determines initial values for the analysis, depending on the calling phase
     var (bodyResult, invariant) =
@@ -159,7 +159,7 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
   override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec, row: Int, level: Int): String = {
     val spaces = ppspec.indent(level)
     val firstLine = spaces + "while (" + condition.mkString(ppspec.env.names) + ")"
-    val annotation = for (p <- ann.get(this, 1); deco <- ppspec.decorator(p, row, firstLine.size + 1)) yield " " + deco
+    val annotation = for (p <- ann.get((this, 1)); deco <- ppspec.decorator(p, row, firstLine.size + 1)) yield " " + deco
     firstLine + annotation.getOrElse("") + " {\n" +
       body.mkString(ann, ppspec, row + 1, level + 1) +
       spaces + "}\n"

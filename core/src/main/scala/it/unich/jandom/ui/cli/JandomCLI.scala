@@ -31,7 +31,6 @@ import it.unich.jandom.domains.numerical.BoxDoubleDomain
  */
 object JandomCLI extends App {
   val conf = new Conf(args)
-
   val source = scala.io.Source.fromFile(conf.file()).getLines.mkString("\n")
   val parsed = RandomParser().parseProgram(source)
   if (parsed.successful) {

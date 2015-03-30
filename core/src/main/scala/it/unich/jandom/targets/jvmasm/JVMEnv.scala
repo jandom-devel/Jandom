@@ -42,7 +42,7 @@ abstract class JVMEnv[Property <: JVMEnv[Property]] extends AbstractProperty[Pro
    * Empties the abstract environment (i.e., it returns an abstract environment
    * representing no concrete environments).
    */
-  def empty
+  def empty()
 
   def ipush(c: Int)
 

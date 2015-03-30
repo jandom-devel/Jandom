@@ -118,7 +118,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain, classAnalysis: ClassReachable
      * This method check invariants on a numerical abstract frame.
      */
     @elidable(ASSERTION)
-    private def invariantCheck {
+    private def invariantCheck() {
       assert(prop.dimension == stack.size, s"Sharing property <${prop}> and stack of types <${stack}> have different dimensions")
       for (i <- 0 until stack.size) stack(size - 1 - i) match {
         case _: RefType =>

@@ -1,30 +1,41 @@
-import EclipseKeys._
+//*** Declare projects
 
-val Jandom = project in file("core")
+val Jandom = project in file("core") enablePlugins(BuildInfoPlugin)
 
-val JandomExtended = project in file("extended") dependsOn Jandom % "compile->compile;test->test"
+val JandomExtended = project in file("extended")  dependsOn Jandom % "compile->compile;test->test"
+
+val root = project in file(".")  aggregate (Jandom, JandomExtended) 
+
+// This delegates the root run task to the run task in the Jandom project
+
+run <<= run in ("Jandom", Compile)
+
+run in Test <<= run in ("Jandom", Test)
 
 // Add a new benchmark configuration...
 // val Bench = config("bench") extend(Test)
 // val root = project in file(".") configs(Bench) settings( inConfig(Bench) (Defaults.testSettings):_*) aggregate (Jandom, JandomExtended) 
 
-val root = project in file(".") aggregate (Jandom, JandomExtended) 
+//*** Scala configuration
 
 version in ThisBuild := "0.1.3-SNAPSHOT"
 
-scalaVersion in ThisBuild := "2.11.4"
+scalaVersion in ThisBuild := "2.11.6"
+
+scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-Xlint", "-Xlint:-delayedinit-select", "-Xlint:-missing-interpolator")
 
 fork in ThisBuild := true
 
-executionEnvironment in ThisBuild := Some(EclipseExecutionEnvironment.JavaSE17)
+crossPaths in ThisBuild := false
 
-eclipseOutput in ThisBuild := Some(".target")
+//*** Resolvers
 
-// for removing warnings when Breeze does not find native libraries
-//
-// javaOptions in ThisBuild ++= Seq("-Dcom.github.fommil.netlib.BLAS=com.github.fommil.netlib.F2jBLAS",
-//   "-Dcom.github.fommil.netlib.LAPACK=com.github.fommil.netlib.F2jLAPACK",
-//   "-Dcom.github.fommil.netlib.ARPACK=com.github.fommil.netlib.F2jARPACK")
+resolvers in ThisBuild ++= Seq(
+  "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
+  "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
+)
+
+//*** Detect PPL
 
 val optionalPPLPathName = try {
     val PPLPathName = Process("ppl-config -l").lines.head+"/ppl/ppl_java.jar"
@@ -35,9 +46,15 @@ val optionalPPLPathName = try {
 
 pplJar in ThisBuild := optionalPPLPathName
 
-// This delegates the root run task to the run task in JandomCore
+//*** Eclipse plugin
 
-run <<= run in ("Jandom", Compile)
+EclipseKeys.executionEnvironment in ThisBuild := Some(EclipseExecutionEnvironment.JavaSE17)
 
-run in Test <<= run in ("Jandom", Test)
+EclipseKeys.eclipseOutput in ThisBuild := Some("target.eclipse")
+
+// for removing warnings when Breeze does not find native libraries
+//
+// javaOptions in ThisBuild ++= Seq("-Dcom.github.fommil.netlib.BLAS=com.github.fommil.netlib.F2jBLAS",
+//   "-Dcom.github.fommil.netlib.LAPACK=com.github.fommil.netlib.F2jLAPACK",
+//   "-Dcom.github.fommil.netlib.ARPACK=com.github.fommil.netlib.F2jARPACK")
 
