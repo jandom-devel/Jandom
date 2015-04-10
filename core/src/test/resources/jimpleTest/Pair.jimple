@@ -1,0 +1,16 @@
+class Pair extends java.lang.Object
+{
+    A v;
+    B w;
+
+    void <init>()
+    {
+        Pair this;
+
+        this := @this: Pair;
+
+        specialinvoke this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}

@@ -1,0 +1,16 @@
+class ListA extends java.lang.Object
+{
+    ListA next;
+    A v;
+
+    void <init>()
+    {
+        ListA this;
+
+        this := @this: ListA;
+
+        specialinvoke this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}
