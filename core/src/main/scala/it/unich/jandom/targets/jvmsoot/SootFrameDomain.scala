@@ -90,6 +90,12 @@ trait SootFrameDomain extends CartesianFiberedDomain {
     def evalNew(tpe: soot.Type): P
 
     /**
+     * Add a new variable of unknown value
+     * @param t the type of the new variable
+     */
+    def evalUnknown(tpe: soot.Type): Property
+
+    /**
      * Evaluate  a frame variable `i` and push a copy into the frame
      * @param i the frame variable to evaluate
      */
@@ -101,6 +107,12 @@ trait SootFrameDomain extends CartesianFiberedDomain {
      * @param f the field to evaluate within `i`
      */
     def evalField(i: Int = dimension - 1, f: soot.SootField): P
+
+    /**
+     * Cast the top element of the frame to the new type
+     * @param t the new type
+     */
+    def evalCast(t: soot.Type): Property
 
     /**
      * Sums the two top element of the frame and replace them with the result

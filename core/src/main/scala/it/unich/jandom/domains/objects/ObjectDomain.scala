@@ -18,32 +18,60 @@
 
 package it.unich.jandom.domains.objects
 
-import it.unich.jandom.domains.DimensionFiberedDomain
-import it.unich.jandom.domains.DimensionFiberedProperty
+import it.unich.jandom.domains.CartesianFiberedDomain
+import it.unich.jandom.domains.CartesianFiberedProperty
+import it.unich.jandom.objectmodels.ObjectModel
 
 /**
  * This trait represents the interface for a domain which handles objects and their relationship.
  * May be used, for example, for sharing analysis. This is only a draft, and will be probably improved
- * along the development of Jandom. Also, the concrete domain should be better understood.
+ * along the development of Jandom.
+ * @tparam OM the class of object models related to this domain
  * @author Gianluca Amato <gamato@unich.it>
- *
  */
-trait ObjectDomain extends DimensionFiberedDomain {
-
+trait ObjectDomain[+OM <: ObjectModel] extends CartesianFiberedDomain {
+  /**
+   * The property associated to an ObjectDomain is an ObjectProperty.
+   */
   type Property <: ObjectProperty[Property]
+
+  /**
+   * The type of the fiber components corresponds to the type of the object model.
+   */
+  type FiberComponent = om.Type
+
+  /**
+   * The object model of this domain. An object model abstracts the details of the ways
+   * a programming languages deals with objects.
+   */
+  val om: OM
 
   /**
    * This trait is the interface for abstract elements in the object domain.
    */
-  trait ObjectProperty[P <: ObjectProperty[P]] extends DimensionFiberedProperty[P] {
+  trait ObjectProperty[P <: ObjectProperty[P]] extends CartesianFiberedProperty[om.Type, P] {
     this: P =>
 
-    type ShareFilter = UP[Int] => Boolean
+    /**
+     * Returns the type of an object reachable by following a sequence of fields. The
+     * returned type should be a super-type of all the object possibly reachable with
+     * this sequence of fields. Returns `None` if the field sequence stops due to a
+     * null pointer.
+     */
+    def typeOf(v: Int, fs: Iterable[om.Field]): Option[om.Type]
+
+    /**
+     * Add a new variable. The new variable may be in whatever relationship with the
+     * old ones.
+     * @param t the type of the new variable
+     */
+    def addUnknownVariable(t: om.Type): P
 
     /**
      * Add a new non-null variable which does not share with any other variable.
+     * @param t the type of the new variable
      */
-    def addFreshVariable: P
+    def addFreshVariable(t: om.Type): P
 
     /**
      * Assign the null object to variable `dst`.
@@ -51,37 +79,101 @@ trait ObjectDomain extends DimensionFiberedDomain {
     def assignNull(dst: Int = dimension - 1): P
 
     /**
-     * Corresponds to the assignment `dst = src`.
+     * Corresponds to the assignment `dst = src`. We assume dst is a subtype
+     * of src
      */
     def assignVariable(dst: Int, src: Int): P
 
     /**
-     * Corresponds to the assignment `dst.field = src`.
+     * Corresponds to the assignment `dst.field = src`. We assume dst.field is a subtype
+     * of src
      */
-    def assignVariableToField(dst: Int, field: Int, src: Int): P
+    def assignVariableToField(dst: Int, field: om.Field, src: Int): P
 
     /**
-     * Corresponds to the assignment `dst = src.field`.
+     * Corresponds to the assignment `dst = src.field`. We assume dst is a subtype of src
      */
-    def assignFieldToVariable(dst: Int, src: Int, field: Int, mayShare: ShareFilter = (_ => true)): P
+    def assignFieldToVariable(dst: Int, src: Int, field: om.Field): P
 
     /**
-     * Refine property according to the information provided by the ShareFilter.
+     * Change the type of variable v-th. We assume the new type is comparable with the old one.
      */
-    def filter(mayShare: ShareFilter): P
+    def castVariable(v: Int, newtype: om.Type): P
 
     /**
-     * Returns true if variable `v` is definitively null
+     * Returns true if the variable v might be null
      */
-    def isNull(v: Int): Boolean
+    def mustBeNull(v: Int): Boolean = mustBeNull(v, Iterable())
 
     /**
-     * Returns the property after the successful completion of the test `v == null`
+     * Returns true if the variable v must be null
+     */
+    def mayBeNull(v: Int): Boolean = mayBeNull(v, Iterable())
+
+    /**
+     * Returns true if the location obtained by v following fields in fieldseq is definitively
+     * null. If some intermediate value is definitively null, it returns true.
+     */
+    def mustBeNull(v: Int, fieldseq: Iterable[om.Field]): Boolean
+
+    /**
+     * Returns true if the location obtained by v following fields in fieldseq may be
+     * null. If some intermediate value is definitively null, it returns true.
+     */
+    def mayBeNull(v: Int, fieldseq: Iterable[om.Field]): Boolean
+
+    /**
+     * Returns true if two variables may share
+     */
+    def mayShare(v1: Int, v2: Int): Boolean = mayShare(v1, Iterable(), v2, Iterable())
+
+    /**
+     * Returns true if two fields may share
+     */
+    def mayShare(v1: Int, f1: Iterable[om.Field], v2: Int, f2: Iterable[om.Field]): Boolean
+
+    /**
+     * Returns true if two variables must share
+     */
+    def mustShare(v1: Int, v2: Int): Boolean = mustShare(v1, Iterable(), v2, Iterable())
+
+    /**
+     * Returns true if two fields must share
+     */
+    def mustShare(v1: Int, f1: Iterable[om.Field], v2: Int, f2: Iterable[om.Field]): Boolean
+
+    /**
+     * Returns true if two variables may be aliases, i.e. if they might point to the same
+     * location.
+     */
+    def mayBeAliases(v1: Int, v2: Int): Boolean
+
+    /**
+     * Returns true if two variables must be aliases, i.e. they should point to the same
+     * location.
+     */
+    def mustBeAliases(v1: Int, v2: Int): Boolean
+
+    /**
+     * Returns true if two variables may be weak aliases, i.e. they point to the same
+     * location or are both null.
+     */
+
+    def mayBeWeakAliases(v1: Int, v2: Int): Boolean
+    /**
+     * Returns true if two variables must be weak aliases, i.e. they point to the same
+     * location or are both null.
+     */
+
+    def mustBeWeakAliases(v1: Int, v2: Int): Boolean
+
+    /**
+     * Returns the result after the successful completion of the test `v == null`
      */
     def testNull(v: Int): P
 
     /**
-     * Returns the property after the successful completion of the test `v != null`
+     * Returns the result after the successful completion of the test `v != null`
      */
     def testNotNull(v: Int): P
 

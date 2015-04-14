@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -16,19 +16,19 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom.ui
-import it.unich.jandom.domains.objects.ObjectDomainFactory
-import it.unich.jandom.domains.objects.PairSharingDomain
+package it.unich.jandom.domains.objects
+
+import it.unich.jandom.objectmodels.ObjectModel
 
 /**
- * A parameter enumeration for the object domain which are supported in Jandom.
+ * A factory for object domains, i.e. domains which takes an object model as an input.
  * @author Gianluca Amato <gamato@unich.it>
  */
-object ObjectDomains extends ParameterEnumeration[ObjectDomainFactory] {
-  val name = "Object Domain"
-  val description = "The object domain to use for the analysis"
-  val values: Seq[ParameterValue[ObjectDomainFactory]] = Seq(
-		  ParameterValue(PairSharingDomain,"Pair Sharing","The pair sharing domain by Spoto and Secci")
-  )
-  val default = values.last
+trait ObjectDomainFactory {
+  /**
+   * Returns an abstract domain given an object model.
+   * @tparam OM is the particular subclass of ObjectModel we want to provide. It is
+   * generally `om.type`.
+   */
+  def apply[OM <: ObjectModel](om: OM): ObjectDomain[OM]
 }

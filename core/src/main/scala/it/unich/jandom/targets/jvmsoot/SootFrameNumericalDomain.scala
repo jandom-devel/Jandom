@@ -158,11 +158,15 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalConstant(const: Double) = Property(prop.addVariable().constantAssignment(dimension, const), DoubleType.v :: stack)
 
+    def evalCast(t: soot.Type) = Property(this.prop, t :: stack.tail)
+
     def evalConstant(const: String) = Property(prop.addVariable(), RefType.v(const.getClass().getName()) :: stack)
 
     def evalNull = addVariable(NullType.v())
 
     def evalNew(tpe: Type) = addVariable(tpe)
+
+    def evalUnknown(tpe: Type) = addVariable(tpe)
 
     def evalLocal(v: Int) = {
       if (isNumeric(stack(dimension - 1 - v)))

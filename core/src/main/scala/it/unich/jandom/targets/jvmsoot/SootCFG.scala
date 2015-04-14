@@ -55,6 +55,21 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   lazy val localMap = locals.zipWithIndex.toMap
 
   /**
+   * Returns the sequence of types to be returned by every interpretation of this CFG
+   */
+  def inputTypes = SootCFG.inputTypes(method)
+
+  /**
+   * Returns the sequence of types required as input for every interpretation of this CFG
+   */
+  def outputTypes = SootCFG.outputTypes(method)
+
+  /**
+   * This is the sequence of types of the frame in intra-procedural analysis
+   */
+  def localTypes(params: Parameters) = (locals map { _.getType() }) ++ (if (params.io) inputTypes else Seq())
+
+  /**
    * @inheritdoc
    * At the moment, I am assuming that the first locals are exactly the parameters
    * of the method. It essentially expands the input property adding new variables
@@ -64,7 +79,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   protected def adaptProperty(params: Parameters)(input: params.Property): params.Property = {
     assert(input.dimension <= body.getLocalCount(), s"Actual parameters <${input}> to method ${method} are more than the formal parameters")
     var currprop = input
-    for (i <- input.dimension until body.getLocalCount()) currprop = currprop.evalNew(locals(i).getType())
+    for (i <- input.dimension until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
     if (params.io) {
       for (i <- 0 until SootCFG.inputTypes(method).size) currprop = currprop.evalLocal(i)
     }
