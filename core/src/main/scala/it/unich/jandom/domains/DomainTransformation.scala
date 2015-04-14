@@ -22,7 +22,7 @@ import it.unich.jandom.domains.numerical._
 
 /**
  * This is the trait for domain transformations, i.e. maps from properties of one abstract domain to
- * properties of another abstract domain. Domain transformations are parametri w.r.t. a family of
+ * properties of another abstract domain. Domain transformations are parametrized w.r.t. a family of
  * abstract domains.
  * @tparam DomA source family of abstract domains
  * @tparam DomB target family of abstract domains
