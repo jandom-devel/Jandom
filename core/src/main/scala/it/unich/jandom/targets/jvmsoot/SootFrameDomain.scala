@@ -90,6 +90,12 @@ trait SootFrameDomain extends CartesianFiberedDomain {
     def evalNew(tpe: soot.Type): P
 
     /**
+     * Add a new variable of unknown value
+     * @param t the type of the new variable
+     */
+    def evalUnknown(tpe: soot.Type): Property
+
+    /**
      * Evaluate  a frame variable `i` and push a copy into the frame
      * @param i the frame variable to evaluate
      */
@@ -101,6 +107,12 @@ trait SootFrameDomain extends CartesianFiberedDomain {
      * @param f the field to evaluate within `i`
      */
     def evalField(i: Int = dimension - 1, f: soot.SootField): P
+
+    /**
+     * Cast the top element of the frame to the new type
+     * @param t the new type
+     */
+    def evalCast(t: soot.Type): Property
 
     /**
      * Sums the two top element of the frame and replace them with the result
@@ -332,5 +344,17 @@ trait SootFrameDomain extends CartesianFiberedDomain {
      * @param n the frame variable whose monitor is exited.
      */
     def exitMonitor(n: Int = dimension - 1): P = this
+
+    /**
+     * The connect method is used for inter-procedural analysis. It takes two properties
+     * such that the last `common` dimensions of `this` corresponds to the first `common`
+     * dimension of `other`. The first represents the abstract state before calling a
+     * procedure, the second represents the abstract state at the end of the procedure.
+     * `connect` merge the two abstract states using a call-by-value semantics, and
+     * remove the common dimension.
+     * @todo why not remove the private dimensions before connecting?
+     * @todo we should better understand the concrete semantic of this operation
+     */
+    def connect(other: Property, common: Int): Property
   }
 }

@@ -227,7 +227,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
         case v: AnyNewExpr => prop.evalNew(v.getType())
         case v: InvokeExpr => analyzeInvokeExpr(v, prop)
         case v: InstanceOfExpr => prop.evalNull
-        case v: CastExpr => prop.evalNull // TODO: this can be made more precise
+        case v: CastExpr => prop.evalCast(v.getCastType())
         case v: InstanceFieldRef => prop.evalField(localMap(v.getBase().asInstanceOf[Local]), v.getField())
       }
     }

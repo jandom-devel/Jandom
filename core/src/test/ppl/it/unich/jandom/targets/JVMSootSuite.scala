@@ -19,15 +19,14 @@
 package it.unich.jandom.targets
 
 import org.scalatest.FunSuite
-
 import it.unich.jandom.domains.numerical.ppl.PPLDomain
 import it.unich.jandom.domains.objects.PairSharingDomain
 import it.unich.jandom.domains.objects.UP
 import it.unich.jandom.parsers.NumericalPropertyParser
 import it.unich.jandom.targets.jvmsoot._
-
 import parma_polyhedra_library.C_Polyhedron
 import soot._
+import it.unich.jandom.domains.objects.PairSharingDomain
 
 /**
  * Simple test suite for the JVMSoot target.
@@ -38,7 +37,9 @@ class JVMSootSuite extends FunSuite with SootTests {
   import scala.collection.JavaConversions._
 
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
-  val classAnalysis = new ClassReachableAnalysis(scene)
+  val om = new SootObjectModel(scene)
+  val psdom = new PairSharingDomain(om)
+
   val numdomain = PPLDomain[C_Polyhedron]()
 
   bafTests()
@@ -145,9 +146,9 @@ class JVMSootSuite extends FunSuite with SootTests {
       "class_parametric" -> Set(UP(0, 0), UP(0, 5), UP(1, 1), UP(1, 5), UP(2, 2), UP(0, 1), UP(0, 2), UP(3, 4), UP(1, 2), UP(2, 5), UP(4, 4), UP(5, 5), UP(3, 3)))
 
     for ((methodName, ps) <- jimplePairSharingTests) {
-      val method = new JimpleMethod(c.getMethodByName(methodName))
+      val jmethod = new JimpleMethod(c.getMethodByName(methodName))
       val params = new Parameters[JimpleMethod] {
-        val domain = new SootFrameObjectDomain(PairSharingDomain,classAnalysis)
+        val domain = new SootFrameObjectDomain(psdom)
         io = true
         //debugWriter = new java.io.PrintWriter(System.err)
       }
@@ -155,8 +156,8 @@ class JVMSootSuite extends FunSuite with SootTests {
       params.interpretation = Some(inte)
       test(s"Jimple object analysis: ${methodName}") {
         try {
-          val ann = method.analyze(params)
-          assert(ann(method.lastPP.get).prop === PairSharingDomain.Property(ps, method.locals.size + method.body.getMethod().getParameterCount()))
+          val ann = jmethod.analyze(params)
+          assert(ann(jmethod.lastPP.get).prop === psdom(ps,  jmethod.localTypes(params)))
         } finally {
           params.debugWriter.flush()
         }
@@ -165,17 +166,17 @@ class JVMSootSuite extends FunSuite with SootTests {
   }
 
   def jimpleInterProceduralPSTests() {
-    val jimplePairSharingTests = Seq(
-      "sequential" -> PairSharingDomain(Set(), 0),
-      "objcreation" -> PairSharingDomain(Set(), 0),
-      "class_parametric" -> PairSharingDomain(Set(UP(0, 0), UP(0, 1), UP(1, 1)), 2),
-      "pair_one" -> PairSharingDomain(Set(UP(0, 0), UP(0, 2), UP(1, 1), UP(2, 2)), 3))
+    val jimplePairSharingTests:  Seq[(String, Set[UP[Int]])]  = Seq(
+      "sequential" -> Set(),
+      "objcreation" -> Set(),
+      "class_parametric" -> Set(UP(0, 0), UP(0, 1), UP(1, 1)),
+      "pair_one" -> Set(UP(0, 0), UP(0, 2), UP(1, 1), UP(2, 2)))
 
     for ((methodName, prop) <- jimplePairSharingTests) {
       val method = c.getMethodByName(methodName)
       val jmethod = new JimpleMethod(method)
       val params = new Parameters[JimpleMethod] {
-        val domain = new SootFrameObjectDomain(PairSharingDomain,classAnalysis)
+        val domain = new SootFrameObjectDomain(psdom)
         io = true
       }
       val inte = new JimpleRecursiveInterpretation[params.type](scene, params)
@@ -184,7 +185,7 @@ class JVMSootSuite extends FunSuite with SootTests {
         val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes().asInstanceOf[java.util.List[Type]])
         try {
           inte.compute(method, input)
-          assert(inte(method, input).prop === prop)
+          assert(inte(method, input).prop === psdom(prop,jmethod.outputTypes))
         } finally {
           params.debugWriter.flush()
         }

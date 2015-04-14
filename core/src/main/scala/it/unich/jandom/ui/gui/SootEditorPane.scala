@@ -204,11 +204,11 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
         try {
           val numericalDomain = frame.parametersPane.selectedNumericalDomain
           val objectDomain = frame.parametersPane.selectedObjectDomain
-          val klassAnalysis = new ClassReachableAnalysis(sootScene)
+          val om = new SootObjectModel(sootScene)
           val sootDomain = if (anGroup.selected == Some(radioNumerical))
             new SootFrameNumericalDomain(numericalDomain)
           else
-            new SootFrameObjectDomain(objectDomain,klassAnalysis)
+            new SootFrameObjectDomain(objectDomain(om))
           typeGroup.selected match {
             case Some(`radioBaf`) =>
               val bafMethod = method.asInstanceOf[BafMethod]

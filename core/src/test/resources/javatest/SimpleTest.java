@@ -6,9 +6,63 @@ class A {
 class B {
 }
 
-class ListA {
+interface ListInterface { }
+
+interface ListInterface2 extends ListInterface { }
+
+interface ListInterface3 extends ListInterface { }
+
+interface ListInterface4 extends ListInterface3 { }
+
+interface OtherInterface { }
+
+interface InstantiableInterface { }
+
+abstract class Abs implements ListInterface2 {
+	int length;
+}
+
+abstract class Abs1 implements InstantiableInterface { }
+
+class NoAbs1 extends Abs1 {
+	int x;	
+}
+
+abstract class Abs2 extends NoAbs1 { }
+
+class ListA implements ListInterface {
 	ListA next;
 	A v;
+}
+
+class ListA2 extends ListA {
+	A w;
+}
+
+class ListA3 extends ListA implements ListInterface4, OtherInterface {
+	A v2;	
+}
+
+class S1 {
+}
+
+class S2 extends S1 {
+	A f1;
+}
+
+class S3 extends S2 {
+	B f2;
+}
+
+class S5 extends S3 {
+}
+
+class S4 extends S2 {
+	ListA l;
+}
+
+class R3 {
+	S3 s;
 }
 
 class Pair {
@@ -16,10 +70,13 @@ class Pair {
 	B w;
 }
 
+class K {
+}
+
 public class SimpleTest {
 	int classX;
 	int classY;
-	int sum;
+	int sum;	
 
 	static void sequential() {
 		int x = 0;
