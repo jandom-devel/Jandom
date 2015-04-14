@@ -138,11 +138,24 @@ class JVMSootSuite extends FunSuite with SootTests {
       "longassignment" -> Set(),
       "topologicalorder" -> Set(),
       "complexif" -> Set(),
-      "objcreation" -> Set(UP(0, 0), UP(0, 5), UP(1, 1), UP(1, 5), UP(5, 6), UP(6, 7), UP(2, 2), UP(0, 1), UP(0, 6), UP(6, 6), UP(5, 7), UP(3, 6), UP(3, 5),
-        UP(1, 3), UP(1, 8), UP(2, 4), UP(0, 7), UP(5, 8), UP(3, 7), UP(0, 3), UP(1, 7), UP(7, 8), UP(8, 8), UP(0, 8), UP(4, 4), UP(5, 5), UP(7, 7), UP(3, 3),
-        UP(3, 8), UP(1, 6), UP(6, 8)),
-      "classrefinement" -> Set(UP(0, 0), UP(1, 1), UP(5, 6), UP(2, 2), UP(0, 1), UP(2, 3), UP(6, 6), UP(4, 5), UP(3, 6), UP(3, 5), UP(2, 4), UP(3, 4),
-        UP(2, 5), UP(4, 4), UP(5, 5), UP(3, 3)),
+      "objcreation" -> Set(
+          UP(0, 0), UP(0, 2), UP(0, 3), UP(0, 5), UP(0, 6), UP(0, 7), UP(0, 8),
+          UP(1, 1), UP(1, 4),
+          UP(2, 0), UP(2, 2), UP(2, 3), UP(2, 5), UP(2, 6), UP(2, 7), UP(2, 8), 
+          UP(3, 3), UP(3, 5), UP(3, 6), UP(3, 7), UP(3, 8),
+          UP(4, 4), 
+          UP(5, 5), UP(5, 6), UP(5, 7), UP(5, 8), 
+          UP(6, 6), UP(6, 7), UP(6, 8), 
+          UP(7, 7), UP(7, 8), 
+          UP(8, 8)),
+      "classrefinement" -> Set(
+          UP(0, 0), UP(0, 3), 
+          UP(1, 1), UP(1, 2), UP(1, 4), UP(1, 5), 
+          UP(2, 2), UP(2, 4), UP(2, 5), UP(2, 6),
+          UP(3, 3),
+          UP(4, 4), UP(4, 5),
+          UP(5, 5), UP(5, 6), 
+          UP(6, 6)),
       "class_parametric" -> Set(UP(0, 0), UP(0, 5), UP(1, 1), UP(1, 5), UP(2, 2), UP(0, 1), UP(0, 2), UP(3, 4), UP(1, 2), UP(2, 5), UP(4, 4), UP(5, 5), UP(3, 3)))
 
     for ((methodName, ps) <- jimplePairSharingTests) {

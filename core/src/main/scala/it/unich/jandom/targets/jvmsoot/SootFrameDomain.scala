@@ -23,6 +23,7 @@ import it.unich.jandom.domains.AbstractDomain
 import it.unich.jandom.domains.AbstractProperty
 import it.unich.jandom.domains.CartesianFiberedProperty
 import it.unich.jandom.domains.CartesianFiberedDomain
+import soot.NullType
 
 /**
  * This is the base trait domain for the analysis of methods using Soot. It represents
@@ -81,7 +82,7 @@ trait SootFrameDomain extends CartesianFiberedDomain {
     /**
      * Push a null constant into the frame
      */
-    def evalNull: P
+    def evalNull(tpe: soot.Type = NullType.v()): P
 
     /**
      * Push a new object into the frame

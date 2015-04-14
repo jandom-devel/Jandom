@@ -179,7 +179,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
     def analyzeExpr(v: Value, prop: params.Property): params.Property = {
       v match {
         case v: NullConstant =>
-          prop.evalNull
+          prop.evalNull()
         case v: StringConstant =>
           prop.evalGlobal(v)
         case v: IntConstant =>
@@ -226,7 +226,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
           }
         case v: AnyNewExpr => prop.evalNew(v.getType())
         case v: InvokeExpr => analyzeInvokeExpr(v, prop)
-        case v: InstanceOfExpr => prop.evalNull
+        case v: InstanceOfExpr => prop.evalNull()
         case v: CastExpr => prop.evalCast(v.getCastType())
         case v: InstanceFieldRef => prop.evalField(localMap(v.getBase().asInstanceOf[Local]), v.getField())
       }
