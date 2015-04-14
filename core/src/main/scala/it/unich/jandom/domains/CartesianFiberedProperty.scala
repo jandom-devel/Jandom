@@ -19,7 +19,7 @@
 package it.unich.jandom.domains
 
 /**
- * This class represents a single element in a CartesianFiberedDomain. Properties are partitioned 
+ * This class represents a single element in a CartesianFiberedDomain. Properties are partitioned
  * in fibers, which also exists in the implicit concrete domain. Each fiber has a top and bottom element.
  * Binary operators are guaranteed to work when both elements are part of the same fiber. Some operations
  * allows to move from one fiber to another.
@@ -42,7 +42,7 @@ trait CartesianFiberedProperty[Type, Property <: CartesianFiberedProperty[Type, 
    * Returns the dimension of the property, i.e., the number of variables in its fiber.
    */
   def dimension: Int
-    
+
   /**
    * Returns true ONLY IF this is the top element on the fiber. A top element
    * is bigger than all the other elements, is neutral for intersection and
@@ -103,18 +103,6 @@ trait CartesianFiberedProperty[Type, Property <: CartesianFiberedProperty[Type, 
    * `-1`, then dimension i is removed
    */
   def mapVariables(rho: Seq[Int]): Property
-
-  /**
-   * The connect method is used for inter-procedural analysis. It takes two properties
-   * such that the last `common` dimensions of `this` corresponds to the first `common`
-   * dimension of `other`. The first represents the abstract state before calling a
-   * procedure, the second represents the abstract state at the end of the procedure.
-   * `connect` merge the two abstract states using a call-by-value semantics, and
-   * remove the common dimension.
-   * @todo why not remove the private dimensions before connecting?
-   * @todo we should better understand the concrete semantic of this operation
-   */
-  def connect(other: Property, common: Int): Property
 
   /**
    * Returns a string representation of the abstract property.
