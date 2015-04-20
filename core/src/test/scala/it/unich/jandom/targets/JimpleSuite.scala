@@ -98,3 +98,61 @@ class JimpleSuite extends FunSuite with SootTests {
 
 }
 
+  /* 
+   * Code to create a jimple class - NOT USED
+
+   def createClass() {
+
+   // resolve dependencies
+
+  scene.loadClassAndSupport("java.lang.Object")
+  scene.loadClassAndSupport("java.lang.System")
+  
+  // create the class "public class TestClass extends Object"
+  val testClass = new SootClass("TestClass", Modifier.PUBLIC)
+  testClass.setSuperclass(scene.getSootClass("java.lang.Object"))
+  scene.addClass(testClass)
+   
+  // create the method "public static void main(String[])"
+  val parameters =  new ArrayList[Type]()
+  parameters.add({ArrayType.v(RefType.v("java.lang.String"), 1)})
+  
+  val mainMethod = new SootMethod("main", parameters, VoidType.v(), Modifier.PUBLIC | Modifier.STATIC)
+ 
+  testClass.addMethod(mainMethod)
+  
+  // create the method body
+  val body = Jimple.v().newBody(mainMethod)           
+  mainMethod.setActiveBody(body)
+  val units = body.getUnits()
+  
+  // add a local variable "java.lang.String l0"
+  val arg = Jimple.v().newLocal("l0", ArrayType.v(RefType.v("java.lang.String"), 1))
+  body.getLocals().add(arg)
+                
+  // add local "java.io.printStream tmpRef"
+  val tmpRef = Jimple.v().newLocal("tmpRef", RefType.v("java.io.PrintStream"))
+  body.getLocals().add(tmpRef)
+                
+  // add "l0 = @parameter0"
+  units.add(Jimple.v().newIdentityStmt(arg, 
+        Jimple.v().newParameterRef(ArrayType.v(RefType.v("java.lang.String"), 1), 0)))
+            
+  // add "tmpRef = java.lang.System.out"
+  units.add(Jimple.v().newAssignStmt(tmpRef, Jimple.v().newStaticFieldRef(
+       Scene.v().getField("<java.lang.System: java.io.PrintStream out>").makeRef())));
+            
+  // insert "tmpRef.println("Hello world!")"
+  val toCall = Scene.v().getMethod("<java.io.PrintStream: void println(java.lang.String)>");
+  units.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(tmpRef, toCall.makeRef(), StringConstant.v("Hello world!"))))
+            
+  // insert "return"
+  units.add(Jimple.v().newReturnVoidStmt())
+  
+  // set the abstract domain 
+  val classAnalysis = new ClassReachableAnalysis(scene)
+  val c = testClass
+  
+  }
+}
+*/
