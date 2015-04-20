@@ -68,12 +68,13 @@ class JimpleSuite extends FunSuite with SootTests {
      "classrefinement" -> 
         ("{(r0, r0), (r0, $r3), (r1, r1), (r1, r2), (r1, $r4), (r1, $r5), (r2, r2), (r2, $r4), (r2, $r5), (r2, r6), ($r3, $r3), ($r4, $r4), ($r4, $r5), ($r5, $r5), ($r5, r6), (r6, r6)}",
         Seq("r2", "$r5", "r1", "$r4", "r0", "$r3", "r6"),
-        Seq()),
-      "class_parametric" -> 
+        Seq())
+ /*     ,"class_parametric" -> 
         ("{(r0, r0), (r0, r1), (r0, $r2), (r0, @p0), (r1, r1), (r1, $r2), (r1, @p0), ($r2, $r2), ($r2, @p0), ($r3, $r3),  ($r3, r4), (r4, r4), (@p0, @p0)}",
         Seq("r0", "$r3", "r4", "r1", "$r2", "@p0"),
         Seq())
-       )
+ */
+        )
      
       for ( (methodName , (ps, varNames, varTypes)) <- jimplePairSharingTests) {
       val jmethod = new JimpleMethod(c.getMethodByName(methodName))
@@ -87,7 +88,6 @@ class JimpleSuite extends FunSuite with SootTests {
       test(s"Jimple object analysis: ${methodName}") {
         try {
           val ann = jmethod.analyze(params)
-          print(jmethod.mkString(params)(ann))
           assert(ann(jmethod.lastPP.get).prop === psdom.parseProperty(ps, varNames ,jmethod.localTypes(params)))
         } finally {
           params.debugWriter.flush()

@@ -32,7 +32,7 @@ class JVMASMSuite extends FunSuite {
   val BoxDouble = BoxDoubleDomain()
 
   test("simple method analysis") {
-    val is = getClass().getResourceAsStream("/javatest/SimpleTest.class")
+    val is = getClass().getResourceAsStream("/java/javatest/SimpleTest.class")
     val cr = new ClassReader(is)
     val node = new ClassNode()
     cr.accept(node, ClassReader.SKIP_DEBUG)
