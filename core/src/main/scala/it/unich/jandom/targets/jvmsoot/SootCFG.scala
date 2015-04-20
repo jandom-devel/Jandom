@@ -79,7 +79,9 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   protected def adaptProperty(params: Parameters)(input: params.Property): params.Property = {
     assert(input.dimension <= body.getLocalCount(), s"Actual parameters <${input}> to method ${method} are more than the formal parameters")
     var currprop = input
-    for (i <- input.dimension until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
+//     changed as follows 
+//  for (i <- input.dimension until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
+    for (i <- 0 until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
     if (params.io) {
       for (i <- 0 until SootCFG.inputTypes(method).size) currprop = currprop.evalLocal(i)
     }
