@@ -20,6 +20,7 @@ package it.unich.jandom.domains.objects
 
 import scala.collection.immutable.Range
 import it.unich.jandom.objectmodels.ObjectModel
+import scala.util.parsing.combinator.RegexParsers
 
 /**
  * This is the implementation of the pair sharing domain in [Spoto and Secci].
@@ -69,6 +70,29 @@ class PairSharingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] 
       UP(l1, r1) <- ps; if l1 == v || r1 == v; second = if (l1 == v) r1 else l1
     ) yield UP(first, second)) ++ ps
 
+  private class PairSharingParser(val varNames:Seq[String]) extends RegexParsers {
+
+    override val whiteSpace = """(\s|#.*\r?\n)+""".r // handle # as the start of a comment
+
+    private val ident = """[@$a-zA-Z._][\w.]*""".r  // allow . in identifiers
+  
+    private val pair =( "(" ~> ident <~ ","  ) ~ ident <~ ")"  ^^ {case x ~ y => new UP(varNames.indexOf(x), varNames.indexOf(y))}
+  
+    private val sequence = "{" ~> repsep(pair,",") <~ "}" 
+  
+    def parseProperty(s:String) = parseAll(sequence,s)
+    
+  }
+  
+  
+  
+  def parseProperty(s:String, varNames:Seq[String], varTypes:Seq[om.Type]) = {
+    
+    val psParser = new PairSharingParser(varNames)
+    this(psParser.parseProperty(s).get.toSet,varTypes)
+    
+  }
+    
   /**
    * An object of pair sharing. Each object is composed of a set of unordered pair of variables (the variables
    * which may possibly share) and the types of those variables.
@@ -251,6 +275,8 @@ class PairSharingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] 
       }
   }
 }
+
+
 
 /**
  * The companion object for `PairSharingDomain`, which is also a domain factory.

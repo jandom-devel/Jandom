@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato, Francesca Scozzari
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import it.unich.jandom.domains.objects.PairSharingDomain
 /**
  * Simple test suite for the JVMSoot target.
  * @author Gianluca Amato
+ * @author Francesca Scozzari
  *
  */
 class JVMSootSuite extends FunSuite with SootTests {
@@ -160,7 +161,7 @@ class JVMSootSuite extends FunSuite with SootTests {
 
     for ((methodName, ps) <- jimplePairSharingTests) {
       val jmethod = new JimpleMethod(c.getMethodByName(methodName))
-      val params = new Parameters[JimpleMethod] {
+        val params = new Parameters[JimpleMethod] {
         val domain = new SootFrameObjectDomain(psdom)
         io = true
         //debugWriter = new java.io.PrintWriter(System.err)
@@ -170,6 +171,7 @@ class JVMSootSuite extends FunSuite with SootTests {
       test(s"Jimple object analysis: ${methodName}") {
         try {
           val ann = jmethod.analyze(params)
+          print(jmethod.mkString(params)(ann))
           assert(ann(jmethod.lastPP.get).prop === psdom(ps,  jmethod.localTypes(params)))
         } finally {
           params.debugWriter.flush()

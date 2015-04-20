@@ -1,0 +1,16 @@
+class javatest.Pair extends java.lang.Object
+{
+    javatest.A v;
+    javatest.B w;
+
+    void <init>()
+    {
+        javatest.Pair this;
+
+        this := @this: javatest.Pair;
+
+        specialinvoke this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}

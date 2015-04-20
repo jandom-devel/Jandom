@@ -1,13 +1,11 @@
-class ListA extends java.lang.Object
+class javatest.B extends java.lang.Object
 {
-    ListA next;
-    A v;
 
     void <init>()
     {
-        ListA this;
+        javatest.B this;
 
-        this := @this: ListA;
+        this := @this: javatest.B;
 
         specialinvoke this.<java.lang.Object: void <init>()>();
 
