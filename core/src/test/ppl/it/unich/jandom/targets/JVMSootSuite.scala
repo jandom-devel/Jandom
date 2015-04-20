@@ -171,7 +171,7 @@ class JVMSootSuite extends FunSuite with SootTests {
       test(s"Jimple object analysis: ${methodName}") {
         try {
           val ann = jmethod.analyze(params)
-          print(jmethod.mkString(params)(ann))
+          //print(jmethod.mkString(params)(ann))
           assert(ann(jmethod.lastPP.get).prop === psdom(ps,  jmethod.localTypes(params)))
         } finally {
           params.debugWriter.flush()
