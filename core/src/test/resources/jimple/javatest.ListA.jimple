@@ -1,0 +1,16 @@
+class javatest.ListA extends java.lang.Object
+{
+    javatest.ListA next;
+    javatest.A v;
+
+    void <init>()
+    {
+        javatest.ListA this;
+
+        this := @this: javatest.ListA;
+
+        specialinvoke this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}

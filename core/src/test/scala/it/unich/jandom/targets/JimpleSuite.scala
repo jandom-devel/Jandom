@@ -1,0 +1,150 @@
+/**
+ * Copyright 2015 Francesca Scozzari
+ *
+ * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+ * JANDOM is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * JANDOM is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package it.unich.jandom.targets
+
+import org.scalatest.FunSuite
+
+import it.unich.jandom.domains.numerical.BoxDoubleDomain
+import it.unich.jandom.domains.objects.PairSharingDomain
+import it.unich.jandom.parsers.NumericalPropertyParser
+import it.unich.jandom.targets.jvmsoot._
+
+import soot._
+
+/**
+ * Simple test suite for the Soot Jimple target. Differently from JVMSootSuite, we
+ * directly analyze Jimple code.
+ * @author Francesca Scozzari
+ */
+
+class JimpleSuite extends FunSuite with SootTests {
+
+  // disable all jimple optimizations
+  PhaseOptions.v().setPhaseOption("jb", "enabled:false")
+
+  val jimpleTestDir = java.nio.file.Paths.get(System.getProperty("user.dir"),"src","test","resources","jimple")
+  scene.setSootClassPath(jimpleTestDir.toString)
+
+  val c = scene.loadClassAndSupport("javatest.SimpleTest")
+  val om = new SootObjectModel(scene)
+  val psdom = PairSharingDomain(om)
+  val numdom = BoxDoubleDomain(overReals = false)
+
+  jimpleNumTests()
+  jimplePairSharingTests()
+
+   def jimpleNumTests() {
+    val jimpleNumericalTests = Seq(
+      "sequential" ->
+        Seq(None -> false -> "b0 == 0 && b1 == 10 && i2 == 10"),
+      "conditional" ->
+        Seq(None -> false -> "b0 == 0 &&  z0 == 0 && z1 == 1" ),
+      "loop" ->
+        Seq(None -> false -> "i0 >= 10 && i0 <= 11"),
+      "nested" ->
+        Seq(None -> false -> "i0 >= 0 && i1 >= 10 && i1 <= 11"),
+      "longassignment" ->
+        Seq(None -> false -> "i0 >= 0 && i1 >= 10 && i1 <= 11"),
+      "topologicalorder" ->
+        Seq(None -> false -> "z0 == 1 && b0 == 2 && i1 == 3"),
+      "parametric_static" -> Seq(
+        None -> false -> "i0 == i0",  // cannot parse empty strings
+        None -> true -> "p0 == i0 && p1 == i1", // pi's are parameters
+        Some("i0 == 0") -> false -> "i0 == 0",
+        Some("i0 == 0") -> true -> "i0 == 0 && p0 == i0 && p1 == i1"),
+      "parametric_dynamic" ->
+        Seq(None -> false -> "i0 == i0"),
+      "parametric_caller" ->
+        Seq(None -> true -> "b3 ==3 && b4 ==4 && i2 ==7 && p0 == i0 && p1 == i1"))
+
+    for ((methodName, instances) <- jimpleNumericalTests; (((input, ifIo), propString), i) <- instances.zipWithIndex) {
+      val method = new JimpleMethod(c.getMethodByName(methodName))
+      val params = new Parameters[JimpleMethod] {
+        val domain = new SootFrameNumericalDomain(numdom)
+        io = ifIo
+        interpretation = Some(new JimpleInterpretation(this))
+      }
+      test(s"Jimple numerical analysis: ${methodName} ${if (i > 0) i + 1 else ""}") {
+        val env = Environment(method.locals map { _.getName() } :_*)
+        val parser = new NumericalPropertyParser(env)
+        try {
+          val ann = input match {
+            case None => method.analyze(params)
+            case Some(input) =>
+              val prop = parser.parseProperty(input, params.domain.numdom).get
+              method.analyzeFromInput(params)(params.domain(prop, IntType.v()))
+          }
+          val prop = parser.parseProperty(propString, params.domain.numdom).get
+          assert(ann(method.lastPP.get).prop === prop)
+        } finally {
+          params.debugWriter.flush()
+        }
+      }
+    }
+  }
+
+  def jimplePairSharingTests() {
+
+    val jimplePairSharingTests : Seq[(String, (String, Seq[String], Seq[soot.Type]))] = Seq(
+      "sequential" ->  (("{}", Seq(), Seq())),
+      "conditional" -> (("{}", Seq(), Seq())),
+      "loop" -> (("{}", Seq(), Seq())),
+      "nested" -> (("{}", Seq(), Seq())),
+      "longassignment" -> (("{}", Seq(), Seq())),
+      "topologicalorder" -> (("{}", Seq(), Seq())),
+      "complexif" -> (("{}", Seq(), Seq())),
+      "objcreation" ->
+        (("{(r2, r0), (r2, $r6), (r2, $r5), ($r6, r0), ($r6, r8), ($r6 , $r7), (r8, r8), ($r3, r8), (r2, r2), ($r5, $r5), ($r5, $r3), (r0, $r3), ( $r4, $r4), ($r7, $r7), ($r5, r8), ($r5, $r6), ($r6, $r3), (r0, r8), (r1, r1), (r2, $r3), ($r5, $r7), ($r3, $r3),(r2, $r7), ($r6, $r6), (r2, r8), ($r5, r0), ($r7, r0), (r0, r0), (r1, $r4), ($r7, r8), ($r7, $r3)}",
+        Seq("r2", "$r5", "$r6", "$r7", "r0", "r1", "$r3", "$r4", "r8"),
+        Seq())),
+        // variable types is NOT USED
+        // javatest.ListA, javatest.ListA, javatest.ListA, javatest.ListA, javatest.A, javatest.A, javatest.A, javatest.A, javatest.A)
+     "classrefinement" ->
+        (("{(r0, r0), (r0, $r3), (r1, r1), (r1, r2), (r1, $r4), (r1, $r5), (r2, r2), (r2, $r4), (r2, $r5), (r2, r6), ($r3, $r3), ($r4, $r4), ($r4, $r5), ($r5, $r5), ($r5, r6), (r6, r6)}",
+        Seq("r2", "$r5", "r1", "$r4", "r0", "$r3", "r6"),
+        Seq()))
+ /*
+     This is commented since analysis of method with parameters do not work correctly!
+     ,"class_parametric" ->
+        ("{(r0, r0), (r0, r1), (r0, $r2), (r0, @p0), (r1, r1), (r1, $r2), (r1, @p0), ($r2, $r2), ($r2, @p0), ($r3, $r3),  ($r3, r4), (r4, r4), (@p0, @p0)}",
+        Seq("r0", "$r3", "r4", "r1", "$r2", "@p0"),
+        Seq())
+ */
+      )
+
+      for ( (methodName , (ps, varNames, varTypes)) <- jimplePairSharingTests) {
+      val jmethod = new JimpleMethod(c.getMethodByName(methodName))
+      val params = new Parameters[JimpleMethod] {
+        val domain = new SootFrameObjectDomain(psdom)
+        io = true
+      }
+      val inte = new TopSootInterpretation[JimpleMethod, params.type](params)
+      params.interpretation = Some(inte)
+      test(s"Jimple object analysis: ${methodName}") {
+        try {
+          val ann = jmethod.analyze(params)
+          assert(ann(jmethod.lastPP.get).prop === psdom(ps, varNames ,jmethod.localTypes(params)))
+        } finally {
+          params.debugWriter.flush()
+        }
+      }
+    }
+  }
+
+}

@@ -1,0 +1,388 @@
+public class javatest.SimpleTest extends java.lang.Object
+{
+    int classX;
+    int classY;
+    int sum;
+
+         public void <init>()
+     {
+         javatest.SimpleTest r0;
+ 
+         r0 := @this: javatest.SimpleTest;
+ 
+         specialinvoke r0.<java.lang.Object: void <init>()>();
+ 
+         return;
+     }
+     static void sequential()
+     {
+         byte b0, b1;
+         int i2;
+ 
+         b0 = 0;
+ 
+         b1 = 10;
+ 
+         i2 = 10;
+ 
+         return;
+     }
+     static void conditional()
+     {
+         byte b0, b1;
+         boolean z0, z1;
+ 
+         b0 = 0;
+ 
+         z0 = 0;
+ 
+         if 0 > 10 goto label1;
+ 
+         z1 = 1;
+ 
+         goto label2;
+ 
+      label1:
+         b1 = 2;
+ 
+      label2:
+         return;
+     }
+     static void loop()
+     {
+         int i0;
+ 
+         i0 = 0;
+ 
+      label1:
+         if i0 >= 10 goto label2;
+ 
+         i0 = i0 + 1;
+ 
+         goto label1;
+ 
+      label2:
+         return;
+     }
+     static void nested()
+     {
+         int i0, i1, i2;
+ 
+         i0 = 0;
+ 
+         i1 = 0;
+ 
+      label1:
+         if i1 >= 10 goto label4;
+ 
+         i2 = 0;
+ 
+      label2:
+         if i2 >= i1 goto label3;
+ 
+         i0 = i0 + 1;
+ 
+         i2 = i2 + 1;
+ 
+         goto label2;
+ 
+      label3:
+         i1 = i1 + 1;
+ 
+         goto label1;
+ 
+      label4:
+         return;
+     }
+     static void longassignment()
+     {
+         int i0, i1, i2, $i3, $i4;
+ 
+         i0 = 0;
+ 
+         i1 = 0;
+ 
+      label1:
+         if i1 >= 10 goto label4;
+ 
+         i2 = 0;
+ 
+      label2:
+         if i2 >= i1 goto label3;
+ 
+         $i4 = i0 + i1;
+ 
+         $i3 = 2 * i2;
+ 
+         i0 = $i4 + $i3;
+ 
+         i2 = i2 + 1;
+ 
+         goto label2;
+ 
+      label3:
+         i1 = i1 + 1;
+ 
+         goto label1;
+ 
+      label4:
+         return;
+     }
+     static void topologicalorder()
+     {
+         boolean z0;
+         byte b0;
+         int i1;
+ 
+         z0 = 1;
+ 
+         if 1 == 1 goto label1;
+ 
+         b0 = 3;
+ 
+         goto label2;
+ 
+      label1:
+         b0 = 2;
+ 
+      label2:
+         i1 = b0 + 1;
+ 
+         return;
+     }
+     static int parametric_static(int, int)
+     {
+         int i0, i1, $i2;
+ 
+         i0 := @parameter0: int;
+ 
+         i1 := @parameter1: int;
+ 
+         $i2 = i0 + i1;
+ 
+         return $i2;
+     }
+     int parametric_dynamic(int, int)
+     {
+         javatest.SimpleTest r0;
+         int i0, i1, $i2, $i3;
+ 
+         r0 := @this: javatest.SimpleTest;
+ 
+         i0 := @parameter0: int;
+ 
+         i1 := @parameter1: int;
+ 
+         r0.<javatest.SimpleTest: int classX> = i0;
+ 
+         r0.<javatest.SimpleTest: int classY> = i1;
+ 
+         $i2 = i0 + i1;
+ 
+         r0.<javatest.SimpleTest: int sum> = $i2;
+ 
+         $i3 = r0.<javatest.SimpleTest: int sum>;
+ 
+         return $i3;
+     }
+     static int parametric_caller(int, int)
+     {
+         int i0, i1, i2;
+         byte b3, b4;
+ 
+         i0 := @parameter0: int;
+ 
+         i1 := @parameter1: int;
+ 
+         b3 = 3;
+ 
+         b4 = 4;
+ 
+         i2 = staticinvoke <javatest.SimpleTest: int parametric_static(int,int)>(3, 4);
+ 
+         return i2;
+     }
+     static int recursb(int)
+     {
+         int i0, $i1, $i2;
+ 
+         i0 := @parameter0: int;
+ 
+         $i1 = i0 + 1;
+ 
+         $i2 = staticinvoke <javatest.SimpleTest: int recursa(int)>($i1);
+ 
+         return $i2;
+     }
+     static int recursa(int)
+     {
+         int i0, $i1;
+ 
+         i0 := @parameter0: int;
+ 
+         if i0 >= 0 goto label1;
+ 
+         $i1 = staticinvoke <javatest.SimpleTest: int recursb(int)>(i0);
+ 
+         return $i1;
+ 
+      label1:
+         return i0;
+     }
+     static void mycast()
+     {
+         byte b0, b1, b2;
+         int i3;
+         long l4;
+         float f0, f1;
+         double d0;
+ 
+         b0 = 103;
+ 
+         b1 = 104;
+ 
+         b2 = (byte) 207;
+ 
+         i3 = 207;
+ 
+         l4 = (long) 207;
+ 
+         f0 = (float) 103;
+ 
+         f1 = (float) 207;
+ 
+         d0 = (double) 207;
+ 
+         return;
+     }
+     static void complexif()
+     {
+         byte b0, b1;
+         boolean z0, z1;
+ 
+         b0 = 0;
+ 
+         b1 = 0;
+ 
+         z0 = 0;
+ 
+         if 0 >= 0 goto label1;
+ 
+         z1 = 1;
+ 
+      label1:
+         return;
+     }
+     static void objcreation()
+     {
+         javatest.A r0, r1, $r3, $r4, r8;
+         javatest.ListA r2, $r5, $r6, $r7;
+ 
+         $r3 = new javatest.A;
+ 
+         specialinvoke $r3.<javatest.A: void <init>()>();
+ 
+         r0 = $r3;
+ 
+         $r4 = new javatest.A;
+ 
+         specialinvoke $r4.<javatest.A: void <init>()>();
+ 
+         r1 = $r4;
+ 
+         $r5 = new javatest.ListA;
+ 
+         specialinvoke $r5.<javatest.ListA: void <init>()>();
+ 
+         r2 = $r5;
+ 
+         r2.<javatest.ListA: javatest.A v> = r0;
+ 
+         $r7 = r2.<javatest.ListA: javatest.ListA next>;
+ 
+         $r6 = r2.<javatest.ListA: javatest.ListA next>;
+ 
+         $r7.<javatest.ListA: javatest.ListA next> = $r6;
+ 
+         r8 = r2.<javatest.ListA: javatest.A v>;
+ 
+         return;
+     }
+     static void classrefinement()
+     {
+         javatest.A r0, $r3, r6;
+         javatest.B r1, $r4;
+         javatest.Pair r2, $r5;
+ 
+         $r3 = new javatest.A;
+ 
+         specialinvoke $r3.<javatest.A: void <init>()>();
+ 
+         r0 = $r3;
+ 
+         $r4 = new javatest.B;
+ 
+         specialinvoke $r4.<javatest.B: void <init>()>();
+ 
+         r1 = $r4;
+ 
+         $r5 = new javatest.Pair;
+ 
+         specialinvoke $r5.<javatest.Pair: void <init>()>();
+ 
+         r2 = $r5;
+ 
+         r2.<javatest.Pair: javatest.B w> = r1;
+ 
+         r6 = r2.<javatest.Pair: javatest.A v>;
+ 
+         return;
+     }
+     static javatest.Pair class_parametric(javatest.A)
+     {
+         javatest.A r0, $r3, r4;
+         javatest.Pair r1, $r2;
+ 
+         r0 := @parameter0: javatest.A;
+ 
+         $r2 = new javatest.Pair;
+ 
+         specialinvoke $r2.<javatest.Pair: void <init>()>();
+ 
+         r1 = $r2;
+ 
+         r1.<javatest.Pair: javatest.A v> = r0;
+ 
+         $r3 = new javatest.A;
+ 
+         specialinvoke $r3.<javatest.A: void <init>()>();
+ 
+         r4 = $r3;
+ 
+         return r1;
+     }
+     static javatest.ListA pair_one(javatest.A, javatest.B)
+     {
+         javatest.A r0;
+         javatest.B r1;
+         javatest.ListA r2, $r3, $r4;
+ 
+         r0 := @parameter0: javatest.A;
+ 
+         r1 := @parameter1: javatest.B;
+ 
+         $r3 = new javatest.ListA;
+ 
+         specialinvoke $r3.<javatest.ListA: void <init>()>();
+ 
+         r2 = $r3;
+ 
+         r2.<javatest.ListA: javatest.A v> = r0;
+ 
+         $r4 = staticinvoke <javatest.SimpleTest: javatest.ListA pair_one(javatest.A,javatest.B)>(r0, r1);
+ 
+         r2.<javatest.ListA: javatest.ListA next> = $r4;
+ 
+         return r2;
+     }
+}
