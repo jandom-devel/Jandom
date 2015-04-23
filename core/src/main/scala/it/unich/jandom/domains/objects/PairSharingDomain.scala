@@ -20,6 +20,7 @@ package it.unich.jandom.domains.objects
 
 import scala.collection.immutable.Range
 import it.unich.jandom.objectmodels.ObjectModel
+import scala.util.parsing.combinator.RegexParsers
 
 /**
  * This is the implementation of the pair sharing domain in [Spoto and Secci].
@@ -38,6 +39,18 @@ class PairSharingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] 
    * @param types a sequence of types for the variables in ps
    */
   def apply(ps: Set[UP[Int]], types: Seq[om.Type]) = new Property(ps, types.reverse)
+
+  /**
+   * Builds a pair sharing object from a string representation. The string has the form
+   * "{ ( v1, v2 ), ( v3, v4 ), ... }" where v1, v2, etc.. are variable names.
+   * @param s the string representation
+   * @param varNames the name of variables
+   * @param varTypes the type of variables
+   */
+  def apply(s: String, varNames: Seq[String], varTypes: Seq[om.Type]): Property = {
+    val psParser = new PairSharingDomain.PairSharingParser(varNames)
+    this(psParser.parseProperty(s).get.toSet, varTypes)
+  }
 
   /**
    * Build a pair sharing object made of all pairs of variable which may share.
@@ -80,8 +93,8 @@ class PairSharingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] 
 
     type Domain = PairSharingDomain.this.type
 
-    def domain = PairSharingDomain.this    
-      
+    def domain = PairSharingDomain.this
+
     def dimension = rtypes.size
 
     def fiber = rtypes.reverse
@@ -95,7 +108,7 @@ class PairSharingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] 
     def isBottom = ps.isEmpty
 
     def isEmpty = false
-    
+
     def union(that: Property) = {
       assert(dimension == that.dimension)
       new Property(ps union that.ps, rtypes)
@@ -168,11 +181,10 @@ class PairSharingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] 
       connectFull(that, common).delVariables(dimension - common until dimension)
     }
 
-    def typeOf(v: Int, fs: Iterable[om.Field]) = 
-      if (fs.isEmpty) Some(rtypes(dimension - v - 1)) else 
-        if (mustBeNull(v)) None else 
-          Some(om.typeOf(fs.last))
-      
+    def typeOf(v: Int, fs: Iterable[om.Field]) =
+      if (fs.isEmpty) Some(rtypes(dimension - v - 1)) else if (mustBeNull(v)) None else
+        Some(om.typeOf(fs.last))
+
     def addFreshVariable(t: om.Type) =
       if (om.mayShare(t, t)) new Property(ps + UP((dimension, dimension)), t +: rtypes) else new Property(ps, t +: rtypes)
 
@@ -207,25 +219,25 @@ class PairSharingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] 
     def testNull(v: Int) = new Property(removeVariable(ps, v), rtypes)
 
     def testNotNull(v: Int) = if (mustBeNull(v)) bottom else this
-  
-    def mayBeNull(v: Int, fs: Iterable[om.Field]) = true 
-      
+
+    def mayBeNull(v: Int, fs: Iterable[om.Field]) = true
+
     def mustBeNull(v: Int, fs: Iterable[om.Field]) = !(ps contains UP(v, v))
-    
-    def mayShare(v1: Int, fs1: Iterable[om.Field], v2: Int, fs2: Iterable[om.Field]) = 
-      (ps contains UP(v1,v2)) &&  om.mayShare(om.typeOf(fs1.last), om.typeOf(fs2.last))
-        
+
+    def mayShare(v1: Int, fs1: Iterable[om.Field], v2: Int, fs2: Iterable[om.Field]) =
+      (ps contains UP(v1, v2)) && om.mayShare(om.typeOf(fs1.last), om.typeOf(fs2.last))
+
     def mustShare(v1: Int, fs1: Iterable[om.Field], v2: Int, fs2: Iterable[om.Field]) = false
-    
-    def mayBeAliases(v1: Int, v2: Int) = 
-      (ps contains UP(v1,v2)) && om.mayBeAliases(rtypes(dimension - v1 - 1), rtypes(dimension - v2 - 2)) 
-    
+
+    def mayBeAliases(v1: Int, v2: Int) =
+      (ps contains UP(v1, v2)) && om.mayBeAliases(rtypes(dimension - v1 - 1), rtypes(dimension - v2 - 2))
+
     def mustBeAliases(v1: Int, v2: Int) = false
-    
+
     def mayBeWeakAliases(v1: Int, v2: Int) = true
-    
+
     def mustBeWeakAliases(v1: Int, v2: Int) = mustBeNull(v1) && mustBeNull(v2)
-    
+
     def mkString(vars: Seq[String]) = {
       val pairs = ps map { case UP(l, r) => s"(${vars(l)}, ${vars(r)})" }
       s"${pairs.mkString("[ ", ", ", " ]")} types ${rtypes.reverse.mkString("< ", ", ", " >")}"
@@ -256,5 +268,13 @@ class PairSharingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] 
  * The companion object for `PairSharingDomain`, which is also a domain factory.
  */
 object PairSharingDomain extends ObjectDomainFactory {
+
+  private class PairSharingParser(val varNames: Seq[String]) extends RegexParsers {
+    private val ident = """[@$a-zA-Z._][\w.]*""".r  // allow .$ in identifiers
+    private val pair = ("(" ~> ident <~ ",") ~ ident <~ ")" ^^ { case x ~ y => new UP(varNames.indexOf(x), varNames.indexOf(y)) }
+    private val sequence = "{" ~> repsep(pair, ",") <~ "}"
+    def parseProperty(s: String) = parseAll(sequence, s)
+  }
+
   def apply[OM <: ObjectModel](om: OM) = new PairSharingDomain(om)
 }
