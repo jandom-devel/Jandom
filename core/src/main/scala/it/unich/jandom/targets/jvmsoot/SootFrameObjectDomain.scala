@@ -105,8 +105,8 @@ class SootFrameObjectDomain(val dom: ObjectDomain[SootObjectModel]) extends Soot
 
     def evalConstant(c: String) = addUntrackedVariable(RefType.v(c.getClass().getName()))
 
-    def evalNull =
-      Property(prop.addFreshVariable(NullType.v()).assignNull(size), NullType.v() :: stack, globals)
+    def evalNull(tpe : Type = soot.NullType.v()) =
+      Property(prop.addFreshVariable(tpe).assignNull(size), tpe :: stack, globals)
 
     def evalNew(tpe: Type) =
       if (tpe.isInstanceOf[RefType])

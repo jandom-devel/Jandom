@@ -162,7 +162,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalConstant(const: String) = Property(prop.addVariable(), RefType.v(const.getClass().getName()) :: stack)
 
-    def evalNull = addVariable(NullType.v())
+    def evalNull(tpe: Type = soot.NullType.v()) = addVariable(tpe)
 
     def evalNew(tpe: Type) = addVariable(tpe)
 

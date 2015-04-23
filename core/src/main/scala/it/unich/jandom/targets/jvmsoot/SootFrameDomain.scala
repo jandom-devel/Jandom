@@ -81,7 +81,7 @@ trait SootFrameDomain extends CartesianFiberedDomain {
     /**
      * Push a null constant into the frame
      */
-    def evalNull: P
+    def evalNull(tpe: soot.Type = soot.NullType.v()): P
 
     /**
      * Push a new object into the frame

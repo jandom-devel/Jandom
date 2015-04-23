@@ -58,8 +58,8 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case _: IfGeInst => prop.evalConstant(0).testGe
       case _: IfEqInst => prop.evalConstant(0).testEq
       case _: IfNeInst => prop.evalConstant(0).testNe
-      case _: IfNonNullInst => prop.evalNull.testNe
-      case _: IfNullInst => prop.evalNull.testEq
+      case _: IfNonNullInst => prop.evalNull().testNe
+      case _: IfNullInst => prop.evalNull().testEq
     }
 
     for (unit <- node.iterator())
@@ -247,7 +247,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
           case i: LongConstant => currprop.evalConstant(i.value)
           case i: FloatConstant => currprop.evalConstant(i.value)
           case i: DoubleConstant => currprop.evalConstant(i.value)
-          case i: NullConstant => currprop.evalNull
+          case i: NullConstant => currprop.evalNull()
           case i: StringConstant => currprop.evalConstant(i.value)
           case i: Constant => throw UnsupportedSootUnitException(unit)
         }
@@ -320,4 +320,3 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
     exits
   }
 }
-
