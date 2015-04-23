@@ -32,7 +32,7 @@ import soot._
  */
 class SootObjectModelSuite extends FunSpec with ObjectModelSuite with SootTests {
 
-  val scene = initSoot("java")
+  val scene = initSoot()
   val klassA = RefType.v(scene.loadClassAndSupport("javatest.A"))
   val klassB = RefType.v(scene.loadClassAndSupport("javatest.B"))
   val klassListA = RefType.v(scene.loadClassAndSupport("javatest.ListA"))

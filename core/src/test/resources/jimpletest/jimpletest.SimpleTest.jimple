@@ -1,4 +1,4 @@
-public class javatest.SimpleTest extends java.lang.Object
+public class jimpletest.SimpleTest extends java.lang.Object
 {
     int classX;
     int classY;
@@ -6,9 +6,9 @@ public class javatest.SimpleTest extends java.lang.Object
 
          public void <init>()
      {
-         javatest.SimpleTest r0;
+         jimpletest.SimpleTest r0;
  
-         r0 := @this: javatest.SimpleTest;
+         r0 := @this: jimpletest.SimpleTest;
  
          specialinvoke r0.<java.lang.Object: void <init>()>();
  
@@ -164,24 +164,24 @@ public class javatest.SimpleTest extends java.lang.Object
      }
      int parametric_dynamic(int, int)
      {
-         javatest.SimpleTest r0;
+         jimpletest.SimpleTest r0;
          int i0, i1, $i2, $i3;
  
-         r0 := @this: javatest.SimpleTest;
+         r0 := @this: jimpletest.SimpleTest;
  
          i0 := @parameter0: int;
  
          i1 := @parameter1: int;
  
-         r0.<javatest.SimpleTest: int classX> = i0;
+         r0.<jimpletest.SimpleTest: int classX> = i0;
  
-         r0.<javatest.SimpleTest: int classY> = i1;
+         r0.<jimpletest.SimpleTest: int classY> = i1;
  
          $i2 = i0 + i1;
  
-         r0.<javatest.SimpleTest: int sum> = $i2;
+         r0.<jimpletest.SimpleTest: int sum> = $i2;
  
-         $i3 = r0.<javatest.SimpleTest: int sum>;
+         $i3 = r0.<jimpletest.SimpleTest: int sum>;
  
          return $i3;
      }
@@ -198,7 +198,7 @@ public class javatest.SimpleTest extends java.lang.Object
  
          b4 = 4;
  
-         i2 = staticinvoke <javatest.SimpleTest: int parametric_static(int,int)>(3, 4);
+         i2 = staticinvoke <jimpletest.SimpleTest: int parametric_static(int,int)>(3, 4);
  
          return i2;
      }
@@ -210,7 +210,7 @@ public class javatest.SimpleTest extends java.lang.Object
  
          $i1 = i0 + 1;
  
-         $i2 = staticinvoke <javatest.SimpleTest: int recursa(int)>($i1);
+         $i2 = staticinvoke <jimpletest.SimpleTest: int recursa(int)>($i1);
  
          return $i2;
      }
@@ -222,7 +222,7 @@ public class javatest.SimpleTest extends java.lang.Object
  
          if i0 >= 0 goto label1;
  
-         $i1 = staticinvoke <javatest.SimpleTest: int recursb(int)>(i0);
+         $i1 = staticinvoke <jimpletest.SimpleTest: int recursb(int)>(i0);
  
          return $i1;
  
@@ -275,113 +275,113 @@ public class javatest.SimpleTest extends java.lang.Object
      }
      static void objcreation()
      {
-         javatest.A r0, r1, $r3, $r4, r8;
-         javatest.ListA r2, $r5, $r6, $r7;
+         jimpletest.A r0, r1, $r3, $r4, r8;
+         jimpletest.ListA r2, $r5, $r6, $r7;
  
-         $r3 = new javatest.A;
+         $r3 = new jimpletest.A;
  
-         specialinvoke $r3.<javatest.A: void <init>()>();
+         specialinvoke $r3.<jimpletest.A: void <init>()>();
  
          r0 = $r3;
  
-         $r4 = new javatest.A;
+         $r4 = new jimpletest.A;
  
-         specialinvoke $r4.<javatest.A: void <init>()>();
+         specialinvoke $r4.<jimpletest.A: void <init>()>();
  
          r1 = $r4;
  
-         $r5 = new javatest.ListA;
+         $r5 = new jimpletest.ListA;
  
-         specialinvoke $r5.<javatest.ListA: void <init>()>();
+         specialinvoke $r5.<jimpletest.ListA: void <init>()>();
  
          r2 = $r5;
  
-         r2.<javatest.ListA: javatest.A v> = r0;
+         r2.<jimpletest.ListA: jimpletest.A v> = r0;
  
-         $r7 = r2.<javatest.ListA: javatest.ListA next>;
+         $r7 = r2.<jimpletest.ListA: jimpletest.ListA next>;
  
-         $r6 = r2.<javatest.ListA: javatest.ListA next>;
+         $r6 = r2.<jimpletest.ListA: jimpletest.ListA next>;
  
-         $r7.<javatest.ListA: javatest.ListA next> = $r6;
+         $r7.<jimpletest.ListA: jimpletest.ListA next> = $r6;
  
-         r8 = r2.<javatest.ListA: javatest.A v>;
+         r8 = r2.<jimpletest.ListA: jimpletest.A v>;
  
          return;
      }
      static void classrefinement()
      {
-         javatest.A r0, $r3, r6;
-         javatest.B r1, $r4;
-         javatest.Pair r2, $r5;
+         jimpletest.A r0, $r3, r6;
+         jimpletest.B r1, $r4;
+         jimpletest.Pair r2, $r5;
  
-         $r3 = new javatest.A;
+         $r3 = new jimpletest.A;
  
-         specialinvoke $r3.<javatest.A: void <init>()>();
+         specialinvoke $r3.<jimpletest.A: void <init>()>();
  
          r0 = $r3;
  
-         $r4 = new javatest.B;
+         $r4 = new jimpletest.B;
  
-         specialinvoke $r4.<javatest.B: void <init>()>();
+         specialinvoke $r4.<jimpletest.B: void <init>()>();
  
          r1 = $r4;
  
-         $r5 = new javatest.Pair;
+         $r5 = new jimpletest.Pair;
  
-         specialinvoke $r5.<javatest.Pair: void <init>()>();
+         specialinvoke $r5.<jimpletest.Pair: void <init>()>();
  
          r2 = $r5;
  
-         r2.<javatest.Pair: javatest.B w> = r1;
+         r2.<jimpletest.Pair: jimpletest.B w> = r1;
  
-         r6 = r2.<javatest.Pair: javatest.A v>;
+         r6 = r2.<jimpletest.Pair: jimpletest.A v>;
  
          return;
      }
-     static javatest.Pair class_parametric(javatest.A)
+     static jimpletest.Pair class_parametric(jimpletest.A)
      {
-         javatest.A r0, $r3, r4;
-         javatest.Pair r1, $r2;
+         jimpletest.A r0, $r3, r4;
+         jimpletest.Pair r1, $r2;
  
-         r0 := @parameter0: javatest.A;
+         r0 := @parameter0: jimpletest.A;
  
-         $r2 = new javatest.Pair;
+         $r2 = new jimpletest.Pair;
  
-         specialinvoke $r2.<javatest.Pair: void <init>()>();
+         specialinvoke $r2.<jimpletest.Pair: void <init>()>();
  
          r1 = $r2;
  
-         r1.<javatest.Pair: javatest.A v> = r0;
+         r1.<jimpletest.Pair: jimpletest.A v> = r0;
  
-         $r3 = new javatest.A;
+         $r3 = new jimpletest.A;
  
-         specialinvoke $r3.<javatest.A: void <init>()>();
+         specialinvoke $r3.<jimpletest.A: void <init>()>();
  
          r4 = $r3;
  
          return r1;
      }
-     static javatest.ListA pair_one(javatest.A, javatest.B)
+     static jimpletest.ListA pair_one(jimpletest.A, jimpletest.B)
      {
-         javatest.A r0;
-         javatest.B r1;
-         javatest.ListA r2, $r3, $r4;
+         jimpletest.A r0;
+         jimpletest.B r1;
+         jimpletest.ListA r2, $r3, $r4;
  
-         r0 := @parameter0: javatest.A;
+         r0 := @parameter0: jimpletest.A;
  
-         r1 := @parameter1: javatest.B;
+         r1 := @parameter1: jimpletest.B;
  
-         $r3 = new javatest.ListA;
+         $r3 = new jimpletest.ListA;
  
-         specialinvoke $r3.<javatest.ListA: void <init>()>();
+         specialinvoke $r3.<jimpletest.ListA: void <init>()>();
  
          r2 = $r3;
  
-         r2.<javatest.ListA: javatest.A v> = r0;
+         r2.<jimpletest.ListA: jimpletest.A v> = r0;
  
-         $r4 = staticinvoke <javatest.SimpleTest: javatest.ListA pair_one(javatest.A,javatest.B)>(r0, r1);
+         $r4 = staticinvoke <jimpletest.SimpleTest: jimpletest.ListA pair_one(jimpletest.A,jimpletest.B)>(r0, r1);
  
-         r2.<javatest.ListA: javatest.ListA next> = $r4;
+         r2.<jimpletest.ListA: jimpletest.ListA next> = $r4;
  
          return r2;
      }

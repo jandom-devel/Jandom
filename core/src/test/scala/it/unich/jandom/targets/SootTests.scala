@@ -28,7 +28,7 @@ trait SootTests {
    * Initialize Soot and set classpath to the directory `dir` within the resource
    * directory.
    */
-  def initSoot(dir: String) = {
+  def initSoot(dir: String = "") = {
     soot.G.reset()
     val scene = soot.Scene.v()
     scene.loadBasicClasses()

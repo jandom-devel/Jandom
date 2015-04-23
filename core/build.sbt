@@ -26,8 +26,6 @@ unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default +  EclipseCreateSrc.Managed
 
-EclipseKeys.classpathTransformerFactories := Seq(ClasspathentryTransformer)
-
 // It would be nice to be able to exclude resource directories from compilation.
 
 managedSourceDirectories in Test := Seq()

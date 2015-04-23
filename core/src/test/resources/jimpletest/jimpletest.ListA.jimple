@@ -1,0 +1,16 @@
+class jimpletest.ListA extends java.lang.Object
+{
+    jimpletest.ListA next;
+    jimpletest.A v;
+
+    void <init>()
+    {
+        jimpletest.ListA this;
+
+        this := @this: jimpletest.ListA;
+
+        specialinvoke this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}

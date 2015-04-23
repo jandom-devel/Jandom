@@ -35,7 +35,7 @@ import it.unich.jandom.targets.SootTests
 class UnitBlockGraphSuite extends FunSpec with SootTests {
   import scala.collection.JavaConversions._
 
-  val scene = initSoot("java")
+  val scene = initSoot()
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
 
   for (m <- c.getMethods(); body = m.retrieveActiveBody()) {

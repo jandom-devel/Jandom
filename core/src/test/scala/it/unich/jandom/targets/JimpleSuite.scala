@@ -35,12 +35,12 @@ import soot._
 
 class JimpleSuite extends FunSuite with SootTests {
 
-  val scene = initSoot("jimple")
+  val scene = initSoot("jimpletest")
 
   // disable all jimple optimizations
   PhaseOptions.v().setPhaseOption("jb", "enabled:false")
 
-  val c = scene.loadClassAndSupport("javatest.SimpleTest")
+  val c = scene.loadClassAndSupport("jimpletest.SimpleTest")
   val om = new SootObjectModel(scene)
   val psdom = PairSharingDomain(om)
   val numdom = BoxDoubleDomain(overReals = false)

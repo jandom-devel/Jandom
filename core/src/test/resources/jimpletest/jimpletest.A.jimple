@@ -1,11 +1,11 @@
-class javatest.B extends java.lang.Object
+class jimpletest.A extends java.lang.Object
 {
 
     void <init>()
     {
-        javatest.B this;
+        jimpletest.A this;
 
-        this := @this: javatest.B;
+        this := @this: javatest.A;
 
         specialinvoke this.<java.lang.Object: void <init>()>();
 

@@ -37,7 +37,7 @@ import it.unich.jandom.domains.objects.PairSharingDomain
 class JVMSootSuite extends FunSuite with SootTests {
   import scala.collection.JavaConversions._
 
-  val scene = initSoot("java")
+  val scene = initSoot()
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
   val om = new SootObjectModel(scene)
   val psdom = new PairSharingDomain(om)
