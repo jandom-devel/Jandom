@@ -23,8 +23,18 @@ package it.unich.jandom.targets
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait SootTests {
-  val scene = soot.Scene.v()
-  scene.loadBasicClasses()
-  val sootTestDir = java.nio.file.Paths.get(System.getProperty("user.dir"),"src","test","resources","java")
-  scene.setSootClassPath(sootTestDir.toString)
+
+  /**
+   * Initialize Soot and set classpath to the directory `dir` within the resource
+   * directory.
+   */
+  def initSoot(dir: String) = {
+    soot.G.reset()
+    val scene = soot.Scene.v()
+    scene.loadBasicClasses()
+    val sootTestDir = java.nio.file.Paths.get(System.getProperty("user.dir"), "src", "test", "resources", dir)
+    scene.setSootClassPath(sootTestDir.toString)
+    scene
+  }
+
 }

@@ -35,11 +35,10 @@ import soot._
 
 class JimpleSuite extends FunSuite with SootTests {
 
+  val scene = initSoot("jimple")
+
   // disable all jimple optimizations
   PhaseOptions.v().setPhaseOption("jb", "enabled:false")
-
-  val jimpleTestDir = java.nio.file.Paths.get(System.getProperty("user.dir"),"src","test","resources","jimple")
-  scene.setSootClassPath(jimpleTestDir.toString)
 
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
   val om = new SootObjectModel(scene)

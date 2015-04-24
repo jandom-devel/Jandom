@@ -27,7 +27,8 @@ import it.unich.jandom.targets.SootTests
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class BriefBigBlockGraphSuite extends FunSpec with SootTests { 
+class BriefBigBlockGraphSuite extends FunSpec with SootTests {
+  val scene = initSoot("java")
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
 
   describe("The BriefBigBlockGraph for the nested method") {
