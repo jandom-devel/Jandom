@@ -18,6 +18,8 @@
 
 package it.unich.jandom.targets
 
+import java.io.File
+
 /**
  * A initialization trait to mix in test suites using Soot.
  * @author Gianluca Amato <gamato@unich.it>
@@ -32,8 +34,9 @@ trait SootTests {
     soot.G.reset()
     val scene = soot.Scene.v()
     scene.loadBasicClasses()
-    val sootTestDir = java.nio.file.Paths.get(System.getProperty("user.dir"), "src", "test", "resources", dir)
-    scene.setSootClassPath(sootTestDir.toString)
+    val resourceURL = getClass().getResource("/"+dir)
+    val sootTestDir = new File(resourceURL.toURI())
+    scene.setSootClassPath(sootTestDir.toString())
     scene
   }
 
