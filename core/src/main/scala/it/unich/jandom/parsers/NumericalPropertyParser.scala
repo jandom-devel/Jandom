@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2014, 2015 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -29,26 +29,7 @@ import it.unich.jandom.targets.Environment
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
-  /**
-   * If this variable is false, unrecognized variables will be treated as errors, otherwise they will be
-   * added to the environment.
-   */
-  var closedVariables = false
-
-  /**
-   * Parser for variables.
-   */
-  override val variable: Parser[Int] = new Parser[Int] {
-    def apply(in: Input) = ident(in) match {
-      case Success(i, in1) => env.getBinding(i) match {
-        case Some(v) => Success(v, in1)
-        case None => if (closedVariables) Failure("Unexpected variable", in1) else Success(env.addBinding(i), in1)
-      }
-      case default => default.asInstanceOf[ParseResult[Int]]
-    }
-  }
-
+class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser with VariableParser {
   /**
    * Parser for properties.
    */
