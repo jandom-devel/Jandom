@@ -150,7 +150,11 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
     require(low.length == A.cols)
     require(Try(A \ DenseMatrix.eye[Double](dimension)).isSuccess, s"The shape matrix ${A} is not invertible")
     require(normalized)
-
+    
+    println("isempty "+isEmpty)
+    println("low "+low)
+    println("high "+high)
+    
     type Domain = ParallelotopeDomain
 
     def domain = ParallelotopeDomain.this

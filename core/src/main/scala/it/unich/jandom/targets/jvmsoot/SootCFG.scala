@@ -52,7 +52,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     val order = new PseudoTopologicalOrderer[Node].newList(graph, false).zipWithIndex.toMap
     def compare(x: Node, y: Node) = order(x) - order(y)
   }
-  lazy val localMap = locals.zipWithIndex.toMap
+  lazy val localMap = locals.zipWithIndex.map{case (l,i) => (l,i+inputTypes.length)}.toMap
 
   /**
    * Returns the sequence of types to be returned by every interpretation of this CFG
@@ -81,7 +81,16 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     var currprop = input
     for (i <- input.dimension until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
     if (params.io) {
+
+//     changed as follows 
+//  for (i <- input.dimension until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
+//    for (i <- 0 until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
+    
+    // if the method has parameters, then we add fake local variables for tracking objects referred by parameters 
+    /* if (params.io) {
+>>>>>>> 2006cde... Started parameter passing in testing.
       for (i <- 0 until SootCFG.inputTypes(method).size) currprop = currprop.evalLocal(i)
+    } */
     }
     currprop
   }
