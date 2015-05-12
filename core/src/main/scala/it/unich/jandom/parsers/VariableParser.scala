@@ -47,6 +47,7 @@ trait VariableParser extends JavaTokenParsers {
       case default => default.asInstanceOf[ParseResult[Int]]
     }
   }
+  
   val parameterVariable: Parser[Int] = new Parser[Int] {
     def apply(in: Input) = ident(in) match {
       case Success(i, in1) => env.getBinding("@"+i) match {
