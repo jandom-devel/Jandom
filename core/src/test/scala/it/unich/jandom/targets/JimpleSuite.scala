@@ -37,7 +37,7 @@ class JimpleSuite extends FunSuite with SootTests {
 
   val scene = initSoot("jimpletest")
 
-  // disable all jimple optimizations
+  // disable all Jimple optimizations
   PhaseOptions.v().setPhaseOption("jb", "enabled:false")
 
   val c = scene.loadClassAndSupport("jimpletest.SimpleTest")
