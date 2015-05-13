@@ -146,14 +146,13 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
     val high: DenseVector[Double])
     extends NumericalProperty[Property] {
 
+    println("Property= "+A)
+    println("low= "+low)
+    println("high= "+high)
     require(low.length == A.rows)
     require(low.length == A.cols)
     require(Try(A \ DenseMatrix.eye[Double](dimension)).isSuccess, s"The shape matrix ${A} is not invertible")
     require(normalized)
-    
-    println("isempty "+isEmpty)
-    println("low "+low)
-    println("high "+high)
     
     type Domain = ParallelotopeDomain
 
@@ -488,6 +487,8 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
           val newhigh = high.copy
           newA(chosen, ::) := coeffs.t
           newhigh(chosen) = -known
+          println("A= " + A)
+          println("newA= " + newA)
           new Property(false, low, newA, newhigh)
         }
       }

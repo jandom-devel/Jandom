@@ -81,6 +81,8 @@ class JimpleSuite extends FunSuite with SootTests {
       }
       test(s"Jimple numerical analysis: ${methodName} ${if (i > 0) i + 1 else ""}") {
         val env = Environment(method.locals map { _.getName() } :_*)
+        for (i <- 0 until c.getMethodByName(methodName).getParameterCount())
+            env.addBinding("@parameter"+i)
         val parser = new NumericalPropertyParser(env)
         try {
           val ann = input match {
@@ -112,17 +114,16 @@ class JimpleSuite extends FunSuite with SootTests {
         ($r5, $r3), (r0, $r3), ( $r4, $r4), ($r7, $r7), ($r5, r8), ($r5, $r6), ($r6, $r3), (r0, r8), (r1, r1), (r2, $r3), ($r5, $r7), ($r3, $r3),(r2, $r7), ($r6, $r6), 
         (r2, r8), ($r5, r0), ($r7, r0), (r0, r0), (r1, $r4), ($r7, r8), ($r7, $r3)}""",
      "classrefinement" ->
-        """{(r0, r0), (r0, $r3), (r1, r1), (r1, r2), (r1, $r4), (r1, $r5), (r2, r2), (r2, $r4), (r2, $r5), (r2, r6), ($r3, $r3), ($r4, $r4), ($r4, $r5), 
+        """{(r0, r0), (r0, $r3), (r1, r1), (r1, r2), (r1, $r4), (r1, $r5), (r2, r2), (r2, $r4), (r2, $r5), (r2, r6), ($r3, $r3), ($r4, $r4), ($r4, $r5),
         ($r5, $r5), ($r5, r6), (r6, r6)}"""
- /*
-     This is commented since analysis of methods with parameters does not work correctly!
      ,"class_parametric" ->
-        ("{(r0, r0), (r0, r1), (r0, $r2), (r0, @p0), (r1, r1), (r1, $r2), (r1, @p0), ($r2, $r2), ($r2, @p0), ($r3, $r3),  ($r3, r4), (r4, r4), (@p0, @p0)}",
-        Seq("r0", "$r3", "r4", "r1", "$r2", "@p0"),
-        Seq())
- */
-      )
-
+        """{(@parameter0, @parameter0), (r0, r0), (r1, r1), ($r2, $r2),($r3, $r3),  (r4, r4),
+        (@parameter0, r0), (@parameter0, r1), (@parameter0, $r2),
+        (r0, r1), (r0, $r2),
+        (r1, $r2),
+        ($r3, r4)}""" 
+        )
+ 
       for ( (methodName , ps) <- jimplePairSharingTests) {
       val jmethod = new JimpleMethod(c.getMethodByName(methodName))
       val params = new Parameters[JimpleMethod] {
@@ -133,7 +134,13 @@ class JimpleSuite extends FunSuite with SootTests {
       params.interpretation = Some(inte)
       test(s"Jimple object analysis: ${methodName}") {
         try {          
-          val env = Environment(jmethod.locals map { _.getName() } :_*)
+          val env = Environment()
+          for (i <- 0 until c.getMethodByName(methodName).getParameterCount())
+            env.addBinding("@parameter"+i)
+          for(l <- jmethod.locals )
+            env.addBinding(l.getName)
+//          val env = Environment(jmethod.locals map { _.getName() } :_*)
+          
           val parser = new PairSharingParser(env)
           val prop = parser.parseProperty(ps).get.toSet
           val ann = jmethod.analyze(params)

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import soot.toolkits.graph._
  * based on the generic analyzer for control flow graphs.
  * @param method the method we want to analyze
  * @author Gianluca Amato <gamato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
  */
 class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](method) {
   import scala.collection.JavaConversions._
@@ -248,6 +249,22 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
         throw new UnsupportedSootUnitException(unit)
       case unit: IdentityStmt =>
       // ignore this instruction...
+        unit.getRightOp() match {
+          case v: ParameterRef =>
+            //val expr = analyzeExpr(unit.getRightOp(), currprop)
+              val expr = currprop.evalLocal(v.getIndex) 
+              unit.getLeftOp() match {
+                case local: Local =>
+                currprop = expr.assignLocal(localMap(local))
+                case field: InstanceFieldRef =>
+                val local = field.getBase().asInstanceOf[Local]
+                currprop = expr.assignField(localMap(local), field.getField())
+          }    
+          case _ =>
+            throw new UnsupportedSootUnitException(unit)
+        }
+        
+        
       case unit: EnterMonitorStmt =>
         unit.getOp() match {
           case local: Local =>

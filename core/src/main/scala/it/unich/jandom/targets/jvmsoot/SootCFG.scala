@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -36,7 +36,8 @@ import soot.toolkits.graph.PseudoTopologicalOrderer
  * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
  * @param method the method we want to analyze
  * @author Gianluca Amato <gamato@unich.it>
- */
+ * @author Francesca Scozzari <fscozzari@unich.it>
+ * */
 abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: SootMethod) extends ControlFlowGraph[Tgt, Node] {
   import scala.collection.JavaConversions._
 
@@ -55,19 +56,19 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   lazy val localMap = locals.zipWithIndex.map{case (l,i) => (l,i+inputTypes.length)}.toMap
 
   /**
-   * Returns the sequence of types to be returned by every interpretation of this CFG
+   * Returns the sequence of types required as input for every interpretation of this CFG
    */
   def inputTypes = SootCFG.inputTypes(method)
 
   /**
-   * Returns the sequence of types required as input for every interpretation of this CFG
+   * Returns the sequence of types to be returned by every interpretation of this CFG
    */
   def outputTypes = SootCFG.outputTypes(method)
 
   /**
    * This is the sequence of types of the frame in intra-procedural analysis
    */
-  def localTypes(params: Parameters) = (locals map { _.getType() }) ++ (if (params.io) inputTypes else Seq())
+  def localTypes(params: Parameters) = (if (params.io) inputTypes else Seq()) ++ (locals map { _.getType() }) 
 
   /**
    * @inheritdoc
@@ -79,18 +80,13 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   protected def adaptProperty(params: Parameters)(input: params.Property): params.Property = {
     assert(input.dimension <= body.getLocalCount(), s"Actual parameters <${input}> to method ${method} are more than the formal parameters")
     var currprop = input
-    for (i <- input.dimension until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
-    if (params.io) {
-
-//     changed as follows 
-//  for (i <- input.dimension until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
-//    for (i <- 0 until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
     
-    // if the method has parameters, then we add fake local variables for tracking objects referred by parameters 
-    /* if (params.io) {
->>>>>>> 2006cde... Started parameter passing in testing.
-      for (i <- 0 until SootCFG.inputTypes(method).size) currprop = currprop.evalLocal(i)
-    } */
+    if (params.io) {
+      for (i <- input.dimension until body.getLocalCount()+input.dimension) 
+        currprop = currprop.evalUnknown(locals(i-input.dimension).getType())
+    } else {
+      for (i <- input.dimension until body.getLocalCount()) 
+        currprop = currprop.evalUnknown(locals(i).getType())
     }
     currprop
   }
@@ -118,7 +114,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     val parameterNames = if (params.io) (for (i <- 0 until method.getParameterCount()) yield "@parameter" + i) else Seq()
     val stackPositions = prop.dimension - body.getLocalCount() - (if (params.io) method.getParameterCount() else 0)
     val stackNames = for (i <- 0 until stackPositions) yield "#s" + i
-    val names = localNames ++ parameterNames ++ stackNames
+    val names = parameterNames ++ localNames ++ stackNames
     prop.mkString(names)
   }
 
