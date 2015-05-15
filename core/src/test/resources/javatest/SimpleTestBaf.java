@@ -27,6 +27,7 @@ public class SimpleTestBaf {
 		x = x + y;
 	}
 
+	@SuppressWarnings("unused")
 	static void dup() {
 		int x = 0;
 		int y = x;
