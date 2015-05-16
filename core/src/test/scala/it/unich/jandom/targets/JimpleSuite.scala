@@ -64,32 +64,35 @@ class JimpleSuite extends FunSuite with SootTests {
         Seq(None -> false -> "z0 == 1 && b0 == 2 && i1 == 3"),
       "parametric_static" -> Seq(
         None -> false -> "i0 == i0",  // cannot parse empty strings
-        None -> true -> "p0 == i0 && p1 == i1", // pi's are parameters
+        None -> true -> "@parameter0 == i0 && @parameter1 == i1", // pi's are parameters
         Some("i0 == 0") -> false -> "i0 == 0",
-        Some("i0 == 0") -> true -> "i0 == 0 && p0 == i0 && p1 == i1"),
+        Some("i0 == 0") -> true -> "i0 == 0 && @parameter0 == i0 && @parameter1 == i1"),
       "parametric_dynamic" ->
         Seq(None -> false -> "i0 == i0"),
       "parametric_caller" ->
-        Seq(None -> true -> "b3 ==3 && b4 ==4 && i2 ==7 && p0 == i0 && p1 == i1"))
+        Seq(None -> true -> "b3 ==3 && b4 ==4 && i2 ==7 && @parameter0 == i0 && @parameter1 == i1"))
 
     for ((methodName, instances) <- jimpleNumericalTests; (((input, ifIo), propString), i) <- instances.zipWithIndex) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
       val params = new Parameters[JimpleMethod] {
         val domain = new SootFrameNumericalDomain(numdom)
-        io = ifIo
+//        io = ifIo
+        io = true
         interpretation = Some(new JimpleInterpretation(this))
       }
       test(s"Jimple numerical analysis: ${methodName} ${if (i > 0) i + 1 else ""}") {
-        val env = Environment(method.locals map { _.getName() } :_*)
-        for (i <- 0 until c.getMethodByName(methodName).getParameterCount())
+        val env = Environment()
+          for (i <- 0 until c.getMethodByName(methodName).getParameterCount())
             env.addBinding("@parameter"+i)
-        val parser = new NumericalPropertyParser(env)
+          for(l <- method.locals )
+            env.addBinding(l.getName)
+       val parser = new NumericalPropertyParser(env)
         try {
           val ann = input match {
             case None => method.analyze(params)
             case Some(input) =>
               val prop = parser.parseProperty(input, params.domain.numdom).get
-              method.analyzeFromInput(params)(params.domain(prop, IntType.v()))
+             method.analyzeFromInput(params)(params.domain(prop, IntType.v()))
           }
           val prop = parser.parseProperty(propString, params.domain.numdom).get
           assert(ann(method.lastPP.get).prop === prop)

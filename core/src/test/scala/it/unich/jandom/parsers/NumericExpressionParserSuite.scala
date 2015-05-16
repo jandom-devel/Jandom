@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -37,6 +37,7 @@ class NumericExpressionParserSuite extends FunSuite {
   class TempParser extends NumericExpressionParser {
     val env = Environment()
     val variable = ident ^^ { env.getBindingOrAdd(_) }
+    val parameterVariable = "@" ~> ident ^^ { env.getBindingOrAdd(_) }
     def parseExpr(s: String) = parseAll(numexpr, s)
   }
 

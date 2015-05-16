@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  * 
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -33,6 +33,7 @@ import it.unich.jandom.targets.NumericAssignmentMultiple
   * It actually parser a super-set of the LPInv transitions systems, since it possible to specify complex
   * conditions with &&, || and ! in the locations, and non-linear expressions.
   * @author Gianluca Amato <gamato@unich.it>
+  * @author Francesca Scozzari <fscozzari@unich.it>
   */
 class LPInvParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
   private val location_env = new HashMap[String, Location]
@@ -41,6 +42,10 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with NumericExp
 
   val variable: Parser[Int] =
     ident ^^ { env(_) }
+
+  // this is for compatibility only with the Random parser
+  val parameterVariable: Parser[Int] =
+    "@" ~> ident ^^ { env(_) }
 
   private val var_declaration: Parser[Any] =
     ident ^^ { case v => env.addBinding(v) }
