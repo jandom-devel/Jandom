@@ -259,12 +259,20 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
                 case field: InstanceFieldRef =>
                 val local = field.getBase().asInstanceOf[Local]
                 currprop = expr.assignField(localMap(local), field.getField())
-          }    
+          }   
+          case v: ThisRef =>
+            // we assume that @this is in position 0
+              val expr = currprop.evalLocal(0) 
+              unit.getLeftOp() match {
+                case local: Local =>
+                currprop = expr.assignLocal(localMap(local))
+                case field: InstanceFieldRef =>
+                val local = field.getBase().asInstanceOf[Local]
+                currprop = expr.assignField(localMap(local), field.getField())
+          }             
           case _ =>
             throw new UnsupportedSootUnitException(unit)
         }
-        
-        
       case unit: EnterMonitorStmt =>
         unit.getOp() match {
           case local: Local =>

@@ -54,7 +54,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     def compare(x: Node, y: Node) = order(x) - order(y)
   }
   lazy val localMap = locals.zipWithIndex.map{case (l,i) => (l,i+inputTypes.length)}.toMap
-
+  
   /**
    * Returns the sequence of types required as input for every interpretation of this CFG
    */
@@ -110,11 +110,12 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   }
 
   def formatProperty(params: Parameters)(prop: params.Property) = {
-    val localNames = locals map { _.getName() }
+    val thisVariable = if (!method.isStatic()) Seq("@this") else Seq()  
     val parameterNames = if (params.io) (for (i <- 0 until method.getParameterCount()) yield "@parameter" + i) else Seq()
+    val localNames = locals map { _.getName() }
     val stackPositions = prop.dimension - body.getLocalCount() - (if (params.io) method.getParameterCount() else 0)
     val stackNames = for (i <- 0 until stackPositions) yield "#s" + i
-    val names = parameterNames ++ localNames ++ stackNames
+    val names = thisVariable ++ parameterNames ++ localNames ++ stackNames
     prop.mkString(names)
   }
 

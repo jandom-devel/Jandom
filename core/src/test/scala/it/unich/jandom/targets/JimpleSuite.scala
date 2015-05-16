@@ -65,10 +65,10 @@ class JimpleSuite extends FunSuite with SootTests {
       "parametric_static" -> Seq(
         None -> false -> "i0 == i0",  // cannot parse empty strings
         None -> true -> "@parameter0 == i0 && @parameter1 == i1", // pi's are parameters
-        Some("i0 == 0") -> false -> "i0 == 0",
-        Some("i0 == 0") -> true -> "i0 == 0 && @parameter0 == i0 && @parameter1 == i1"),
+        Some("@parameter0 == 0") -> false -> "@parameter0 == 0 && i0 == 0",
+        Some("@parameter0 == 0") -> true -> "i0 == 0 && @parameter0 == i0 && @parameter1 == i1"),
       "parametric_dynamic" ->
-        Seq(None -> false -> "i0 == i0"),
+        Seq(None -> true -> "i0 == i0"),
       "parametric_caller" ->
         Seq(None -> true -> "b3 ==3 && b4 ==4 && i2 ==7 && @parameter0 == i0 && @parameter1 == i1"))
 
@@ -82,16 +82,27 @@ class JimpleSuite extends FunSuite with SootTests {
       }
       test(s"Jimple numerical analysis: ${methodName} ${if (i > 0) i + 1 else ""}") {
         val env = Environment()
+          if (!c.getMethodByName(methodName).isStatic())  
+            env.addBinding("@this")
           for (i <- 0 until c.getMethodByName(methodName).getParameterCount())
             env.addBinding("@parameter"+i)
           for(l <- method.locals )
             env.addBinding(l.getName)
+        // Environment which containts only the method parameters @parameter0, @parameter1, ...     
+        val parametrOnlyEnv = Environment()
+          if (!c.getMethodByName(methodName).isStatic()) 
+            parametrOnlyEnv.addBinding("@this")
+          for (i <- 0 until c.getMethodByName(methodName).getParameterCount())
+            parametrOnlyEnv.addBinding("@parameter"+i)
+            
        val parser = new NumericalPropertyParser(env)
+       val parametrOnlyParser = new NumericalPropertyParser(parametrOnlyEnv)
+
         try {
           val ann = input match {
             case None => method.analyze(params)
             case Some(input) =>
-              val prop = parser.parseProperty(input, params.domain.numdom).get
+              val prop = parametrOnlyParser.parseProperty(input, params.domain.numdom).get
              method.analyzeFromInput(params)(params.domain(prop, IntType.v()))
           }
           val prop = parser.parseProperty(propString, params.domain.numdom).get
