@@ -98,8 +98,20 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
    */
   override def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
     val tmp = super.extractOutput(params)(ann)
-    if (params.io)
-      tmp.extract(SootCFG.outputTypes(method).size)
+    if (params.io) {
+      // we first remove the copy of the parameters (local variables)
+      val returnValue = method.getReturnType match {
+      case _:VoidType => tmp.delVariables(tmp.dimension-method.getParameterCount until tmp.dimension)
+      case _ =>  {
+        val rho = Seq.range(0,tmp.dimension-SootCFG.outputTypes(method).size-1) ++ 
+        Seq.fill(SootCFG.outputTypes(method).size)(-1) ++  //remove copies of parameters
+        Seq(tmp.dimension-SootCFG.outputTypes(method).size-1)  //this is the result  
+        tmp.mapVariables(rho)
+        }
+      }
+      returnValue
+      //tmp.extract(SootCFG.outputTypes(method).size)
+    }
     else
       throw new IllegalArgumentException("Only supported with I/O semantics")
   }

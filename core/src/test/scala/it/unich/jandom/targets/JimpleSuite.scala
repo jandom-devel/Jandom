@@ -63,9 +63,9 @@ class JimpleSuite extends FunSuite with SootTests {
       "topologicalorder" ->
         Seq(None -> false -> "z0 == 1 && b0 == 2 && i1 == 3"),
       "parametric_static" -> Seq(
-        None -> false -> "i0 == i0",  // cannot parse empty strings
+        None -> true -> "i0 == i0",  // cannot parse empty strings
         None -> true -> "@parameter0 == i0 && @parameter1 == i1", // pi's are parameters
-        Some("@parameter0 == 0") -> false -> "@parameter0 == 0 && i0 == 0",
+        Some("@parameter0 == 0") -> true -> "@parameter0 == 0 && i0 == 0",
         Some("@parameter0 == 0") -> true -> "i0 == 0 && @parameter0 == i0 && @parameter1 == i1"),
       "parametric_dynamic" ->
         Seq(None -> true -> "i0 == i0"),

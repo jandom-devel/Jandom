@@ -69,9 +69,11 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    * a tail block. In particular, we are assuming that the last result of analyzeBlock is the "output"
    * of the CFG, so be careful to preserve this property.
    */
-  def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property =
-    graph.getTails map { (node) => analyzeBlock(params)(node, ann(node)).last } reduce { _ union _ }
-
+  def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
+    val temp = graph.getTails map { (node) => analyzeBlock(params)(node, ann(node)).last }
+    val temp2 = temp reduce { _ union _ }
+    temp2
+  }
   /**
    * This method adapt an input property (expressed typically only in terms of the input
    * parameters) in a new property with additional information needed to carry on the analysis.
