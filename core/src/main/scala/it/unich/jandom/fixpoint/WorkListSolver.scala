@@ -18,17 +18,23 @@
 
 package it.unich.jandom.fixpoint
 
+import it.unich.jandom.utils.PMaps._
+
 /**
  * This solver solver a finite equation system with a work-list based method.
  * @param eqs the equation system to solve
  */
 final class WorkListSolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends FixpointSolver[EQS] {
+  type Parameters = startParam.type +: boxesParam.type +: PNil
 
-  def apply(start: eqs.Assignment, boxes: eqs.Unknown => eqs.Box): eqs.Assignment = {
+  def apply(params: Parameters): eqs.Assignment = {
+    val start = params(startParam)
+    val boxes = params(boxesParam)
+    
     val current: collection.mutable.HashMap[eqs.Unknown, eqs.Value] =
-       (for ( x <- eqs.unknowns) yield (x -> start(x))) (collection.breakOut)
+      (for (x <- eqs.unknowns) yield (x -> start(x)))(collection.breakOut)
     var workList = scala.collection.mutable.Queue[eqs.Unknown](eqs.unknowns: _*)
-    while (! workList.isEmpty) {
+    while (!workList.isEmpty) {
       val x = workList.dequeue()
       val newval = boxes(x)(current(x), eqs(current)(x))
       if (newval != current(x)) {

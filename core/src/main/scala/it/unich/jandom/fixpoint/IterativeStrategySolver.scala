@@ -18,23 +18,29 @@
 
 package it.unich.jandom.fixpoint
 
+import it.unich.jandom.utils.PMaps._
+
 /**
  * A solver for finite equation systems based on iterative strategies.
  * @param eqs the equation system to solve
  */
-abstract class IterativeStrategySolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends FixpointSolver[EQS] {
+final class IterativeStrategySolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends FixpointSolver[EQS] {
+  type Parameters = startParam.type +: boxesParam.type +: strategyParam.type +: PNil
 
   /**
-   * The iterative strategy to use for solving the equation system.
+   * A parameter for the solver: the iterative strategy to use
    */
-  val strategy: IterativeStrategy[eqs.Unknown]
+  val strategyParam = Parameter[IterativeStrategy[eqs.Unknown]]
 
-  def apply(start: eqs.Assignment, boxes: eqs.Unknown => eqs.Box): eqs.Assignment = {
+  def apply(params: Parameters): eqs.Assignment = {
     import IterativeStrategy._
-
+    val strategy = params(strategyParam)
+    val start = params(startParam)
+    val boxes = params(boxesParam)
+    
     val current: collection.mutable.HashMap[eqs.Unknown, eqs.Value] = (for (x <- eqs.unknowns) yield (x -> start(x)))(collection.breakOut)
     val stack = collection.mutable.Stack.empty[Int]
-    val stackdirty =  collection.mutable.Stack.empty[Boolean]
+    val stackdirty = collection.mutable.Stack.empty[Boolean]
 
     var dirty = false
     var i = 0
@@ -62,7 +68,7 @@ abstract class IterativeStrategySolver[EQS <: FiniteEquationSystem](val eqs: EQS
             dirty = stackdirty.pop()
             i += 1
           }
-       }
+      }
     }
     current
   }
@@ -76,5 +82,5 @@ object IterativeStrategySolver {
    * @param eqs the equation system to solve.
    * @param a_strategy the iterative strategy to use.
    */
-  def apply(eqs: FiniteEquationSystem)(a_strategy: IterativeStrategy[eqs.Unknown]) = new IterativeStrategySolver[eqs.type](eqs) { val strategy = a_strategy }
+  def apply(eqs: FiniteEquationSystem) = new IterativeStrategySolver[eqs.type](eqs)
 }

@@ -51,5 +51,5 @@ object IterativeStrategy {
   /**
    * Builds an iterative strategy from a sequence of `StrategyElement`.
    */
-  def apply[U](els: StrategyElement[U]*) = new IterativeStrategy(els.toIndexedSeq)
+  def apply[U](els: StrategyElement[U]*) = new IterativeStrategy[U](els.toIndexedSeq)
 }

@@ -18,12 +18,19 @@
 
 package it.unich.jandom.fixpoint
 
+import it.unich.jandom.utils.PMaps._
+
 /**
  * This solver solves a finite equation system with the round robin method.
  * @param eqs the equation system to solve
  */
 final class RoundRobinSolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends FixpointSolver[EQS] {
-  def apply(start: eqs.Assignment, boxes: eqs.Unknown => eqs.Box): eqs.Assignment = {
+  type Parameters = startParam.type +: boxesParam.type +: PNil
+
+  def apply(params: Parameters): eqs.Assignment = {    
+    val start = params(startParam)
+    val boxes = params(boxesParam)
+    
     val current: collection.mutable.HashMap[eqs.Unknown, eqs.Value] =
        (for ( x <- eqs.unknowns) yield (x -> start(x))) (collection.breakOut)
     var dirty = true

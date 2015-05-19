@@ -18,6 +18,8 @@
 
 package it.unich.jandom.fixpoint
 
+import it.unich.jandom.utils.PMaps._
+
 /**
  * This is the common trait of all equation solvers.
  * @tparam EQS the type of equation systems supported by this solver
@@ -30,9 +32,27 @@ trait FixpointSolver[EQS <: EquationSystem] {
   val eqs: EQS
 
   /**
-   * The solver algorithm.
+   * A parameter for the solver: an assignment to boxes for each unknown.
    */
-  def apply(start: eqs.Assignment, boxes: eqs.Unknown => eqs.Box): eqs.Assignment
+  val boxesParam = Parameter[eqs.BoxAssignment]
+
+  /**
+   * A parameter for the solver: an initial assignment
+   */
+  val startParam = Parameter[eqs.Assignment]
+
+  /**
+   * The set of parameters required by this particular solver.
+   */
+  type Parameters <: PMap
+  
+  /**
+   * The solver algorithm.
+   * @param params the parameters for the algorithm
+   * @return if it terminates, it returns an assignment `rho` which is a solution of the following equation, 
+   * for each unknown `x`: `rho(x) = rho(x) boxes(x) eqs(rho)(x)`. 
+   */
+  def apply(params: Parameters): eqs.Assignment
 
   /**
    * The name of the solver.

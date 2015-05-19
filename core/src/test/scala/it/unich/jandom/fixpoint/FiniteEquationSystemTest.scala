@@ -18,6 +18,8 @@
 
 package it.unich.jandom.fixpoint
 
+import it.unich.jandom.utils.PMaps._
+
 import org.scalatest.FunSpec
 import org.scalatest.prop.PropertyChecks
 import org.scalacheck.Gen
@@ -65,12 +67,16 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
    * Tests whether solving `eqs` equation system always returns a correct result. Should be used only for solvers which are
    * guaranteed to terminate with the given box assignment.
    */
-  def testCorrectness(solver: FixpointSolver[_ <: FiniteEquationSystem])(boxes: solver.eqs.Unknown => solver.eqs.Box)(implicit values: Arbitrary[solver.eqs.Value]) = {
+  def testCorrectness(solver: FixpointSolver[simpleEqs.type], m: PMap)(boxes: solver.eqs.Unknown => solver.eqs.Box)
+    (implicit conv: Function1[solver.startParam.type +: solver.boxesParam.type +: m.type, solver.Parameters], values: Arbitrary[solver.eqs.Value]) = {
+    import solver._
+    
     val startRhosList = Gen.listOfN(solver.eqs.unknowns.size, values.arbitrary)
     val startRhos = startRhosList map { (l) => HashMap(solver.eqs.unknowns zip l: _*) }
     it("always returns a box solution") {
       forAll(startRhos) { startEnv =>
-        val finalEnv = solver(startEnv, boxes)
+        val params =  (startParam --> startEnv) +: (boxesParam --> boxes) +: m
+        val finalEnv = solver(params)
         for (x <- solver.eqs.unknowns)
           assert(finalEnv(x) === boxes(x)(finalEnv(x), solver.eqs(finalEnv)(x)))
       }
@@ -81,10 +87,14 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
    * Test solvers for the `simpleEqs` equation system when starting from the initial
    * assignment `startRho`.
    */
-  def testExpectedResult(solver: FixpointSolver[simpleEqs.type]) = {
+  def testExpectedResult(solver: FixpointSolver[simpleEqs.type], m: PMap)
+    (implicit conv: Function1[solver.startParam.type +: solver.boxesParam.type +: m.type, solver.Parameters]) {
+    import solver._
+
     describe(s"${solver.name} with last") {
       it("gives the expected result starting from startRho") {
-        val finalRho = solver(startRho, allLast)
+        val params = (startParam --> startRho) +: (boxesParam --> allLast) +: m
+        val finalRho = solver(params)
         assert(finalRho(0) === 0.0)
         assert(finalRho(1) === 10.0)
         assert(finalRho(2) === 11.0)
@@ -94,7 +104,8 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
 
     describe(s"${solver.name} with max") {
       it("gives the expected result starting from startRho") {
-        val finalRho = solver(startRho, allMax)
+        val params = (startParam --> startRho) +: (boxesParam --> allMax) +: m
+        val finalRho = solver(params)
         assert(finalRho(0) === 0.0)
         assert(finalRho(1) === 10.0)
         assert(finalRho(2) === 11.0)
@@ -104,7 +115,8 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
 
     describe(s"${solver.name} with widening") {
       it("gives the expected result starting from startRho") {
-        val finalRho = solver(startRho, allWiden)
+        val params = (startParam --> startRho) +: (boxesParam --> allWiden) +: m
+        val finalRho = solver(params)
         assert(finalRho(0) === 0.0)
         assert(finalRho(1) === Double.PositiveInfinity)
         assert(finalRho(2) === Double.PositiveInfinity)
@@ -113,11 +125,12 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
     }
 
     describe(s"${solver.name} with widening") {
-      testCorrectness(solver)(allWiden)
+      testCorrectness(solver,m)(allWiden)
     }
   }
 
-  testExpectedResult(RoundRobinSolver(simpleEqs))
-  testExpectedResult(WorkListSolver(simpleEqs))
-  testExpectedResult(IterativeStrategySolver(simpleEqs)(simpleEqsStrategy))
+  testExpectedResult(RoundRobinSolver(simpleEqs), PMap.empty)
+  testExpectedResult(WorkListSolver(simpleEqs), PMap.empty)
+  val s = IterativeStrategySolver(simpleEqs)
+  testExpectedResult(s, (s.strategyParam --> simpleEqsStrategy) +: PMap.empty)
 }

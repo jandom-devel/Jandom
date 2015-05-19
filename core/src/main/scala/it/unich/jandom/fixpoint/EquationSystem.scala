@@ -42,6 +42,11 @@ trait EquationSystem {
    * new iteration.
    */
   type Box = (Value, Value) => Value
+  
+  /**
+   * An assignment of a box for each unknown
+   */
+  type BoxAssignment = Unknown => Box
 
   /**
    * The actual equation system.
