@@ -1,0 +1,44 @@
+public class javatest.ParameterTest extends java.lang.Object
+{
+
+    int unusedParameters(int, int, int)
+    {
+        javatest.ParameterTest this;
+        int a, b, c, temp$0;
+
+        this := @this: javatest.ParameterTest;
+
+        a := @parameter0: int;
+
+        b := @parameter1: int;
+
+        c := @parameter2: int;
+
+        temp$0 = 0;
+
+        return temp$0;
+    }
+
+    int unusedParameters2(int, int, int)
+    {
+        javatest.ParameterTest this;
+        int temp$0;
+
+        this := @this: javatest.ParameterTest;
+
+        temp$0 = 0;
+
+        return temp$0;
+    }
+
+    public void <init>()
+    {
+        javatest.ParameterTest this;
+
+        this := @this: javatest.ParameterTest;
+
+        specialinvoke this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}
