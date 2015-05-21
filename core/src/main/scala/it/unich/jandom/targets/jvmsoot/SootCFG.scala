@@ -32,8 +32,8 @@ import soot.toolkits.graph.PseudoTopologicalOrderer
 
 /**
  * This class is an ancestor for all the analyzers of JVM methods using the Soot library.
- * @tparam Node the type of the nodes for the control flow graph.
  * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
+ * @tparam Node the type of the nodes for the control flow graph.
  * @param method the method we want to analyze
  * @author Gianluca Amato <gamato@unich.it>
  * @author Francesca Scozzari <fscozzari@unich.it>
@@ -44,6 +44,8 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
   type DomainBase = SootFrameDomain
 
   val body: Body
+  
+  // local variables of the method. Parameters are NOT included.
   def locals = body.getLocals().toIndexedSeq
 
   // These are lazy values since body is not initialized when they are executed
@@ -72,23 +74,15 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
 
   /**
    * @inheritdoc
-   * At the moment, I am assuming that the first locals are exactly the parameters
-   * of the method. It essentially expands the input property adding new variables
-   * until exhausting locals. If the input/output analysis is active, it duplicates the
-   * input parameters.
+   * It expands the input property adding new variables until exhausting locals.
    */
-  protected def adaptProperty(params: Parameters)(input: params.Property): params.Property = {
+  protected def expandPropertyWithLocalVariables(params: Parameters)(input: params.Property): params.Property = {
     assert(input.dimension <= body.getLocalCount(), s"Actual parameters <${input}> to method ${method} are more than the formal parameters")
     var currprop = input
     
-    if (params.io) {
-      for (i <- input.dimension until body.getLocalCount()+input.dimension) 
-        currprop = currprop.evalUnknown(locals(i-input.dimension).getType())
-    } else {
-      for (i <- input.dimension until body.getLocalCount()) 
-        currprop = currprop.evalUnknown(locals(i).getType())
-    }
-    currprop
+    for (i <- 0 until body.getLocalCount()) 
+      currprop = currprop.evalUnknown(locals(i).getType())
+      currprop
   }
 
   /**
@@ -97,6 +91,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
    * the semantics of the method.
    */
   override def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
+    // first we put the result of the method in the last dimension  
     val tmp = super.extractOutput(params)(ann)
     if (params.io) {
       // we first remove the copy of the parameters (local variables)
@@ -118,7 +113,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
 
   protected def topProperty(node: Node, params: Parameters): params.Property = {
     val inputParams = SootCFG.inputTypes(method)
-    adaptProperty(params)(params.domain.top(inputParams))
+    expandPropertyWithLocalVariables(params)(params.domain.top(inputParams))
   }
 
   def formatProperty(params: Parameters)(prop: params.Property) = {
@@ -189,6 +184,10 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
 object SootCFG {
   /**
    * Returns the sequence of types to be returned by every interpretation of a SootMethod
+   * The order of variable types is:
+   * type of @this (only if the method is not static)
+   * types of parameters @parameter0, @parameter1, ... 
+   * type of return value (we omit it when the return type is void)
    */
   def outputTypes(method: SootMethod) = {
     import scala.collection.JavaConversions._
@@ -202,15 +201,18 @@ object SootCFG {
 
   /**
    * Returns the sequence of types required as input for a SootMethod
+   * The order of variable types is:
+   * type of @this (only if the method is not static)
+   * types of parameters @parameter0, @parameter1, ... 
    */
   def inputTypes(method: SootMethod) = {
     import scala.collection.JavaConversions._
-    val parameterTypes = method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]]
-    val thisTypes =
+    val thisType =
       if (method.isStatic())
         Seq()
       else
         Seq(method.getDeclaringClass().getType())
-    thisTypes ++ parameterTypes
+    val parameterTypes = method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]]
+    thisType ++ parameterTypes
   }
 }
