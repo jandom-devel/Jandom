@@ -1,12 +1,12 @@
-public class javatest.ParameterTest extends java.lang.Object
+public class jimpletest.ParameterTest extends java.lang.Object
 {
 
     int unusedParameters(int, int, int)
     {
-        javatest.ParameterTest this;
+        jimpletest.ParameterTest this;
         int a, b, c, temp$0;
 
-        this := @this: javatest.ParameterTest;
+        this := @this: jimpletest.ParameterTest;
 
         a := @parameter0: int;
 
@@ -21,11 +21,10 @@ public class javatest.ParameterTest extends java.lang.Object
 
     int unusedParameters2(int, int, int)
     {
-        javatest.ParameterTest this;
+        jimpletest.ParameterTest this;
         int temp$0;
 
-        this := @this: javatest.ParameterTest;
-
+ 
         temp$0 = 0;
 
         return temp$0;
@@ -33,9 +32,9 @@ public class javatest.ParameterTest extends java.lang.Object
 
     public void <init>()
     {
-        javatest.ParameterTest this;
+        jimpletest.ParameterTest this;
 
-        this := @this: javatest.ParameterTest;
+        this := @this: jimpletest.ParameterTest;
 
         specialinvoke this.<java.lang.Object: void <init>()>();
 
