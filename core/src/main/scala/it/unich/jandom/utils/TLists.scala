@@ -19,13 +19,13 @@
 package it.unich.jandom.utils
 
 /**
- * This is an implementation of a type (`TList`) which is list of types. `TNil` is the empty list, while `H::T`
+ * This is an implementation of a type (`TList`) which is a list of types. `TNil` is the empty list, while `H::T`
  * is the concatenation of the type `H` with the list `T`.
  */
 object TLists {
   
   /**
-   * The top of the hierarchy. Every subclass of TList is a list of types. 
+   * The top of the type hierarchy. Every subclass of TList is a list of types. 
    */
   sealed trait TList
 
@@ -35,13 +35,14 @@ object TLists {
   sealed trait TNil extends TList  
   
   /**
-   * The implementation for the list of types obtained by concatenating `H` and `T`. 
+   * The list of types obtained by concatenating type `H` and list `T`.
+   * @tparam H the head of the new list
+   * @tparam T the tail of the new list
    */
   private [TLists] sealed trait TCons[H, T <: TList] extends TList
 
-  
   /**
-   * The list of types obtained by concatenating `H` and `T`. 
+   * The list of types obtained by concatenating `H` and `T`. It is just a syntactic sugar for `TCons`. 
    */
   type ::[H, T <: TList] = TCons[H, T]
 
