@@ -8,4 +8,5 @@ target/
 *.sc
 .settings/
 .idea/
+.cache-*
 
