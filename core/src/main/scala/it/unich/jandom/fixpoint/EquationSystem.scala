@@ -20,8 +20,9 @@ package it.unich.jandom.fixpoint
 
 /**
  * This is the trait for a generic equation system.
+ * @author Gianluca Amato <gamato@unich.it>
  */
-trait EquationSystem {
+abstract class EquationSystem {
   /**
    * The type of the unknowns for this equation system.
    */
@@ -33,20 +34,19 @@ trait EquationSystem {
   type Value
 
   /**
-   * An assignment of values to unknowns, which is a candidate solution.
+   * An assignment of values to unknowns
    */
-  type Assignment = Unknown => Value
+  type Assignment = UFactory[Unknown, Value]
 
   /**
-   * A way to combine the value in the previous iteration with the value in the
-   * new iteration.
+   * A partial assignment of values to unknowns
    */
-  type Box = (Value, Value) => Value
-  
+  type PartialAssignment = PartialUFactory[Unknown, Value]
+
   /**
    * An assignment of a box for each unknown
    */
-  type BoxAssignment = Unknown => Box
+  type BoxAssignment = UFactory[Unknown, Box[Value]]
 
   /**
    * The actual equation system.

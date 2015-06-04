@@ -21,25 +21,34 @@ package it.unich.jandom.fixpoint
 import it.unich.jandom.utils.PMaps._
 
 /**
- * This is the common trait of all equation solvers.
- * @tparam EQS the type of equation systems supported by this solver
+ * This is the common trait of all fixpoint solvers for equation systems.
+ * @tparam EQS the type of equation systems supported by this solver.
+ * @define boxsolution If it terminates, it returns a box-solution of the set of equations.
+ * @define termination It is guaranteed to terminate if each loop in the dependency graph of `eqs` has a node `u` such that
+ * the box associated to `u` is a widening.
  */
-trait FixpointSolver[EQS <: EquationSystem] {
-
+abstract class FixpointSolver[EQS <: EquationSystem] {
   /**
    * The particular equation system this solver deals with.
    */
   val eqs: EQS
 
   /**
-   * A parameter for the solver: an assignment to boxes for each unknown.
+   * A parameter for the solver: a listener. It defaults to the empty listener. Almost
+   * every fixpoint solver uses the `listener` parameter for tracing and debugging
+   * purposes, although it is never explicitly mentioned in the documentation.
    */
-  val boxesParam = Parameter[eqs.BoxAssignment]
+  val listener = Parameter[FixpointSolverListener](FixpointSolverListener.EmptyListener)
 
   /**
-   * A parameter for the solver: an initial assignment
+   * A parameter for the solver: the starting assignment.
    */
-  val startParam = Parameter[eqs.Assignment]
+  val start = Parameter[eqs.Assignment]
+
+  /**
+   * A parameter for the solver: an assignment of boxes to unknowns.
+   */
+  val boxes = Parameter[eqs.BoxAssignment]
 
   /**
    * The set of parameters required by this particular solver.
@@ -47,15 +56,8 @@ trait FixpointSolver[EQS <: EquationSystem] {
   type Parameters <: PMap
   
   /**
-   * The solver algorithm.
-   * @param params the parameters for the algorithm
-   * @return if it terminates, it returns an assignment `rho` which is a solution of the following equation, 
-   * for each unknown `x`: `rho(x) = rho(x) boxes(x) eqs(rho)(x)`. 
+   * The solver algorithm. If it terminates, it returns a solution of the equation system, whatever it means.
+   * @param params the parameters for the algorithm.
    */
   def apply(params: Parameters): eqs.Assignment
-
-  /**
-   * The name of the solver.
-   */
-  val name: String
 }

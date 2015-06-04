@@ -16,28 +16,32 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom.fixpoint
+package it.unich.jandom.fixpoint.finite
 
+import it.unich.jandom.fixpoint._
 import it.unich.jandom.utils.PMaps._
 
 /**
- * This solver solves a finite equation system with the round robin method.
- * @param eqs the equation system to solve
+ * It solves a finite equation system by applying the round-robin chaotic iteration from the `start` assignment,
+ * using the box operators in `boxes`.
+ * $boxsolution
+ * $termination 
  */
-final class RoundRobinSolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends FixpointSolver[EQS] {
-  type Parameters = startParam.type +: boxesParam.type +: PNil
+class RoundRobinSolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends FixpointSolver[EQS] with FixpointSolverHelper[EQS] {
 
-  def apply(params: Parameters): eqs.Assignment = {    
-    val start = params(startParam)
-    val boxes = params(boxesParam)
-    
-    val current: collection.mutable.HashMap[eqs.Unknown, eqs.Value] =
-       (for ( x <- eqs.unknowns) yield (x -> start(x))) (collection.breakOut)
+  type Parameters = start.type +: boxes.type +: PNil
+
+  def apply(params: Parameters): eqs.Assignment = {
+    implicit val listener = params(this.listener)
+    val start = params(this.start)
+    val boxes = params(this.boxes)
+
+    val current = initmap(start, eqs.unknowns)
     var dirty = true
     while (dirty) {
       dirty = false
       for (x <- eqs.unknowns) {
-        val newval = boxes(x)(current(x), eqs(current)(x))
+        val newval = evaluate(current, x, boxes(x))
         if (newval != current(x)) {
           current(x) = newval
           dirty = true
@@ -46,13 +50,4 @@ final class RoundRobinSolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends 
     }
     current
   }
-  val name = "RoundRobin"
-}
-
-object RoundRobinSolver {
-  /**
-   * Returns a solver for an equation system.
-   * @param eqs the equation system to solve.
-   */
-  def apply(eqs: FiniteEquationSystem) = new RoundRobinSolver[eqs.type](eqs)
 }

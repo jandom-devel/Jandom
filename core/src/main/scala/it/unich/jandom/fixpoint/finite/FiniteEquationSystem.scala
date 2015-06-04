@@ -16,13 +16,25 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom
+package it.unich.jandom.fixpoint.finite
+
+import it.unich.jandom.fixpoint._
+import it.unich.jandom.utils.Relation
 
 /**
- * This package contains the generic equation solvers, which will be eventually
- * used for all the analysis in Jandom.
- * @author Gianluca Amato <gamato@unich.it>
+ * This is the trait for an equation system with a finite set of unknowns
+ * and static dependencies between them. When computing `apply(rho)(x)`,
+ * the result may only depend on values of `rho(y)` for an `y` such that 
+ * `y infl x`.
  */
-package object fixpoint {
+trait FiniteEquationSystem extends EquationSystem {
+  /**
+   * The collection of all unknowns.
+   */
+  def unknowns: Iterable[Unknown]
 
+  /**
+   * A relation between an unknown x and the unknowns y it influences.
+   */
+  val infl: Relation[Unknown, Unknown]
 }
