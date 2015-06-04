@@ -30,9 +30,9 @@ crossPaths in ThisBuild := false
 
 //*** Resolvers
 
-resolvers in ThisBuild ++= Seq(
-  "Sonatype Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots/",
-  "Sonatype Releases" at "https://oss.sonatype.org/content/repositories/releases/"
+resolvers ++= Seq(
+  Resolver.sonatypeRepo("releases"),
+  Resolver.sonatypeRepo("snapshots")
 )
 
 //*** Detect PPL
