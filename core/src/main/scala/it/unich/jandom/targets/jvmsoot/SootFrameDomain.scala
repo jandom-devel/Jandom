@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import it.unich.jandom.domains.CartesianFiberedDomain
  * evaluating expressions compositionally.
  * @author Gianluca Amato <gamato@unich.it>
  * @author Luca Mangifesta
+ * @author Francesca Scozzari 
  */
 trait SootFrameDomain extends CartesianFiberedDomain {
 
@@ -100,6 +101,12 @@ trait SootFrameDomain extends CartesianFiberedDomain {
      * @param i the frame variable to evaluate
      */
     def evalLocal(i: Int): P
+
+    /**
+     * Evaluate  a parameter variable `i` and push a copy into the frame
+     * @param i the parameter variable to evaluate
+     */
+   // def evalParam(i: Int): P
 
     /**
      * Evaluate a field of a frame variable, and push a copy into the frame

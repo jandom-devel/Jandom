@@ -235,7 +235,8 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
 
     var exits = Seq[params.Property]()
     var currprop = initprop
-    for (unit <- node.iterator()) unit match {
+    for (unit <- node.iterator()) 
+      unit match {
       case unit: AssignStmt =>
         val expr = analyzeExpr(unit.getRightOp(), currprop)
         unit.getLeftOp() match {
@@ -247,12 +248,12 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
         }
       case unit: BreakpointStmt =>
         throw new UnsupportedSootUnitException(unit)
-      case unit: IdentityStmt =>
+      case unit: IdentityStmt => {
       // ignore this instruction...
         unit.getRightOp() match {
           case v: ParameterRef =>
             //val expr = analyzeExpr(unit.getRightOp(), currprop)
-              val expr = currprop.evalLocal(v.getIndex) 
+              val expr = currprop.evalLocal(v.getIndex+ (if (method.isStatic()) 0 else 1 ))
               unit.getLeftOp() match {
                 case local: Local =>
                 currprop = expr.assignLocal(localMap(local))
@@ -273,6 +274,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
           case _ =>
             throw new UnsupportedSootUnitException(unit)
         }
+      }
       case unit: EnterMonitorStmt =>
         unit.getOp() match {
           case local: Local =>

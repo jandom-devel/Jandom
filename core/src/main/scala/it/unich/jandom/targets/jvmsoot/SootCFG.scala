@@ -77,7 +77,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
    * It expands the input property adding new variables until exhausting locals.
    */
   protected def expandPropertyWithLocalVariables(params: Parameters)(input: params.Property): params.Property = {
-    assert(input.dimension <= body.getLocalCount(), s"Actual parameters <${input}> to method ${method} are more than the formal parameters")
+    //assert(input.dimension <= body.getLocalCount(), s"Actual parameters <${input}> to method ${method} are more than the formal parameters")
     var currprop = input
     
     for (i <- 0 until body.getLocalCount()) 
@@ -94,38 +94,40 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     // first we put the result of the method in the last dimension  
     val annWithReturnValue = super.extractOutput(params)(ann)
     if (params.io) {
-      // we first remove the copy of the parameters (local variables)
+      // we remove the copy of the parameters (local variables)
       method.getReturnType match {
-      case _:VoidType => annWithReturnValue.extract(SootCFG.outputTypes(method).size)
+//      case _:VoidType => annWithReturnValue.extract(SootCFG.outputTypes(method).size)
+      case _:VoidType => annWithReturnValue.restrict(SootCFG.outputTypes(method).size)
       case _ =>  annWithReturnValue.delVariables(SootCFG.inputTypes(method).size until annWithReturnValue.dimension-1)
      }
     }
     else
-      //for intra-procedural analysis we return all the local variables plus the returned value in the last position
+      // for intra-procedural analysis we return all the local variables plus the returned value in the last position
       annWithReturnValue
       //throw new IllegalArgumentException("Only supported with I/O semantics")
   }
 
   protected def topProperty(node: Node, params: Parameters): params.Property = {
     if (params.io) {
-      val inputParams = SootCFG.inputTypes(method)
-      expandPropertyWithLocalVariables(params)(params.domain.top(inputParams))
+      expandPropertyWithLocalVariables(params)(params.domain.top(inputTypes))
     } else {
       params.domain.top(method.getActiveBody.getLocals.toSeq map { (l) => l.getType})
     }
   }
 
   def formatProperty(params: Parameters)(prop: params.Property) = {
-    val localNames = locals map { _.getName() }
-    val returnValue = Seq("@return")
+    // we denote by "@return" the return value of the method
+    val localNames = locals map { _.getName() }        
     if(params.io) {
       val thisVariable = if (!method.isStatic()) Seq("@this") else Seq()  
-      val parameterNames = if (params.io) (for (i <- 0 until method.getParameterCount()) yield "@parameter" + i) else Seq()
-      val stackPositions = prop.dimension - body.getLocalCount() - (if (params.io) method.getParameterCount() else 0)
-      val stackNames = for (i <- 0 until stackPositions) yield "#s" + i
-      prop.mkString(thisVariable ++ parameterNames ++ localNames ++ stackNames ++ returnValue)
+      val parameterNames = for (i <- 0 until method.getParameterCount()) yield "@parameter" + i 
+      val returnValue = if(prop.dimension > inputTypes.length) Seq("@return") else Seq()
+      //val stackPositions = prop.dimension - body.getLocalCount() - (if (params.io) method.getParameterCount() else 0)
+      //val stackNames = for (i <- 0 until stackPositions) yield "#s" + i
+      //prop.mkString(thisVariable ++ parameterNames ++ localNames ++ stackNames ++ returnValue)
+      prop.mkString(thisVariable ++ parameterNames ++ localNames ++ returnValue)
     } else {
-      // we denote by "@return" the return value of the method
+      val returnValue = if(prop.dimension > localNames.length) Seq("@return") else Seq()
       prop.mkString(localNames ++ returnValue)
     }
   }
