@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -27,6 +27,7 @@ import soot.jandom.MyFastHierarchy
 /**
  * An object model for the JVM using the Soot library.
  * @author Gianluca Amato <gamato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
  */
 class SootObjectModel(scene: soot.Scene) extends ObjectModel with ObjectModelHelper {
 
@@ -62,6 +63,7 @@ class SootObjectModel(scene: soot.Scene) extends ObjectModel with ObjectModelHel
     case t: RefType => t.getSootClass().isConcrete()
     case _: PrimType => true
     case _: ArrayType => true
+    case _: NullType => false
   }
 
   def isArray(t: Type) = t.isInstanceOf[ArrayType]
@@ -109,6 +111,7 @@ class SootObjectModel(scene: soot.Scene) extends ObjectModel with ObjectModelHel
       }
     case _: PrimType => Set()
     case t: ArrayType => children(t.baseType) map { (ArrayType.v(_, t.numDimensions)) }
+    case t: NullType => Set()
   }
 
   /**

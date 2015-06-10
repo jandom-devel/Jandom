@@ -146,9 +146,6 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
     val high: DenseVector[Double])
     extends NumericalProperty[Property] {
 
-    println("Property= "+A)
-    println("low= "+low)
-    println("high= "+high)
     require(low.length == A.rows)
     require(low.length == A.cols)
     require(Try(A \ DenseMatrix.eye[Double](dimension)).isSuccess, s"The shape matrix ${A} is not invertible")

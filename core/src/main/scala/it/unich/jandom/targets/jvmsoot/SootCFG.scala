@@ -115,19 +115,21 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     }
   }
 
-  def formatProperty(params: Parameters)(prop: params.Property) = {
-    // we denote by "@return" the return value of the method
-    val localNames = locals map { _.getName() }        
-    if(params.io) {
-      val thisVariable = if (!method.isStatic()) Seq("@this") else Seq()  
-      val parameterNames = for (i <- 0 until method.getParameterCount()) yield "@parameter" + i 
-      val returnValue = if(prop.dimension > inputTypes.length) Seq("@return") else Seq()
+  def formatProperty(params: Parameters, lastPP: Boolean=false)(prop: params.Property) = {
+    val localNames =  locals map { _.getName() }         
+      // we denote by "@return" the return value of the method
+    val returnValue = if(method.getReturnType() != VoidType.v()) Seq("@return") else Seq()
+    val thisVariable = if (!method.isStatic()) Seq("@this") else Seq()  
+    val parameterNames = for (i <- 0 until method.getParameterCount()) yield "@parameter" + i 
       //val stackPositions = prop.dimension - body.getLocalCount() - (if (params.io) method.getParameterCount() else 0)
       //val stackNames = for (i <- 0 until stackPositions) yield "#s" + i
+    if(params.io) {
+      if(lastPP) 
+        prop.mkString(thisVariable ++ parameterNames ++ returnValue)
       //prop.mkString(thisVariable ++ parameterNames ++ localNames ++ stackNames ++ returnValue)
-      prop.mkString(thisVariable ++ parameterNames ++ localNames ++ returnValue)
+      else  
+        prop.mkString(thisVariable ++ parameterNames ++ localNames)
     } else {
-      val returnValue = if(prop.dimension > localNames.length) Seq("@return") else Seq()
       prop.mkString(localNames ++ returnValue)
     }
   }
@@ -169,7 +171,10 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
       unit.removeAllTags()
 
     val outLine = if (ann contains lastPP.get) {
-      "/* Output: " + formatProperty(params)(ann(lastPP.get)) + " */\n"
+      if(params.io)
+        "/* Output: " + formatProperty(params,true)(extractOutput(params)(ann)) + " */\n"
+      else
+        "/* Output: " + formatProperty(params,true)(ann(lastPP.get)) + " */\n"    
     } else
       ""
     lines.mkString("", "\n", "\n") + outLine
