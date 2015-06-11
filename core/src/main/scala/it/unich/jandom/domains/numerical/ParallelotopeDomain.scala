@@ -484,8 +484,6 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
           val newhigh = high.copy
           newA(chosen, ::) := coeffs.t
           newhigh(chosen) = -known
-          println("A= " + A)
-          println("newA= " + newA)
           new Property(false, low, newA, newhigh)
         }
       }

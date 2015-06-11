@@ -57,8 +57,6 @@ class JimpleSuiteParameters extends FunSuite with SootTests {
     "emptyNull" -> 
         """{(@this, @this), (this,this), (@this, this)}""",
     "emptyThis" -> 
-//        """{(@this, @this), (this,this), (@return,@return), 
-//            (@this, this), (@this,@return), (this,@return)}"""
         """{(@this, @this), (this,this), 
             (@this, this)}""",
     "unusedParameters" ->
@@ -115,8 +113,6 @@ class JimpleSuiteParameters extends FunSuite with SootTests {
             env.addBinding(l.getName)
          if (jmethod.body.getMethod.getReturnType() != VoidType.v())
             env.addBinding("@return")
-            //          val env = Environment(jmethod.locals map { _.getName() } :_*)
-          
           val parser = new PairSharingParser(env)
           val prop = parser.parseProperty(ps).get.toSet
           val ann = jmethod.analyze(params)
@@ -131,9 +127,36 @@ class JimpleSuiteParameters extends FunSuite with SootTests {
   }
   
   def jimplePairSharingTestsFromInput() {
+ 
     // analyze from an input property where @this is not null and all the other variables are null
+
     val jimplePairSharingTests : Seq[(String, String)] = Seq(
-   "emptyIntS" ->
+    "emptyInt" ->
+        """{(@this, @this), (this,this), (@this, this)}""",
+    "emptyNull" -> 
+        """{(@this, @this), (this,this), (@this, this)}""",
+    "emptyThis" -> 
+        """{(@this, @this), (this,this), 
+            (@this, this)}""",
+    "unusedParameters" ->
+        """{(@this, @this), (this,this), (@this, this) }""",  
+    "returnParameter" ->
+        """{(@this, @this), (this,this), (@this, this) }""",
+   "returnThis" ->
+        """{(@this, @this), (this,this), (@this, this)}""",
+   "create" -> 
+        """{(@this, @this), (this,this), (@this, this),     
+            (a,a), (temp$0,temp$0), (a,temp$0)}""",   
+   "create2" -> 
+        """{(@this, @this), (this,this), (@this, this),     
+            (a,a), (temp$0,temp$0), (a,temp$0),
+            (y,y), (y,a), (y,temp$0)}""",   
+   "createCall" -> 
+       """{(@this, @this), (this,this), (@this, this),     
+           (a,a), (temp$0,temp$0), (a,temp$0),
+            (y,y), (y,a), (y,temp$0),
+            (temp$1,temp$1), (temp$1,a), (temp$1,y), (temp$1,temp$0)}""",               
+    "emptyIntS" ->
         """{}""",
     "emptyNullS" -> 
         """{}""",
@@ -161,18 +184,18 @@ class JimpleSuiteParameters extends FunSuite with SootTests {
             env.addBinding(l.getName)
          if (jmethod.body.getMethod.getReturnType() != VoidType.v())
             env.addBinding("@return")
-            //          val env = Environment(jmethod.locals map { _.getName() } :_*)
-          
+           
           val parser = new PairSharingParser(env)
           val prop = parser.parseProperty(ps).get.toSet
           val input = parser.parseProperty("{(@this, @this)}").get.toSet
-          val inputProp = if (jmethod.body.getMethod.isStatic()) 
-      //                        params.domain.bottom(SootCFG.inputTypes(c.getMethodByName(methodName)))
-                              psdom.bottom(SootCFG.inputTypes(c.getMethodByName(methodName)))
+          val inputTypes = SootCFG.inputTypes(c.getMethodByName(methodName))
+          val inputProp = (if (jmethod.body.getMethod.isStatic()) 
+                              psdom.bottom(inputTypes)
                               else 
-                              psdom(input,Seq(c.getType))
-//          val ann = jmethod.analyzeFromInput(params)(inputProp)
-          val ann = jmethod.analyzeFromInput(params)(params.domain.bottom(SootCFG.inputTypes(c.getMethodByName(methodName))))
+                              psdom(input,inputTypes)).asInstanceOf[params.domain.dom.Property]
+          
+          val inputProp2= params.domain.Property(inputProp,inputTypes.toList.reverse, Map.empty)
+          val ann = jmethod.analyzeFromInput(params)(inputProp2)
           val analysisResult = ann(jmethod.lastPP.get).prop
           val oracle = psdom(prop, jmethod.localTypes(params))
           assert( analysisResult=== oracle)
