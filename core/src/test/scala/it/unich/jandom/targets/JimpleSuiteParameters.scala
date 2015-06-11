@@ -81,6 +81,12 @@ class JimpleSuiteParameters extends FunSuite with SootTests {
             (@parameter1,@parameter1),   (@parameter1,  @this), (@parameter1,  this),
             (a,a), (temp$0,temp$0), (a,temp$0),
             (y,y), (y,a), (y,temp$0)}""",   
+   "createCall" -> 
+       """{(@this, @this), (this,this), (@this, this),     
+            (@parameter1,@parameter1),   (@parameter1,  @this), (@parameter1,  this),
+            (a,a), (temp$0,temp$0), (a,temp$0),
+            (y,y), (y,a), (y,temp$0),
+            (temp$1,temp$1), (temp$1,a), (temp$1,y), (temp$1,temp$0)}""",               
     "emptyIntS" ->
         """{}""",
     "emptyNullS" -> 

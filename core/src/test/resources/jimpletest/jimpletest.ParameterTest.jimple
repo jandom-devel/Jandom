@@ -116,6 +116,30 @@ public class jimpletest.ParameterTest extends java.lang.Object
         return y;
     }
 
+    jimpletest.ParameterTest createCall(int, jimpletest.ParameterTest)
+    {
+        jimpletest.ParameterTest this, y, a, temp$0, temp$1;
+        int x;
+
+        this := @this: jimpletest.ParameterTest;
+
+        x := @parameter0: int;
+
+        y := @parameter1: jimpletest.ParameterTest;
+
+        temp$0 = new jimpletest.ParameterTest;
+
+        specialinvoke temp$0.<jimpletest.ParameterTest: void <init>()>();
+
+        a = temp$0;
+
+        temp$1 = staticinvoke <jimpletest.ParameterTest: jimpletest.ParameterTest returnParameterS(int,jimpletest.ParameterTest)>(x, a);
+
+        y = temp$1;
+
+        return y;
+    }
+
     static int emptyIntS()
     {
         int temp$0;

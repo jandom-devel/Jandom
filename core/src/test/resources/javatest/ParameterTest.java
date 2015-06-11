@@ -38,6 +38,14 @@ public class ParameterTest {
 		return y;
 	}
 	
+	ParameterTest createCall(int x, ParameterTest y) {
+		ParameterTest a;
+		a = new ParameterTest();
+		y = a;
+		y = returnParameterS(x,a);
+		return y;
+	}
+	
 	static int emptyIntS() {
 		return 0;
 	}
@@ -49,7 +57,10 @@ public class ParameterTest {
 	static int unusedParametersS(int a, ParameterTest b, int c) {
 		return 0;
 	}
+	
 	static ParameterTest returnParameterS(int a, ParameterTest b) {
 		return b;
 	}
+	
+	
 }
