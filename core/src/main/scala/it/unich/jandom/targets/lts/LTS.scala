@@ -18,17 +18,13 @@
 
 package it.unich.jandom.targets.lts
 
-import it.unich.jandom.domains.numerical.NumericalDomain
-import it.unich.jandom.targets.{ Environment, Target }
-import it.unich.jandom.targets.Annotation
-import it.unich.jandom.domains.CartesianFiberedProperty
-import it.unich.jandom.domains.DimensionFiberedDomain
 import it.unich.jandom.domains.DimensionFiberedProperty
-import it.unich.jandom.targets.IterationStrategy
-import it.unich.jandom.targets.WideningNarrowingLocation
+import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.fixpoint._
+import it.unich.jandom.fixpoint.structured.FlowEquationSystem
+import it.unich.jandom.fixpoint.structured.LayeredEquationSystem
+import it.unich.jandom.targets._
 import it.unich.jandom.utils.Relation
-import it.unich.jandom.fixpoint.finite.FiniteEquationSystem
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -102,12 +98,15 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
   }
 
   /**
-   * Converts an LTS into a finite equation system, given a numerical domain.
+   * Converts an LTS into a flow equation system, given a numerical domain. It is generally better
+   * to use toEQS, since toEQSFlow might be deprecated in the future.
    */
-  def toEQS(dom: NumericalDomain) = {
-     // build an empty property.. it is used several times, so we speed execution
-     val empty = dom.bottom(env.size)
-     val initRegion = regions find { _.name == "init" }
+  def toEQSFlow(dom: NumericalDomain): FlowEquationSystem[Location, dom.Property, Either[Transition, Location]] = {
+    type Edge = Either[Transition, Location]
+
+    // build an empty property.. it is used several times, so we speed execution
+    val empty = dom.bottom(env.size)
+    val initRegion = regions find { _.name == "init" }
 
     // this are the initial non empty states of the LTS
     val (startrho, inputlocs) = initRegion match {
@@ -120,20 +119,66 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
           }
         }, locations)
     }
-
-    FiniteEquationSystem[Location, dom.Property](
-    body = (env: Location => dom.Property) => { x: Location =>  {
-         val incomingValues = for ( t <- x.incoming ) yield t.analyze(env(t.start))
-         incomingValues reduce { _ union _ }
-    } },
-    unknowns = locations.toSet,
-    inputUnknowns = inputlocs,
-    infl = Relation (locations.toSet, { (x: Location) => x.outgoing.map(_.end).toSet }),
-    initial = startrho
-  )
-}
+    val edges: Set[Edge] = ((transitions map { Left(_) }) ++ (inputlocs map { Right(_) })).toSet
+    val fakeloc = new Location("fake", Seq.empty)
+    FlowEquationSystem[Location, dom.Property, Edge](
+      unknowns = fakeloc +: locations,
+      inputUnknowns = inputlocs,
+      edgeAction = { (rho: Location => dom.Property) =>
+        e: Either[Transition, Location] =>
+          e match {
+            case Left(t) => t.analyze(rho(t.start))
+            case Right(l) => startrho(l)
+          }
+      },
+      source = { _ match { case Left(t) => t.start; case Right(l) => fakeloc } },
+      target = { _ match { case Left(t) => t.end; case Right(l) => l } },
+      ingoing = { l: Location => if (l == fakeloc) Seq.empty else Right(l) :: (l.incoming map { Left(_) }) },
+      outgoing = { l: Location => if (l == fakeloc) locations map { Right(_) } else l.outgoing map { Left(_) } },
+      initial = startrho,
+      combine = { _ union _ })
+  }
 
   override def getAnnotation[Property] = new LTSAnnotation[Property]
+
+  /**
+   * Converts an LTS into a layered equation system, given a numerical domain.
+   */
+  def toEQS(dom: NumericalDomain): LayeredEquationSystem[Location, dom.Property, Either[Transition, Location]] = {
+    type Edge = Either[Transition, Location]
+
+    // build an empty property.. it is used several times, so we speed execution
+    val empty = dom.bottom(env.size)
+    val initRegion = regions find { _.name == "init" }
+
+    // this are the initial non empty states of the LTS
+    val (startrho, inputlocs) = initRegion match {
+      case Some(Region(_, Some(initloc), initcond)) =>
+        ({ loc: Location => if (loc == initloc) initcond.analyze(dom.top(env.size)) else empty }, Set(initloc))
+      case _ =>
+        ({ loc: Location =>
+          (dom.top(env.size) /: loc.conditions) {
+            (prop, cond) => cond.analyze(prop)
+          }
+        }, locations)
+    }
+    val edges: Set[Edge] = ((transitions map { Left(_) }) ++ (inputlocs map { Right(_) })).toSet
+
+    LayeredEquationSystem[Location, dom.Property, Edge](
+      unknowns = locations,
+      inputUnknowns = inputlocs,
+      edgeBody = { (e: Edge) =>
+        (rho: Location => dom.Property) => (x: Location) =>
+          e match {
+            case Left(t) => t.analyze(rho(t.start))
+            case Right(l) => startrho(l)
+          }
+      },
+      sources = Relation(edges, { _ match { case Left(t) => Set(t.start); case Right(l) => Set.empty } }),
+      targets = Relation(edges, { _ match { case Left(t) => Set(t.end); case Right(l) => Set(l) } }),
+      initial = startrho,
+      combine = { _ union _ })
+  }
 
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     // build widening and narrowing for each program point
