@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -52,7 +52,7 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
   val maxBox: Box[Double] = { _ max _ }
   val lastBox: Box[Double] = { (x1, x2) => x2 }
   val timesBox: Box[Double] = { _ * _ }
-  
+
   val startRho = simpleEqs.initial
 
   type SimpleSolver[U, V] = (FiniteEquationSystem[U, V], U => V) => (U => V)
@@ -110,7 +110,7 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
 
   describe("A finite equation system") {
     val rho: PartialFunction[Int, Double] = { case x => x.toDouble }
-    
+
     it("computes r.h.s. according to its body function") {
       assertResult(0) { simpleEqs.body(rho)(0) }
       assertResult(2) { simpleEqs.body(rho)(1) }
