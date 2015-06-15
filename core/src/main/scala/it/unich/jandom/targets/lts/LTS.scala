@@ -104,17 +104,34 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
   /**
    * Converts an LTS into a finite equation system, given a numerical domain.
    */
-  def toEQS(dom: NumericalDomain) = new FiniteEquationSystem  {
-    type Unknown = Location
-    type Value = dom.Property
-    def apply(env: Assignment) = {
-      x: Unknown =>
+  def toEQS(dom: NumericalDomain) = {
+     // build an empty property.. it is used several times, so we speed execution
+     val empty = dom.bottom(env.size)
+     val initRegion = regions find { _.name == "init" }
+
+    // this are the initial non empty states of the LTS
+    val (startrho, inputlocs) = initRegion match {
+      case Some(Region(_, Some(initloc), initcond)) =>
+        ({ loc: Location => if (loc == initloc) initcond.analyze(dom.top(env.size)) else empty }, Set(initloc))
+      case _ =>
+        ({ loc: Location =>
+          (dom.top(env.size) /: loc.conditions) {
+            (prop, cond) => cond.analyze(prop)
+          }
+        }, locations)
+    }
+
+    FiniteEquationSystem[Location, dom.Property](
+    body = (env: Location => dom.Property) => { x: Location =>  {
          val incomingValues = for ( t <- x.incoming ) yield t.analyze(env(t.start))
          incomingValues reduce { _ union _ }
-    }
-    val unknowns = locations.toSet
-    val infl = Relation (locations.toSet, { (x: Location) => x.outgoing.map(_.end).toSet })
-  }
+    } },
+    unknowns = locations.toSet,
+    inputUnknowns = inputlocs,
+    infl = Relation (locations.toSet, { (x: Location) => x.outgoing.map(_.end).toSet }),
+    initial = startrho
+  )
+}
 
   override def getAnnotation[Property] = new LTSAnnotation[Property]
 

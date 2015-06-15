@@ -24,17 +24,57 @@ import it.unich.jandom.utils.Relation
 /**
  * This is the trait for an equation system with a finite set of unknowns
  * and static dependencies between them. When computing `apply(rho)(x)`,
- * the result may only depend on values of `rho(y)` for an `y` such that 
+ * the result may only depend on values of `rho(y)` for an `y` such that
  * `y infl x`.
  */
-trait FiniteEquationSystem extends EquationSystem {
+trait FiniteEquationSystem[U, V] extends EquationSystem[U, V] {
   /**
    * The collection of all unknowns.
    */
-  def unknowns: Iterable[Unknown]
+  val unknowns: Iterable[U]
 
   /**
-   * A relation between an unknown x and the unknowns y it influences.
+   * The collection of all unknowns which may be considered the inputs to this equation system.
    */
-  val infl: Relation[Unknown, Unknown]
+  val inputUnknowns: Iterable[U]
+
+  /**
+   * The static relation between an unknown x and the unknowns y it influences. In any moment, the dependencies
+   * returned by bodyWithDependecies(x) should be a subset of infl.reverse.image(x). The only exception
+   * is when an unkwnown `x` influences `x` itself. In this case, `infl` may omit this dependence when
+   * the r.h.s. for `x` is idempotent.
+   */
+  val infl: Relation[U, U]
+
+  /**
+   * Add boxes to the equation system.
+   */
+  def withBoxes(boxes: PartialFunction[U, Box[V]], boxesAreIdempotent: Boolean): FiniteEquationSystem[U, V]
+}
+
+object FiniteEquationSystem {
+  import EquationSystem._
+
+  /**
+   * Returns a finite equation system given its constituents parts.
+   */
+  def apply[U, V](body: Body[U, V], unknowns: Iterable[U], inputUnknowns: Iterable[U], infl: Relation[U, U], initial: U => V) =
+    new SimpleFiniteEquationSystem(body, unknowns, inputUnknowns, infl, initial)
+
+  /**
+   * A class defining a finite equation system given its constituents parts.
+   */
+  final case class SimpleFiniteEquationSystem[U, V](
+      val body: Body[U, V],
+      val unknowns: Iterable[U],
+      val inputUnknowns: Iterable[U],
+      val infl: Relation[U, U],
+      val initial: U => V) extends FiniteEquationSystem[U, V] {
+
+    def bodyWithDependencies = buildBodyWithDependencies(body)
+
+    def withBoxes(boxes: PartialFunction[U, Box[V]], boxesAreIdempotent: Boolean) = copy(
+      body = addBoxesToBody(body, boxes),
+      infl = if (boxesAreIdempotent) infl else infl union Relation(unknowns.toSet, { (u: U) => Set(u) }))
+  }
 }

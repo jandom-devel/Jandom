@@ -19,58 +19,30 @@
 package it.unich.jandom.fixpoint
 
 /**
- * A Box is a way to combine two values into a new one. It is essentially a function
- * (V,V) => V where the first parameter is the old value and the second value is the 
- * new contribution. Both widening and narrowing are examples of boxes. 
- * @tparam V the type of the values to combine.
- */
-abstract class Box[V] extends Function2[V, V, V]
-
-/**
- * The companion object for boxes essentially contains many useful factories.
+ * The `Box` object defines some factories for building boxes, i.e. functions of the
+ * type (V,V)=>V for some V which are abstractions of widenings, narrowings, etc..
  */
 object Box {
-
-  // Unfortunately, there is no way to use the function literal notation for boxes.
-  
   /**
-   * Returns a box whose behavior is described by a function.
-   * @param boxf the function which combines values.
+   * A box which always returns its right component (new contribution).
    */
-  def apply[V](boxf: (V,V) => V) = new functionalBox(boxf) 
-  
-  /**
-   * A box whose behavior is described by a function.
-   * @param boxf the function which combines values.
-   */
-  implicit class functionalBox[V](boxf: (V, V) => V) extends Box[V] {
-    def apply(x: V, y: V) = boxf(x, y)
-  }
+  def right[V]: Box[V] = { (x: V, y: V) => y }
 
   /**
-   * Returns a box which always returns its right component.
+   * A box which always returns its left component (original value).
    */
-  def right[V] = new Box[V] {
-    def apply(x: V, y: V) = y
-  } 
-  
-  /**
-   * Returns a box which always returns its left component.
-   */
-  def left[V] = new Box[V] {
-    def apply(x: V, y: V) = x
-  }
+  def left[V]: Box[V] = { (x: V, y: V) => x }
 
   /**
-   * Returns a box which coincides with the `first` box for `delay` calls,
+   * A box which coincides with the `first` box for `delay` calls,
    * and then coincides with the `second` box. This may be used to implement
    * delayed widening and narrowing.
    */
-  def cascade[V](first: Box[V], delay: Int, second: Box[V]) = new Box[V] {    
-    require(delay >= 0)    
+  def cascade[V](first: Box[V], delay: Int, second: Box[V]): Box[V] = {
+    require(delay >= 0)
     var steps = delay
 
-    def apply(x: V, y: V) = {
+    { (x: V, y: V) =>
       if (steps > 0) {
         steps -= 1
         first(x, y)

@@ -19,33 +19,23 @@
 package it.unich.jandom.fixpoint.finite
 
 import it.unich.jandom.fixpoint._
-import HierarchicalOrdering._
-import it.unich.jandom.utils.PMaps._
-
 
 /**
- * It solves a finite equation system by using a strategy encoded with a hierarchical ordering. It starts computing from the `start` assignment,
- * using the box operators in `boxes` and a hierarchical ordering specified by the 'ordering` parameter. 
- * $boxsolution
- * $termination 
+ * A solver whose strategy in based on a hierarchical ordering.
  */
-class HierarchicalOrderingSolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends FixpointSolver[EQS] with FixpointSolverHelper[EQS] {
-
+object HierarchicalOrderingSolver extends FixpointSolver {
   /**
-   * A parameter for the solver: a hierarchical ordering
+   * It solves a finite equation system by using a strategy encoded with a hierarchical ordering.
+   * @param eqs the equations system to solve.
+   * @param start the initial assignment.
+   * @param ordering the hierarchical ordering which drives the analysis.
+   * @param litener the listener whose callbacks are called for debugging and tracing.
    */
-  val ordering = Parameter[HierarchicalOrdering[eqs.Unknown]]
-
-  type Parameters = start.type +: boxes.type +: ordering.type +: PNil
-
-  def apply(params: Parameters): eqs.Assignment = {
+  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, ordering: HierarchicalOrdering[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = {
     import HierarchicalOrdering._
-    implicit val listener = params(this.listener)
-    val start = params(this.start)
-    val boxes = params(this.boxes)
-    val ordering = params(this.ordering)
 
-    val current = initmap(start, eqs.unknowns)
+    val current = (collection.mutable.HashMap.empty[U, V]).withDefault(start)
+    listener.initialized(current)
     val stack = collection.mutable.Stack.empty[Int]
     val stackdirty = collection.mutable.Stack.empty[Boolean]
 
@@ -61,7 +51,8 @@ class HierarchicalOrderingSolver[EQS <: FiniteEquationSystem](val eqs: EQS) exte
           dirty = false
           i += 1
         case Val(x) =>
-          val newval = evaluate(current, x, boxes(x))
+          val newval = eqs.body(current)(x)
+          listener.evaluated(current, x, newval)
           if (newval != current(x)) {
             current(x) = newval
             dirty = true

@@ -19,23 +19,11 @@
 package it.unich.jandom.fixpoint.infinite
 
 import it.unich.jandom.fixpoint._
-import it.unich.jandom.utils.PMaps._
 
 /**
- * A LocalFixpointSolver returns a partial solution of a possibly infinite equation system. It needs a 
- * parameter `wanted` which is a collection of unknowns we want to have in the result, and it
- * tries to solve the smallest set of unknowns in order to return a valid partial solution.
+ * A LocalFixpointSolver returns a partial solution of a possibly infinite equation system. Every 
+ * solver needs a parameter `wanted` which is a collection of unknowns we want to have in the result, and it
+ * tries to solve the smallest set of unknowns in order to return a valid partial solution. A local
+ * fixpoint solver should return an iterable function.
  */
-abstract class LocalFixpointSolver[EQS <: EquationSystem] extends FixpointSolver[EQS] {
-  /**
-   * A parameter for the solver: the collection of required unknowns in the result.
-   */
-  val wanted = Parameter[Iterable[eqs.Unknown]] 
-  
-  /**
-   * The solver algorithm. It returns a partial assignment, so that it may be queried for the
-   * actual set of unknowns which have been computed. If it terminates, it returns a solution 
-   * of the equation system, whatever it means.
-   */
-  def apply(params: Parameters): eqs.PartialAssignment
-}
+trait LocalFixpointSolver extends FixpointSolver

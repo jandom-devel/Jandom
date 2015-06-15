@@ -23,16 +23,6 @@ import org.scalatest.FunSpec
 import org.scalacheck.Gen
 
 class BoxSuite extends FunSpec with PropertyChecks {
-  describe("A functional box") {
-    val f = { (x: Int, y: Int) => x + y }
-    val box = Box(f)
-    it("returns the same value as the function") {
-      forAll { (x: Int, y: Int) =>
-        assertResult(f(x, y))(box(x, y))
-      }
-    }
-  }
-
   describe("A left box") {
     val box = Box.left[Int]
     it("returns the first element") {

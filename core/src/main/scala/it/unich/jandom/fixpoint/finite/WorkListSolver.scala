@@ -19,32 +19,32 @@
 package it.unich.jandom.fixpoint.finite
 
 import it.unich.jandom.fixpoint._
-import it.unich.jandom.utils.PMaps._
 
 /**
- * It solves a finite equation system by using a work-list method. It starts computing from the `start` assignment,
- * using the box operators in `boxes`. 
- * $boxsolution
- * $termination 
+ * A fixpoint solver based on a worklist.
  */
-class WorkListSolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends FixpointSolver[EQS] with FixpointSolverHelper[EQS] {
-
-  type Parameters = start.type +: boxes.type +: PNil
-  
-  def apply(params: Parameters): eqs.PartialAssignment = {
-    implicit val listener = params(this.listener)
-    val start = params(this.start)
-    val boxes = params(this.boxes)
-
-    val current = initmap(start, eqs.unknowns)
-    var workList = collection.mutable.Queue.empty[eqs.Unknown]
+object WorkListSolver extends FixpointSolver {
+  /**
+   * It solves a finite equation system by using a worklist based method.
+   * @param eqs the equation system to solve.
+   * @param start the initial assignment.
+   * @param litener the listener whose callbacks are called for debugging and tracing.
+   */
+  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = {
+    val current = (collection.mutable.HashMap.empty[U, V]).withDefault(start)
+    listener.initialized(current)
+    var workList = collection.mutable.Queue.empty[U]
     workList ++= eqs.unknowns
     while (!workList.isEmpty) {
       val x = workList.dequeue()
-      val newval = evaluate(current, x, boxes(x))
+      val newval = eqs.body(current)(x)
+      listener.evaluated(current, x, newval)
       if (newval != current(x)) {
         current(x) = newval
-        workList ++= eqs.infl.image(x)
+        // this might become expensive if worklist is big... however, blindly 
+        // adding to the worklist all the elements in the influence set greatly
+        // increases the number of iterations.
+        for (y <- eqs.infl.image(x); if ! (workList contains y)) workList += y
       }
     }
     current

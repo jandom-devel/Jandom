@@ -24,37 +24,15 @@ import scala.annotation.tailrec
 
 /**
  * This trait represents a depth-first ordering of a graph, as it appears in Aho, Sehti, Ullman book
- * on compilers. The graph is encoded as an instance of the Relation trait. Each DFO is strictly
- * connected to a relation.
+ * on compilers. It extends the concept of graph ordering distinguishing between Advancing, Retreating
+ * and Cross edges.
  * @tparam N the type of the nodes of the graph
- * @tparam R the singleton type of the graph this object refers to
  */
-trait DFOrdering[N] extends Ordering[N] {
+trait DFOrdering[N] extends GraphOrdering[N] {
   import DFOrdering.EdgeType._
-
-  /**
-   * The relation corresponding to this ordering.
-   */
-  val relation: Relation[N, N]
-
-  /**
-   * Returns the elements in the correct ordering.
-   */
-  def toSeq: Seq[N]
   
   /**
-   * It returns whether `u` is an head node, i.e., it is the target of a retreating edge.
-   */
-  def isHead(u: N): Boolean
-
-  /**
-   * Returns the set of head nodes.
-   */
-  def heads: Set[N]
-  
-  /**
-   * It returns the type of the edge u->v. The edge u->v should be part of R, otherwise
-   * the result is meaningless.
+   * It returns the type of an edge u->v. 
    * @param u source node
    * @param v target node
    */
@@ -79,7 +57,12 @@ object DFOrdering {
   /**
    * Returns a DFOrdering for the graph encoded by relation `r` and starting nodes in `entries`.
    */
-  def apply[N](r: Relation[N, N])(entries: N*) = new DFOrderingFromR[N](r, entries: _*)
+  def apply[N](r: Relation[N, N], entries: Iterable[N]) = new DFOrderingFromR[N](r, entries)
+  
+  /**
+   * Returns a DFOrdering for the graph encoded by relation `r` and starting nodes in `entries`.
+   */
+  def apply[N](r: Relation[N, N])(entries: N*) = new DFOrderingFromR[N](r, entries)
 
   /**
    * This class is a depth-first ordering for the relation `r`. Note that this ordering only contains elements reachable from entries.
@@ -87,11 +70,11 @@ object DFOrdering {
    * @param relation the relation from which compute the DFOrdering.
    * @param entries nodes from which to start the visit.
    */
-  final class DFOrderingFromR[N](val relation: Relation[N, N], entries: N*) extends DFOrdering[N] {
+  final class DFOrderingFromR[N](relation: Relation[N, N], entries: Iterable[N]) extends DFOrdering[N] {
     import DFOrdering.EdgeType._
 
-    val dfn = collection.mutable.HashMap.empty[N, Int]
-    val dfst = collection.mutable.Set.empty[(N, N)]
+    private val dfn = collection.mutable.HashMap.empty[N, Int]
+    private val dfst = collection.mutable.Set.empty[(N, N)]
     initDFO()
 
     def initDFO() {
@@ -106,7 +89,11 @@ object DFOrdering {
         dfn += u -> c
         c -= 1
       }
-      for (x <- entries) dfsVisit(x)
+      for (x <- entries) if (! (visited contains x)) dfsVisit(x)
+      
+      // add nodes not reachable from entries
+      for (x <- relation.domain) if (! (visited contains x)) dfsVisit(x)
+      for (x <- relation.codomain) if (! (visited contains x)) dfsVisit(x)
     }
 
     def toSeq = (relation.domain union relation.inverse.domain).toSeq.sorted(this)

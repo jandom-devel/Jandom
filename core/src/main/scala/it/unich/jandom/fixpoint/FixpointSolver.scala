@@ -18,46 +18,9 @@
 
 package it.unich.jandom.fixpoint
 
-import it.unich.jandom.utils.PMaps._
-
 /**
- * This is the common trait of all fixpoint solvers for equation systems.
- * @tparam EQS the type of equation systems supported by this solver.
- * @define boxsolution If it terminates, it returns a box-solution of the set of equations.
- * @define termination It is guaranteed to terminate if each loop in the dependency graph of `eqs` has a node `u` such that
- * the box associated to `u` is a widening.
+ * This is the common trait of all fixpoint solvers for equation systems. It is just a marker trait.
+ * All fixpoint solvers have different an apply method (with different parameters) which may be used
+ * to solve an equation system.
  */
-abstract class FixpointSolver[EQS <: EquationSystem] {
-  /**
-   * The particular equation system this solver deals with.
-   */
-  val eqs: EQS
-
-  /**
-   * A parameter for the solver: a listener. It defaults to the empty listener. Almost
-   * every fixpoint solver uses the `listener` parameter for tracing and debugging
-   * purposes, although it is never explicitly mentioned in the documentation.
-   */
-  val listener = Parameter[FixpointSolverListener](FixpointSolverListener.EmptyListener)
-
-  /**
-   * A parameter for the solver: the starting assignment.
-   */
-  val start = Parameter[eqs.Assignment]
-
-  /**
-   * A parameter for the solver: an assignment of boxes to unknowns.
-   */
-  val boxes = Parameter[eqs.BoxAssignment]
-
-  /**
-   * The set of parameters required by this particular solver.
-   */
-  type Parameters <: PMap
-  
-  /**
-   * The solver algorithm. If it terminates, it returns a solution of the equation system, whatever it means.
-   * @param params the parameters for the algorithm.
-   */
-  def apply(params: Parameters): eqs.Assignment
-}
+trait FixpointSolver

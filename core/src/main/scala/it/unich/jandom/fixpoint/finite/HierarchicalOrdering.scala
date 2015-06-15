@@ -20,35 +20,19 @@ package it.unich.jandom.fixpoint.finite
 
 /**
  * Hierarchical ordering as defined in Bourdoncle's paper "Efficient chaotic iteration strategies with widenings", FMPA'93.
- * Note that, a hierarchical ordering generally considers only a subset of the elements of type T, those
- * returned by the `domain` method. The result of applying any method of this trait on any element which is not part of
- * the domain is not specified.
  */
-trait HierarchicalOrdering[T] extends Ordering[T] {
-  /**
-   * Returns the elements in the correct ordering.
-   */
-  def toSeq: Seq[T]
-
-  /**
-   * Returns the set of heads.
-   */
-  def heads: Set[T]
-
-  /**
-   * Returns whether `x` is an head element.
-   */
-  def isHead(x: T): Boolean
-
-  /**
-   * Returns the sequence of elements and parenthesis representing the hierarchical ordering.
-   */
-  def toSeqWithParenthesis: Seq[HierarchicalOrdering.Element[T]]
+trait HierarchicalOrdering[N] extends GraphOrdering[N] {
+  import HierarchicalOrdering._
   
   /**
-   * Converts a hierchical ordering into a string on the basis of its parenthesized sequence
+   * A sequence of elements and parenthesis representing the hierarchical ordering.
    */
-  override def toString = toSeqWithParenthesis.mkString(" ")    
+  def toSeqWithParenthesis: Seq[HOElement[N]]
+
+  /**
+   * Converts a hierarchical ordering into a string on the basis of its parenthesized sequence
+   */
+  override def toString = toSeqWithParenthesis.mkString(" ")
 }
 
 /**
@@ -58,28 +42,29 @@ trait HierarchicalOrdering[T] extends Ordering[T] {
 object HierarchicalOrdering {
 
   /**
-   * An Element[T] is either `Left` (left parenthesis), `Right` (right parenthesis) or `Val(x)` where `x` is a value of type `T`.
-   * A sequence of Element is the standard representation of a hierarchical ordering.
+   * An HOElement[N] is either `Left` (left parenthesis), `Right` (right parenthesis) or `Val(x)` where `x` is a value of type `N`.
+   * A sequence of HOElements is the standard representation of a hierarchical ordering.
    */
-  sealed abstract class Element[+T]
-  final case object Left extends Element[Nothing] {
+  sealed abstract class HOElement[+N]
+  final case object Left extends HOElement[Nothing] {
     override def toString = "("
   }
-  final case object Right extends Element[Nothing] {
+  final case object Right extends HOElement[Nothing] {
     override def toString = ")"
   }
-  final case class Val[T](val u: T) extends Element[T] {
+  final case class Val[N](val u: N) extends HOElement[N] {
     override def toString = u.toString
   }
 
   /**
-   * Check if `seq` is a correct parenthesized sequence of elements
+   * Check if `seq` is a correct parenthesized sequence of elements.
+   * @param seq a sequence of HOElements.
    */
-  def validateSeqWithParenthesis[T](seq: Seq[Element[T]]): Boolean = {
+  def validateSeqWithParenthesis[N](seq: Seq[HOElement[N]]): Boolean = {
     var opened = 0
     var lastopened = false
     for (s <- seq) {
-      if (lastopened && !s.isInstanceOf[Val[T]]) return false
+      if (lastopened && !s.isInstanceOf[Val[N]]) return false
       if (s == Left) {
         opened += 1
         lastopened = true
@@ -93,23 +78,54 @@ object HierarchicalOrdering {
     }
     opened == 0
   }
+    
+  /**
+   * Builds a hierarchical ordering from a sequence of HOElements.
+   */
+  def apply[N](els: HOElement[N]*) = new SequenceBasedHierarchicalOrdering(els.toIndexedSeq)
 
   /**
-   * A hierarchical ordering defined by a sequence of Element.
+   * Builds a hierarchical ordering from a graph ordering. Components are opened for each head, and they are all closed at the end.
+   * If the `o` is the DFO for a graph, the result is a weak-topological ordering for the same graph.
    */
-  class SequenceBasedHierarchicalOrdering[T](seq: IndexedSeq[Element[T]]) extends HierarchicalOrdering[T] {
+  def apply[N](o: GraphOrdering[N]) = new GraphOrderingBasedHO(o)
+
+  /**
+   * A hierarchical ordering defined by a sequence of HOElements.
+   */
+  final class SequenceBasedHierarchicalOrdering[N](seq: IndexedSeq[HOElement[N]]) extends HierarchicalOrdering[N] {
     if (!validateSeqWithParenthesis(seq)) throw new IllegalArgumentException("Invalid sequence of elements and parenthesis")
-    
-    private lazy val orderingIndex: Map[T, Int] = (for { (x, i) <- seq.zipWithIndex; if x.isInstanceOf[Val[T]]; Val(u) = x } yield u -> i)(collection.breakOut)
-    def toSeq = for { x <- seq.view; if x.isInstanceOf[Val[T]]; Val(u) = x } yield u
+
+    private lazy val orderingIndex: Map[N, Int] = (for { (x, i) <- seq.zipWithIndex; if x.isInstanceOf[Val[N]]; Val(u) = x } yield u -> i)(collection.breakOut)
+    def toSeq = for { x <- seq.view; if x.isInstanceOf[Val[N]]; Val(u) = x } yield u
     def toSeqWithParenthesis = seq
-    lazy val heads: Set[T] = (for { i <- 0 until seq.length; if seq(i) == Left; Val(u) = seq(i + 1) } yield u)(collection.breakOut)
-    def isHead(x: T) = heads contains x
-    def compare(x: T, y: T) = orderingIndex(x) - orderingIndex(y)
+    lazy val heads: Set[N] = (for { i <- 0 until seq.length; if seq(i) == Left; Val(u) = seq(i + 1) } yield u)(collection.breakOut)
+    def isHead(x: N) = heads contains x
+    def compare(x: N, y: N) = orderingIndex(x) - orderingIndex(y)
   }
 
   /**
-   * Builds a hierarchical ordering from a sequence of `Element`s.
+   * A hierarchical ordering specified by a GraphOrdering. Components are opened for each head, and they are all closed at the end.
+   * If the `o` is the DFO for a graph, the result is a weak-topological ordering for the same graph.
    */
-  def apply[T](els: Element[T]*) = new SequenceBasedHierarchicalOrdering[T](els.toIndexedSeq)
+  final class GraphOrderingBasedHO[N](o: GraphOrdering[N]) extends HierarchicalOrdering[N] {
+    def toSeq = o.toSeq
+    def isHead(x: N) = o.isHead(x)
+    def heads = o.heads
+    def compare(x: N, y: N) = o.compare(x, y)
+    lazy val toSeqWithParenthesis = {
+      val buffer = collection.mutable.Buffer.empty[HOElement[N]]
+      var open = 0
+      for (x <- o.toSeq) {
+        if (o.isHead(x)) {
+          buffer.append(Left)
+          open += 1
+        }
+        buffer.append(Val(x))
+      }
+      for (_ <- 0 until open) { buffer.append(Right) }
+      buffer.toSeq
+    }
+  }
+
 }

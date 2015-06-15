@@ -18,38 +18,92 @@
 
 package it.unich.jandom.fixpoint
 
+import scala.collection.mutable.Buffer
+
 /**
  * This is the trait for a generic equation system.
+ * @tparam U the type for the unknowns of this equation system.
+ * @tparam V the type for the values assumed by the unknowns of this equation system.
  * @author Gianluca Amato <gamato@unich.it>
  */
-abstract class EquationSystem {
+trait EquationSystem[U, V] {   
   /**
-   * The type of the unknowns for this equation system.
+   * The equation system viewed as a transformer from assignments to assignments.
    */
-  type Unknown
+  def body: (U => V) => (U => V)
 
   /**
-   * The type of values for this equation system.
+   * An initial assignment which may be used to bootstrap the analysis. 
    */
-  type Value
+  def initial: U => V
+  
+  /**
+   * A variant of `body` which keeps track of the unknowns queried during the evaluation.
+   */
+  def bodyWithDependencies: (U => V) => U => (V, Iterable[U])
 
   /**
-   * An assignment of values to unknowns
+   * Add boxes to the equation system. 
+   * @param boxes a partial function from unknowns to boxes.
+   * @param boxesAreIdempotent if true boxes are assumed to be idempotent. In this case, some optimization.
+   * is possible.
    */
-  type Assignment = UFactory[Unknown, Value]
+  def withBoxes(boxes: PartialFunction[U, Box[V]], boxesAreIdempotent: Boolean): EquationSystem[U, V]
+}
+
+object EquationSystem {
 
   /**
-   * A partial assignment of values to unknowns
+   * An alias for the type returned by body
    */
-  type PartialAssignment = PartialUFactory[Unknown, Value]
+  type Body[U, V] = (U => V) => (U => V)
 
   /**
-   * An assignment of a box for each unknown
+   * An alias for the type returned by bodyWithDependencies
    */
-  type BoxAssignment = UFactory[Unknown, Box[Value]]
+  type BodyWithDependecies[U, V] = (U => V) => U => (V, Iterable[U])
 
   /**
-   * The actual equation system.
+   * Returns a new equation system from the given body.
    */
-  def apply(rho: Assignment): Assignment
+  def apply[U, V](body: Body[U, V], initial: U => V) = SimpleEquationSystem(body, initial)
+  
+  /**
+   * This class implements an equation system when a body is provided.
+   */
+  case class SimpleEquationSystem[U, V](val body: Body[U, V], val initial: U => V) extends EquationSystem[U,V] {
+    def bodyWithDependencies = buildBodyWithDependencies(body)
+    def withBoxes(boxes: PartialFunction[U, Box[V]], boxesAreIdempotent: Boolean) =
+      copy(body = addBoxesToBody(body, boxes))
+    def withInitialAssignment(rho: U => V) =
+      copy(initial = rho)
+  }
+  
+  /**
+   * This method takes a body and a partial box assignment and returns a new body where boxes have been
+   * plugged inside. If `newbody = addBoxesToBody(body, boxes)` and `boxes` is defined on `x`,
+   * then `newbody(rho)(x) = boxes(x) (  rho(x), body(rho)(x) )`.
+   */
+  def addBoxesToBody[U, V](body: Body[U, V], boxes: PartialFunction[U, Box[V]]): Body[U,V] = {
+    (rho: U => V) =>
+      (x: U) => {
+        if (boxes.isDefinedAt(x)) boxes(x)(rho(x), body(rho)(x)) else body(rho)(x)
+      }
+  }
+
+  /**
+   * This methods takes a body and returns a new body which keeps tracks of queried unknowns.
+   */
+  def buildBodyWithDependencies[U, V](body: Body[U,V]): BodyWithDependecies[U,V] = {
+    (rho: U => V) =>
+      (x: U) => {
+        val queried = Buffer.empty[U]
+        val trackrho = { y: U =>
+          queried.append(y)
+          rho(y)
+        }
+        val newval = body(trackrho)(x)
+        (newval, queried.toSeq)
+      }
+  }
 }

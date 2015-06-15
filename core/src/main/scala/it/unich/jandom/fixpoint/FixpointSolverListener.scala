@@ -18,34 +18,87 @@
 
 package it.unich.jandom.fixpoint
 
+import scala.annotation.elidable
+import scala.annotation.elidable._
+
 /**
  * A FixpointSolverListener implements some methods which are called by solvers when certain
  * events occurs. They may be used for debugging, tracing, etc...
+ * @tparam U the type of unknowns supported by this listener
+ * @tparam V the type of values for unknowns supported by this listener
  */
-trait FixpointSolverListener {
+trait FixpointSolverListener[-U, -V] {
   /**
-   * This method is called when an assignment is initialized with the start value
-   * @tparam EQS the type of equation system 
+   * This method is called when an assignment is initialized with the start value.
    * @param rho the current assignment
    */
-  def initialized[EQS <: EquationSystem](rho: EQS#Assignment)
-  
+  @elidable(ASSERTION)
+  def initialized[U1 <: U, V1 <: V](rho: U1 => V1)
+
   /**
    * This method is called when an unknown `u` is evaluated.
-   * @tparam EQS the equation  
    * @param rho the current assignment
-   * @param x the unknown which is evaluated
-   * @param x the result of the evaluation
+   * @param u the unknown which is evaluated
+   * @param newval the result of the evaluation
    */
-  def evaluated[EQS <: EquationSystem](rho: EQS#Assignment, u: EQS#Unknown, newval: EQS#Value)
+  @elidable(ASSERTION)
+  def evaluated[U1 <: U, V1 <: V](rho: U1 => V1, u: U1, newval: V1)
+
+  /**
+   * This is called when the ascending phase begins in a two phase solver.
+   * @param rho the assignment at the beginning of the ascending phase
+   */
+  @elidable(ASSERTION)
+  def ascendingBegins[U1 <: U, V1 <: V](rho: U1 => V1)
+
+  /**
+   * This is called when the descending phase begins in a two phase solver.
+   * @param rho the assignment at the beginning of the descending phase
+   */
+  @elidable(ASSERTION)
+  def descendingBegins[U1 <: U, V1 <: V](rho: U1 => V1)
+}
+
+/**
+ * This abstract class implements a listener for fixpoint solvers which does nothing.
+ * May be sub-classed in order to override only the methods we are interested in.
+ */
+abstract class FixpointSolverListenerAdapter[-U, -V] extends FixpointSolverListener[U, V] {
+  def evaluated[U1, V1](rho: U1 => V1, u: U1, newval: V1) {}
+  def initialized[U1, V1](rho: U1 => V1) {}
+  def ascendingBegins[U1, V1](rho: U1 => V1) {}
+  def descendingBegins[U1, V1](rho: U1 => V1) {}
 }
 
 object FixpointSolverListener {
+
   /**
    * An empty listener which does nothing.
    */
-  object EmptyListener extends FixpointSolverListener {
-    def evaluated[EQS <: EquationSystem](rho: EQS#Assignment, u: EQS#Unknown, newval: EQS#Value) { }
-    def initialized[EQS <: EquationSystem](rho: EQS#Assignment) { }
+  implicit object EmptyListener extends FixpointSolverListenerAdapter[Any, Any]
+
+  /**
+   * A listener which prints all the informations on the standard outputs.
+   */
+  object DebugListener extends FixpointSolverListener[Any, Any] {
+    def evaluated[U1, V1](rho: U1 => V1, u: U1, newval: V1) { println(s"evaluated: ${u} oldvalue: ${rho(u)} newvalue ${newval}") }
+    def initialized[U1, V1](rho: U1 => V1) { println("initialized with assignment ${rho}") }
+    def ascendingBegins[U1, V1](rho: U1 => V1) { println("ascending chain begins with assignment ${rho}") }
+    def descendingBegins[U1, V1](rho: U1 => V1) { println("descending chain begins with assignment ${rho}") }
+  }
+
+  /**
+   * A listener which keeps track of performance measures.
+   */
+  class PerformanceListener extends FixpointSolverListenerAdapter[Any, Any] {
+
+    private var numeval: Int = 0
+
+    /**
+     * Number of evaluations of r.h.s. performed so far
+     */
+    def evaluations = numeval
+
+    override def evaluated[U1, V1](rho: U1 => V1, u: U1, newval: V1) { numeval += 1 }
   }
 }

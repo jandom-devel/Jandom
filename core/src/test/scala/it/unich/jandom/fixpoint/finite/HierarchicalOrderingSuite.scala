@@ -41,7 +41,7 @@ class IterativeStrategySuite extends FunSpec with TableDrivenPropertyChecks {
 
   val graph = Relation[Int, Int](ListSet(1 -> 3, 1 -> 2, 2 -> 3, 3 -> 4, 4 -> 6, 4 -> 5, 4 -> 8, 5 -> 7, 6 -> 7, 7 -> 4, 7 -> 8, 8 -> 4, 8 -> 3, 8 -> 10, 8 -> 9, 9 -> 1, 10 -> 7))
   val dfo = DFOrdering(graph)(1)
-  val o3 = WTOrdering(dfo)
+  val o3 = HierarchicalOrdering(dfo)
   val heads3 = dfo.heads
   val seq3 = dfo.toSeq
   val seqp3 = Seq(Left, Val(1), Val(2), Left, Val(3), Left, Val(4), Val(5), Val(6), Left, Val(7), Val(8), Val(9), Val(10), Right, Right, Right, Right)
@@ -52,7 +52,7 @@ class IterativeStrategySuite extends FunSpec with TableDrivenPropertyChecks {
     (o2, seqp2, seq2, heads2, out2),
     (o3, seqp3, seq3, heads3, out3))
     
-  val wto = Table("WTO", o3)
+  val wto = Table(("Relation", "WTO"), (graph, o3))
 
   describe("The sequence based factory methods") {
     it("generates excpetions on non-well parenthesized sequences") {
@@ -94,8 +94,8 @@ class IterativeStrategySuite extends FunSpec with TableDrivenPropertyChecks {
 
   describe("A weak topological ordering") {
     it("has all back edges pointing to heads") {
-      forAll(wto) { o =>
-        o.relation.graph.forall { case (u, v) => o.lt(u, v) || o.isHead(u) }
+      forAll(wto) { (r,o) =>
+        r.graph.forall { case (u, v) => o.lt(u, v) || o.isHead(u) }
       }
     }
   }

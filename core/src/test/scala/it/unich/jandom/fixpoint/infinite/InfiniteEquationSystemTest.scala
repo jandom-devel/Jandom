@@ -18,66 +18,89 @@
 
 package it.unich.jandom.fixpoint.infinite
 
-import it.unich.jandom.fixpoint._
-import it.unich.jandom.utils.PMaps._
-import it.unich.jandom.utils.Relation
+import scala.collection.mutable.Buffer
 
 import org.scalatest.FunSpec
 import org.scalatest.prop.PropertyChecks
-import org.scalacheck.Gen
-import org.scalacheck.Arbitrary
-import scala.collection.immutable.HashMap
+
+import it.unich.jandom.fixpoint._
+import it.unich.jandom.fixpoint.EquationSystem.SimpleEquationSystem
+import it.unich.jandom.utils.IterableFunction
 
 /**
  * Test solvers for finite equation systems.
  */
 class InfiniteEquationSystemTest extends FunSpec with PropertyChecks {
+  import EquationSystem._
 
-  object simpleEqs extends EquationSystem {
-    type Unknown = Int
-    type Value = Int
-    def apply(rho: Assignment): Assignment = { x =>
-      if (x % 2 == 0) 
-        rho(rho(x)) max x/2
-      else {
-        val n = (x-1)/2
-        rho(6*n + 4)
-      }        
-    }    
-  }
-   
-  /*
-  implicit object Listener extends FixpointSolverListener {
-    def evaluated[EQS <: EquationSystem](rho: EQS#Assignment, u: EQS#Unknown, newval: EQS#Value) { println(s"evaluated ${u} with value ${newval}") }
-    def initialized[EQS <: EquationSystem](rho: EQS#Assignment) { println("initialized") }
-  }
-  */
-  
-  val maxBox = Box[Int] { _ max _ }
-  val startRho = { (x: Int) => 0 }
+  val simpleEqs = SimpleEquationSystem[Int, Int](
+    body = { (rho: Int => Int) =>
+      x: Int =>
+        if (x % 2 == 0)
+          rho(rho(x)) max x / 2
+        else {
+          val n = (x - 1) / 2
+          rho(6 * n + 4)
+        }
+    },
+    initial = { _ => 0}
+   )
 
-  type SimpleSolver[EQS <: EquationSystem with Singleton] = (Iterable[EQS#Unknown], EQS#Assignment, EQS#BoxAssignment) => EQS#Assignment
+  val maxBox: Box[Int] = { _ max _ }
+  val startRho = simpleEqs.initial
+
+  type SimpleSolver[U, V] = (EquationSystem[U, V], U => V, Seq[U]) => IterableFunction[U, V]
+
+  class EvaluationOrderListener extends FixpointSolverListenerAdapter {
+    val buffer = Buffer.empty[Any]
+    override def evaluated[U1, V1](rho: U1 => V1, x: U1, newval: V1) {
+      buffer += x
+    }
+  }
 
   /**
    * Test solvers for the `simpleEqs` equation system when starting from the initial
    * assignment `startRho`.
    */
-  def testExpectedResult(solver: LocalFixpointSolver[simpleEqs.type], m: PMap)(implicit conv: Function1[solver.wanted.type +: solver.start.type +: solver.boxes.type +: m.type, solver.Parameters]) {
-    import solver._
+  def testExpectedResult(solver: SimpleSolver[Int, Int]) {
     it("gives the expected result starting from startRho with max") {
-      val params = (wanted --> Seq(4)) +: (start --> startRho) +: (boxes--> maxBox) +: m
-      val finalRho = solver(params)
+      val finalRho = solver(simpleEqs.withBoxes({ case _ => maxBox }, true), startRho, Seq(4))
+      assertResult(Set(0, 1, 2, 4))(finalRho.keySet)
       assertResult(2)(finalRho(1))
       assertResult(2)(finalRho(2))
-      assertResult(2)(finalRho(4))      
+      assertResult(2)(finalRho(4))
     }
   }
 
-  describe("The WorkListSolver") {
-    testExpectedResult(new WorkListSolver(simpleEqs), PMap.empty) 
+  describe("The standard bodyWithDependencies method") {
+    it("returns the correct dependencies") {
+      val (res, deps) = simpleEqs.bodyWithDependencies(startRho)(4)
+      assertResult((2, Seq(4, 0))) { simpleEqs.bodyWithDependencies(startRho)(4) }
+      assertResult((0, Seq(4))) { simpleEqs.bodyWithDependencies(startRho)(1) }
+    }
+    it("returns the same value as body") {
+      forAll { (x: Int) =>
+        assertResult(simpleEqs.body(startRho)(x)) { simpleEqs.bodyWithDependencies(startRho)(x)._1 }
+      }
+    }
   }
-  describe("The PriorityWorkListSolver") { 
-    val pwsolver = new PriorityWorkListSolver(simpleEqs)
-    testExpectedResult(pwsolver, (pwsolver.priorities --> UFactory.memoize(new PriorityWorkListSolver.DynamicPriority)) +: PMap.empty)
+  
+  describe("The DynamicPriorityOrdering") {
+    it("puts new element first in the ordering") {
+      val o = new PriorityWorkListSolver.DynamicPriority[Int]
+      o.lteq(1,1)
+      assert(o.lt(2,1))
+      assert(o.lt(3,2))
+      assert(o.lt(3,1))
+      assert(o.lt(-10,2))
+    }
+  }
+
+  describe("The WorkListSolver") {    
+    testExpectedResult(WorkListSolver(_, _, _))    
+  }
+
+  describe("The PriorityWorkListSolver") {    
+    testExpectedResult(PriorityWorkListSolver(_, _, _))    
   }
 }

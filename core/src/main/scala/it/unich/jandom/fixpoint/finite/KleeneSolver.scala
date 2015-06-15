@@ -19,34 +19,27 @@
 package it.unich.jandom.fixpoint.finite
 
 import it.unich.jandom.fixpoint._
-import it.unich.jandom.utils.PMaps._
 
 /**
- * It solves a finite equation system by applying Kleene iteration from the `start` assignment,
- * using the box operators in `boxes`.
- * $boxsolution
- * $termination 
+ * A solver based on Kleene iteration.
  */
-class KleeneSolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends FixpointSolver[EQS] with FixpointSolverHelper[EQS] {
-
+object KleeneSolver extends FixpointSolver {
   /**
-   * Parameters used by the analyzer: `start` and `box`.
+   * It solves a finite equation system by applying Kleene iteration from the `start` assignment.
+   * @param eqs the equation system to solve.
+   * @param start the initial assignment.
+   * @param litener the listener whose callbacks are called for debugging and tracing.
    */
-  type Parameters = start.type +: boxes.type +: PNil
-
-  def apply(params: Parameters): eqs.Assignment = {
-    implicit val listener = params(this.listener)
-    val start = params(this.start)
-    val boxes = params(this.boxes)
-    
-    var current = initmap(start, eqs.unknowns)
-    var next = collection.mutable.Map.empty[eqs.Unknown, eqs.Value]
-
+  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = {
+    var current = (collection.mutable.HashMap.empty[U, V]).withDefault(start)
+    var next = collection.mutable.HashMap.empty[U, V]
+    listener.initialized(current)
     var dirty = true
     while (dirty) {
       dirty = false
       for (x <- eqs.unknowns) {
-        val newval = evaluate(current, x, boxes(x))
+        val newval = eqs.body(current)(x)
+        listener.evaluated(current, x, newval)
         if (newval != current(x)) dirty = true
         next(x) = newval
       }

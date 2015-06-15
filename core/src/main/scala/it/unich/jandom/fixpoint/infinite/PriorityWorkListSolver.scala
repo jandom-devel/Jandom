@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -19,76 +19,60 @@
 package it.unich.jandom.fixpoint.infinite
 
 import it.unich.jandom.fixpoint._
-import it.unich.jandom.utils.PMaps._
+import it.unich.jandom.utils.IterableFunction
 
 /**
- * It solves a finite equation system by using a priority work-list method. It starts computing from the `start` assignment,
- * using the box operators in `boxes` and generating priorites for new unknowns with the `priorities` factory.
- * It determines at the least the unknowns specified in `wanted`.
- * $boxsolution
- * $termination
+ * A local fixpoint solver based on a worklist with priorities.
  */
-class PriorityWorkListSolver[EQS <: EquationSystem](val eqs: EQS) extends LocalFixpointSolver[EQS] with FixpointSolverHelper[EQS] {
+object PriorityWorkListSolver extends LocalFixpointSolver {
+  import EquationSystem._
   
   /**
-   * A parameter for the solver: a factory which return priorities for new unknowns. It defaults to a factory
-   * which generates progressive descendant priorities.
+   * This is an dynamic ordering on unknowns: every time an unknown appears, it gets assigned a lower
+   * priority of previous one (i.e., it come earlier in the ordering). This is the default ordering
+   * for PriorityWorkListSolver when an explicit one is not provided.
    */
-  val priorities = Parameter[UFactory[eqs.Unknown, Int]](new PriorityWorkListSolver.DynamicPriority[eqs.Unknown])
-
+  class DynamicPriority[U] extends Ordering[U] {
+    val map = collection.mutable.Map.empty[U,Int]
+    var current = 0
+    def compare(x: U, y: U) = {
+      val xp = map getOrElseUpdate(x, { current -= 1; current })
+      val yp = map getOrElseUpdate(y, { current -= 1; current })
+      xp - yp
+    }    
+  }
+  
   /**
-   * A parameter for the solver: the unknowns we want to have in our partial assignment
+   * It solves a finite equation system by using a worklist based method with priorities.
+   * @param eqs the equation system to solve.
+   * @param start the initial assignment.
+   * @param wanted the collection of unknowns for which we want a solution.
+   * @param ordering an ordering on all unknowns.
+   * @param litener the listener whose callbacks are called for debugging and tracing.
    */
-
-  type Parameters = start.type +: boxes.type +: wanted.type +: priorities.type +: PNil
-
-  def apply(params: Parameters): eqs.PartialAssignment = {
-    implicit val listener = params(this.listener)
-    val start = params(this.start)
-    val boxes = params(this.boxes)
-    val wanted = params(this.wanted)
-    val priorities = params(this.priorities)
-
-    val infl = new collection.mutable.HashMap[eqs.Unknown, collection.mutable.Set[eqs.Unknown]] with collection.mutable.MultiMap[eqs.Unknown, eqs.Unknown]
-    var workList = collection.mutable.PriorityQueue.empty[eqs.Unknown](Ordering.by(priorities))
+  def apply[U,V](eqs: EquationSystem[U,V], start: U => V, wanted: Iterable[U], ordering: Ordering[U] = new DynamicPriority[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener): IterableFunction[U,V] = {
+    val infl = new collection.mutable.HashMap[U, collection.mutable.Set[U]] with collection.mutable.MultiMap[U, U]
+    var workList = collection.mutable.PriorityQueue.empty[U](ordering)
     workList ++= wanted
 
-    class TrackAccess(rho: collection.mutable.Map[eqs.Unknown, eqs.Value], target: eqs.Unknown) extends eqs.Assignment {
-      def apply(x: eqs.Unknown) = {
-        if (!rho.isDefinedAt(x)) {
-          rho += (x -> start(x))
-          workList += x
-        }
-        infl.addBinding(x, target)
-        rho(x)
-      }
-    }
-
-    val current = initmap(start, wanted)
+    val current = (collection.mutable.HashMap.empty[U, V]).withDefault(start)
+    listener.initialized(current)
     while (!workList.isEmpty) {
       val x = workList.dequeue()
-      val newval = evaluate(new TrackAccess(current, x), x, boxes(x))
+      val (newval, dependencies) = eqs.bodyWithDependencies(current)(x)
+      listener.evaluated(current, x, newval)
+      for (y <- dependencies) {
+        if (!current.isDefinedAt(y)) {
+          current(y) = start(y)
+          workList += y
+        }
+        infl.addBinding(y, x)
+      }
       if (newval != current(x)) {
         current(x) = newval
         workList ++= infl(x)
-        println(infl)
       }
     }
     current
-  }
-}
-
-object PriorityWorkListSolver {
-  
-  /**
-   * This class is a factory of priorities for unknowns, to be used together with the `PriorityWorkListSolver`. This
-   * is the standard factory which is used if no priorities are specified.
-   */
-  class DynamicPriority[U] extends UFactory[U, Int] {
-    var current = 0
-    def apply(x: U) = {
-      current -= 1
-      current
-    }
   }
 }

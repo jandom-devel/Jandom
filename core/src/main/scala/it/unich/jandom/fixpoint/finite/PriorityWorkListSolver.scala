@@ -19,34 +19,27 @@
 package it.unich.jandom.fixpoint.finite
 
 import it.unich.jandom.fixpoint._
-import it.unich.jandom.utils.PMaps._
 
 /**
- * It solves a finite equation system by using a priority work-list method. It starts computing from the `start` assignment,
- * using the box operators in `boxes` and priority specified by the 'ordering` parameter. 
- * $boxsolution
- * $termination 
+ * A fixpoint solver based on priority worklists.
  */
-class PriorityWorkListSolver[EQS <: FiniteEquationSystem](val eqs: EQS) extends FixpointSolver[EQS] with FixpointSolverHelper[EQS] {
+object PriorityWorkListSolver extends FixpointSolver {
   /**
-   * A parameter for the solver: a ordering of unknowns
+   * It solves a finite equation system by using a worklist based method with priorities.
+   * @param eqs the equation system to solve.
+   * @param start the initial assignment.
+   * @param ordering an ordering which specified priorities between unknowns.
+   * @param litener the listener whose callbacks are called for debugging and tracing.
    */
-  val ordering = Parameter[Ordering[eqs.Unknown]]
-
-  type Parameters = start.type +: boxes.type +: ordering.type +: PNil
-
-  def apply(params: Parameters): eqs.Assignment = {
-    implicit val listener = params(this.listener)
-    val start = params(this.start)
-    val boxes = params(this.boxes)
-    val ordering = params(this.ordering)
-    
-    val current = initmap(start, eqs.unknowns)
-    var workList = scala.collection.mutable.PriorityQueue.empty[eqs.Unknown](ordering)
+  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, ordering: Ordering[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = {
+    val current = (collection.mutable.HashMap.empty[U, V]).withDefault(start)
+    listener.initialized(current)
+    var workList = scala.collection.mutable.PriorityQueue.empty[U](ordering)
     workList ++= eqs.unknowns
     while (!workList.isEmpty) {
       val x = workList.dequeue()
-      val newval = evaluate(current, x, boxes(x))
+      val newval = eqs.body(current)(x)
+      listener.evaluated(current, x, newval)
       if (newval != current(x)) {
         current(x) = newval
         workList ++= eqs.infl.image(x)
