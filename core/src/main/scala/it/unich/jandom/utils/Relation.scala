@@ -25,43 +25,48 @@ import scala.collection.mutable.MultiMap
  * @tparam U the domain of the relation.
  * @tparam V the codomain of the relation.
  */
-trait Relation[U, V] extends PartiallyOrdered[Relation[U,V]] {
+trait Relation[U, V] extends PartiallyOrdered[Relation[U, V]] {
   /**
    * Returns whether `u` is in relation to `v`.
    */
-  def apply(u: U, v:V): Boolean
-  
+  def apply(u: U, v: V): Boolean
+
   /**
    * Returns whether the relation is empty.
    */
   def isEmpty: Boolean
-  
+
   /**
    * Returns the graph of the relation.
    */
-  def graph: Set[(U,V)]
-  
+  def graph: Set[(U, V)]
+
   /**
    * Returns the image of `u` through the relation.
    */
-  def image(u: U): Set[V]    
-  
+  def image(u: U): Set[V]
+
   /**
    * Returns the elements in `U` which are part of the relation. Formally,
    * the term is not completely correct.
    */
   def domain: Set[U]
-  
+
   /**
    * Returns the elements in `V` which are part of the relation. Formally,
    * the term is not completely correct.
    */
   def codomain: Set[V]
-    
+
   /**
    * Returns the inverse relation.
    */
-  def inverse: Relation[V,U]  
+  def inverse: Relation[V, U]
+
+  /**
+   * The union of two relations.
+   */
+  def union(r: Relation[U, V]) = Relation.union(this, r)
 }
 
 /**
@@ -84,7 +89,7 @@ object Relation {
         def isEmpty = original.isEmpty
         def apply(v: V, u: U) = map.getOrElse(v, Set.empty[U]) contains u
         def image(v: V) = map.getOrElse(v, Set.empty[U]).toSet
-        lazy val graph = for { v <- map.keySet; u <- map(v) } yield (v, u)        
+        lazy val graph = for { v <- map.keySet; u <- map(v) } yield (v, u)
         lazy val domain = map.keySet
         lazy val codomain = original.domain
         def inverse = original
@@ -151,15 +156,32 @@ object Relation {
   }
 
   /**
-   * Builds a relation from its graph.
+   * Builds a relation from its graph. Domain and codomain are computed from the graph.
    */
-  def apply[U, V](aGraph: Set[(U, V)]): Relation[U, V] = new Relation[U, V] with AutomaticInverse[U, V] with AutomaticPartialOrdering[U, V] {
+  def apply[U, V](aGraph: Set[(U, V)]): Relation[U, V] = apply(aGraph, aGraph.map(_._1), aGraph.map(_._2))
+
+  /**
+   * Builds a relation from its graph. Domains and codomain are provided explicitly.
+   */
+  def apply[U, V](aGraph: Set[(U, V)], aDomain: Set[U], aCodomain: Set[V]): Relation[U, V] = new Relation[U, V] with AutomaticInverse[U, V] with AutomaticPartialOrdering[U, V] {
     def isEmpty = aGraph.isEmpty
     def graph = aGraph
     def image(u: U) = aGraph.filter(_._1 == u).map(_._2)
     def apply(u: U, v: V) = aGraph contains ((u, v))
-    def domain = aGraph.map(_._1)
-    def codomain = aGraph.map(_._2)
+    def domain = aDomain
+    def codomain = aCodomain
+  }
+
+  /**
+   * Returns a new relation which is the union of two different relations.
+   */
+  def union[U, V](r1: Relation[U, V], r2: Relation[U, V]): Relation[U, V] = new Relation[U, V] with AutomaticInverse[U, V] with AutomaticPartialOrdering[U, V] {
+    def isEmpty = r1.isEmpty && r2.isEmpty
+    def graph = r1.graph union r2.graph
+    def image(u: U) = r1.image(u) ++ r2.image(u)
+    def apply(u: U, v: V) = r1(u, v) || r2(u, v)
+    def domain = r1.domain ++ r2.domain
+    def codomain = r1.codomain ++ r2.codomain
   }
 
   /**
