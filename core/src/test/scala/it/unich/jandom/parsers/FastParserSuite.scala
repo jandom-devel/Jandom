@@ -67,7 +67,7 @@ class FastParserSuite extends FunSuite {
     val init = Region("init",Some(l1),AtomicCond(x, ComparisonOperators.EQ))
 
 
-    val lts = LTS(IndexedSeq(l1, l2, l3), Seq(t1, t2, t3), env, Seq(init, bad))
+    val lts = LTS("example",IndexedSeq(l1, l2, l3), Seq(t1, t2, t3), env, Seq(init, bad))
 
     val fastString = """
       model example {

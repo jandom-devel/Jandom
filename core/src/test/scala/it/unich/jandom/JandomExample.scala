@@ -52,7 +52,7 @@ object JandomExample extends App {
 
   {
     val source = scala.io.Source.fromFile("examples/LPinv/berkeley.in").getLines.mkString("\n")
-    val parsed = parsers.LPInvParser().parseProgram(source)
+    val parsed = parsers.LPInvParser().parseProgram("berkeley",source)
     if (parsed.successful) {
       val program = parsed.get
       val params = new targets.Parameters[LTS] { val domain = domains.numerical.BoxDoubleDomain() }

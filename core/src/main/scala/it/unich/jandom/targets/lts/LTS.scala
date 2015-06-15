@@ -39,7 +39,7 @@ import it.unich.jandom.fixpoint.finite.FiniteEquationSystem
  * @author Gianluca Amato <gamato@unich.it>
  */
 
-case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transition], val env: Environment, val regions: Seq[Region] = Seq()) extends Target[LTS] {
+case class LTS(val name: String, val locations: IndexedSeq[Location], val transitions: Seq[Transition], val env: Environment, val regions: Seq[Region] = Seq()) extends Target[LTS] {
 
   type ProgramPoint = Location
   type DomainBase = NumericalDomain
@@ -222,6 +222,9 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
     (for ((loc, prop) <- ann) yield loc.name + " => " + prop.mkString(env.variables)).mkString(", ")
   }
 
-  override def toString = locations.mkString("\n") + "\n" + (transitions map { _.mkString(env.variables) }).mkString("\n") + "\n" +
+  def mkString = locations.mkString("\n") + "\n" + (transitions map { _.mkString(env.variables) }).mkString("\n") + "\n" +
     (regions map { _.mkString(env.variables) }).mkString("\n")
+
+  override def toString = name
+
 }

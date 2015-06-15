@@ -77,9 +77,9 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with NumericExp
         }
       }
 
-  private val prog: Parser[LTS] =
+  private def prog(name: String): Parser[LTS] =
     declarations ~> opt(template) ~> rep(location) ~ rep(transition) <~ literal("end") ^^ {
-      case ls ~ ts => LTS(ls.toIndexedSeq, ts, env)
+      case ls ~ ts => LTS(name, ls.toIndexedSeq, ts, env)
     }
 
   /**
@@ -87,7 +87,7 @@ class LPInvParser(val env: Environment) extends JavaTokenParsers with NumericExp
     * @param s the string containing the linear transition system
     * @return a ParseResult with the transition system parsed in the target LTS
     */
-  def parseProgram(s: String) = parseAll(prog, s)
+  def parseProgram(name: String, s: String) = parseAll(prog(name), s)
 }
 
 /** Factory for [[it.unich.jandom.parsers.LPInvParser]] instances. */

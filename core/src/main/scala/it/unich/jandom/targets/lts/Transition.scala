@@ -39,14 +39,16 @@ case class Transition(val name: String, val start: Location, val end: Location, 
 
   def mkString(vars: Seq[String]) = {
     "transition " + name + " " + start.name + " -> " + end.name + " with Guard( " +
-      (guard map { _.mkString(vars) }).mkString(", ") + " )\n" +	
+      (guard map { _.mkString(vars) }).mkString(", ") + " )\n" +
       assignments.mkString(vars).mkString(start = "  ", sep = "\n  ", end = "") + ";"
   }
 
-  override def toString = mkString(Stream.from(0).map { "v" + _ })
+  def mkString: String = mkString(Stream.from(0).map { "v" + _ })
 
   def analyze[Property <: NumericalProperty[Property]](input: Property): Property = {
     val filtered = (input /: guard) { (current, cond) => cond.analyze(current) }
     assignments.analyze(filtered)
   }
+
+  override def toString = name
 }

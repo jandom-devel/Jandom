@@ -43,7 +43,7 @@ class LPInvParserSuite extends FunSuite {
     val t2 = Transition("loop", l2, l2,
       guard = List(AtomicCond(LinearForm(-10, 1), ComparisonOperators.LTE)),
       assignments = NumericAssignment(0, LinearForm(1, 1)))
-    val lts = LTS(IndexedSeq(l1, l2), Seq(t1, t2), env)
+    val lts = LTS("example", IndexedSeq(l1, l2), Seq(t1, t2), env)
 
     val ltsString = """
 	  var x;
@@ -55,6 +55,6 @@ class LPInvParserSuite extends FunSuite {
 	    x := x+1;
 	  end
 	  """
-    assertResult(lts) { LPInvParser().parseProgram(ltsString).get }
+    assertResult(lts) { LPInvParser().parseProgram("example",ltsString).get }
   }
 }
