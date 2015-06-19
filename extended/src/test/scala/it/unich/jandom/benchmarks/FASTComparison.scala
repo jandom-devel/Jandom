@@ -19,55 +19,97 @@
 package it.unich.jandom.benchmarks
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
+import it.unich.jandom.domains.numerical.ppl.PPLDomain
 import it.unich.jandom.fixpoint.Driver._
+import it.unich.jandom.fixpoint.finite.PriorityWorkListSolver
 import it.unich.jandom.fixpoint.FixpointSolverListener.PerformanceListener
 import it.unich.jandom.fixpoint.structured.StructuredDriver
 import it.unich.jandom.utils.PMaps._
+
+import parma_polyhedra_library.C_Polyhedron
 
 /**
  * An example application which compares the precision of different analysis for Alice benchmarks.
  */
 object FASTComparison extends App with FASTLoader {
+  //val dom = PPLDomain[C_Polyhedron]
   val dom = BoxDoubleDomain()
 
-  var globaliter1, globaliter2, globalun, globaleq, globallt, globalgt = 0
-  for (lts <- ltss) {
-    println("----------------------------")
-    println(lts.name)
-    val eqs = lts.toEQS(dom)
-    
-    val l1 = new PerformanceListener 
-    val l2 = new PerformanceListener
-    val ann1 = StructuredDriver(dom)(eqs, (listener --> l1) +: PMap.empty)
-    val ann2 = StructuredDriver(dom)(eqs, (listener --> l2) +: (boxstrategy --> BoxStrategy.Mixed) +: (boxscope --> BoxScope.Localized) +: (solver --> Solver.PriorityWorkListSolver) +: PMap.empty)
-    var lt, eq, gt, un = 0
-    for (l <- lts.locations) {
-      val result = ann1(l) tryCompareTo ann2(l)
-      result match {
-        case None => un += 1
-        case Some(0) => eq += 1
-        case Some(x) if x < 0 => lt += 1
-        case Some(x) if x > 0 => gt += 1
-      }
-    }
-    globaliter1 += l1.evaluations
-    globaliter2 += l2.evaluations
-    globaleq += eq
-    globallt += lt
-    globalgt += gt
-    globalun += un
-    println(s"Iterations: ${l1.evaluations} vs ${l2.evaluations}")
-    println("Uncomparable: " + un)
-    println("Equal : " + eq)
-    println("First Better: " + lt)
-    println("Second Better: " + gt)
-  }  
+  //val delayedNarrowing = Narrowings.Delayed(Narrowings.Intersection, 2, Narrowings.Default)
+  val anarrowing = Narrowings.Default
+  val box = Updates.Combine(Widenings.Default, anarrowing)
+  val basebox = (boxstrategy --> BoxStrategy.Mixed) +: (update --> box) +: (solver --> Solver.PriorityWorkListSolver) +: (narrowing --> anarrowing) +: PMap.empty
 
-  // for comparison, the old solver integrated in the LTS class has 1170 evaluations for worklist based analysis and 1706 evaluations for Kleene.
-  println("\nGlobalInfo -------------- ")
-  println(s"Iterations: ${globaliter1} vs ${globaliter2}")
-  println("Uncomparable: " + globalun)
-  println("Equal : " + globaleq)
-  println("First Better: " + globallt)
-  println("Second Better: " + globalgt)
+  val parameters = Seq(
+    ("standard", (narrowing --> anarrowing) +: PMap.empty),
+    ("localized", (narrowing --> anarrowing) +: (boxscope --> BoxScope.Localized) +: PMap.empty),
+    ("mixed", basebox),
+    ("mixed localized", (boxscope --> BoxScope.Localized) +: basebox),
+    ("mixed localized restart", (boxscope --> BoxScope.Localized) +: (restartstrategy --> true) +: basebox))
+
+  val results = (for (lts <- ltss; eqs = lts.toEQS(dom); (name, p) <- parameters) yield {
+    val l = new PerformanceListener
+    val param = (listener --> l) +: p
+    ((lts, name), (StructuredDriver(dom)(eqs, param), l.evaluations))
+  }).toMap
+
+  for ((name, _) <- parameters) {
+    var numiters = 0
+    for (l <- ltss) numiters += results((l, name))._2
+    println(s"solver ${name} iterations ${numiters}")
+  }
+
+  for (i <- 0 until parameters.size; j <- i + 1 until parameters.size) {
+    val name1 = parameters(i)._1
+    val name2 = parameters(j)._1
+    var globalun, globaleq, globallt, globalgt = 0
+    for (lts <- ltss) {
+      var lt, eq, gt, un = 0
+      val ann1 = results((lts, name1))._1
+      val ann2 = results((lts, name2))._1
+      for (l <- lts.locations) {
+        val result = ann1(l) tryCompareTo ann2(l)
+        result match {
+          case None =>
+            un += 1
+          //println(s"location ${l}: ${ann1(l)} vs ${ann2(l)}")
+          case Some(0) => eq += 1
+          case Some(x) if x < 0 =>
+            lt += 1
+          //println(s"location ${l}: ${ann1(l)} vs ${ann2(l)}")
+          case Some(x) if x > 0 =>
+            gt += 1
+          //println(s"location ${l}: ${ann1(l)} vs ${ann2(l)}")
+        }
+      }
+      /*
+      println(s"${name1} vs ${name2} for ${lts.name}")
+      println("Uncomparable: " + un)
+      println("Equal : " + eq)
+      println("First Better: " + lt)
+      println("Second Better: " + gt)
+      */
+      globaleq += eq
+      globallt += lt
+      globalgt += gt
+      globalun += un
+    }
+    // for comparison, the old solver integrated in the LTS class has 1170 evaluations for worklist based analysis and 1706 evaluations for Kleene.
+    println(s"\n-------------------")
+    println(s"${name1} vs ${name2}")
+    println("Uncomparable: " + globalun)
+    println("Equal : " + globaleq)
+    println("First Better: " + globallt)
+    println("Second Better: " + globalgt)
+  }
+
+  for (lts <- ltss; if lts.name.indexOf("amato") >= 0) {
+    println(lts.name)
+    for ((name, _) <- parameters) {
+      print(s"Solver ${name} -> ")
+      val result = results((lts, name))
+      for (l <- lts.locations) print(s"${l} : ${result._1(l)} ")
+      println("")
+    }
+  }
 }
