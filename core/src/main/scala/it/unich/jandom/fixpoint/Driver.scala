@@ -48,6 +48,7 @@ object Driver {
   val boxlocation = Parameter[BoxLocation.BoxLocation](BoxLocation.Loop)
   val boxscope = Parameter[BoxScope.Value](BoxScope.Standard)
   val boxstrategy = Parameter[BoxStrategy.Value](BoxStrategy.TwoPhases)
+  val restartstrategy = Parameter[Boolean](false)
   val listener = Parameter[FixpointSolverListener[Any, Any]](FixpointSolverListener.EmptyListener)
 
   /**
@@ -133,10 +134,12 @@ object Driver {
      * Only apply widening.
      */
     val OnlyWidening = Value
+
     /**
      * Standard two pass widening/narrowing iteration.
      */
     val TwoPhases = Value
+
     /**
      * Single pass with a mixed box.
      */

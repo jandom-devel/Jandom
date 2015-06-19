@@ -32,15 +32,17 @@ object FiniteDriver extends Driver {
    * @param start the start assignment from where to start the computation
    * @param ordering the ordering on unknowns to use. When solver is `HierarchicalOrderingSolver`, the order should be
    * a `HierarchicalOrdering`.
+   * @param restart at each iteration it is applied to the new and old values. If it returns true, the analysis of
+   * lower priority unknowns is restarted.
    * @param p other parameters provided trough a PMap
    */
-  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, ordering: Option[Ordering[U]], p: PNil) = {
+  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, ordering: Option[Ordering[U]], restart: (V,V) => Boolean = { (x: V, y: V) => false }, p: PNil) = {
     val listener = p(Driver.listener)
     p(solver) match {
       case Solver.RoundRobinSolver => RoundRobinSolver(eqs,start,listener)
       case Solver.KleeneSolver => KleeneSolver(eqs,start,listener)
       case Solver.WorkListSolver => WorkListSolver(eqs,start,listener)
-      case Solver.PriorityWorkListSolver => PriorityWorkListSolver(eqs, start, ordering.get,listener)
+      case Solver.PriorityWorkListSolver => PriorityWorkListSolver(eqs, start, ordering.get, restart, listener)
       case Solver.HierarchicalOrderingSolver =>
         ordering.get match {
           case ho: HierarchicalOrdering[U] => HierarchicalOrderingSolver(eqs, start, ho,listener)

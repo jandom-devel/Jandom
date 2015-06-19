@@ -163,13 +163,14 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
    * @param eqs the equation system to solve
    * @param p parameters passed through a PMap
    */
-  def apply[U, E](dom: AbstractDomain)(eqs: LayeredEquationSystem[U, dom.Property, E],  p: PNil): U => dom.Property = {
+  def apply[U, E](dom: AbstractDomain)(eqs: LayeredEquationSystem[U, dom.Property, E], p: PNil): U => dom.Property = {
     type V = dom.Property
 
     val solver = p(Driver.solver)
     val boxlocation = p(Driver.boxlocation)
     val boxstrategy = p(Driver.boxstrategy)
     val boxscope = p(Driver.boxscope)
+    val restartstrategy = p(Driver.restartstrategy)
 
     val ordering1: Option[GraphOrdering[U]] = (solver, boxscope) match {
       case (Solver.HierarchicalOrderingSolver, _) =>
@@ -187,22 +188,26 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
         ordering1 orElse Some(DFOrdering(eqs.infl, eqs.inputUnknowns))
     }
 
+    val restart: (dom.Property, dom.Property) => Boolean =
+      if (restartstrategy) { (x, y) => x < y }
+      else { (x, y) => false }
+
     boxstrategy match {
       case BoxStrategy.OnlyWidening =>
-        val widening = boxFilter[U,V](eqs, wideningDefine(p(Driver.widening)), boxlocation, ordering)
+        val widening = boxFilter[U, V](eqs, wideningDefine(p(Driver.widening)), boxlocation, ordering)
         val withWidening = boxApply(eqs, widening, boxscope, ordering, true)
-        FiniteDriver(withWidening, eqs.initial, ordering, p)
+        FiniteDriver(withWidening, eqs.initial, ordering, restart, p)
       case BoxStrategy.TwoPhases =>
-        val widening = boxFilter[U,V](eqs, wideningDefine(p(Driver.widening)), boxlocation, ordering)
+        val widening = boxFilter[U, V](eqs, wideningDefine(p(Driver.widening)), boxlocation, ordering)
         val withWidening = boxApply(eqs, widening, boxscope, ordering, true)
-        val ascendingAssignment = FiniteDriver(withWidening, eqs.initial, ordering, p)
-        val narrowing = boxFilter[U,V](eqs, narrowingDefine(p(Driver.narrowing)), boxlocation, ordering)
+        val ascendingAssignment = FiniteDriver(withWidening, eqs.initial, ordering, restart, p)
+        val narrowing = boxFilter[U, V](eqs, narrowingDefine(p(Driver.narrowing)), boxlocation, ordering)
         val withNarrowing = boxApply(eqs, narrowing, boxscope, ordering, true)
-        FiniteDriver(withNarrowing, ascendingAssignment, ordering, p)
+        FiniteDriver(withNarrowing, ascendingAssignment, ordering, restart, p)
       case BoxStrategy.Mixed =>
-        val update = boxFilter[U,V](eqs, updateDefine(p(Driver.update)), boxlocation, ordering)
+        val update = boxFilter[U, V](eqs, updateDefine(p(Driver.update)), boxlocation, ordering)
         val withUpdate = boxApply(eqs, update, boxscope, ordering, false)
-        FiniteDriver(withUpdate, eqs.initial, ordering, p)
+        FiniteDriver(withUpdate, eqs.initial, ordering, restart, p)
     }
   }
 }

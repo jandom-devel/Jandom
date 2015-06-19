@@ -24,14 +24,17 @@ import it.unich.jandom.fixpoint._
  * A fixpoint solver based on priority worklists.
  */
 object PriorityWorkListSolver extends FixpointSolver {
+
   /**
    * It solves a finite equation system by using a worklist based method with priorities.
    * @param eqs the equation system to solve.
    * @param start the initial assignment.
    * @param ordering an ordering which specified priorities between unknowns.
-   * @param litener the listener whose callbacks are called for debugging and tracing.
+   * @param restart at each iteration this function it is applied to the new and old values. If it returns true, the analysis of bigger unknown is
+   * restarted from the initial value.
+   * @param listener the listener whose callbacks are called for debugging and tracing.
    */
-  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, ordering: Ordering[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = {
+  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, ordering: Ordering[U], restart: (V,V) => Boolean = { (x: V, y: V) => false }, listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = {
     val current = (collection.mutable.HashMap.empty[U, V]).withDefault(start)
     listener.initialized(current)
     var workList = scala.collection.mutable.PriorityQueue.empty[U](ordering)
@@ -40,10 +43,15 @@ object PriorityWorkListSolver extends FixpointSolver {
       val x = workList.dequeue()
       val newval = eqs.body(current)(x)
       listener.evaluated(current, x, newval)
-      if (newval != current(x)) {
+      val oldval = current(x)
+      if (restart(newval, oldval))
+        for (y <- eqs.unknowns; if ordering.gt(y,x))
+          current(y) = start(y)
+      if (newval != oldval) {
         current(x) = newval
         workList ++= eqs.infl.image(x)
       }
+
     }
     current
   }
