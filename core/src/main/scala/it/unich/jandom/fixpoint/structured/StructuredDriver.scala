@@ -67,9 +67,10 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
       case Widenings.Union => { _ => unionWidening }
       case Widenings.None => { _ => Box.right[V] }
       case Widenings.Delayed(first, delay, next) =>
+        val hash = collection.mutable.Map.empty[Any, Box[V]]
         val widening1 = wideningDefine[V](first)
         val widening2 = wideningDefine[V](next)
-        val widening = { x: Any => Box.cascade(widening1(x), delay, widening2(x)) }
+        val widening = { (x: Any) => hash.getOrElseUpdate(x, Box.cascade(widening1(x), delay, widening2(x))) }
         widening
     }
   }
@@ -85,9 +86,10 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
       case Narrowings.Stop => { _ => Box.left[V] }
       case Narrowings.None => { _ => Box.right[V] }
       case Narrowings.Delayed(first, delay, next) =>
+        val hash = collection.mutable.Map.empty[Any, Box[V]]
         val narrowing1 = narrowingDefine[V](first)
         val narrowing2 = narrowingDefine[V](next)
-        val narrowing = { (x: Any) => Box.cascade(narrowing1(x), delay, narrowing2(x)) }
+        val narrowing = { (x: Any) => hash.getOrElseUpdate(x, Box.cascade(narrowing1(x), delay, narrowing2(x))) }
         narrowing
     }
   }
