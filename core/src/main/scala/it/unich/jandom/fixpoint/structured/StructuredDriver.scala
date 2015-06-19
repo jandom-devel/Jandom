@@ -26,6 +26,7 @@ import it.unich.jandom.fixpoint.FixpointSolverListener.EmptyListener
 import it.unich.jandom.fixpoint.finite._
 import it.unich.jandom.utils.IterableFunction
 import it.unich.jandom.utils.PMaps._
+import it.unich.jandom.utils.Relation
 
 /**
  * This driver is an interface for solvers of layered equation systems.
@@ -151,13 +152,46 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
    * @param scope an input parameters which determines how we want to apply boxes (such as localized or standard)
    * @param ordering an optional ordering on unknowns to be used for localized boxes.
    */
-  private def boxApply[U, V, E](eqs: LayeredEquationSystem[U, V, E], boxes: IterableFunction[U, Box[V]], scope: BoxScope.Value, ordering: Option[Ordering[U]], idempotent: Boolean): FiniteEquationSystem[U, V] = {
+  private def boxApply[U, V <: AbstractProperty[V], E](eqs: LayeredEquationSystem[U, V, E], boxes: IterableFunction[U, Box[V]], scope: BoxScope.Value, ordering: Option[Ordering[U]], idempotent: Boolean): FiniteEquationSystem[U, V] = {
     if (boxes.isEmpty)
       eqs
     else scope match {
       case BoxScope.Standard => eqs.withBoxes(boxes, idempotent)
       case BoxScope.Localized => eqs.withLocalizedBoxes(boxes, ordering.get, idempotent)
     }
+  }
+
+  def addLocalizedBoxes[U, V <: AbstractProperty[V], E](eqs: LayeredEquationSystem[U, V, E], widening: PartialFunction[U, Box[V]], narrowing: PartialFunction[U, Box[V]], ordering: Ordering[U], boxesAreIdempotent: Boolean): FiniteEquationSystem[U, V] = {
+    val ingoing = eqs.targets.inverse
+    val newbody = { (rho: U => V) =>
+      (x: U) =>
+        val contributions = for (e <- ingoing.image(x)) yield {
+          val contrib = eqs.edgeBody(e)(rho)(x)
+          val boxapply = widening.isDefinedAt(x) && eqs.sources.image(e).exists { ordering.lteq(x, _) } && !(contrib <= rho(x))
+          (contrib, boxapply)
+        }
+        // if contribution is empty the unknown x has no right hand side... it seems
+        // reasonable to return the old value.
+        if (contributions.isEmpty)
+          rho(x)
+        else {
+          val result = contributions reduce { (x: (V, Boolean), y: (V, Boolean)) => (eqs.combine(x._1, y._1), x._2 || y._2) }
+          //println((x, rho(x), contributions))
+          if (widening.isDefinedAt(x)) {
+            if (result._2) {
+              widening(x)(rho(x), result._1)
+            } else
+              if (result._1 < rho(x)) narrowing(x)(rho(x), result._1) else result._1
+          } else
+            result._1
+        }
+    }
+    FiniteEquationSystem(
+      body = newbody,
+      inputUnknowns = eqs.inputUnknowns,
+      unknowns = eqs.unknowns,
+      infl = if (boxesAreIdempotent) eqs.infl else eqs.infl union Relation(eqs.unknowns.toSet, { (u: U) => Set(u) }),
+      initial = eqs.initial)
   }
 
   /**
@@ -208,9 +242,25 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
         val withNarrowing = boxApply(eqs, narrowing, BoxScope.Standard, ordering, true)
         FiniteDriver(withNarrowing, ascendingAssignment, ordering, restart, p)
       case BoxStrategy.Mixed =>
-        val update = boxFilter[U, V](eqs, updateDefine(p(Driver.update)), boxlocation, ordering)
-        val withUpdate = boxApply(eqs, update, boxscope, ordering, false)
-        FiniteDriver(withUpdate, eqs.initial, ordering, restart, p)
+        if (boxscope == BoxScope.Localized) {
+           val widening = boxFilter[U, V](eqs, wideningDefine(p(Driver.widening)), boxlocation, ordering)
+           val narrowing = boxFilter[U, V](eqs, narrowingDefine(p(Driver.narrowing)), boxlocation, ordering)
+           val withUpdate = addLocalizedBoxes(eqs, widening, narrowing, ordering.get, false)
+          FiniteDriver(withUpdate, eqs.initial, ordering, restart, p)
+
+/*          val updatedef1 = updateDefine[dom.Property](Updates.Combine(p(Driver.widening), Narrowings.None))
+          val update1 = boxFilter[U, V](eqs, updatedef1, boxlocation, ordering)
+          val withUpdate1 = eqs.withLocalizedBoxes(update1, ordering.get, true)
+          val updatedef2 = updateDefine[dom.Property](Updates.Combine(Widenings.None, p(Driver.narrowing)))
+          val update2 = boxFilter[U, V](withUpdate1, updatedef2, boxlocation, ordering)
+          val withUpdate2 = withUpdate1.withBoxes(update2, false)
+          FiniteDriver(withUpdate2, eqs.initial, ordering, restart, p)
+  */      } else {
+          val update = boxFilter[U, V](eqs, updateDefine(p(Driver.update)), boxlocation, ordering)
+          // the mixed operator has no sense at the localized level
+          val withUpdate = boxApply(eqs, update, boxscope, ordering, false)
+          FiniteDriver(withUpdate, eqs.initial, ordering, restart, p)
+        }
     }
   }
 }
