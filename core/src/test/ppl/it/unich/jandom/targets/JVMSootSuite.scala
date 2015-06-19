@@ -44,20 +44,20 @@ class JVMSootSuite extends FunSuite with SootTests {
 
   val numdomain = PPLDomain[C_Polyhedron]()
 
-  bafTests()
+ // bafTests()
   jimpleNumTests()
-  jimpleInterProceduralNumTests()
-  jimplePairSharingTests()
-  jimpleInterProceduralPSTests()
+ // jimpleInterProceduralNumTests()
+ // jimplePairSharingTests()
+ // jimpleInterProceduralPSTests()
 
   def bafTests() {
     val bafTests = Seq(
-      "sequential" -> "i2 == 10",
-      "conditional" -> "z0 == 1",
+      "sequential" -> "i2 == 10 && i0==i0 && i1==i1",
+      "conditional" -> "z0 == 1 && z1==z1 && z2==z2 && z3==z3",
       "loop" -> "i0 >= 10 && i0 <= 11",
       "nested" -> "i0 >= i1 - 1 && i1 >= 10 && i1 <= 11 && i2==i2",
-      "longassignment" -> "i0 >= 0 && i1 >= 10 && i2==i2",
-      "topologicalorder" -> "b0 >= 3 && b0<=4")
+      "longassignment" -> "i0 >= 0 && i1 >= 10 && i2==i2 && i3==i3 && i4==i4",
+      "topologicalorder" -> "b0 >= 3 && b0<=4 && b1 == b1 && b2==b2")
 
     val params = new Parameters[BafMethod] {
       val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
@@ -72,7 +72,8 @@ class JVMSootSuite extends FunSuite with SootTests {
           val env = Environment()
           val parser = new NumericalPropertyParser(env)
           val prop = parser.parseProperty(propString, params.domain.numdom).get
-          assert(ann(method.lastPP.get).prop === prop)
+          val lastAnn =  ann(method.lastPP.get).prop
+          assert(lastAnn === prop)
         } finally {
           params.debugWriter.flush()
         }
@@ -82,7 +83,7 @@ class JVMSootSuite extends FunSuite with SootTests {
 
   def jimpleNumTests() {
     val jimpleNumericalTests = Seq(
-      "sequential" ->
+/*      "sequential" ->
         Seq(None -> false -> "v0 == 0 && v1 == 10 && v2 == 10"),
       "conditional" ->
         Seq(None -> false -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3"),
@@ -94,11 +95,12 @@ class JVMSootSuite extends FunSuite with SootTests {
         Seq(None -> false -> "11*v0 - 33*v1 >= -63 && v1 >=10 && v2 == v2 && v3 == v3 && v4 == v4"),
       "topologicalorder" ->
         Seq(None -> false -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4"),
-      "parametric_static" -> Seq(
-        None -> false -> "i0 + i1 - i2 == 0",
+*/      "parametric_static" -> Seq(
+        None -> false -> "i0==i0 && i1==i1 && i2==i2 && i3==i3 && i0 + i1 - i4 == 8 && i0==i2 && i1==i3",
         None -> true -> "i0 + i1 - i2 == 0  && p0 == i0 && p1 == i1",
         Some("i0 == 0 && i1==i1 && i2==i2") -> false -> "i0==0 && i1 - i2 == 0",
-        Some("i0 == 0 && i1==i1 && i2==i2") -> true -> "i0==0 && i1 - i2 == 0 && p0 == i0 && p1 == i1"),
+        Some("i0 == 0 && i1==i1 && i2==i2") -> true -> "i0==0 && i1 - i2 == 0 && p0 == i0 && p1 == i1"
+        ),
       "parametric_dynamic" ->
         Seq(None -> false -> "r0==r0 && i0 + i1 - i2 == 0 && i3==i3"),
       "parametric_caller" ->
@@ -123,7 +125,10 @@ class JVMSootSuite extends FunSuite with SootTests {
               method.analyzeFromInput(params)(params.domain(prop, IntType.v()))
           }
           val prop = parser.parseProperty(propString, params.domain.numdom).get
-          assert(ann(method.lastPP.get).prop === prop)
+          val lastAnn =  ann(method.lastPP.get).prop
+          val n1= prop.dimension
+          val n2= lastAnn.dimension
+          assert(lastAnn === prop)
         } finally {
           params.debugWriter.flush()
         }
