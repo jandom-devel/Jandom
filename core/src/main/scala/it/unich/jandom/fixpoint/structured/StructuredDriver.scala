@@ -204,7 +204,8 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
         val withWidening = boxApply(eqs, widening, boxscope, ordering, true)
         val ascendingAssignment = FiniteDriver(withWidening, eqs.initial, ordering, restart, p)
         val narrowing = boxFilter[U, V](eqs, narrowingDefine(p(Driver.narrowing)), boxlocation, ordering)
-        val withNarrowing = boxApply(eqs, narrowing, boxscope, ordering, true)
+        // localizing narrowing does not seem useful
+        val withNarrowing = boxApply(eqs, narrowing, BoxScope.Standard, ordering, true)
         FiniteDriver(withNarrowing, ascendingAssignment, ordering, restart, p)
       case BoxStrategy.Mixed =>
         val update = boxFilter[U, V](eqs, updateDefine(p(Driver.update)), boxlocation, ordering)
