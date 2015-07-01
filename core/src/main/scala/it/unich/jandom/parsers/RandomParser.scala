@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -29,6 +29,7 @@ import it.unich.jandom.targets.slil._
  * Parser for Random programs.
  * @param env the environment for the parser.
  * @author Gianluca Amato <gamato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
  *
  */
 class RandomParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
@@ -48,6 +49,8 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with NumericEx
   private val variableFollow = not("""[\[(]""".r) // follow a valid variable
   
   val variable: Parser[Int] = ident <~ variableFollow  ^^ { env.getBindingOrAdd(_) }
+  
+  val parameterVariable: Parser[Int] = "@" ~> ident <~ variableFollow  ^^ { env.getBindingOrAdd(_) }
   
   private val atom =
     ( wholeNumber | 

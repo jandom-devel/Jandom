@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import soot.toolkits.graph._
  * based on the generic analyzer for control flow graphs.
  * @param method the method we want to analyze
  * @author Gianluca Amato <gamato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
  */
 class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](method) {
   import scala.collection.JavaConversions._
@@ -234,7 +235,8 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
 
     var exits = Seq[params.Property]()
     var currprop = initprop
-    for (unit <- node.iterator()) unit match {
+    for (unit <- node.iterator()) 
+      unit match {
       case unit: AssignStmt =>
         val expr = analyzeExpr(unit.getRightOp(), currprop)
         unit.getLeftOp() match {
@@ -246,8 +248,32 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
         }
       case unit: BreakpointStmt =>
         throw new UnsupportedSootUnitException(unit)
-      case unit: IdentityStmt =>
-      // ignore this instruction...
+      case unit: IdentityStmt => {
+        unit.getRightOp() match {
+          case v: ParameterRef =>
+                // we assume that the ordering is: @this, @parameter0, parameter1, ... 
+              val expr = currprop.evalLocal(v.getIndex+ (if (method.isStatic()) 0 else 1 ))
+              unit.getLeftOp() match {
+                case local: Local =>
+                currprop = expr.assignLocal(localMap(local))
+                case field: InstanceFieldRef =>
+                val local = field.getBase().asInstanceOf[Local]
+                currprop = expr.assignField(localMap(local), field.getField())
+          }   
+          case v: ThisRef =>
+                // we assume that @this is in position 0
+              val expr = currprop.evalLocal(0) 
+              unit.getLeftOp() match {
+                case local: Local =>
+                currprop = expr.assignLocal(localMap(local))
+                case field: InstanceFieldRef =>
+                val local = field.getBase().asInstanceOf[Local]
+                currprop = expr.assignField(localMap(local), field.getField())
+          }             
+          case _ =>
+            throw new UnsupportedSootUnitException(unit)
+        }
+      }
       case unit: EnterMonitorStmt =>
         unit.getOp() match {
           case local: Local =>

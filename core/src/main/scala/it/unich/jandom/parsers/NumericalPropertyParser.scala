@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2014, 2015 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2014, 2015 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -27,6 +27,7 @@ import it.unich.jandom.targets.Environment
  * A parser for numerical properties.
  * @param env environment to use for parsing the property.
  * @author Gianluca Amato <gamato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
  *
  */
 class NumericalPropertyParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser with VariableParser {

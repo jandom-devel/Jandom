@@ -23,12 +23,13 @@ import it.unich.jandom.domains.objects.UP
 import it.unich.jandom.targets.Environment
 
 /**
- * A parser for pair sharing properties. It parses strings of ther form 
+ * A parser for pair sharing properties. It parses strings of the form 
  * "{ ( v1, v2 ), ( v3, v4 ), ... }" where v1, v2, etc.. are variable names.
  * @param varNames the name of variables
  */
 class PairSharingParser(val env: Environment) extends RegexParsers with VariableParser {  
-  private val pair = ("(" ~> variable <~ ",") ~ variable <~ ")" ^^ { case x ~ y => new UP(x, y) }
+  private val jimpleVariable = variable | "@" ~> parameterVariable
+  private val pair = ("(" ~> jimpleVariable <~ ",") ~ jimpleVariable <~ ")" ^^ { case x ~ y => new UP(x, y) }
   private val sequence = "{" ~> repsep(pair, ",") <~ "}"
   
   /**

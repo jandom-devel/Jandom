@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -32,17 +32,20 @@ import soot.toolkits.graph.PseudoTopologicalOrderer
 
 /**
  * This class is an ancestor for all the analyzers of JVM methods using the Soot library.
- * @tparam Node the type of the nodes for the control flow graph.
  * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
+ * @tparam Node the type of the nodes for the control flow graph.
  * @param method the method we want to analyze
  * @author Gianluca Amato <gamato@unich.it>
- */
+ * @author Francesca Scozzari <fscozzari@unich.it>
+ * */
 abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: SootMethod) extends ControlFlowGraph[Tgt, Node] {
   import scala.collection.JavaConversions._
-
+  
   type DomainBase = SootFrameDomain
 
   val body: Body
+  
+  // local variables of the method. 
   def locals = body.getLocals().toIndexedSeq
 
   // These are lazy values since body is not initialized when they are executed
@@ -52,38 +55,34 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     val order = new PseudoTopologicalOrderer[Node].newList(graph, false).zipWithIndex.toMap
     def compare(x: Node, y: Node) = order(x) - order(y)
   }
-  lazy val localMap = locals.zipWithIndex.toMap
-
+  lazy val localMap = locals.zipWithIndex.map{case (l,i) => (l,i+inputTypes.length)}.toMap
+  
   /**
-   * Returns the sequence of types to be returned by every interpretation of this CFG
+   * Returns the sequence of types required as input for every interpretation of this CFG
    */
   def inputTypes = SootCFG.inputTypes(method)
 
   /**
-   * Returns the sequence of types required as input for every interpretation of this CFG
+   * Returns the sequence of types to be returned by every interpretation of this CFG
    */
   def outputTypes = SootCFG.outputTypes(method)
 
   /**
    * This is the sequence of types of the frame in intra-procedural analysis
    */
-  def localTypes(params: Parameters) = (locals map { _.getType() }) ++ (if (params.io) inputTypes else Seq())
+  def localTypes(params: Parameters) = (if (params.io) inputTypes else Seq()) ++ (locals map { _.getType() }) 
 
   /**
    * @inheritdoc
-   * At the moment, I am assuming that the first locals are exactly the parameters
-   * of the method. It essentially expands the input property adding new variables
-   * until exhausting locals. If the input/output analysis is active, it duplicates the
-   * input parameters.
+   * It expands the input property adding new variables until exhausting locals.
    */
-  protected def adaptProperty(params: Parameters)(input: params.Property): params.Property = {
+  protected def expandPropertyWithLocalVariables(params: Parameters)(input: params.Property): params.Property = {
     assert(input.dimension <= body.getLocalCount(), s"Actual parameters <${input}> to method ${method} are more than the formal parameters")
     var currprop = input
-    for (i <- input.dimension until body.getLocalCount()) currprop = currprop.evalUnknown(locals(i).getType())
-    if (params.io) {
-      for (i <- 0 until SootCFG.inputTypes(method).size) currprop = currprop.evalLocal(i)
-    }
-    currprop
+    
+    for (i <- 0 until body.getLocalCount()) 
+      currprop = currprop.evalUnknown(locals(i).getType())
+      currprop
   }
 
   /**
@@ -92,27 +91,49 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
    * the semantics of the method.
    */
   override def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
-    val tmp = super.extractOutput(params)(ann)
-    if (params.io)
-      tmp.extract(SootCFG.outputTypes(method).size)
+    // first we put the result of the method in the last dimension  
+    val annWithReturnValue = super.extractOutput(params)(ann)
+    if (params.io) {
+      // we remove the copy of the parameters (local variables)
+      method.getReturnType match {
+//      case _:VoidType => annWithReturnValue.extract(SootCFG.outputTypes(method).size)
+//      case _:VoidType => annWithReturnValue.restrict(SootCFG.outputTypes(method).size)
+      case _:VoidType => annWithReturnValue.delVariables(SootCFG.inputTypes(method).size until annWithReturnValue.dimension)
+      case _ =>  annWithReturnValue.delVariables(SootCFG.inputTypes(method).size until annWithReturnValue.dimension-1)
+     }
+    }
     else
-      throw new IllegalArgumentException("Only supported with I/O semantics")
+      // for intra-procedural analysis we return all the local variables plus the returned value in the last position
+      annWithReturnValue
+      //throw new IllegalArgumentException("Only supported with I/O semantics")
   }
 
   protected def topProperty(node: Node, params: Parameters): params.Property = {
-    val inputParams = SootCFG.inputTypes(method)
-    adaptProperty(params)(params.domain.top(inputParams))
+    if (params.io) {
+      expandPropertyWithLocalVariables(params)(params.domain.top(inputTypes))
+    } else {
+      params.domain.top(method.getActiveBody.getLocals.toSeq map { (l) => l.getType})
+    }
   }
 
-  def formatProperty(params: Parameters)(prop: params.Property) = {
-    val localNames = locals map { _.getName() }
-    val parameterNames = if (params.io) (for (i <- 0 until method.getParameterCount()) yield "@p" + i) else Seq()
-    val stackPositions = prop.dimension - body.getLocalCount() - (if (params.io) method.getParameterCount() else 0)
-    val stackNames = for (i <- 0 until stackPositions) yield "#s" + i
-    val names = localNames ++ parameterNames ++ stackNames
-    prop.mkString(names)
+  def formatProperty(params: Parameters, lastPP: Boolean=false)(prop: params.Property) = {
+    val localNames =  locals map { _.getName() }         
+      // we denote by "@return" the return value of the method
+    val returnValue = if(method.getReturnType() != VoidType.v()) Seq("@return") else Seq()
+    val thisVariable = if (!method.isStatic()) Seq("@this") else Seq()  
+    val parameterNames = for (i <- 0 until method.getParameterCount()) yield "@parameter" + i 
+      //val stackPositions = prop.dimension - body.getLocalCount() - (if (params.io) method.getParameterCount() else 0)
+      //val stackNames = for (i <- 0 until stackPositions) yield "#s" + i
+    if(params.io) {
+      if(lastPP) 
+        prop.mkString(thisVariable ++ parameterNames ++ returnValue)
+      //prop.mkString(thisVariable ++ parameterNames ++ localNames ++ stackNames ++ returnValue)
+      else  
+        prop.mkString(thisVariable ++ parameterNames ++ localNames)
+    } else {
+      prop.mkString(localNames ++ returnValue)
+    }
   }
-
   /**
    * Output the program intertwined with the given annotation. It uses the tag system of
    * Soot, but the result is manipulated heavily since we want tags to be printed before
@@ -150,8 +171,12 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     for ((node, prop) <- ann; unit = node.getHead; if unit != null)
       unit.removeAllTags()
 
+    // in the last program point we also show the return value (@return)  
     val outLine = if (ann contains lastPP.get) {
-      "/* Output: " + formatProperty(params)(ann(lastPP.get)) + " */\n"
+      if(params.io)
+        "/* Output: " + formatProperty(params,true)(extractOutput(params)(ann)) + " */\n"
+      else
+        "/* Output: " + formatProperty(params,true)(ann(lastPP.get)) + " */\n"    
     } else
       ""
     lines.mkString("", "\n", "\n") + outLine
@@ -171,6 +196,10 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
 object SootCFG {
   /**
    * Returns the sequence of types to be returned by every interpretation of a SootMethod
+   * The sequence of variable types is:
+   *  - type of @this (only if the method is not static)
+   *  - types of parameters @parameter0, @parameter1, ... 
+   *  - type of return value (only if the return type is not void)
    */
   def outputTypes(method: SootMethod) = {
     import scala.collection.JavaConversions._
@@ -184,15 +213,18 @@ object SootCFG {
 
   /**
    * Returns the sequence of types required as input for a SootMethod
+   * The sequence of variable types is:
+   *  - type of @this (only if the method is not static)
+   *  - types of parameters @parameter0, @parameter1, ... 
    */
   def inputTypes(method: SootMethod) = {
     import scala.collection.JavaConversions._
-    val parameterTypes = method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]]
-    val thisTypes =
+    val thisType =
       if (method.isStatic())
         Seq()
       else
         Seq(method.getDeclaringClass().getType())
-    thisTypes ++ parameterTypes
+    val parameterTypes = method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]]
+    thisType ++ parameterTypes
   }
 }

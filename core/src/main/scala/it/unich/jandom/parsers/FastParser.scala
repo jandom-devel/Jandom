@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -32,7 +32,8 @@ import it.unich.jandom.targets.NumericAssignmentMultiple
 /**
  * Parser for transition systems as they appear in the Fast analyzer.
  * @author Gianluca Amato <gamato@unich.it>
- */
+ * @author Francesca Scozzari <fscozzari@unich.it>
+ * */
 class FastParser extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
   private val env: Environment = new Environment()
   
@@ -45,7 +46,11 @@ class FastParser extends JavaTokenParsers with NumericExpressionParser with Nume
 
   protected val variable: Parser[Int] =
     ident ^^ { env(_) }
-  
+
+  // this is for compatibility only with the Random parser
+  protected val parameterVariable: Parser[Int] =
+    "@" ~> ident ^^ { env(_) }
+
   private val var_declaration: Parser[Int] =
     ident ^^ { case v => env.addBinding(v) }
 

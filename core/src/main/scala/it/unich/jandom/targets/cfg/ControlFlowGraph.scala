@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -32,6 +32,7 @@ import soot.util.Chain
  * @tparam Node the type of the nodes for the control flow graph.
  * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
  * @author Gianluca Amato <gamato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
  */
 abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extends Target[Tgt] {
   import scala.collection.JavaConversions._
@@ -69,14 +70,14 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    * a tail block. In particular, we are assuming that the last result of analyzeBlock is the "output"
    * of the CFG, so be careful to preserve this property.
    */
-  def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property =
+  def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
     graph.getTails map { (node) => analyzeBlock(params)(node, ann(node)).last } reduce { _ union _ }
-
+  }
   /**
    * This method adapt an input property (expressed typically only in terms of the input
    * parameters) in a new property with additional information needed to carry on the analysis.
    */
-  protected def adaptProperty(params: Parameters)(input: params.Property): params.Property
+  protected def expandPropertyWithLocalVariables(params: Parameters)(input: params.Property): params.Property
 
   /**
    * This method returns the top property for a given node in the CFG
@@ -105,7 +106,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    */
   def analyzeFromInput(params: Parameters)(input: params.Property): Annotation[ProgramPoint, params.Property] = {
     val ann = getAnnotation[params.Property]
-    for (node <- graph.getHeads()) ann(node) = adaptProperty(params)(input)
+    for (node <- graph.getHeads()) ann(node) = expandPropertyWithLocalVariables(params)(input)
     analyzeFromAnnotation(params)(ann)
   }
 
