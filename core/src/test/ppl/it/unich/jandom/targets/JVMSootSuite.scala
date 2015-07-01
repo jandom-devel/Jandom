@@ -44,11 +44,11 @@ class JVMSootSuite extends FunSuite with SootTests {
 
   val numdomain = PPLDomain[C_Polyhedron]()
 
- // bafTests()
+  bafTests()
   jimpleNumTests()
- // jimpleInterProceduralNumTests()
- // jimplePairSharingTests()
- // jimpleInterProceduralPSTests()
+  jimpleInterProceduralNumTests()
+  jimplePairSharingTests()
+  jimpleInterProceduralPSTests()
 
   def bafTests() {
     val bafTests = Seq(
@@ -83,7 +83,7 @@ class JVMSootSuite extends FunSuite with SootTests {
 
   def jimpleNumTests() {
     val jimpleNumericalTests = Seq(
-/*      "sequential" ->
+      "sequential" ->
         Seq(None -> false -> "v0 == 0 && v1 == 10 && v2 == 10"),
       "conditional" ->
         Seq(None -> false -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3"),
@@ -95,16 +95,16 @@ class JVMSootSuite extends FunSuite with SootTests {
         Seq(None -> false -> "11*v0 - 33*v1 >= -63 && v1 >=10 && v2 == v2 && v3 == v3 && v4 == v4"),
       "topologicalorder" ->
         Seq(None -> false -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4"),
-*/      "parametric_static" -> Seq(
-        None -> false -> "i0==i0 && i1==i1 && i2==i2 && i3==i3 && i0 + i1 - i4 == 8 && i0==i2 && i1==i3",
-        None -> true -> "i0 + i1 - i2 == 0  && p0 == i0 && p1 == i1",
-        Some("i0 == 0 && i1==i1 && i2==i2") -> false -> "i0==0 && i1 - i2 == 0",
-        Some("i0 == 0 && i1==i1 && i2==i2") -> true -> "i0==0 && i1 - i2 == 0 && p0 == i0 && p1 == i1"
+      "parametric_static" -> Seq(
+//        None -> false -> "i0==i0 && i1==i1 && i2==i2 && i3==i3 && i0 + i1 - i4 == 8 && i0==i2 && i1==i3",
+        None -> true -> "p0 == p0 && p1 == p1 && i0 + i1 - i2 == 0  && p0 == i0 && p1 == i1",
+//        Some("i0 == 0 && i1==i1 && i2==i2") -> false -> "i0==0 && i1 - i2 == 0",
+       Some("p0 == 0 && p1 == p1") -> true -> "i0==0 && i1 - i2 == 0 && p0 == i0 && p1 == i1"
         ),
       "parametric_dynamic" ->
-        Seq(None -> false -> "r0==r0 && i0 + i1 - i2 == 0 && i3==i3"),
+          Seq(None -> true -> "this == this && p0 == p0 && p1 == p1 && r0==r0 && i0 + i1 - i2 == 0 && i3==i3 && p0==i0 && p1==i1"),
       "parametric_caller" ->
-        Seq(None -> true -> "i0 == i0 && i1== i1 && i2==7 && b3 ==3 && b4 ==4 && i0 - p0 == 0 && i1 - p1 == 0"))
+        Seq(None -> true -> "p0 == p0 && p1 == p1 && i0 == i0 && i1== i1 && i2==7 && b3 ==3 && b4 ==4 && i0 - p0 == 0 && i1 - p1 == 0"))
 
     for ((methodName, instances) <- jimpleNumericalTests; (((input, ifIo), propString), i) <- instances.zipWithIndex) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
@@ -163,7 +163,13 @@ class JVMSootSuite extends FunSuite with SootTests {
           UP(4, 4), UP(4, 5),
           UP(5, 5), UP(5, 6),
           UP(6, 6)),
-      "class_parametric" -> Set(UP(0, 0), UP(0, 5), UP(1, 1), UP(1, 5), UP(2, 2), UP(0, 1), UP(0, 2), UP(3, 4), UP(1, 2), UP(2, 5), UP(4, 4), UP(5, 5), UP(3, 3)))
+      "class_parametric" ->  Set(
+          UP(0, 0), UP(0, 1), UP(0, 2), UP(0, 3), 
+          UP(1, 1), UP(1, 2), UP(1, 2), UP(1, 3),
+          UP(2, 2), UP(2, 3),
+          UP(3, 3),
+          UP(4, 4), UP(4, 5),
+          UP(5, 5)))
 
     for ((methodName, ps) <- jimplePairSharingTests) {
       val jmethod = new JimpleMethod(c.getMethodByName(methodName))
@@ -237,6 +243,8 @@ class JVMSootSuite extends FunSuite with SootTests {
         try {
           inte.compute(method, input)
           val prop = parser.parseProperty(propString, params.domain.numdom).get
+//          val n1 = prop.dimension
+//          val n2 = inte(method, input).prop.dimension
           assert(inte(method, input).prop === prop)
         } finally {
           params.debugWriter.flush()

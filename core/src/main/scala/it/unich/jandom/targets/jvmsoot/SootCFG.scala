@@ -97,7 +97,8 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
       // we remove the copy of the parameters (local variables)
       method.getReturnType match {
 //      case _:VoidType => annWithReturnValue.extract(SootCFG.outputTypes(method).size)
-      case _:VoidType => annWithReturnValue.restrict(SootCFG.outputTypes(method).size)
+//      case _:VoidType => annWithReturnValue.restrict(SootCFG.outputTypes(method).size)
+      case _:VoidType => annWithReturnValue.delVariables(SootCFG.inputTypes(method).size until annWithReturnValue.dimension)
       case _ =>  annWithReturnValue.delVariables(SootCFG.inputTypes(method).size until annWithReturnValue.dimension-1)
      }
     }
