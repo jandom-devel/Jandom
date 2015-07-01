@@ -77,7 +77,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
    * It expands the input property adding new variables until exhausting locals.
    */
   protected def expandPropertyWithLocalVariables(params: Parameters)(input: params.Property): params.Property = {
-    //assert(input.dimension <= body.getLocalCount(), s"Actual parameters <${input}> to method ${method} are more than the formal parameters")
+    assert(input.dimension <= body.getLocalCount(), s"Actual parameters <${input}> to method ${method} are more than the formal parameters")
     var currprop = input
     
     for (i <- 0 until body.getLocalCount()) 
@@ -171,6 +171,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     for ((node, prop) <- ann; unit = node.getHead; if unit != null)
       unit.removeAllTags()
 
+    // in the last program point we also show the return value (@return)  
     val outLine = if (ann contains lastPP.get) {
       if(params.io)
         "/* Output: " + formatProperty(params,true)(extractOutput(params)(ann)) + " */\n"
@@ -196,9 +197,9 @@ object SootCFG {
   /**
    * Returns the sequence of types to be returned by every interpretation of a SootMethod
    * The sequence of variable types is:
-   * type of @this (only if the method is not static)
-   * types of parameters @parameter0, @parameter1, ... 
-   * type of return value (we omit it if the return type is void)
+   *  - type of @this (only if the method is not static)
+   *  - types of parameters @parameter0, @parameter1, ... 
+   *  - type of return value (only if the return type is not void)
    */
   def outputTypes(method: SootMethod) = {
     import scala.collection.JavaConversions._
@@ -213,8 +214,8 @@ object SootCFG {
   /**
    * Returns the sequence of types required as input for a SootMethod
    * The sequence of variable types is:
-   * type of @this (only if the method is not static)
-   * types of parameters @parameter0, @parameter1, ... 
+   *  - type of @this (only if the method is not static)
+   *  - types of parameters @parameter0, @parameter1, ... 
    */
   def inputTypes(method: SootMethod) = {
     import scala.collection.JavaConversions._

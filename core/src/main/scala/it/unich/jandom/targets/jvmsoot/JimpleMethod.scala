@@ -249,10 +249,9 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
       case unit: BreakpointStmt =>
         throw new UnsupportedSootUnitException(unit)
       case unit: IdentityStmt => {
-      // ignore this instruction...
         unit.getRightOp() match {
           case v: ParameterRef =>
-            //val expr = analyzeExpr(unit.getRightOp(), currprop)
+                // we assume that the ordering is: @this, @parameter0, parameter1, ... 
               val expr = currprop.evalLocal(v.getIndex+ (if (method.isStatic()) 0 else 1 ))
               unit.getLeftOp() match {
                 case local: Local =>
@@ -262,7 +261,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
                 currprop = expr.assignField(localMap(local), field.getField())
           }   
           case v: ThisRef =>
-            // we assume that @this is in position 0
+                // we assume that @this is in position 0
               val expr = currprop.evalLocal(0) 
               unit.getLeftOp() match {
                 case local: Local =>
