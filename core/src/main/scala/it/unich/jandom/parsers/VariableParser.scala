@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Gianluca Amato <gamato@unich.it>
+ * Copyright 2015 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -23,14 +23,14 @@ import scala.util.parsing.combinator.JavaTokenParsers
 import it.unich.jandom.targets.Environment
 
 trait VariableParser extends JavaTokenParsers {
-  
+
   /**
    * The environment to use for parsing variable names.
    */
   val env: Environment
-  
+
   /**
-   * If this variable is false, unrecognized variables will be treated as errors, otherwise they will be
+   * If this variable is true, unrecognized variables will be treated as errors, otherwise they will be
    * added to the environment.
    */
   var closedVariables: Boolean = false
@@ -47,4 +47,5 @@ trait VariableParser extends JavaTokenParsers {
       case default => default.asInstanceOf[ParseResult[Int]]
     }
   }
+
 }

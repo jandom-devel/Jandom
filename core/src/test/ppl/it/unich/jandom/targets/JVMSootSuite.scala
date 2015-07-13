@@ -52,12 +52,12 @@ class JVMSootSuite extends FunSuite with SootTests {
 
   def bafTests() {
     val bafTests = Seq(
-      "sequential" -> "i2 == 10",
-      "conditional" -> "z0 == 1",
+      "sequential" -> "i2 == 10 && i0==i0 && i1==i1",
+      "conditional" -> "z0 == 1 && z1==z1 && z2==z2 && z3==z3",
       "loop" -> "i0 >= 10 && i0 <= 11",
       "nested" -> "i0 >= i1 - 1 && i1 >= 10 && i1 <= 11 && i2==i2",
-      "longassignment" -> "i0 >= 0 && i1 >= 10 && i2==i2",
-      "topologicalorder" -> "b0 >= 3 && b0<=4")
+      "longassignment" -> "i0 >= 0 && i1 >= 10 && i2==i2 && i3==i3 && i4==i4",
+      "topologicalorder" -> "b0 >= 3 && b0<=4 && b1 == b1 && b2==b2")
 
     val params = new Parameters[BafMethod] {
       val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
@@ -95,14 +95,12 @@ class JVMSootSuite extends FunSuite with SootTests {
       "topologicalorder" ->
         Seq(None -> false -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4"),
       "parametric_static" -> Seq(
-        None -> false -> "i0 + i1 - i2 == 0",
-        None -> true -> "i0 + i1 - i2 == 0  && p0 == i0 && p1 == i1",
-        Some("i0 == 0 && i1==i1 && i2==i2") -> false -> "i0==0 && i1 - i2 == 0",
-        Some("i0 == 0 && i1==i1 && i2==i2") -> true -> "i0==0 && i1 - i2 == 0 && p0 == i0 && p1 == i1"),
+        None -> true -> "p0 == p0 && p1 == p1 && i0 + i1 - i2 == 0  && p0 == i0 && p1 == i1",
+        Some("p0 == 0 && p1 == p1") -> true -> "i0==0 && i1 - i2 == 0 && p0 == i0 && p1 == i1"),
       "parametric_dynamic" ->
-        Seq(None -> false -> "r0==r0 && i0 + i1 - i2 == 0 && i3==i3"),
+        Seq(None -> true -> "this == this && p0 == p0 && p1 == p1 && r0==r0 && i0 + i1 - i2 == 0 && i3==i3 && p0==i0 && p1==i1"),
       "parametric_caller" ->
-        Seq(None -> true -> "i0 == i0 && i1== i1 && i2==7 && b3 ==3 && b4 ==4 && i0 - p0 == 0 && i1 - p1 == 0"))
+        Seq(None -> true -> "p0 == p0 && p1 == p1 && i0 == i0 && i1== i1 && i2==7 && b3 ==3 && b4 ==4 && i0 - p0 == 0 && i1 - p1 == 0"))
 
     for ((methodName, instances) <- jimpleNumericalTests; (((input, ifIo), propString), i) <- instances.zipWithIndex) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
@@ -141,28 +139,34 @@ class JVMSootSuite extends FunSuite with SootTests {
       "topologicalorder" -> Set(),
       "complexif" -> Set(),
       "objcreation" -> Set(
-          UP(0, 0), UP(0, 2), UP(0, 3), UP(0, 5), UP(0, 6), UP(0, 7), UP(0, 8),
-          UP(1, 1), UP(1, 4),
-          UP(2, 0), UP(2, 2), UP(2, 3), UP(2, 5), UP(2, 6), UP(2, 7), UP(2, 8),
-          UP(3, 3), UP(3, 5), UP(3, 6), UP(3, 7), UP(3, 8),
-          UP(4, 4),
-          UP(5, 5), UP(5, 6), UP(5, 7), UP(5, 8),
-          UP(6, 6), UP(6, 7), UP(6, 8),
-          UP(7, 7), UP(7, 8),
-          UP(8, 8)),
+        UP(0, 0), UP(0, 2), UP(0, 3), UP(0, 5), UP(0, 6), UP(0, 7), UP(0, 8),
+        UP(1, 1), UP(1, 4),
+        UP(2, 0), UP(2, 2), UP(2, 3), UP(2, 5), UP(2, 6), UP(2, 7), UP(2, 8),
+        UP(3, 3), UP(3, 5), UP(3, 6), UP(3, 7), UP(3, 8),
+        UP(4, 4),
+        UP(5, 5), UP(5, 6), UP(5, 7), UP(5, 8),
+        UP(6, 6), UP(6, 7), UP(6, 8),
+        UP(7, 7), UP(7, 8),
+        UP(8, 8)),
       "classrefinement" -> Set(
-          UP(0, 0), UP(0, 3),
-          UP(1, 1), UP(1, 2), UP(1, 4), UP(1, 5),
-          UP(2, 2), UP(2, 4), UP(2, 5), UP(2, 6),
-          UP(3, 3),
-          UP(4, 4), UP(4, 5),
-          UP(5, 5), UP(5, 6),
-          UP(6, 6)),
-      "class_parametric" -> Set(UP(0, 0), UP(0, 5), UP(1, 1), UP(1, 5), UP(2, 2), UP(0, 1), UP(0, 2), UP(3, 4), UP(1, 2), UP(2, 5), UP(4, 4), UP(5, 5), UP(3, 3)))
+        UP(0, 0), UP(0, 3),
+        UP(1, 1), UP(1, 2), UP(1, 4), UP(1, 5),
+        UP(2, 2), UP(2, 4), UP(2, 5), UP(2, 6),
+        UP(3, 3),
+        UP(4, 4), UP(4, 5),
+        UP(5, 5), UP(5, 6),
+        UP(6, 6)),
+      "class_parametric" -> Set(
+        UP(0, 0), UP(0, 1), UP(0, 2), UP(0, 3),
+        UP(1, 1), UP(1, 2), UP(1, 2), UP(1, 3),
+        UP(2, 2), UP(2, 3),
+        UP(3, 3),
+        UP(4, 4), UP(4, 5),
+        UP(5, 5)))
 
     for ((methodName, ps) <- jimplePairSharingTests) {
       val jmethod = new JimpleMethod(c.getMethodByName(methodName))
-        val params = new Parameters[JimpleMethod] {
+      val params = new Parameters[JimpleMethod] {
         val domain = new SootFrameObjectDomain(psdom)
         io = true
         //debugWriter = new java.io.PrintWriter(System.err)
@@ -172,7 +176,7 @@ class JVMSootSuite extends FunSuite with SootTests {
       test(s"Jimple object analysis: ${methodName}") {
         try {
           val ann = jmethod.analyze(params)
-          assert(ann(jmethod.lastPP.get).prop === psdom(ps,  jmethod.localTypes(params)))
+          assert(ann(jmethod.lastPP.get).prop === psdom(ps, jmethod.localTypes(params)))
         } finally {
           params.debugWriter.flush()
         }
@@ -181,7 +185,7 @@ class JVMSootSuite extends FunSuite with SootTests {
   }
 
   def jimpleInterProceduralPSTests() {
-    val jimplePairSharingTests:  Seq[(String, Set[UP[Int]])]  = Seq(
+    val jimplePairSharingTests: Seq[(String, Set[UP[Int]])] = Seq(
       "sequential" -> Set(),
       "objcreation" -> Set(),
       "class_parametric" -> Set(UP(0, 0), UP(0, 1), UP(1, 1)),
@@ -200,7 +204,7 @@ class JVMSootSuite extends FunSuite with SootTests {
         val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes().asInstanceOf[java.util.List[Type]])
         try {
           inte.compute(method, input)
-          assert(inte(method, input).prop === psdom(prop,jmethod.outputTypes))
+          assert(inte(method, input).prop === psdom(prop, jmethod.outputTypes))
         } finally {
           params.debugWriter.flush()
         }

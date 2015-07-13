@@ -44,7 +44,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain[SootObjectModel]) extends Soot
 
   /**
    * This class represents a single abstract frame. It tries to support global variables, but it is a kind of hack.
-   * @param prop contains the pair sharing properties. Variables are allocated also for non-numerical variables, but the are forced
+   * @param prop contains the pair sharing properties. Variables are allocated also for non-numerical variables, but they are forced
    * to be definitively null.
    * @param stack the stack of variable types in the current frame. Note that stack position are numbered in the
    * opposite way than frame variables, i.e., the frame variable `i` corresponds to stack position `size - 1 - i`.
@@ -114,7 +114,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain[SootObjectModel]) extends Soot
       else
         addUntrackedVariable(tpe)
 
-    def evalUnknown(tpe: Type) =  
+    def evalUnknown(tpe: Type) =
       if (tpe.isInstanceOf[RefType])
         Property(prop.addUnknownVariable(tpe), tpe :: stack, globals)
       else

@@ -19,12 +19,24 @@
 package it.unich.jandom.targets
 
 import java.io.File
+import scala.util.parsing.combinator.JavaTokenParsers
 
 /**
  * A initialization trait to mix in test suites using Soot.
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait SootTests {
+
+  /**
+   * A parser for Soot identifiers, where @ is allowed as first character for
+   * parameters.
+   */
+  trait SootIdentParser extends JavaTokenParsers {
+    override def ident = {
+      super.ident |
+        "@" ~> super.ident ^^ { case s => "@" + s }
+    }
+  }
 
   /**
    * Initialize Soot and set classpath to the directory `dir` within the resource
@@ -34,10 +46,9 @@ trait SootTests {
     soot.G.reset()
     val scene = soot.Scene.v()
     scene.loadBasicClasses()
-    val resourceURL = getClass().getResource("/"+dir)
+    val resourceURL = getClass().getResource("/" + dir)
     val sootTestDir = new File(resourceURL.toURI())
     scene.setSootClassPath(sootTestDir.toString())
     scene
   }
-
 }

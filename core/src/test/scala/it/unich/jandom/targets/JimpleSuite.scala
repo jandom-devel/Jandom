@@ -37,7 +37,7 @@ class JimpleSuite extends FunSuite with SootTests {
 
   val scene = initSoot("jimpletest")
 
-  // disable all jimple optimizations
+  // disable all Jimple optimizations
   PhaseOptions.v().setPhaseOption("jb", "enabled:false")
 
   val c = scene.loadClassAndSupport("jimpletest.SimpleTest")
@@ -48,12 +48,12 @@ class JimpleSuite extends FunSuite with SootTests {
   jimpleNumTests()
   jimplePairSharingTests()
 
-   def jimpleNumTests() {
+  def jimpleNumTests() {
     val jimpleNumericalTests = Seq(
       "sequential" ->
         Seq(None -> false -> "b0 == 0 && b1 == 10 && i2 == 10"),
       "conditional" ->
-        Seq(None -> false -> "b0 == 0 &&  z0 == 0 && z1 == 1" ),
+        Seq(None -> false -> "b0 == 0 && z0 == 0 && z1 == 1"),
       "loop" ->
         Seq(None -> false -> "i0 >= 10 && i0 <= 11"),
       "nested" ->
@@ -63,30 +63,31 @@ class JimpleSuite extends FunSuite with SootTests {
       "topologicalorder" ->
         Seq(None -> false -> "z0 == 1 && b0 == 2 && i1 == 3"),
       "parametric_static" -> Seq(
-        None -> false -> "i0 == i0",  // cannot parse empty strings
-        None -> true -> "p0 == i0 && p1 == i1", // pi's are parameters
-        Some("i0 == 0") -> false -> "i0 == 0",
-        Some("i0 == 0") -> true -> "i0 == 0 && p0 == i0 && p1 == i1"),
+        None -> true -> "i0 == i0", // cannot parse empty strings
+        None -> true -> "@parameter0 == i0 && @parameter1 == i1", // pi's are parameters
+        Some("@parameter0 == 0") -> true -> "@parameter0 == 0 && i0 == 0",
+        Some("@parameter0 == 0") -> true -> "i0 == 0 && @parameter0 == i0 && @parameter1 == i1"),
       "parametric_dynamic" ->
-        Seq(None -> false -> "i0 == i0"),
+        Seq(None -> true -> "i0 == i0"),
       "parametric_caller" ->
-        Seq(None -> true -> "b3 ==3 && b4 ==4 && i2 ==7 && p0 == i0 && p1 == i1"))
+        Seq(None -> true -> "b3 ==3 && b4 ==4 && i2 ==7 && @parameter0 == i0 && @parameter1 == i1"))
 
     for ((methodName, instances) <- jimpleNumericalTests; (((input, ifIo), propString), i) <- instances.zipWithIndex) {
       val method = new JimpleMethod(c.getMethodByName(methodName))
       val params = new Parameters[JimpleMethod] {
         val domain = new SootFrameNumericalDomain(numdom)
-        io = ifIo
+        io = true
         interpretation = Some(new JimpleInterpretation(this))
       }
       test(s"Jimple numerical analysis: ${methodName} ${if (i > 0) i + 1 else ""}") {
-        val env = Environment(method.locals map { _.getName() } :_*)
-        val parser = new NumericalPropertyParser(env)
+        val parser = new NumericalPropertyParser(method.environment) with SootIdentParser
+        val inputParser = new NumericalPropertyParser(method.inputEnvironment) with SootIdentParser
         try {
           val ann = input match {
-            case None => method.analyze(params)
+            case None =>
+              method.analyze(params)
             case Some(input) =>
-              val prop = parser.parseProperty(input, params.domain.numdom).get
+              val prop = inputParser.parseProperty(input, params.domain.numdom).get
               method.analyzeFromInput(params)(params.domain(prop, IntType.v()))
           }
           val prop = parser.parseProperty(propString, params.domain.numdom).get
@@ -100,7 +101,7 @@ class JimpleSuite extends FunSuite with SootTests {
 
   def jimplePairSharingTests() {
 
-    val jimplePairSharingTests : Seq[(String, String)] = Seq(
+    val jimplePairSharingTests: Seq[(String, String)] = Seq(
       "sequential" -> "{}",
       "conditional" -> "{}",
       "loop" -> "{}",
@@ -108,22 +109,20 @@ class JimpleSuite extends FunSuite with SootTests {
       "longassignment" -> "{}",
       "topologicalorder" -> "{}",
       "complexif" -> "{}",
-      "objcreation" -> """{(r2, r0), (r2, $r6), (r2, $r5), ($r6, r0), ($r6, r8), ($r6 , $r7), (r8, r8), ($r3, r8), (r2, r2), ($r5, $r5), 
-        ($r5, $r3), (r0, $r3), ( $r4, $r4), ($r7, $r7), ($r5, r8), ($r5, $r6), ($r6, $r3), (r0, r8), (r1, r1), (r2, $r3), ($r5, $r7), ($r3, $r3),(r2, $r7), ($r6, $r6), 
+      "objcreation" -> """{(r2, r0), (r2, $r6), (r2, $r5), ($r6, r0), ($r6, r8), ($r6 , $r7), (r8, r8), ($r3, r8), (r2, r2), ($r5, $r5),
+        ($r5, $r3), (r0, $r3), ( $r4, $r4), ($r7, $r7), ($r5, r8), ($r5, $r6), ($r6, $r3), (r0, r8), (r1, r1), (r2, $r3), ($r5, $r7), ($r3, $r3),(r2, $r7), ($r6, $r6),
         (r2, r8), ($r5, r0), ($r7, r0), (r0, r0), (r1, $r4), ($r7, r8), ($r7, $r3)}""",
-     "classrefinement" ->
-        """{(r0, r0), (r0, $r3), (r1, r1), (r1, r2), (r1, $r4), (r1, $r5), (r2, r2), (r2, $r4), (r2, $r5), (r2, r6), ($r3, $r3), ($r4, $r4), ($r4, $r5), 
-        ($r5, $r5), ($r5, r6), (r6, r6)}"""
- /*
-     This is commented since analysis of methods with parameters does not work correctly!
-     ,"class_parametric" ->
-        ("{(r0, r0), (r0, r1), (r0, $r2), (r0, @p0), (r1, r1), (r1, $r2), (r1, @p0), ($r2, $r2), ($r2, @p0), ($r3, $r3),  ($r3, r4), (r4, r4), (@p0, @p0)}",
-        Seq("r0", "$r3", "r4", "r1", "$r2", "@p0"),
-        Seq())
- */
-      )
+      "classrefinement" ->
+        """{(r0, r0), (r0, $r3), (r1, r1), (r1, r2), (r1, $r4), (r1, $r5), (r2, r2), (r2, $r4), (r2, $r5), (r2, r6), ($r3, $r3), ($r4, $r4), ($r4, $r5),
+        ($r5, $r5), ($r5, r6), (r6, r6)}""",
+      "class_parametric" ->
+        """{(@parameter0, @parameter0), (r0, r0), (r1, r1), ($r2, $r2),($r3, $r3),  (r4, r4),
+        (@parameter0, r0), (@parameter0, r1), (@parameter0, $r2),
+        (r0, r1), (r0, $r2),
+        (r1, $r2),
+        ($r3, r4)}""")
 
-      for ( (methodName , ps) <- jimplePairSharingTests) {
+    for ((methodName, ps) <- jimplePairSharingTests) {
       val jmethod = new JimpleMethod(c.getMethodByName(methodName))
       val params = new Parameters[JimpleMethod] {
         val domain = new SootFrameObjectDomain(psdom)
@@ -132,10 +131,9 @@ class JimpleSuite extends FunSuite with SootTests {
       val inte = new TopSootInterpretation[JimpleMethod, params.type](params)
       params.interpretation = Some(inte)
       test(s"Jimple object analysis: ${methodName}") {
-        try {          
-          val env = Environment(jmethod.locals map { _.getName() } :_*)
-          val parser = new PairSharingParser(env)
-          val prop = parser.parseProperty(ps).get.toSet
+        try {
+          val parser = new PairSharingParser(jmethod.environment) with SootIdentParser
+          val prop = parser.parseProperty(ps).get
           val ann = jmethod.analyze(params)
           assert(ann(jmethod.lastPP.get).prop === psdom(prop, jmethod.localTypes(params)))
         } finally {
@@ -144,5 +142,4 @@ class JimpleSuite extends FunSuite with SootTests {
       }
     }
   }
-
 }

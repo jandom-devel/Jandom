@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013 Gianluca Amato, Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@ import soot.toolkits.graph._
  * based on the generic analyzer for control flow graphs.
  * @param method the method we want to analyze
  * @author Gianluca Amato <gamato@unich.it>
+ * @author Francesca Scozzari <fscozzari@unich.it>
  */
 class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](method) {
   import scala.collection.JavaConversions._
@@ -234,53 +235,72 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
 
     var exits = Seq[params.Property]()
     var currprop = initprop
-    for (unit <- node.iterator()) unit match {
-      case unit: AssignStmt =>
-        val expr = analyzeExpr(unit.getRightOp(), currprop)
-        unit.getLeftOp() match {
-          case local: Local =>
-            currprop = expr.assignLocal(localMap(local))
-          case field: InstanceFieldRef =>
-            val local = field.getBase().asInstanceOf[Local]
-            currprop = expr.assignField(localMap(local), field.getField())
-        }
-      case unit: BreakpointStmt =>
-        throw new UnsupportedSootUnitException(unit)
-      case unit: IdentityStmt =>
-      // ignore this instruction...
-      case unit: EnterMonitorStmt =>
-        unit.getOp() match {
-          case local: Local =>
-            currprop = currprop.enterMonitor(localMap(local))
-        }
-      case unit: ExitMonitorStmt =>
-        unit.getOp() match {
-          case local: Local =>
-            currprop = currprop.exitMonitor(localMap(local))
-        }
-      case unit: GotoStmt =>
-        exits :+= currprop
-      case unit: IfStmt =>
-        val (tbranch, fbranch) = analyzeCond(unit.getCondition(), currprop)
-        exits :+= tbranch
-        currprop = fbranch
-      case unit: InvokeStmt =>
-        currprop = analyzeInvokeExpr(unit.getInvokeExpr(), currprop)
-        if (unit.getInvokeExpr().getType() != VoidType.v()) currprop = currprop.restrict(1)
-      case unit: LookupSwitchStmt =>
-        throw new UnsupportedSootUnitException(unit)
-      case unit: NopStmt =>
-      case unit: RetStmt =>
-        throw new UnsupportedSootUnitException(unit)
-      case unit: ReturnStmt =>
-        exits :+= analyzeExpr(unit.getOp(), currprop)
-      case unit: ReturnVoidStmt =>
-        exits :+= currprop
-      case unit: TableSwitchStmt =>
-        throw new UnsupportedSootUnitException(unit)
-      case unit: ThrowStmt =>
-        throw new UnsupportedSootUnitException(unit)
-    }
+    for (unit <- node.iterator())
+      unit match {
+        case unit: AssignStmt =>
+          val expr = analyzeExpr(unit.getRightOp(), currprop)
+          unit.getLeftOp() match {
+            case local: Local =>
+              currprop = expr.assignLocal(localMap(local))
+            case field: InstanceFieldRef =>
+              val local = field.getBase().asInstanceOf[Local]
+              currprop = expr.assignField(localMap(local), field.getField())
+          }
+        case unit: BreakpointStmt =>
+          throw new UnsupportedSootUnitException(unit)
+        case unit: IdentityStmt =>
+          val expr = unit.getRightOp() match {
+            case v: ParameterRef =>
+              // we assume that the ordering is: @this, @parameter0, parameter1, ...
+              currprop.evalLocal(v.getIndex + (if (method.isStatic()) 0 else 1))
+            case v: ThisRef =>
+              // we assume that @this is in position 0
+              currprop.evalLocal(0)
+            case _ =>
+              throw new UnsupportedSootUnitException(unit)
+          }
+          currprop = unit.getLeftOp() match {
+            case local: Local =>
+              expr.assignLocal(localMap(local))
+            case field: InstanceFieldRef =>
+              val local = field.getBase().asInstanceOf[Local]
+              expr.assignField(localMap(local), field.getField())
+          }
+        case unit: EnterMonitorStmt =>
+          unit.getOp() match {
+            case local: Local =>
+              currprop = currprop.enterMonitor(localMap(local))
+          }
+        case unit: ExitMonitorStmt =>
+          unit.getOp() match {
+            case local: Local =>
+              currprop = currprop.exitMonitor(localMap(local))
+          }
+        case unit: GotoStmt =>
+          exits :+= currprop
+        case unit: IfStmt =>
+          val (tbranch, fbranch) = analyzeCond(unit.getCondition(), currprop)
+          exits :+= tbranch
+          currprop = fbranch
+        case unit: InvokeStmt =>
+          currprop = analyzeInvokeExpr(unit.getInvokeExpr(), currprop)
+          if (unit.getInvokeExpr().getType() != VoidType.v()) currprop = currprop.restrict(1)
+        case unit: LookupSwitchStmt =>
+          throw new UnsupportedSootUnitException(unit)
+        case unit: NopStmt =>
+        case unit: RetStmt =>
+          throw new UnsupportedSootUnitException(unit)
+        case unit: ReturnStmt =>
+          // ReturnStmt is implemented by evaluating the returned expression. In this way, the
+          // obtained abstract state has one dimension more than the other program points.
+          exits :+= analyzeExpr(unit.getOp(), currprop)
+        case unit: ReturnVoidStmt =>
+          exits :+= currprop
+        case unit: TableSwitchStmt =>
+          throw new UnsupportedSootUnitException(unit)
+        case unit: ThrowStmt =>
+          throw new UnsupportedSootUnitException(unit)
+      }
     if (node.getTail.fallsThrough()) exits +:= currprop
     exits
   }

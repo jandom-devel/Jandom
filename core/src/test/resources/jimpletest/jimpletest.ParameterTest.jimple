@@ -1,0 +1,199 @@
+public class jimpletest.ParameterTest extends java.lang.Object
+{
+
+    int emptyInt()
+    {
+        jimpletest.ParameterTest this;
+        int temp$0;
+
+        this := @this: jimpletest.ParameterTest;
+
+        temp$0 = 0;
+
+        return temp$0;
+    }
+
+    jimpletest.ParameterTest emptyNull()
+    {
+        jimpletest.ParameterTest this, temp$0;
+
+        this := @this: jimpletest.ParameterTest;
+
+        temp$0 = null;
+
+        return temp$0;
+    }
+
+    jimpletest.ParameterTest emptyThis()
+    {
+        jimpletest.ParameterTest this;
+
+        this := @this: jimpletest.ParameterTest;
+
+        return this;
+    }
+
+    int unusedParameters(int, jimpletest.ParameterTest, int)
+    {
+        jimpletest.ParameterTest this, b;
+        int a, c, temp$0;
+
+        this := @this: jimpletest.ParameterTest;
+
+        a := @parameter0: int;
+
+        b := @parameter1: jimpletest.ParameterTest;
+
+        c := @parameter2: int;
+
+        temp$0 = 0;
+
+        return temp$0;
+    }
+
+    jimpletest.ParameterTest returnParameter(int, jimpletest.ParameterTest)
+    {
+        jimpletest.ParameterTest this, b;
+        int a;
+
+        this := @this: jimpletest.ParameterTest;
+
+        a := @parameter0: int;
+
+        b := @parameter1: jimpletest.ParameterTest;
+
+        return b;
+    }
+
+    jimpletest.ParameterTest returnThis(int, jimpletest.ParameterTest)
+    {
+        jimpletest.ParameterTest this, b;
+        int a;
+
+        this := @this: jimpletest.ParameterTest;
+
+        a := @parameter0: int;
+
+        b := @parameter1: jimpletest.ParameterTest;
+
+        return this;
+    }
+
+    jimpletest.ParameterTest create()
+    {
+        jimpletest.ParameterTest this, a, temp$0;
+
+        this := @this: jimpletest.ParameterTest;
+
+        temp$0 = new jimpletest.ParameterTest;
+
+        specialinvoke temp$0.<jimpletest.ParameterTest: void <init>()>();
+
+        a = temp$0;
+
+        return a;
+    }
+
+    jimpletest.ParameterTest create2(int, jimpletest.ParameterTest)
+    {
+        jimpletest.ParameterTest this, y, a, temp$0;
+        int x;
+
+        this := @this: jimpletest.ParameterTest;
+
+        x := @parameter0: int;
+
+        y := @parameter1: jimpletest.ParameterTest;
+
+        temp$0 = new jimpletest.ParameterTest;
+
+        specialinvoke temp$0.<jimpletest.ParameterTest: void <init>()>();
+
+        a = temp$0;
+
+        y = a;
+
+        return y;
+    }
+
+    jimpletest.ParameterTest createCall(int, jimpletest.ParameterTest)
+    {
+        jimpletest.ParameterTest this, y, a, temp$0, temp$1;
+        int x;
+
+        this := @this: jimpletest.ParameterTest;
+
+        x := @parameter0: int;
+
+        y := @parameter1: jimpletest.ParameterTest;
+
+        temp$0 = new jimpletest.ParameterTest;
+
+        specialinvoke temp$0.<jimpletest.ParameterTest: void <init>()>();
+
+        a = temp$0;
+
+        temp$1 = staticinvoke <jimpletest.ParameterTest: jimpletest.ParameterTest returnParameterS(int,jimpletest.ParameterTest)>(x, a);
+
+        y = temp$1;
+
+        return y;
+    }
+
+    static int emptyIntS()
+    {
+        int temp$0;
+
+        temp$0 = 0;
+
+        return temp$0;
+    }
+
+    static jimpletest.ParameterTest emptyNullS()
+    {
+        jimpletest.ParameterTest temp$0;
+
+        temp$0 = null;
+
+        return temp$0;
+    }
+
+    static int unusedParametersS(int, jimpletest.ParameterTest, int)
+    {
+        int a, c, temp$0;
+        jimpletest.ParameterTest b;
+
+        a := @parameter0: int;
+
+        b := @parameter1: jimpletest.ParameterTest;
+
+        c := @parameter2: int;
+
+        temp$0 = 0;
+
+        return temp$0;
+    }
+
+    static jimpletest.ParameterTest returnParameterS(int, jimpletest.ParameterTest)
+    {
+        int a;
+        jimpletest.ParameterTest b;
+
+        a := @parameter0: int;
+
+        b := @parameter1: jimpletest.ParameterTest;
+
+        return b;
+    }
+
+    public void <init>()
+    {
+        jimpletest.ParameterTest this;
+
+        this := @this: jimpletest.ParameterTest;
+
+        specialinvoke this.<java.lang.Object: void <init>()>();
+
+        return;
+    }
+}

@@ -23,18 +23,18 @@ import it.unich.jandom.domains.objects.UP
 import it.unich.jandom.targets.Environment
 
 /**
- * A parser for pair sharing properties. It parses strings of ther form 
+ * A parser for pair sharing properties. It parses strings of the form
  * "{ ( v1, v2 ), ( v3, v4 ), ... }" where v1, v2, etc.. are variable names.
  * @param varNames the name of variables
  */
-class PairSharingParser(val env: Environment) extends RegexParsers with VariableParser {  
+class PairSharingParser(val env: Environment) extends RegexParsers with VariableParser {
   private val pair = ("(" ~> variable <~ ",") ~ variable <~ ")" ^^ { case x ~ y => new UP(x, y) }
-  private val sequence = "{" ~> repsep(pair, ",") <~ "}"
-  
+  private val sequence = "{" ~> repsep(pair, ",") <~ "}" ^^ { case seq => seq.toSet }
+
   /**
    * Parse the string `s` as a pair sharing property.
    * @param s string to parse
-   * @return a list of unordered pairs of numbers 
+   * @return a list of unordered pairs of numbers
    */
   def parseProperty(s: String) = parseAll(sequence, s)
 }
