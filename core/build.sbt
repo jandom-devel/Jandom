@@ -2,14 +2,14 @@
 
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.4" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.12.2" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
   "org.scalanlp" %% "breeze" % "0.11.2",
   // for using native linear algebra libraries
   // "org.scalanlp" %% "breeze-natives" % "0.9",
   "org.rogach" %% "scallop" % "0.9.5",
-  "org.scala-lang.modules" %% "scala-swing" % "1.0.1",
-  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.3",
+  "org.scala-lang.modules" %% "scala-swing" % "1.0.2",
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
   // ASM is included in the Soot Jar
   "soot" % "soot" % "2.5.0+git2" from "https://ssebuild.cased.de/nightly/soot/lib/soot-trunk.jar"
 )

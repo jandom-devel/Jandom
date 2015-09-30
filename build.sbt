@@ -20,7 +20,7 @@ run in Test <<= run in ("Jandom", Test)
 
 version in ThisBuild := "0.1.3-SNAPSHOT"
 
-scalaVersion in ThisBuild := "2.11.6"
+scalaVersion in ThisBuild := "2.11.7"
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-Xlint", "-Xlint:-delayedinit-select", "-Xlint:-missing-interpolator")
 
