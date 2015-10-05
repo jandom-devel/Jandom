@@ -28,6 +28,15 @@ object PriorityWorkListSolver extends LocalFixpointSolver {
   import EquationSystem._
   
   /**
+   * Parameters needed for the local priority worklist solver
+   * @param start the initial assignment.
+   * @param listener the listener whose callbacks are invoked for debugging and tracing.
+   */
+  case class Params[U, V](start: U => V, wanted: Iterable[U], ordering: Ordering[U] = new DynamicPriority[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) extends LocalBaseParams[U,V]
+
+  type EQS[U, V] = EquationSystem[U, V]
+  
+  /**
    * This is an dynamic ordering on unknowns: every time an unknown appears, it gets assigned a lower
    * priority of previous one (i.e., it come earlier in the ordering). This is the default ordering
    * for PriorityWorkListSolver when an explicit one is not provided.
@@ -50,7 +59,9 @@ object PriorityWorkListSolver extends LocalFixpointSolver {
    * @param ordering an ordering on all unknowns.
    * @param litener the listener whose callbacks are called for debugging and tracing.
    */
-  def apply[U,V](eqs: EquationSystem[U,V], start: U => V, wanted: Iterable[U], ordering: Ordering[U] = new DynamicPriority[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener): IterableFunction[U,V] = {
+  def solve[U,V](eqs: EquationSystem[U,V], params: Params[U,V]) = {
+    import params._
+    
     val infl = new collection.mutable.HashMap[U, collection.mutable.Set[U]] with collection.mutable.MultiMap[U, U]
     var workList = collection.mutable.PriorityQueue.empty[U](ordering)
     workList ++= wanted
@@ -75,4 +86,10 @@ object PriorityWorkListSolver extends LocalFixpointSolver {
     }
     current
   }
+  
+  /**
+   * A convenience method for calling the solver
+   */
+  def apply[U,V](eqs: EquationSystem[U,V], start: U => V, wanted: Iterable[U], ordering: Ordering[U] = new DynamicPriority[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = 
+     solve(eqs,Params(start, wanted, ordering, listener))
 }

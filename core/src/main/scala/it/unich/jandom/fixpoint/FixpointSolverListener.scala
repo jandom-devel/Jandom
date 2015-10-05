@@ -92,7 +92,7 @@ object FixpointSolverListener {
    */
   class PerformanceListener extends FixpointSolverListenerAdapter[Any, Any] {
 
-    private var numeval: Int = 0
+    private var numeval: Int = 0    
 
     /**
      * Number of evaluations of r.h.s. performed so far

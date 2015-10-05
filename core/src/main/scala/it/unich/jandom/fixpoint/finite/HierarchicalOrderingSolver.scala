@@ -23,16 +23,26 @@ import it.unich.jandom.fixpoint._
 /**
  * A solver whose strategy in based on a hierarchical ordering.
  */
-object HierarchicalOrderingSolver extends FixpointSolver {
+object HierarchicalOrderingSolver extends FiniteFixpointSolver {
+  /**
+   * Parameters needed for the hierarchical ordering solver
+   * @param start the initial assignment.
+   * @param ordering the hierarchical ordering which drives the analysis.
+   * @param listener the listener whose callbacks are invoked for debugging and tracing.
+   */
+  case class Params[U, V](start: Assignment[U, V], ordering: HierarchicalOrdering[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) extends BaseParams[U,V]
+
+  type EQS[U, V] = FiniteEquationSystem[U, V]
+
   /**
    * It solves a finite equation system by using a strategy encoded with a hierarchical ordering.
    * @param eqs the equations system to solve.
    * @param start the initial assignment.
-   * @param ordering the hierarchical ordering which drives the analysis.
    * @param litener the listener whose callbacks are called for debugging and tracing.
    */
-  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, ordering: HierarchicalOrdering[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = {
+  def solve[U, V](eqs: EQS[U, V], params: Params[U,V]) = {
     import HierarchicalOrdering._
+    import params._
 
     val current = (collection.mutable.HashMap.empty[U, V]).withDefault(start)
     listener.initialized(current)
@@ -71,4 +81,10 @@ object HierarchicalOrderingSolver extends FixpointSolver {
     }
     current
   }
+  
+  /**
+   * A convenience method for calling the solver
+   */
+  def apply[U,V](eqs: EQS[U, V], start: Assignment[U, V], ordering: HierarchicalOrdering[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = 
+    solve(eqs, Params(start, ordering, listener))
 }

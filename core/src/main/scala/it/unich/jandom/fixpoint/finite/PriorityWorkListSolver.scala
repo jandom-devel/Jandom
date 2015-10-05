@@ -23,18 +23,22 @@ import it.unich.jandom.fixpoint._
 /**
  * A fixpoint solver based on priority worklists.
  */
-object PriorityWorkListSolver extends FixpointSolver {
-
+object PriorityWorkListSolver extends FiniteFixpointSolver {
   /**
-   * It solves a finite equation system by using a worklist based method with priorities.
-   * @param eqs the equation system to solve.
+   * Parameters needed for the priority worklist solver
    * @param start the initial assignment.
    * @param ordering an ordering which specified priorities between unknowns.
    * @param restart at each iteration this function it is applied to the new and old values. If it returns true, the analysis of bigger unknown is
    * restarted from the initial value.
-   * @param listener the listener whose callbacks are called for debugging and tracing.
+   * @param listener the listener whose callbacks are invoked for debugging and tracing.
    */
-  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, ordering: Ordering[U], restart: (V,V) => Boolean = { (x: V, y: V) => false }, listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = {
+  case class Params[U, V](start: Assignment[U,V], ordering: Ordering[U], restart: (V,V) => Boolean = { (x: V, y: V) => false }, listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener)  extends BaseParams[U,V]
+  
+  type EQS[U,V] = FiniteEquationSystem[U,V]
+
+  def solve[U, V](eqs: FiniteEquationSystem[U, V], params: Params[U,V]) = {
+    import params._
+    
     val current = (collection.mutable.HashMap.empty[U, V]).withDefault(start)
     listener.initialized(current)
     var workList = scala.collection.mutable.PriorityQueue.empty[U](ordering)
@@ -55,4 +59,10 @@ object PriorityWorkListSolver extends FixpointSolver {
     }
     current
   }
+  
+    /**
+   * A convenience method for calling the solver
+   */
+  def apply[U,V](eqs: EQS[U, V], start: Assignment[U, V], ordering: Ordering[U], restart: (V,V) => Boolean = { (x: V, y: V) => false }, listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = 
+    solve(eqs, Params(start, ordering, restart, listener))
 }

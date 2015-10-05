@@ -23,14 +23,18 @@ import it.unich.jandom.fixpoint._
 /**
  * A fixpoint solver based on the round robin strategy.
  */
-object RoundRobinSolver extends FixpointSolver { 
+object RoundRobinSolver extends FiniteFixpointSolver {
   /**
-   * It solves a finite equation system with a round robin strategy.
-   * @param eqs the equation system to solve.
+   * Parameters needed for the round robin solver
    * @param start the initial assignment.
-   * @param litener the listener whose callbacks are called for debugging and tracing.
+   * @param listener the listener whose callbacks are invoked for debugging and tracing.
    */
-  def apply[U,V](eqs: FiniteEquationSystem[U,V], start: U => V, listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = {
+  case class Params[U, V](start: Assignment[U, V], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) extends BaseParams[U,V]
+
+  type EQS[U, V] = FiniteEquationSystem[U, V]
+
+  def solve[U, V](eqs: FiniteEquationSystem[U, V], params: Params[U, V]) = {
+    import params._
 
     val current = (collection.mutable.HashMap.empty[U, V]).withDefault(start)
     listener.initialized(current)
@@ -48,4 +52,10 @@ object RoundRobinSolver extends FixpointSolver {
     }
     current
   }
+
+  /**
+   * A convenience method for calling the solver
+   */
+  def apply[U, V](eqs: EQS[U, V], start: Assignment[U, V], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) =
+    solve(eqs, Params(start, listener))
 }

@@ -20,7 +20,7 @@ package it.unich.jandom.utils
 
 /**
  * An `IterableFunction` is a partial function which may be iterated to get a collection
- * of all its bindings. It is hal way between a `PartialFunction` and a `Map`.
+ * of all its bindings. It is half way between a `PartialFunction` and a `Map`.
  * @tparam U the domain of the function.
  * @tapram T the codomain of the function.
  */

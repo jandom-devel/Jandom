@@ -28,7 +28,7 @@ import it.unich.jandom.utils.PMaps._
  * but it does not implement any algorithm and just delegates to other fixpoint solvers by passing them suitable
  * parameters.
  */
-abstract class Driver extends FixpointSolver {
+abstract class Driver {
   /**
    * This exception is thrown when the parameters provided to the `Driver` are not correct.
    */

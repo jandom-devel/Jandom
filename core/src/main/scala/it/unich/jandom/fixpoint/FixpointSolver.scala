@@ -18,9 +18,38 @@
 
 package it.unich.jandom.fixpoint
 
+import scala.language.higherKinds
+
 /**
  * This is the common trait of all fixpoint solvers for equation systems. It is just a marker trait.
  * All fixpoint solvers have different an apply method (with different parameters) which may be used
  * to solve an equation system.
  */
-trait FixpointSolver
+trait FixpointSolver {
+  
+  /**
+   * The base class from which all the parameter types should descend.
+   */
+  abstract protected class BaseParams[U,V] {
+    /**
+     * The initial assignment to start the analysis
+     */
+    val start: Assignment[U,V]
+    
+    /**
+     * A listener for debugging or tracing purposes
+     */
+    val listener: FixpointSolverListener[U,V]
+  }
+  
+  /**
+   * Each fixpoint solver needs an equation system and some parameters. Parameters are generally different
+   * for each fixpoint solver, hence they are provided as an inner type. 
+   */
+  type Params[U,V] <: BaseParams[U,V]
+  
+  /**
+   * EQS is the subclass of equation systems the solver may work with.
+   */
+  type EQS[U,V] <: EquationSystem[U,V]
+}

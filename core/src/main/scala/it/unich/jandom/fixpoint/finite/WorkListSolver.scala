@@ -23,14 +23,25 @@ import it.unich.jandom.fixpoint._
 /**
  * A fixpoint solver based on a worklist.
  */
-object WorkListSolver extends FixpointSolver {
+object WorkListSolver extends FiniteFixpointSolver {
+  /**
+   * Parameters needed for the round robin solver
+   * @param start the initial assignment.
+   * @param listener the listener whose callbacks are invoked for debugging and tracing.
+   */
+  case class Params[U, V](start: Assignment[U, V], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) extends BaseParams[U,V]
+
+  type EQS[U, V] = FiniteEquationSystem[U, V]
+
   /**
    * It solves a finite equation system by using a worklist based method.
    * @param eqs the equation system to solve.
    * @param start the initial assignment.
    * @param litener the listener whose callbacks are called for debugging and tracing.
    */
-  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: U => V, listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = {
+  def solve[U, V](eqs: FiniteEquationSystem[U, V], params: Params[U,V]) = {
+    import params._
+    
     val current = (collection.mutable.HashMap.empty[U, V]).withDefault(start)
     listener.initialized(current)
     var workList = collection.mutable.Queue.empty[U]
@@ -44,9 +55,12 @@ object WorkListSolver extends FixpointSolver {
         // this might become expensive if worklist is big... however, blindly 
         // adding to the worklist all the elements in the influence set greatly
         // increases the number of iterations.
-        for (y <- eqs.infl.image(x); if ! (workList contains y)) workList += y
+        for (y <- eqs.infl.image(x); if !(workList contains y)) workList += y
       }
     }
     current
   }
+
+  def apply[U, V](eqs: FiniteEquationSystem[U, V], start: Assignment[U,V], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) =
+    solve(eqs, Params(start, listener))
 }
