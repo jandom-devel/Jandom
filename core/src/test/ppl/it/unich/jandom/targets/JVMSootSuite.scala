@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato, Francesca Scozzari
+ * Copyright 2013, 2015 Gianluca Amato, Francesca Scozzari
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -45,9 +45,7 @@ class JVMSootSuite extends FunSuite with SootTests {
   val numdomain = PPLDomain[C_Polyhedron]()
 
   bafTests()
-  jimpleNumTests()
   jimpleInterProceduralNumTests()
-  jimplePairSharingTests()
   jimpleInterProceduralPSTests()
 
   def bafTests() {
@@ -73,110 +71,6 @@ class JVMSootSuite extends FunSuite with SootTests {
           val parser = new NumericalPropertyParser(env)
           val prop = parser.parseProperty(propString, params.domain.numdom).get
           assert(ann(method.lastPP.get).prop === prop)
-        } finally {
-          params.debugWriter.flush()
-        }
-      }
-    }
-  }
-
-  def jimpleNumTests() {
-    val jimpleNumericalTests = Seq(
-      "sequential" ->
-        Seq(None -> false -> "v0 == 0 && v1 == 10 && v2 == 10"),
-      "conditional" ->
-        Seq(None -> false -> "v0 == 0 && v1 == 0 && v2 == 1 && v3==v3"),
-      "loop" ->
-        Seq(None -> false -> "v0 >= 10 && v0 <= 11"),
-      "nested" ->
-        Seq(None -> false -> "v0 >= v1 - 1 && v1 >= 10 && v1 <= 11 && v2==v2"),
-      "longassignment" ->
-        Seq(None -> false -> "11*v0 - 33*v1 >= -63 && v1 >=10 && v2 == v2 && v3 == v3 && v4 == v4"),
-      "topologicalorder" ->
-        Seq(None -> false -> "v0 == 1 && v1 - v2 == -1 &&  v2 >= 3 && v2 <= 4"),
-      "parametric_static" -> Seq(
-        None -> true -> "p0 == p0 && p1 == p1 && i0 + i1 - i2 == 0  && p0 == i0 && p1 == i1",
-        Some("p0 == 0 && p1 == p1") -> true -> "i0==0 && i1 - i2 == 0 && p0 == i0 && p1 == i1"),
-      "parametric_dynamic" ->
-        Seq(None -> true -> "this == this && p0 == p0 && p1 == p1 && r0==r0 && i0 + i1 - i2 == 0 && i3==i3 && p0==i0 && p1==i1"),
-      "parametric_caller" ->
-        Seq(None -> true -> "p0 == p0 && p1 == p1 && i0 == i0 && i1== i1 && i2==7 && b3 ==3 && b4 ==4 && i0 - p0 == 0 && i1 - p1 == 0"))
-
-    for ((methodName, instances) <- jimpleNumericalTests; (((input, ifIo), propString), i) <- instances.zipWithIndex) {
-      val method = new JimpleMethod(c.getMethodByName(methodName))
-      val params = new Parameters[JimpleMethod] {
-        val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
-        io = ifIo
-        interpretation = Some(new JimpleInterpretation(this))
-        //debugWriter = new java.io.PrintWriter(System.err)
-      }
-      test(s"Jimple numerical analysis: ${methodName} ${if (i > 0) i + 1 else ""}") {
-        val env = Environment()
-        val parser = new NumericalPropertyParser(env)
-        try {
-          val ann = input match {
-            case None => method.analyze(params)
-            case Some(input) =>
-              val prop = parser.parseProperty(input, params.domain.numdom).get
-              method.analyzeFromInput(params)(params.domain(prop, IntType.v()))
-          }
-          val prop = parser.parseProperty(propString, params.domain.numdom).get
-          assert(ann(method.lastPP.get).prop === prop)
-        } finally {
-          params.debugWriter.flush()
-        }
-      }
-    }
-  }
-
-  def jimplePairSharingTests() {
-    val jimplePairSharingTests: Seq[(String, Set[UP[Int]])] = Seq(
-      "sequential" -> Set(),
-      "conditional" -> Set(),
-      "loop" -> Set(),
-      "nested" -> Set(),
-      "longassignment" -> Set(),
-      "topologicalorder" -> Set(),
-      "complexif" -> Set(),
-      "objcreation" -> Set(
-        UP(0, 0), UP(0, 2), UP(0, 3), UP(0, 5), UP(0, 6), UP(0, 7), UP(0, 8),
-        UP(1, 1), UP(1, 4),
-        UP(2, 0), UP(2, 2), UP(2, 3), UP(2, 5), UP(2, 6), UP(2, 7), UP(2, 8),
-        UP(3, 3), UP(3, 5), UP(3, 6), UP(3, 7), UP(3, 8),
-        UP(4, 4),
-        UP(5, 5), UP(5, 6), UP(5, 7), UP(5, 8),
-        UP(6, 6), UP(6, 7), UP(6, 8),
-        UP(7, 7), UP(7, 8),
-        UP(8, 8)),
-      "classrefinement" -> Set(
-        UP(0, 0), UP(0, 3),
-        UP(1, 1), UP(1, 2), UP(1, 4), UP(1, 5),
-        UP(2, 2), UP(2, 4), UP(2, 5), UP(2, 6),
-        UP(3, 3),
-        UP(4, 4), UP(4, 5),
-        UP(5, 5), UP(5, 6),
-        UP(6, 6)),
-      "class_parametric" -> Set(
-        UP(0, 0), UP(0, 1), UP(0, 2), UP(0, 3),
-        UP(1, 1), UP(1, 2), UP(1, 2), UP(1, 3),
-        UP(2, 2), UP(2, 3),
-        UP(3, 3),
-        UP(4, 4), UP(4, 5),
-        UP(5, 5)))
-
-    for ((methodName, ps) <- jimplePairSharingTests) {
-      val jmethod = new JimpleMethod(c.getMethodByName(methodName))
-      val params = new Parameters[JimpleMethod] {
-        val domain = new SootFrameObjectDomain(psdom)
-        io = true
-        //debugWriter = new java.io.PrintWriter(System.err)
-      }
-      val inte = new TopSootInterpretation[JimpleMethod, params.type](params)
-      params.interpretation = Some(inte)
-      test(s"Jimple object analysis: ${methodName}") {
-        try {
-          val ann = jmethod.analyze(params)
-          assert(ann(jmethod.lastPP.get).prop === psdom(ps, jmethod.localTypes(params)))
         } finally {
           params.debugWriter.flush()
         }
