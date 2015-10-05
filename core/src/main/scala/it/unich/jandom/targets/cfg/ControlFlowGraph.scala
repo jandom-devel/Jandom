@@ -170,7 +170,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
       params.log("result " + (graph.getSuccsOf(node) zip result).mkString(" ; ") + "\n")
       for ((succ, out) <- graph.getSuccsOf(node) zip result) {
         annEdge((node, succ)) = out
-        val newinput = graph.getPredsOf(succ) map { e => annEdge((e, succ)) } reduce { _ union _ }
+        val newinput = ann(succ) intersection (graph.getPredsOf(succ) map { e => annEdge((e, succ)) } reduce { _ union _ })
         params.log(s"narrow $succ : ${ann(succ)} with $newinput ")
         // this may probably cause an infinite loop
         val succval = if (ordering.lteq(succ, node)) {

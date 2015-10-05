@@ -133,7 +133,7 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
         invariant = newinvariant
 
         bodyResult = body.analyzeStmt(params)(condition.analyze(invariant), newphase, ann)
-        newinvariant = invariant narrowing (input union bodyResult)
+        newinvariant = invariant narrowing (invariant intersection (input union bodyResult))
 
         // Debug
         params.log(s"Body Result: $bodyResult\n")
