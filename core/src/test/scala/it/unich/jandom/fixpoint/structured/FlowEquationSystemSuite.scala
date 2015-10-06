@@ -99,9 +99,8 @@ class FlowEquationSystemSuite extends FunSpec {
       }
 
       val box = { (x: Int, y: Int) => x + 2 * y }
-      val boxes: PartialFunction[Int, Box[Int]] = { case _ => box }
-      val eqs1 = simpleEqs.withBoxes(boxes, true)
-      val eqs2 = simpleEqs.withBoxes(boxes, false)
+      val eqs1 = simpleEqs.withBoxes(box, true)
+      val eqs2 = simpleEqs.withBoxes(box, false)
 
       test(eqs1)
       test(eqs2)
@@ -122,11 +121,10 @@ class FlowEquationSystemSuite extends FunSpec {
         assertResult(9)(body(rho2)(1))
       }
 
-      val box = { (x: Int, y: Int) => x + (2 * y) }
-      val boxes: PartialFunction[Int, Box[Int]] = { case _ => box }
+      val box = { (x: Int, y: Int) => x + (2 * y) }      
       val ordering = DFOrdering(simpleEqs.infl)(0)
-      val eqs1 = simpleEqs.withLocalizedBoxes(boxes, ordering, true)
-      val eqs2 = simpleEqs.withLocalizedBoxes(boxes, ordering, false)
+      val eqs1 = simpleEqs.withLocalizedBoxes(box, ordering, true)
+      val eqs2 = simpleEqs.withLocalizedBoxes(box, ordering, false)
 
       test(eqs1)
       test(eqs2)

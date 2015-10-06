@@ -52,12 +52,11 @@ class EquationSystemSuite extends FunSpec {
     }
     
     it("correctly adds boxes") {
-      val eqs = simpleEqs.withBoxes({ case _ => box }, false)
+      val eqs = simpleEqs.withBoxes(box, false)
       assertResult(0) { eqs.body(rho)(0) }
       assertResult(2) { eqs.body(rho)(1) }
       assertResult(4) { eqs.body(rho)(2) }
       assertResult(9) { eqs.body(rho)(3) }
     }
   }
-
 }

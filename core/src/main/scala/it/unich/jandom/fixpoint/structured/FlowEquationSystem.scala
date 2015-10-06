@@ -74,7 +74,7 @@ object FlowEquationSystem {
    * Returns an implementation of `FlowEquationSystem` from a subset of its constituents.
    */
   def apply[U, V, E](unknowns: Iterable[U], inputUnknowns: Iterable[U], edgeAction: EdgeAction[U, V, E],
-    source: E => U, target: E => U, outgoing: U => Iterable[E], ingoing: U => Iterable[E], initial: U => V, combine: Box[V]) =
+    source: E => U, target: E => U, outgoing: U => Iterable[E], ingoing: U => Iterable[E], initial: U => V, combine: Box[V] ) =
     SimpleFlowEquationSystem(unknowns, inputUnknowns, edgeAction, source, target, outgoing, ingoing, initial, combine)
 
   /**
@@ -141,14 +141,14 @@ object FlowEquationSystem {
       initial = initial
     )
 
-    def withBoxes(boxes: PartialFunction[U, Box[V]], boxesAreIdempotent: Boolean) = FiniteEquationSystem(
+    def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean) = FiniteEquationSystem(
       body = addBoxesToBody(body, boxes),
       inputUnknowns = inputUnknowns,
       unknowns = unknowns,
       infl = if (boxesAreIdempotent) infl else infl union Relation(unknowns.toSet, { (u: U) => Set(u) }),
       initial = initial)
 
-    def withLocalizedBoxes(boxes: PartialFunction[U, Box[V]], ordering: Ordering[U], boxesAreIdempotent: Boolean) = {
+    def withLocalizedBoxes(boxes: BoxAssignment[U, V], ordering: Ordering[U], boxesAreIdempotent: Boolean) = {
       if (boxesAreIdempotent) {
         val newEdgeAction: EdgeAction[U, V, E] = { (rho: U => V) =>
           e: E =>

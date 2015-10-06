@@ -18,6 +18,9 @@
 
 package it.unich.jandom.fixpoint
 
+import it.unich.jandom.fixpoint.lattice.DirectedPartialOrdering
+import it.unich.jandom.fixpoint.lattice.DirectedSet
+
 /**
  * The `Box` object defines some factories for building boxes, i.e. functions of the
  * type (V,V)=>V for some V which are abstractions of widenings, narrowings, etc..
@@ -34,21 +37,31 @@ object Box {
   def left[V]: Box[V] = { (x: V, y: V) => x }
 
   /**
-   * A box which coincides with the `first` box for `delay` calls,
-   * and then coincides with the `second` box. This may be used to implement
-   * delayed widening and narrowing.
+   * Returns the upper bound for a directed set as a Box.
    */
-  def cascade[V](first: Box[V], delay: Int, second: Box[V]): Box[V] = {
-    require(delay >= 0)
-    var steps = delay
+  def upperbound[V <: DirectedSet[V]]: Box[V] = { _ upperbound _ }
 
-    { (x: V, y: V) =>
-      if (steps > 0) {
-        steps -= 1
-        first(x, y)
-      } else {
-        second(x, y)
-      }
-    }
+  /**
+   * Warrowing, as defined in the upcoming paper of Amato, Scozzari, Seidl, Apinis, Vodjani,
+   * "Efficiently intertwining widening and narrowing".
+   * @tparam V the type of values, should be a partial ordered
+   * @param widening is widening over V
+   * @param narrowing is a narrowing over V
+   */
+  def warrowing[V <: PartiallyOrdered[V]](widening: Box[V], narrowing: Box[V]): Box[V] = {
+    (x: V, y: V) => if (y <= x) narrowing(x, y) else widening(x, y)
+  }
+
+  /**
+   * Warrowing, as defined in the upcoming paper of Amato, Scozzari, Seidl, Apinis, Vodjani,
+   * "Efficiently intertwining widening and narrowing".
+   * @tparam V the type of values, should be a partially ordered
+   * @param widening is widening over V
+   * @param narrowing is a narrowing over V
+   */
+  def warrowingFromOrdering[V: PartialOrdering](widening: Box[V], narrowing: Box[V]): Box[V] = {
+    val order = implicitly[PartialOrdering[V]]
+    (x: V, y: V) => if (order.lteq(y, x)) narrowing(x, y) else widening(x, y)
   }
 }
+

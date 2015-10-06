@@ -80,7 +80,7 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
     import solver._
 
     it("gives the expected result starting from startRho with last") {
-      val finalRho = solver(simpleEqs.withBoxes({ case _ => lastBox }, true), startRho)
+      val finalRho = solver(simpleEqs.withBoxes(lastBox, true), startRho)
       assert(finalRho(0) === 0.0)
       assert(finalRho(1) === 10.0)
       assert(finalRho(2) === 11.0)
@@ -88,7 +88,7 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
     }
 
     it("gives the expected result starting from startRho with max") {
-      val finalRho = solver(simpleEqs.withBoxes({ case _ => maxBox }, true), startRho)
+      val finalRho = solver(simpleEqs.withBoxes(maxBox, true), startRho)
       assert(finalRho(0) === 0.0)
       assert(finalRho(1) === 10.0)
       assert(finalRho(2) === 11.0)
@@ -96,7 +96,7 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
     }
 
     it("gives the expected result starting from startRho with widening") {
-      val finalRho = solver(simpleEqs.withBoxes({ case _ => wideningBox }, true), startRho)
+      val finalRho = solver(simpleEqs.withBoxes(wideningBox, true), startRho)
       assert(finalRho(0) === 0.0)
       assert(finalRho(1) === Double.PositiveInfinity)
       assert(finalRho(2) === Double.PositiveInfinity)
@@ -104,7 +104,7 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
     }
 
     it("always returns a box solution with widening") {
-      testCorrectness(simpleEqs.withBoxes({ case _ => wideningBox }, true), solver)
+      testCorrectness(simpleEqs.withBoxes(wideningBox, true), solver)
     }
   }
 
@@ -126,7 +126,7 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
     }
 
     it("correctly adds boxes") {
-      val eqs = simpleEqs.withBoxes({ case _ => timesBox }, false)
+      val eqs = simpleEqs.withBoxes(timesBox, false)
       assertResult(0) { eqs.body(rho)(0) }
       assertResult(2) { eqs.body(rho)(1) }
       assertResult(4) { eqs.body(rho)(2) }

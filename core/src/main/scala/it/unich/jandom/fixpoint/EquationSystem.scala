@@ -48,7 +48,7 @@ trait EquationSystem[U, V] {
    * @param boxesAreIdempotent if true boxes are assumed to be idempotent. In this case, some optimization.
    * is possible.
    */
-  def withBoxes(boxes: PartialFunction[U, Box[V]], boxesAreIdempotent: Boolean): EquationSystem[U, V]
+  def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean): EquationSystem[U, V]
 }
 
 object EquationSystem {
@@ -73,7 +73,7 @@ object EquationSystem {
    */
   case class SimpleEquationSystem[U, V](val body: Body[U, V], val initial: U => V) extends EquationSystem[U,V] {
     def bodyWithDependencies = buildBodyWithDependencies(body)
-    def withBoxes(boxes: PartialFunction[U, Box[V]], boxesAreIdempotent: Boolean) =
+    def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean) =
       copy(body = addBoxesToBody(body, boxes))
     def withInitialAssignment(rho: U => V) =
       copy(initial = rho)
@@ -84,7 +84,7 @@ object EquationSystem {
    * plugged inside. If `newbody = addBoxesToBody(body, boxes)` and `boxes` is defined on `x`,
    * then `newbody(rho)(x) = boxes(x) (  rho(x), body(rho)(x) )`.
    */
-  def addBoxesToBody[U, V](body: Body[U, V], boxes: PartialFunction[U, Box[V]]): Body[U,V] = {
+  def addBoxesToBody[U, V](body: Body[U, V], boxes: BoxAssignment[U, V]): Body[U,V] = {
     (rho: U => V) =>
       (x: U) => {
         if (boxes.isDefinedAt(x)) boxes(x)(rho(x), body(rho)(x)) else body(rho)(x)

@@ -64,7 +64,7 @@ class InfiniteEquationSystemTest extends FunSpec with PropertyChecks {
    */
   def testExpectedResult(solver: SimpleSolver[Int, Int]) {
     it("gives the expected result starting from startRho with max") {
-      val finalRho = solver(simpleEqs.withBoxes({ case _ => maxBox }, true), startRho, Seq(4))
+      val finalRho = solver(simpleEqs.withBoxes(maxBox, true), startRho, Seq(4))
       assertResult(Set(0, 1, 2, 4))(finalRho.keySet)
       assertResult(2)(finalRho(1))
       assertResult(2)(finalRho(2))

@@ -16,28 +16,19 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom.fixpoint
+package it.unich.jandom.fixpoint.lattice
 
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.FunSpec
-import org.scalacheck.Gen
-
-class BoxSuite extends FunSpec with PropertyChecks {
-  describe("A left box") {
-    val box = Box.left[Int]
-    it("returns the first element") {
-      forAll { (x: Int, y: Int) =>
-        assertResult(x)(box(x, y))
-      }
-    }
-  }
-
-  describe("A right box") {
-    val box = Box.right[Int]
-    it("returns the second element") {
-      forAll { (x: Int, y: Int) =>
-        assertResult(y)(box(x, y))
-      }
-    }
-  }
+/**
+ * A DirectedSet is a partially ordered set where each pair of elements has an upper bound.
+ */
+trait DirectedSet[+A] extends PartiallyOrdered[A] {
+  /**
+   * It returns an upper bound of `x` and `y`.
+   */
+  def upperbound[B >: A <% PartiallyOrdered[B]](that: B): B
+  
+  /**
+   * It returns an upper bound of `x` and `y`. It is an alias for the `upperbound` method.
+   */
+  @inline def \/[B >: A <% PartiallyOrdered[B]](that: B) = this upperbound that
 }

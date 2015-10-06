@@ -31,48 +31,38 @@ import it.unich.jandom.utils.Relation
 /**
  * This driver is an interface for solvers of layered equation systems.
  */
-object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
+object StructuredDriver extends Driver {
 
   /**
    * Returns the standard widening for the type V.
    */
-  private def defaultWidening[V <: AbstractProperty[V]]: Box[V] = { _ widening _ }
+  private def defaultWidening[V <: AbstractProperty[V]] = { (x:V, y:V) => x widening y }
 
   /**
    * Returns the standard union for the type V.
    */
-  private def unionWidening[V <: AbstractProperty[V]]: Box[V] = { _ union _ }
+  private def unionWidening[V <: AbstractProperty[V]] = { (x:V, y:V) => x union y }
 
   /**
    * Returns the standard narrowing for the type V.
    */
-  private def defaultNarrowing[V <: AbstractProperty[V]]: Box[V] = { _ narrowing _ }
+  private def defaultNarrowing[V <: AbstractProperty[V]] = { (x:V, y:V) => x narrowing y }
 
   /**
    * Returns the standard intersection for the type V.
    */
-  private def intersectionNarrowing[V <: AbstractProperty[V]]: Box[V] = { _ intersection _ }
-
-  /**
-   * Returns a mixed box from a given widening and narrowing.
-   */
-  private def createUpdate[V <: AbstractProperty[V]](widening: Box[V], narrowing: Box[V]): Box[V] = { (x: V, y: V) => if (y <= x) narrowing(x, y) else widening(x, y) }
+  private def intersectionNarrowing[V <: AbstractProperty[V]] = { (x:V, y:V) => x intersection y }
 
   /**
    * Returns an assignment of a widening for each unknown.
    * @param w input parameter which drives the generation of the widening assignment.
    */
-  private def wideningDefine[V <: AbstractProperty[V]](w: Widenings.Widening): Any => Box[V] = {
+  private def wideningDefine[V <: AbstractProperty[V]](w: Widenings.Widening): BoxAssignment[Any, V] = {
     w match {
-      case Widenings.Default => { _ => defaultWidening }
-      case Widenings.Union => { _ => unionWidening }
-      case Widenings.None => { _ => Box.right[V] }
-      case Widenings.Delayed(first, delay, next) =>
-        val hash = collection.mutable.Map.empty[Any, Box[V]]
-        val widening1 = wideningDefine[V](first)
-        val widening2 = wideningDefine[V](next)
-        val widening = { (x: Any) => hash.getOrElseUpdate(x, Box.cascade(widening1(x), delay, widening2(x))) }
-        widening
+      case Widenings.Default => defaultWidening[V]
+      case Widenings.Union => unionWidening[V]
+      case Widenings.None => BoxAssignment.right[V]
+      case Widenings.Delayed(first, delay, next) => BoxAssignment.cascade(wideningDefine[V](first), delay, wideningDefine[V](next))
     }
   }
 
@@ -80,18 +70,13 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
    * Returns an assignment of a narrowing for each unknown.
    * @param b input parameter which drives the generation of the narrowing assignment.
    */
-  private def narrowingDefine[V <: AbstractProperty[V]](n: Narrowings.Narrowing): Any => Box[V] = {
+  private def narrowingDefine[V <: AbstractProperty[V]](n: Narrowings.Narrowing): BoxAssignment[Any, V] = {
     n match {
-      case Narrowings.Default => { _ => defaultNarrowing }
-      case Narrowings.Intersection => { _ => intersectionNarrowing }
-      case Narrowings.Stop => { _ => Box.left[V] }
-      case Narrowings.None => { _ => Box.right[V] }
-      case Narrowings.Delayed(first, delay, next) =>
-        val hash = collection.mutable.Map.empty[Any, Box[V]]
-        val narrowing1 = narrowingDefine[V](first)
-        val narrowing2 = narrowingDefine[V](next)
-        val narrowing = { (x: Any) => hash.getOrElseUpdate(x, Box.cascade(narrowing1(x), delay, narrowing2(x))) }
-        narrowing
+      case Narrowings.Default => defaultNarrowing[V]
+      case Narrowings.Intersection => intersectionNarrowing[V]
+      case Narrowings.Stop => BoxAssignment.left[V]
+      case Narrowings.None => BoxAssignment.right[V]
+      case Narrowings.Delayed(first, delay, next) => BoxAssignment.cascade(narrowingDefine[V](first), delay, narrowingDefine[V](next))
     }
   }
 
@@ -99,17 +84,10 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
    * Returns an assignment of a mixed box for each unknown.
    * @param u input parameter which drives the generation of the mixed assignment.
    */
-  private def updateDefine[V <: AbstractProperty[V]](u: Updates.Update): Any => Box[V] = {
+  private def warrowingDefine[V <: AbstractProperty[V]](u: Updates.Update): BoxAssignment[Any, V] = {
     u match {
-      case Updates.DefaultUpdate => {
-        _ => createUpdate(defaultWidening, defaultNarrowing)
-      }
-      case Updates.Combine(widening, narrowing) => {
-        val w = wideningDefine[V](widening)
-        val n = narrowingDefine[V](narrowing)
-        val update = { (x: Any) => createUpdate(w(x), n(x)) }
-        update
-      }
+      case Updates.DefaultUpdate => BoxAssignment.warrowing(defaultWidening[V], defaultNarrowing[V])
+      case Updates.Combine(widening, narrowing) => BoxAssignment.warrowing(wideningDefine[V](widening), narrowingDefine[V](narrowing))
     }
   }
 
@@ -121,29 +99,12 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
    * @param location input parameter which drives the filtering by specifying where to put boxes.
    * @param ordering a GraphOrdering used when we need to detect heads.
    */
-  private def boxFilter[U, V <: AbstractProperty[V]](eqs: FiniteEquationSystem[U, V], boxes: U => Box[V], location: BoxLocation.Value, ordering: Option[GraphOrdering[U]]): IterableFunction[U, Box[V]] = {
+  private def boxFilter[U, V <: AbstractProperty[V]](eqs: FiniteEquationSystem[U, V], boxes: BoxAssignment[U, V], location: BoxLocation.Value, ordering: Option[GraphOrdering[U]]): Option[BoxAssignment[U, V]] =
     location match {
-      case BoxLocation.None =>
-        IterableFunction.empty
-      case BoxLocation.All =>
-        new IterableFunction[U, Box[V]] {
-          def apply(x: U) = boxes(x)
-          def isDefinedAt(x: U) = true
-          def iterator = eqs.unknowns.iterator map { u => (u, boxes(u)) }
-          def keys = eqs.unknowns
-          def keySet = eqs.unknowns.toSet
-        }
-      case BoxLocation.Loop =>
-        val realOrdering = ordering.get
-        new IterableFunction[U, Box[V]] {
-          def apply(x: U) = boxes(x)
-          def isDefinedAt(x: U) = realOrdering.isHead(x)
-          def iterator = eqs.unknowns.iterator filter realOrdering.isHead map { u => (u, apply(u)) }
-          def keys = eqs.unknowns filter realOrdering.isHead
-          def keySet = keys.toSet
-        }
+      case BoxLocation.None => None
+      case BoxLocation.All => Some(boxes)
+      case BoxLocation.Loop => Some(boxes.restrict(ordering.get.isHead))
     }
-  }
 
   /**
    * Apply a given box assignment to an equation system, generatig a new equation system.
@@ -152,22 +113,22 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
    * @param scope an input parameters which determines how we want to apply boxes (such as localized or standard)
    * @param ordering an optional ordering on unknowns to be used for localized boxes.
    */
-  private def boxApply[U, V <: AbstractProperty[V], E](eqs: LayeredEquationSystem[U, V, E], boxes: IterableFunction[U, Box[V]], scope: BoxScope.Value, ordering: Option[Ordering[U]], idempotent: Boolean): FiniteEquationSystem[U, V] = {
-    if (boxes.isEmpty)
+  private def boxApply[U, V <: AbstractProperty[V], E](eqs: LayeredEquationSystem[U, V, E], optBoxes: Option[BoxAssignment[U, V]], scope: BoxScope.Value, ordering: Option[Ordering[U]], idempotent: Boolean): FiniteEquationSystem[U, V] = {
+    if (optBoxes.isEmpty)
       eqs
     else scope match {
-      case BoxScope.Standard => eqs.withBoxes(boxes, idempotent)
-      case BoxScope.Localized => eqs.withLocalizedBoxes(boxes, ordering.get, idempotent)
+      case BoxScope.Standard => eqs.withBoxes(optBoxes.get, idempotent)
+      case BoxScope.Localized => eqs.withLocalizedBoxes(optBoxes.get, ordering.get, idempotent)
     }
   }
 
-  def addLocalizedBoxes[U, V <: AbstractProperty[V], E](eqs: LayeredEquationSystem[U, V, E], widening: PartialFunction[U, Box[V]], narrowing: PartialFunction[U, Box[V]], ordering: Ordering[U], boxesAreIdempotent: Boolean): FiniteEquationSystem[U, V] = {
+  def addLocalizedBoxes[U, V <: AbstractProperty[V], E](eqs: LayeredEquationSystem[U, V, E], widening: BoxAssignment[U, V], narrowing: BoxAssignment[U, V], ordering: Ordering[U], boxesAreIdempotent: Boolean): FiniteEquationSystem[U, V] = {
     val ingoing = eqs.targets.inverse
     val newbody = { (rho: U => V) =>
       (x: U) =>
         val contributions = for (e <- ingoing.image(x)) yield {
           val contrib = eqs.edgeBody(e)(rho)(x)
-          val boxapply = widening.isDefinedAt(x) && eqs.sources.image(e).exists { ordering.lteq(x, _) } && !(contrib <= rho(x))
+          val boxapply = eqs.sources.image(e).exists { ordering.lteq(x, _) } && !(contrib <= rho(x))
           (contrib, boxapply)
         }
         // if contribution is empty the unknown x has no right hand side... it seems
@@ -177,13 +138,9 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
         else {
           val result = contributions reduce { (x: (V, Boolean), y: (V, Boolean)) => (eqs.combine(x._1, y._1), x._2 || y._2) }
           //println((x, rho(x), contributions))
-          if (widening.isDefinedAt(x)) {
-            if (result._2) {
-              widening(x)(rho(x), result._1)
-            } else
-              if (result._1 < rho(x)) narrowing(x)(rho(x), result._1) else result._1
-          } else
-            result._1
+          if (result._2) {
+            widening(x)(rho(x), result._1)
+          } else if (result._1 < rho(x)) narrowing(x)(rho(x), result._1) else result._1
         }
     }
     FiniteEquationSystem(
@@ -230,7 +187,7 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
 
     boxstrategy match {
       case BoxStrategy.OnlyWidening =>
-        val widening = boxFilter[U, V](eqs, wideningDefine(p(Driver.widening)), boxlocation, ordering)
+        val widening = boxFilter[U, V](eqs, wideningDefine[V](p(Driver.widening)), boxlocation, ordering)
         val withWidening = boxApply(eqs, widening, boxscope, ordering, true)
         FiniteDriver(withWidening, eqs.initial, ordering, restart, p)
       case BoxStrategy.TwoPhases =>
@@ -243,23 +200,18 @@ object StructuredDriver extends it.unich.jandom.fixpoint.Driver {
         FiniteDriver(withNarrowing, ascendingAssignment, ordering, restart, p)
       case BoxStrategy.Mixed =>
         if (boxscope == BoxScope.Localized) {
-           val widening = boxFilter[U, V](eqs, wideningDefine(p(Driver.widening)), boxlocation, ordering)
-           val narrowing = boxFilter[U, V](eqs, narrowingDefine(p(Driver.narrowing)), boxlocation, ordering)
-           val withUpdate = addLocalizedBoxes(eqs, widening, narrowing, ordering.get, false)
+          val widening = boxFilter[U, V](eqs, wideningDefine(p(Driver.widening)), boxlocation, ordering) 
+          val narrowing = boxFilter[U, V](eqs, narrowingDefine(p(Driver.narrowing)), boxlocation, ordering)
+          val withUpdate = if (widening.isEmpty && narrowing.isEmpty) 
+            eqs
+          else 
+            addLocalizedBoxes(eqs, widening getOrElse BoxAssignment.right[V], narrowing getOrElse BoxAssignment.right[V], ordering.get, false)
           FiniteDriver(withUpdate, eqs.initial, ordering, restart, p)
-
-/*          val updatedef1 = updateDefine[dom.Property](Updates.Combine(p(Driver.widening), Narrowings.None))
-          val update1 = boxFilter[U, V](eqs, updatedef1, boxlocation, ordering)
-          val withUpdate1 = eqs.withLocalizedBoxes(update1, ordering.get, true)
-          val updatedef2 = updateDefine[dom.Property](Updates.Combine(Widenings.None, p(Driver.narrowing)))
-          val update2 = boxFilter[U, V](withUpdate1, updatedef2, boxlocation, ordering)
-          val withUpdate2 = withUpdate1.withBoxes(update2, false)
-          FiniteDriver(withUpdate2, eqs.initial, ordering, restart, p)
-  */      } else {
-          val update = boxFilter[U, V](eqs, updateDefine(p(Driver.update)), boxlocation, ordering)
+        } else {
+          val warrowingAssignment = boxFilter[U, V](eqs, warrowingDefine(p(Driver.update)), boxlocation, ordering)
           // the mixed operator has no sense at the localized level
-          val withUpdate = boxApply(eqs, update, boxscope, ordering, false)
-          FiniteDriver(withUpdate, eqs.initial, ordering, restart, p)
+          val eqsWithWarrowing = boxApply(eqs, warrowingAssignment, boxscope, ordering, false)
+          FiniteDriver(eqsWithWarrowing, eqs.initial, ordering, restart, p)
         }
     }
   }

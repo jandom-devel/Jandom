@@ -49,7 +49,7 @@ trait FiniteEquationSystem[U, V] extends EquationSystem[U, V] {
   /**
    * Add boxes to the equation system.
    */
-  def withBoxes(boxes: PartialFunction[U, Box[V]], boxesAreIdempotent: Boolean): FiniteEquationSystem[U, V]
+  def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean): FiniteEquationSystem[U, V]
 }
 
 object FiniteEquationSystem {
@@ -73,7 +73,7 @@ object FiniteEquationSystem {
 
     def bodyWithDependencies = buildBodyWithDependencies(body)
 
-    def withBoxes(boxes: PartialFunction[U, Box[V]], boxesAreIdempotent: Boolean) = copy(
+    def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean) = copy(
       body = addBoxesToBody(body, boxes),
       infl = if (boxesAreIdempotent) infl else infl union Relation(unknowns.toSet, { (u: U) => Set(u) }))
   }

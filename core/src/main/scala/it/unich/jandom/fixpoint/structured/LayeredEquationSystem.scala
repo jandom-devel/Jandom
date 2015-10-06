@@ -59,7 +59,7 @@ trait LayeredEquationSystem[U, V, E] extends FiniteEquationSystem[U, V] {
    * @param ordering an order on unknown in order to decide for which layer we need to apply widening.
    * @param boxesAreIdempotent if true the boxes are assumed to be idempotent and some optimization is possible.
    */
-  def withLocalizedBoxes(boxes: PartialFunction[U, Box[V]], ordering: Ordering[U], boxesAreIdempotent: Boolean): LayeredEquationSystem[U, V, _]
+  def withLocalizedBoxes(boxes: BoxAssignment[U, V], ordering: Ordering[U], boxesAreIdempotent: Boolean): LayeredEquationSystem[U, V, _]
 
   /**
    * Add an initial assignments to the equation system, which is combined with standard body.
@@ -128,14 +128,14 @@ object LayeredEquationSystem {
       infl = infl,
       initial = initial)
 
-    def withBoxes(boxes: PartialFunction[U, Box[V]], boxesAreIdempotent: Boolean) = FiniteEquationSystem(
+    def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean) = FiniteEquationSystem(
       body = addBoxesToBody(body, boxes),
       inputUnknowns = inputUnknowns,
       unknowns = unknowns,
       infl = if (boxesAreIdempotent) infl else infl union Relation(unknowns.toSet, { (u: U) => Set(u) }),
       initial = initial)
 
-    def withLocalizedBoxes(boxes: PartialFunction[U, Box[V]], ordering: Ordering[U], boxesAreIdempotent: Boolean) = {
+    def withLocalizedBoxes(boxes: BoxAssignment[U, V], ordering: Ordering[U], boxesAreIdempotent: Boolean) = {
       val newEdgeBody: EdgeBody[U, V, E] = { e: E =>
         (rho: U => V) => x: U =>
           if (boxes.isDefinedAt(x) && sources.image(e).exists { ordering.lteq(x, _) }) {
