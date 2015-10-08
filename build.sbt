@@ -46,15 +46,8 @@ val optionalPPLPathName = try {
 
 pplJar in ThisBuild := optionalPPLPathName
 
-//*** Eclipse plugin
-
-EclipseKeys.executionEnvironment in ThisBuild := Some(EclipseExecutionEnvironment.JavaSE17)
-
-EclipseKeys.eclipseOutput in ThisBuild := Some("target.eclipse")
-
 // for removing warnings when Breeze does not find native libraries
 //
 // javaOptions in ThisBuild ++= Seq("-Dcom.github.fommil.netlib.BLAS=com.github.fommil.netlib.F2jBLAS",
 //   "-Dcom.github.fommil.netlib.LAPACK=com.github.fommil.netlib.F2jLAPACK",
 //   "-Dcom.github.fommil.netlib.ARPACK=com.github.fommil.netlib.F2jARPACK")
-

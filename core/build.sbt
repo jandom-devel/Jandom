@@ -27,6 +27,10 @@ unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default +  EclipseCreateSrc.Managed
 
+EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE17)
+
+EclipseKeys.eclipseOutput := Some("target.eclipse")
+
 // It would be nice to be able to exclude resource directories from compilation.
 
 managedSourceDirectories in Test := Seq()
@@ -44,4 +48,3 @@ gitHeadCommitSHA := Process("git rev-parse HEAD").lines.head
 buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, gitHeadCommitSHA)
 
 buildInfoPackage := "it.unich.jandom"
-

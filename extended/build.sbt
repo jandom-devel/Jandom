@@ -19,3 +19,8 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
 
 cappiSettings
 
+//*** Eclipse plugin
+
+EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE17)
+
+EclipseKeys.eclipseOutput := Some("target.eclipse")
