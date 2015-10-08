@@ -26,7 +26,7 @@ import it.unich.jandom.utils.IterableFunction
  */
 object PriorityWorkListSolver extends LocalFixpointSolver {
   import EquationSystem._
-  
+
   /**
    * Parameters needed for the local priority worklist solver
    * @param start the initial assignment.
@@ -35,7 +35,7 @@ object PriorityWorkListSolver extends LocalFixpointSolver {
   case class Params[U, V](start: U => V, wanted: Iterable[U], ordering: Ordering[U] = new DynamicPriority[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) extends LocalBaseParams[U,V]
 
   type EQS[U, V] = EquationSystem[U, V]
-  
+
   /**
    * This is an dynamic ordering on unknowns: every time an unknown appears, it gets assigned a lower
    * priority of previous one (i.e., it come earlier in the ordering). This is the default ordering
@@ -48,9 +48,9 @@ object PriorityWorkListSolver extends LocalFixpointSolver {
       val xp = map getOrElseUpdate(x, { current -= 1; current })
       val yp = map getOrElseUpdate(y, { current -= 1; current })
       xp - yp
-    }    
+    }
   }
-  
+
   /**
    * It solves a finite equation system by using a worklist based method with priorities.
    * @param eqs the equation system to solve.
@@ -61,7 +61,7 @@ object PriorityWorkListSolver extends LocalFixpointSolver {
    */
   def solve[U,V](eqs: EquationSystem[U,V], params: Params[U,V]) = {
     import params._
-    
+
     val infl = new collection.mutable.HashMap[U, collection.mutable.Set[U]] with collection.mutable.MultiMap[U, U]
     var workList = collection.mutable.PriorityQueue.empty[U](ordering)
     workList ++= wanted
@@ -70,7 +70,7 @@ object PriorityWorkListSolver extends LocalFixpointSolver {
     listener.initialized(current)
     while (!workList.isEmpty) {
       val x = workList.dequeue()
-      val (newval, dependencies) = eqs.bodyWithDependencies(current)(x)
+      val (newval, dependencies) = eqs.withDependencies(current)(x)
       listener.evaluated(current, x, newval)
       for (y <- dependencies) {
         if (!current.isDefinedAt(y)) {
@@ -86,10 +86,10 @@ object PriorityWorkListSolver extends LocalFixpointSolver {
     }
     current
   }
-  
+
   /**
    * A convenience method for calling the solver
    */
-  def apply[U,V](eqs: EquationSystem[U,V], start: U => V, wanted: Iterable[U], ordering: Ordering[U] = new DynamicPriority[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) = 
+  def apply[U,V](eqs: EquationSystem[U,V], start: U => V, wanted: Iterable[U], ordering: Ordering[U] = new DynamicPriority[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) =
      solve(eqs,Params(start, wanted, ordering, listener))
 }

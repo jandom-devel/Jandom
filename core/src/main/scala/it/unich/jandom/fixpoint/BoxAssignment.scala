@@ -66,7 +66,7 @@ object BoxAssignment {
   /**
    * Returns the upper bound for a directed set.
    */
-  def upperbound[V <: DirectedSet[V]]: BoxAssignment[Any,V] = { (x:V, y:V) => x upperbound y }
+  def union[V <: DirectedSet[V]]: BoxAssignment[Any,V] = { (x:V, y:V) => x union y }
 
   /**
    * A box which coincides with the `first` box for `delay` calls, and then coincides with the `second` box.
@@ -110,14 +110,14 @@ object BoxAssignment {
    * before using the provided widening.
    */
   def delayedWidening[U, V <: DirectedSet[V]](widening: BoxAssignment[U, V], delay: Int): BoxAssignment[U, V] =
-    cascade({ (x:V, y:V) => x upperbound y }, delay, widening)
+    cascade({ (x:V, y:V) => x union y }, delay, widening)
 
   /**
    * Returns a delayed widening obtained by applying upperbound for a given number of steps
    * before using the provided widening.
    */
   def delayedWidening[U, V: DirectedPartialOrdering](widening: BoxAssignment[U, V], delay: Int): BoxAssignment[U, V] =
-    cascade(implicitly[DirectedPartialOrdering[V]].upperbound _, delay, widening)
+    cascade(implicitly[DirectedPartialOrdering[V]].union _, delay, widening)
 
   /**
    * Warrowing, as defined in the upcoming paper of Amato, Scozzari, Seidl, Apinis, Vodjani,

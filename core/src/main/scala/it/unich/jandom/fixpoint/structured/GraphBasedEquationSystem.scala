@@ -21,15 +21,21 @@ package it.unich.jandom.fixpoint.structured
 import it.unich.jandom.fixpoint._
 import it.unich.jandom.fixpoint.finite._
 import it.unich.jandom.utils.Relation
+import it.unich.jandom.fixpoint.lattice.Magma
 
 /**
  * This is the trait for a finite equation system which is composed of several layers. Each layer is
- * an equation system by itself, and may be though of as an hyperedge with many sources and targets.
+ * an equation system by itself, and may be though of as an hyperedges with many sources and a single
+ * target.
  * @tparam U the type for the unknowns of this equation system.
  * @tparam V the type for the values assumed by the unknowns of this equation system.
- * @tparam E the type of hyperedges/layer of this equation system
+ * @tparam E the type of hyperedges of this equation system
  */
-trait LayeredEquationSystem[U, V, E] extends FiniteEquationSystem[U, V] {
+abstract class GraphBasedEquationSystem[U, V: Magma, E] extends FiniteEquationSystem[U, V] {
+  /**
+   * It returns a possible initial value for the analysis
+   */
+  def initial: U => V
 
   /**
    * It returns a function which associates a transformer of assignments to each body.
@@ -49,26 +55,21 @@ trait LayeredEquationSystem[U, V, E] extends FiniteEquationSystem[U, V] {
   def targets: Relation[E, U]
 
   /**
-   * The box to use when combining different layers.
-   */
-  def combine: Box[V]
-
-  /**
    * Add boxes to the equation system in a localized way.
    * @param boxes new box to add.
    * @param ordering an order on unknown in order to decide for which layer we need to apply widening.
    * @param boxesAreIdempotent if true the boxes are assumed to be idempotent and some optimization is possible.
    */
-  def withLocalizedBoxes(boxes: BoxAssignment[U, V], ordering: Ordering[U], boxesAreIdempotent: Boolean): LayeredEquationSystem[U, V, _]
+  def withLocalizedBoxes(boxes: BoxAssignment[U, V], ordering: Ordering[U], boxesAreIdempotent: Boolean): GraphBasedEquationSystem[U, V, _]
 
   /**
-   * Add an initial assignments to the equation system, which is combined with standard body.
-   * @param rho the assignment to combine with the standard body.
+   * Combine a base assignment with the equation system
+   * @param init the assignment to add to the equation system
    */
-  def withInputAssignment(rho: PartialFunction[U, V]): FiniteEquationSystem[U, V]
+  def withBaseAssignment(init: PartialFunction[U, V]): FiniteEquationSystem[U, V]
 }
 
-object LayeredEquationSystem {
+object GraphBasedEquationSystem {
   import EquationSystem._
 
   /**
@@ -79,40 +80,41 @@ object LayeredEquationSystem {
   /**
    * Builds a layered equation system from a subset of its constituents.
    */
-  def apply[U, V, E](unknowns: Iterable[U], inputUnknowns: Iterable[U], edgeBody: EdgeBody[U, V, E],
-    sources: Relation[E, U], targets: Relation[E, U], initial: U => V, combine: Box[V]) =
-    SimpleLayeredEquationSystem(unknowns, inputUnknowns, edgeBody, sources, targets, initial, combine)
+  def apply[U, V: Magma, E](unknowns: Iterable[U], inputUnknowns: Iterable[U], edgeBody: EdgeBody[U, V, E],
+    sources: Relation[E, U], targets: Relation[E, U], initial: U => V) =
+    SimpleGraphBasedEquationSystem(unknowns, inputUnknowns, edgeBody, sources, targets, initial)
 
   /**
    * An implementation of `LayeredEquationSystem` from a subset of its constituents.
    */
-  case class SimpleLayeredEquationSystem[U, V, E](
-      val unknowns: Iterable[U],
-      val inputUnknowns: Iterable[U],
-      val edgeBody: EdgeBody[U, V, E],
-      val sources: Relation[E, U],
-      val targets: Relation[E, U],
-      val initial: U => V,
-      val combine: Box[V]) extends LayeredEquationSystem[U, V, E] {
+  final case class SimpleGraphBasedEquationSystem[U, V, E](
+    val unknowns: Iterable[U],
+    val inputUnknowns: Iterable[U],
+    val edgeBody: EdgeBody[U, V, E],
+    val sources: Relation[E, U],
+    val targets: Relation[E, U],
+    val initial: U => V)(implicit magma: Magma[V])
+      extends GraphBasedEquationSystem[U, V, E] with FiniteEquationSystem.WithBaseAssignment[U, V] {
 
     private val ingoing = targets.inverse
 
     private val outgoing = sources.inverse
 
-    def body = { (rho: U => V) =>
+    val body = { (rho: U => V) =>
       (x: U) =>
         val contributions = for (e <- ingoing.image(x)) yield edgeBody(e)(rho)(x)
         // if contribution is empty the unknown x has no right hand side... it seems
         // reasonable to return the old value.
-        if (contributions.isEmpty) rho(x) else contributions reduce { combine }
+        if (contributions.isEmpty) rho(x) else contributions reduce magma.op
     }
 
     // TODO there is no way to force a particular ordering of the dependencies
-    def bodyWithDependencies = { (rho: U => V) =>
-      (x: U) =>
+    val withDependencies = { (rho: U => V) =>
+      (x: U) => {
         val deps = for (e <- ingoing.image(x); y <- sources.image(e)) yield y
         val res = body(rho)(x)
         (res, deps)
+      }
     }
 
     val infl = {
@@ -121,19 +123,17 @@ object LayeredEquationSystem {
       Relation(graph.toSet, unknownsSet, unknownsSet)
     }
 
-    def withInputAssignment(init: PartialFunction[U, V]) = FiniteEquationSystem(
-      body = addInputAssignmentToBody(body, init, combine),
+    def withBaseAssignment(init: PartialFunction[U, V]) = FiniteEquationSystem(
+      body = addBaseAssignmentToBody(body, init),
       unknowns = unknowns,
       inputUnknowns = inputUnknowns,
-      infl = infl,
-      initial = initial)
+      infl = infl)
 
     def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean) = FiniteEquationSystem(
       body = addBoxesToBody(body, boxes),
       inputUnknowns = inputUnknowns,
       unknowns = unknowns,
-      infl = if (boxesAreIdempotent) infl else infl union Relation(unknowns.toSet, { (u: U) => Set(u) }),
-      initial = initial)
+      infl = if (boxesAreIdempotent) infl else infl union Relation(unknowns.toSet, { (u: U) => Set(u) }))
 
     def withLocalizedBoxes(boxes: BoxAssignment[U, V], ordering: Ordering[U], boxesAreIdempotent: Boolean) = {
       val newEdgeBody: EdgeBody[U, V, E] = { e: E =>
@@ -152,17 +152,5 @@ object LayeredEquationSystem {
       }
       copy(edgeBody = newEdgeBody, sources = newSources)
     }
-  }
-
-  /**
-   * This method takes a body, a partial assignment and a combine operation, and returns a new equation system
-   * where the r.h.s. of each unknown is combined with init. In formulas, if `newbody` is the result of the method
-   * and `init` is defined on 'x', then `newbody(rho)(x) = combine( init(x), body(rho)(x) )`.
-   */
-  def addInputAssignmentToBody[U, V](body: Body[U, V], init: PartialFunction[U, V], combine: Box[V]): Body[U, V] = {
-    (rho: U => V) =>
-      (x: U) => {
-        if (init.isDefinedAt(x)) combine(init(x), body(rho)(x)) else body(rho)(x)
-      }
   }
 }

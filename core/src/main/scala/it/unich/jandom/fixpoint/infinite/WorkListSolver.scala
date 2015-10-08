@@ -25,7 +25,7 @@ import it.unich.jandom.utils.IterableFunction
  * A local fixpoint solver based on a worklist.
  */
 object WorkListSolver extends LocalFixpointSolver {
-    
+
   /**
    * Parameters needed for the local worklist solver
    * @param start the initial assignment.
@@ -44,7 +44,7 @@ object WorkListSolver extends LocalFixpointSolver {
    */
   def solve[U, V](eqs: EquationSystem[U, V], params: Params[U,V]) = {
     import params._
-    
+
     var infl = (new collection.mutable.HashMap[U, collection.mutable.Set[U]] with collection.mutable.MultiMap[U, U])
     var workList = collection.mutable.Queue.empty[U]
     workList ++= wanted
@@ -53,7 +53,7 @@ object WorkListSolver extends LocalFixpointSolver {
     listener.initialized(current)
     while (!workList.isEmpty) {
       val x = workList.dequeue()
-      val (newval, dependencies) = eqs.bodyWithDependencies(current)(x)
+      val (newval, dependencies) = eqs.withDependencies(current)(x)
       listener.evaluated(current, x, newval)
       for (y <- dependencies) {
         if (!current.isDefinedAt(y)) {
@@ -69,11 +69,11 @@ object WorkListSolver extends LocalFixpointSolver {
     }
     current
   }
-  
+
   /**
    * A convenience method for calling the solver
-   */  
+   */
   def apply[U, V](eqs: EquationSystem[U, V], start: U => V, wanted: Iterable[U], listener: FixpointSolverListener[U, V] = FixpointSolverListener.EmptyListener) =
     solve(eqs, Params(start, wanted, listener))
-  
+
 }

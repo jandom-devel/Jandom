@@ -39,7 +39,7 @@ object Box {
   /**
    * Returns the upper bound for a directed set as a Box.
    */
-  def upperbound[V <: DirectedSet[V]]: Box[V] = { _ upperbound _ }
+  def union[V <: DirectedSet[V]]: Box[V] = { _ union _ }
 
   /**
    * Warrowing, as defined in the upcoming paper of Amato, Scozzari, Seidl, Apinis, Vodjani,

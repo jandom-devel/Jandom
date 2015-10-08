@@ -38,7 +38,7 @@ package object fixpoint {
    * values.
    */
   type PartialAssignment[U, V] = IterableFunction[U, V]
-  
+
   /**
    * A OneBox is a way to combine two values into a new one. It is an alias for the type
    * (V,V) => V, where the first parameter is the old value and the second value is the
@@ -46,4 +46,14 @@ package object fixpoint {
    * @tparam V the type of the values to combine.
    */
   type Box[V] = (V, V) => V
+
+  /**
+   * An alias for the type returned by body
+   */
+  type Body[U, V] = (U => V) => (U => V)
+
+  /**
+   * An alias for the type returned by bodyWithDependencies
+   */
+  type BodyWithDependecies[U, V] = (U => V) => U => (V, Iterable[U])
 }

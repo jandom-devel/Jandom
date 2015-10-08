@@ -30,10 +30,9 @@ class EquationSystemSuite extends FunSpec {
           case 2 => rho(1) + 1
           case 3 => rho(3)
         }
-    },
-    initial = { x => x })
+    })
 
-  val rho = simpleEqs.initial
+  val rho = { x: Int => x }
   val box: Box[Int] = { _ * _ }
 
   describe("An equation system") {
@@ -43,14 +42,14 @@ class EquationSystemSuite extends FunSpec {
       assertResult(2) { simpleEqs.body(rho)(2) }
       assertResult(3) { simpleEqs.body(rho)(3) }
     }
-    
+
     it("correctly infers dependencies") {
-      assertResult((0, Seq(0))) { simpleEqs.bodyWithDependencies(rho)(0) }
-      assertResult((2, Seq(0, 2, 3))) { simpleEqs.bodyWithDependencies(rho)(1) }
-      assertResult((2, Seq(1))) { simpleEqs.bodyWithDependencies(rho)(2) }
-      assertResult((3, Seq(3))) { simpleEqs.bodyWithDependencies(rho)(3) }
+      assertResult((0, Seq(0))) { simpleEqs.withDependencies(rho)(0) }
+      assertResult((2, Seq(0, 2, 3))) { simpleEqs.withDependencies(rho)(1) }
+      assertResult((2, Seq(1))) { simpleEqs.withDependencies(rho)(2) }
+      assertResult((3, Seq(3))) { simpleEqs.withDependencies(rho)(3) }
     }
-    
+
     it("correctly adds boxes") {
       val eqs = simpleEqs.withBoxes(box, false)
       assertResult(0) { eqs.body(rho)(0) }

@@ -19,6 +19,7 @@
 package it.unich.jandom.fixpoint
 
 import scala.collection.mutable.Buffer
+import it.unich.jandom.fixpoint.lattice.Magma
 
 /**
  * This is the trait for a generic equation system.
@@ -26,75 +27,53 @@ import scala.collection.mutable.Buffer
  * @tparam V the type for the values assumed by the unknowns of this equation system.
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait EquationSystem[U, V] {   
+trait EquationSystem[U, V] {
   /**
    * The equation system viewed as a transformer from assignments to assignments.
    */
-  def body: (U => V) => (U => V)
+  def body: Body[U, V]
 
-  /**
-   * An initial assignment which may be used to bootstrap the analysis. 
-   */
-  def initial: U => V
-  
   /**
    * A variant of `body` which keeps track of the unknowns queried during the evaluation.
    */
-  def bodyWithDependencies: (U => V) => U => (V, Iterable[U])
+  def withDependencies: BodyWithDependecies[U, V]
 
   /**
-   * Add boxes to the equation system. 
+   * Add boxes to the equation system.
    * @param boxes a partial function from unknowns to boxes.
-   * @param boxesAreIdempotent if true boxes are assumed to be idempotent. In this case, some optimization.
-   * is possible.
+   * @param boxesAreIdempotent if true boxes are assumed to be idempotent. In this case, some optimizations
+   * are possible.
    */
   def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean): EquationSystem[U, V]
+
+  /**
+   * Combine a base assignment with the equation system
+   * @param init the assignment to add to the equation system
+   */
+  def withBaseAssignment(init: PartialFunction[U, V])(implicit magma: Magma[V]): EquationSystem[U,V]
 }
 
 object EquationSystem {
-
-  /**
-   * An alias for the type returned by body
-   */
-  type Body[U, V] = (U => V) => (U => V)
-
-  /**
-   * An alias for the type returned by bodyWithDependencies
-   */
-  type BodyWithDependecies[U, V] = (U => V) => U => (V, Iterable[U])
-
   /**
    * Returns a new equation system from the given body.
    */
-  def apply[U, V](body: Body[U, V], initial: U => V) = SimpleEquationSystem(body, initial)
-  
+  def apply[U, V](body: Body[U, V]) = SimpleEquationSystem(body)
+
   /**
-   * This class implements an equation system when a body is provided.
+   * This is a simple implementation of equation systems.
    */
-  case class SimpleEquationSystem[U, V](val body: Body[U, V], val initial: U => V) extends EquationSystem[U,V] {
-    def bodyWithDependencies = buildBodyWithDependencies(body)
+  final case class SimpleEquationSystem[U, V](val body: Body[U, V]) extends EquationSystem[U, V] {
+    val withDependencies = buildBodyWithDependencies(body)
     def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean) =
-      copy(body = addBoxesToBody(body, boxes))
-    def withInitialAssignment(rho: U => V) =
-      copy(initial = rho)
-  }
-  
-  /**
-   * This method takes a body and a partial box assignment and returns a new body where boxes have been
-   * plugged inside. If `newbody = addBoxesToBody(body, boxes)` and `boxes` is defined on `x`,
-   * then `newbody(rho)(x) = boxes(x) (  rho(x), body(rho)(x) )`.
-   */
-  def addBoxesToBody[U, V](body: Body[U, V], boxes: BoxAssignment[U, V]): Body[U,V] = {
-    (rho: U => V) =>
-      (x: U) => {
-        if (boxes.isDefinedAt(x)) boxes(x)(rho(x), body(rho)(x)) else body(rho)(x)
-      }
+      new SimpleEquationSystem(addBoxesToBody(body, boxes))
+    def withBaseAssignment(init: PartialFunction[U, V])(implicit magma: Magma[V]): EquationSystem[U,V] =
+      new SimpleEquationSystem(addBaseAssignmentToBody(body, init))
   }
 
   /**
-   * This methods takes a body and returns a new body which keeps tracks of queried unknowns.
+   * This method builds a body with dependencies from a standard body.
    */
-  def buildBodyWithDependencies[U, V](body: Body[U,V]): BodyWithDependecies[U,V] = {
+  def buildBodyWithDependencies[U, V](body: Body[U, V]) = {
     (rho: U => V) =>
       (x: U) => {
         val queried = Buffer.empty[U]
@@ -106,4 +85,29 @@ object EquationSystem {
         (newval, queried.toSeq)
       }
   }
+
+  /**
+   * This method takes a body and a partial box assignment and returns a new body where boxes have been
+   * plugged inside. If `newbody = addBoxesToBody(body, boxes)` and `boxes` is defined on `x`,
+   * then `newbody(rho)(x) = boxes(x) (  rho(x), body(rho)(x) )`.
+   */
+  def addBoxesToBody[U, V](body: Body[U, V], boxes: BoxAssignment[U, V]): Body[U, V] = {
+    (rho: U => V) =>
+      (x: U) => {
+        if (boxes.isDefinedAt(x)) boxes(x)(rho(x), body(rho)(x)) else body(rho)(x)
+      }
+  }
+
+  /**
+   * This method takes a body, a partial assignment and a combine operation, and returns a new equation system
+   * where the r.h.s. of each unknown is combined with init. In formulas, if `newbody` is the result of the method
+   * and `init` is defined on 'x', then `newbody(rho)(x) = combine( init(x), body(rho)(x) )`.
+   */
+  def addBaseAssignmentToBody[U, V](body: Body[U, V], init: PartialFunction[U, V])(implicit magma: Magma[V]): Body[U, V] = {
+    (rho: U => V) =>
+      (x: U) => {
+        if (init.isDefinedAt(x)) magma.op(init(x), body(rho)(x)) else body(rho)(x)
+      }
+  }
+
 }

@@ -25,10 +25,10 @@ trait DirectedSet[+A] extends PartiallyOrdered[A] {
   /**
    * It returns an upper bound of `x` and `y`.
    */
-  def upperbound[B >: A <% PartiallyOrdered[B]](that: B): B
+  def union[B >: A <% PartiallyOrdered[B]](that: B): B
   
   /**
    * It returns an upper bound of `x` and `y`. It is an alias for the `upperbound` method.
    */
-  @inline def \/[B >: A <% PartiallyOrdered[B]](that: B) = this upperbound that
+  @inline def \/[B >: A <% PartiallyOrdered[B]](that: B) = this union that
 }

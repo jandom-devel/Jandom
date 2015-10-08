@@ -18,12 +18,19 @@
 
 package it.unich.jandom.fixpoint.lattice
 
+import scala.language.implicitConversions
+
 /**
- * A DirectedPartialOrdering is a PartialOrdering where each pair of elements has an upper bound.
+ * A Magma is a set with a binary operation (op)
  */
-trait DirectedPartialOrdering[A] extends PartialOrdering[A] {
-  /**
-   * It returns an upper bound of `x` and  `y`.
-   */
-  def union(x: A, y: A): A
+trait Magma[A] {
+  def op(x: A, y: A): A
+}
+
+object Magma {
+  implicit def magmaOps[A: Magma](a: A): MagmaOps[A] = new MagmaOps(a)
+
+  final class MagmaOps[A](val lhs: A)(implicit ev: Magma[A]) {
+    def |+|(rhs: A): A = ev.op(lhs, rhs)
+  }
 }

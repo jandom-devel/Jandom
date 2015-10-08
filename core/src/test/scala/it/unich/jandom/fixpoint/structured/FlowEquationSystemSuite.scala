@@ -19,14 +19,18 @@
 package it.unich.jandom.fixpoint.structured
 
 import org.scalatest.FunSpec
-
 import it.unich.jandom.fixpoint.Box
-
 import it.unich.jandom.fixpoint.finite.DFOrdering
 import it.unich.jandom.fixpoint.finite.FiniteEquationSystem
 import it.unich.jandom.utils.Relation
+import it.unich.jandom.fixpoint.lattice.Magma
+import scala.runtime.RichInt
 
 class FlowEquationSystemSuite extends FunSpec {
+
+  implicit object MagmaInt extends Magma[Int] {
+    def op(x: Int, y: Int) = x max y
+  }
 
   val edges = Set('a', 'b', 'c', 'd')
   val unknowns = Set(0, 1, 2, 3)
@@ -50,8 +54,7 @@ class FlowEquationSystemSuite extends FunSpec {
     ingoing =  Map((0,Seq()), (1,Seq('a','d')), (2,Seq('b')), (3, Seq('c'))),
     unknowns = unknowns,
     inputUnknowns = Set(0),
-    initial = { _ => 0 },
-    combine = { _ max _ })
+    initial = { _ => 0 })
   val rho = { x: Int => x }
 
   describe("A Simple Layered equation system") {
@@ -64,7 +67,7 @@ class FlowEquationSystemSuite extends FunSpec {
     }
 
     it("correctly computes the body with dependencies") {
-      val body = simpleEqs.bodyWithDependencies
+      val body = simpleEqs.withDependencies
       assertResult(0 -> Seq())(body(rho)(0))
       assertResult(3 -> Seq(0,3))(body(rho)(1))
       assertResult(1 -> Seq(1))(body(rho)(2))
@@ -81,7 +84,7 @@ class FlowEquationSystemSuite extends FunSpec {
 
     it("correctly adds input assignments") {
       val input: PartialFunction[Int, Int] = { case _ => 2 }
-      val eqs = simpleEqs.withInputAssignment(input)
+      val eqs = simpleEqs.withBaseAssignment(input)
       val body = eqs.body
       assertResult(2)(body(rho)(0))
       assertResult(3)(body(rho)(1))
@@ -121,7 +124,7 @@ class FlowEquationSystemSuite extends FunSpec {
         assertResult(9)(body(rho2)(1))
       }
 
-      val box = { (x: Int, y: Int) => x + (2 * y) }      
+      val box = { (x: Int, y: Int) => x + (2 * y) }
       val ordering = DFOrdering(simpleEqs.infl)(0)
       val eqs1 = simpleEqs.withLocalizedBoxes(box, ordering, true)
       val eqs2 = simpleEqs.withLocalizedBoxes(box, ordering, false)

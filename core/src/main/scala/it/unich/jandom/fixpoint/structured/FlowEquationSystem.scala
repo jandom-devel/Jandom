@@ -21,7 +21,7 @@ package it.unich.jandom.fixpoint.structured
 import it.unich.jandom.fixpoint._
 import it.unich.jandom.fixpoint.finite._
 import it.unich.jandom.utils.Relation
-import it.unich.jandom.fixpoint.structured.LayeredEquationSystem.SimpleLayeredEquationSystem
+import it.unich.jandom.fixpoint.lattice.Magma
 
 /**
  * This is the trait for a layered equation system where each layer contain a single equation of the
@@ -30,10 +30,9 @@ import it.unich.jandom.fixpoint.structured.LayeredEquationSystem.SimpleLayeredEq
  * seem to have any performance advantage w.r.t. the general case, and it is less expressive.
  * @tparam U the type for the unknowns of this equation system.
  * @tparam V the type for the values assumed by the unknowns of this equation system.
- * @tparam E the type of edges of this equation system
+ * @tparam E the type of edges of this equaton system
  */
-trait FlowEquationSystem[U, V, E] extends LayeredEquationSystem[U, V, E] {
-
+abstract class FlowEquationSystem[U, V: Magma, E] extends GraphBasedEquationSystem[U, V, E] {
   /**
    * It return a function which, given an assignment and edge, returns the output value of
    * the edge.
@@ -63,7 +62,6 @@ trait FlowEquationSystem[U, V, E] extends LayeredEquationSystem[U, V, E] {
 
 object FlowEquationSystem {
   import EquationSystem._
-  import LayeredEquationSystem._
 
   /**
    * An alias for the type of edgeAction.
@@ -73,23 +71,23 @@ object FlowEquationSystem {
   /**
    * Returns an implementation of `FlowEquationSystem` from a subset of its constituents.
    */
-  def apply[U, V, E](unknowns: Iterable[U], inputUnknowns: Iterable[U], edgeAction: EdgeAction[U, V, E],
-    source: E => U, target: E => U, outgoing: U => Iterable[E], ingoing: U => Iterable[E], initial: U => V, combine: Box[V] ) =
-    SimpleFlowEquationSystem(unknowns, inputUnknowns, edgeAction, source, target, outgoing, ingoing, initial, combine)
+  def apply[U, V: Magma, E](unknowns: Iterable[U], inputUnknowns: Iterable[U], edgeAction: EdgeAction[U, V, E],
+    source: E => U, target: E => U, outgoing: U => Iterable[E], ingoing: U => Iterable[E], initial: U => V) =
+    SimpleFlowEquationSystem(unknowns, inputUnknowns, edgeAction, source, target, outgoing, ingoing, initial)
 
   /**
    * An implementation of `FlowEquationSystem` from a subset of its constituents.
    */
-  case class SimpleFlowEquationSystem[U, V, E](
-      val unknowns: Iterable[U],
-      val inputUnknowns: Iterable[U],
-      val edgeAction: EdgeAction[U, V, E],
-      val source: E => U,
-      val target: E => U,
-      val outgoing: U => Iterable[E],
-      val ingoing: U => Iterable[E],
-      val initial: U => V,
-      val combine: Box[V]) extends FlowEquationSystem[U, V, E] {
+  final case class SimpleFlowEquationSystem[U, V, E](
+    val unknowns: Iterable[U],
+    val inputUnknowns: Iterable[U],
+    val edgeAction: EdgeAction[U, V, E],
+    val source: E => U,
+    val target: E => U,
+    val outgoing: U => Iterable[E],
+    val ingoing: U => Iterable[E],
+    val initial: U => V)(implicit magma: Magma[V])
+      extends FlowEquationSystem[U, V, E] with FiniteEquationSystem.WithBaseAssignment[U, V] {
 
     private lazy val edges: Set[E] = (for (u <- unknowns; e <- outgoing(u)) yield e)(collection.breakOut)
 
@@ -99,19 +97,20 @@ object FlowEquationSystem {
 
     def edgeBody = (e: E) => (rho: U => V) => (x: U) => edgeAction(rho)(e)
 
-    def body = { (rho: U => V) =>
+    val body = { (rho: U => V) =>
       (x: U) =>
         val contributions = for (e <- ingoing(x)) yield edgeAction(rho)(e)
         // if contribution is empty the unknown x has no right hand side... it seems
         // reasonable to return the old value.
-        if (contributions.isEmpty) rho(x) else  contributions reduce { combine }
+        if (contributions.isEmpty) rho(x) else contributions reduce { magma.op }
     }
 
-    def bodyWithDependencies = { (rho: U => V) =>
-      (x: U) =>
+    val withDependencies = { (rho: U => V) =>
+      (x: U) => {
         val deps = for (e <- ingoing(x)) yield source(e)
         val res = body(rho)(x)
         (res, deps)
+      }
     }
 
     val infl: Relation[U, U] = new Relation[U, U] with Relation.AutomaticPartialOrdering[U, U] {
@@ -133,20 +132,17 @@ object FlowEquationSystem {
       }
     }
 
-    def withInputAssignment(init: PartialFunction[U, V]) = FiniteEquationSystem(
-      body = addInputAssignmentToBody(body, init, combine),
+    def withBaseAssignment(init: PartialFunction[U, V]) = FiniteEquationSystem(
+      body = addBaseAssignmentToBody(body, init),
       unknowns = unknowns,
       inputUnknowns = inputUnknowns,
-      infl = infl,
-      initial = initial
-    )
+      infl = infl)
 
     def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean) = FiniteEquationSystem(
       body = addBoxesToBody(body, boxes),
       inputUnknowns = inputUnknowns,
       unknowns = unknowns,
-      infl = if (boxesAreIdempotent) infl else infl union Relation(unknowns.toSet, { (u: U) => Set(u) }),
-      initial = initial)
+      infl = if (boxesAreIdempotent) infl else infl union Relation(unknowns.toSet, { (u: U) => Set(u) }))
 
     def withLocalizedBoxes(boxes: BoxAssignment[U, V], ordering: Ordering[U], boxesAreIdempotent: Boolean) = {
       if (boxesAreIdempotent) {
@@ -160,7 +156,7 @@ object FlowEquationSystem {
         }
         copy(edgeAction = newEdgeAction)
       } else {
-        val asLayered = LayeredEquationSystem(unknowns, inputUnknowns, edgeBody, sources, targets, initial, combine)
+        val asLayered = GraphBasedEquationSystem(unknowns, inputUnknowns, edgeBody, sources, targets, initial)
         asLayered.withLocalizedBoxes(boxes, ordering, boxesAreIdempotent)
       }
     }

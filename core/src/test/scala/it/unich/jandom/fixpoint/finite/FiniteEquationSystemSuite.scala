@@ -44,8 +44,7 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
     },
     unknowns = Set(0, 1, 2, 3),
     inputUnknowns = Set(0, 1, 2, 3),
-    infl = Relation(Map(0 -> Set(0, 1, 2), 1 -> Set(2), 2 -> Set(1), 3 -> Set(1, 3))),
-    initial = { (x: Int) => if (x == 3) 10.0 else 0.0 })
+    infl = Relation(Map(0 -> Set(0, 1, 2), 1 -> Set(2), 2 -> Set(1), 3 -> Set(1, 3))))
 
   val simpleEqsStrategy = HierarchicalOrdering[Int](Left, Val(0), Left, Val(1), Val(2), Val(3), Right, Right)
   val wideningBox: Box[Double] = { (x1, x2) => if (x2 > x1) Double.PositiveInfinity else x1 }
@@ -53,7 +52,7 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
   val lastBox: Box[Double] = { (x1, x2) => x2 }
   val timesBox: Box[Double] = { _ * _ }
 
-  val startRho = simpleEqs.initial
+  val startRho = { (x: Int) => if (x == 3) 10.0 else 0.0 }
 
   type SimpleSolver[U, V] = (FiniteEquationSystem[U, V], U => V) => (U => V)
 
@@ -119,10 +118,10 @@ class FiniteEquationSystemTest extends FunSpec with PropertyChecks {
     }
 
     it("correctly infers dependencies") {
-      assertResult((0, Seq(0))) { simpleEqs.bodyWithDependencies(rho)(0) }
-      assertResult((2, Seq(0, 2, 3))) { simpleEqs.bodyWithDependencies(rho)(1) }
-      assertResult((2, Seq(1))) { simpleEqs.bodyWithDependencies(rho)(2) }
-      assertResult((3, Seq(3))) { simpleEqs.bodyWithDependencies(rho)(3) }
+      assertResult((0, Seq(0))) { simpleEqs.withDependencies(rho)(0) }
+      assertResult((2, Seq(0, 2, 3))) { simpleEqs.withDependencies(rho)(1) }
+      assertResult((2, Seq(1))) { simpleEqs.withDependencies(rho)(2) }
+      assertResult((3, Seq(3))) { simpleEqs.withDependencies(rho)(3) }
     }
 
     it("correctly adds boxes") {

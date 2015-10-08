@@ -34,7 +34,7 @@ class InfiniteEquationSystemTest extends FunSpec with PropertyChecks {
   import EquationSystem._
 
   val simpleEqs = SimpleEquationSystem[Int, Int](
-    body = { (rho: Int => Int) =>
+    { (rho: Int => Int) =>
       x: Int =>
         if (x % 2 == 0)
           rho(rho(x)) max x / 2
@@ -42,12 +42,10 @@ class InfiniteEquationSystemTest extends FunSpec with PropertyChecks {
           val n = (x - 1) / 2
           rho(6 * n + 4)
         }
-    },
-    initial = { _ => 0}
-   )
+    })
 
   val maxBox: Box[Int] = { _ max _ }
-  val startRho = simpleEqs.initial
+  val startRho = { x: Int => 0 }
 
   type SimpleSolver[U, V] = (EquationSystem[U, V], U => V, Seq[U]) => IterableFunction[U, V]
 
@@ -74,33 +72,33 @@ class InfiniteEquationSystemTest extends FunSpec with PropertyChecks {
 
   describe("The standard bodyWithDependencies method") {
     it("returns the correct dependencies") {
-      val (res, deps) = simpleEqs.bodyWithDependencies(startRho)(4)
-      assertResult((2, Seq(4, 0))) { simpleEqs.bodyWithDependencies(startRho)(4) }
-      assertResult((0, Seq(4))) { simpleEqs.bodyWithDependencies(startRho)(1) }
+      val (res, deps) = simpleEqs.withDependencies(startRho)(4)
+      assertResult((2, Seq(4, 0))) { simpleEqs.withDependencies(startRho)(4) }
+      assertResult((0, Seq(4))) { simpleEqs.withDependencies(startRho)(1) }
     }
     it("returns the same value as body") {
       forAll { (x: Int) =>
-        assertResult(simpleEqs.body(startRho)(x)) { simpleEqs.bodyWithDependencies(startRho)(x)._1 }
+        assertResult(simpleEqs.body(startRho)(x)) { simpleEqs.withDependencies(startRho)(x)._1 }
       }
     }
   }
-  
+
   describe("The DynamicPriorityOrdering") {
     it("puts new element first in the ordering") {
       val o = new PriorityWorkListSolver.DynamicPriority[Int]
-      o.lteq(1,1)
-      assert(o.lt(2,1))
-      assert(o.lt(3,2))
-      assert(o.lt(3,1))
-      assert(o.lt(-10,2))
+      o.lteq(1, 1)
+      assert(o.lt(2, 1))
+      assert(o.lt(3, 2))
+      assert(o.lt(3, 1))
+      assert(o.lt(-10, 2))
     }
   }
 
-  describe("The WorkListSolver") {    
-    testExpectedResult(WorkListSolver(_, _, _))    
+  describe("The WorkListSolver") {
+    testExpectedResult(WorkListSolver(_, _, _))
   }
 
-  describe("The PriorityWorkListSolver") {    
-    testExpectedResult(PriorityWorkListSolver(_, _, _))    
+  describe("The PriorityWorkListSolver") {
+    testExpectedResult(PriorityWorkListSolver(_, _, _))
   }
 }

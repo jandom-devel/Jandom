@@ -20,6 +20,7 @@ package it.unich.jandom.fixpoint.finite
 
 import it.unich.jandom.fixpoint._
 import it.unich.jandom.utils.Relation
+import it.unich.jandom.fixpoint.lattice.Magma
 
 /**
  * This is the trait for an equation system with a finite set of unknowns
@@ -31,12 +32,12 @@ trait FiniteEquationSystem[U, V] extends EquationSystem[U, V] {
   /**
    * The collection of all unknowns.
    */
-  val unknowns: Iterable[U]
+  def unknowns: Iterable[U]
 
   /**
    * The collection of all unknowns which may be considered the inputs to this equation system.
    */
-  val inputUnknowns: Iterable[U]
+  def inputUnknowns: Iterable[U]
 
   /**
    * The static relation between an unknown x and the unknowns y it influences. In any moment, the dependencies
@@ -44,12 +45,18 @@ trait FiniteEquationSystem[U, V] extends EquationSystem[U, V] {
    * is when an unkwnown `x` influences `x` itself. In this case, `infl` may omit this dependence when
    * the r.h.s. for `x` is idempotent.
    */
-  val infl: Relation[U, U]
+  def infl: Relation[U, U]
 
   /**
    * Add boxes to the equation system.
    */
   def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean): FiniteEquationSystem[U, V]
+
+  /**
+   * Combine a base assignment with the equation system
+   * @param init the assignment to add to the equation system
+   */
+  def withBaseAssignment(init: PartialFunction[U, V])(implicit magma: Magma[V]): FiniteEquationSystem[U, V]
 }
 
 object FiniteEquationSystem {
@@ -58,8 +65,22 @@ object FiniteEquationSystem {
   /**
    * Returns a finite equation system given its constituents parts.
    */
-  def apply[U, V](body: Body[U, V], unknowns: Iterable[U], inputUnknowns: Iterable[U], infl: Relation[U, U], initial: U => V) =
-    new SimpleFiniteEquationSystem(body, unknowns, inputUnknowns, infl, initial)
+  def apply[U, V](body: Body[U, V], unknowns: Iterable[U], inputUnknowns: Iterable[U], infl: Relation[U, U]) =
+    new SimpleFiniteEquationSystem(body, unknowns, inputUnknowns, infl)
+
+  /**
+   * A trait which provides the withBaseAssignment method. It is separated into a different trait
+   * to give him low priority.
+   */
+  trait WithBaseAssignment[U, V] {
+    this: FiniteEquationSystem[U, V] =>
+
+    def withBaseAssignment(init: PartialFunction[U, V])(implicit magma: Magma[V]) = FiniteEquationSystem(
+      body = addBaseAssignmentToBody(body, init),
+      unknowns = unknowns,
+      inputUnknowns = inputUnknowns,
+      infl = infl)
+  }
 
   /**
    * A class defining a finite equation system given its constituents parts.
@@ -68,10 +89,9 @@ object FiniteEquationSystem {
       val body: Body[U, V],
       val unknowns: Iterable[U],
       val inputUnknowns: Iterable[U],
-      val infl: Relation[U, U],
-      val initial: U => V) extends FiniteEquationSystem[U, V] {
+      val infl: Relation[U, U]) extends FiniteEquationSystem[U, V] with WithBaseAssignment[U,V] {
 
-    def bodyWithDependencies = buildBodyWithDependencies(body)
+    val withDependencies = buildBodyWithDependencies(body)
 
     def withBoxes(boxes: BoxAssignment[U, V], boxesAreIdempotent: Boolean) = copy(
       body = addBoxesToBody(body, boxes),

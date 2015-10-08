@@ -113,7 +113,7 @@ object StructuredDriver extends Driver {
    * @param scope an input parameters which determines how we want to apply boxes (such as localized or standard)
    * @param ordering an optional ordering on unknowns to be used for localized boxes.
    */
-  private def boxApply[U, V <: AbstractProperty[V], E](eqs: LayeredEquationSystem[U, V, E], optBoxes: Option[BoxAssignment[U, V]], scope: BoxScope.Value, ordering: Option[Ordering[U]], idempotent: Boolean): FiniteEquationSystem[U, V] = {
+  private def boxApply[U, V <: AbstractProperty[V], E](eqs: GraphBasedEquationSystem[U, V, E], optBoxes: Option[BoxAssignment[U, V]], scope: BoxScope.Value, ordering: Option[Ordering[U]], idempotent: Boolean): FiniteEquationSystem[U, V] = {
     if (optBoxes.isEmpty)
       eqs
     else scope match {
@@ -122,7 +122,7 @@ object StructuredDriver extends Driver {
     }
   }
 
-  def addLocalizedBoxes[U, V <: AbstractProperty[V], E](eqs: LayeredEquationSystem[U, V, E], widening: BoxAssignment[U, V], narrowing: BoxAssignment[U, V], ordering: Ordering[U], boxesAreIdempotent: Boolean): FiniteEquationSystem[U, V] = {
+  def addLocalizedBoxes[U, V <: AbstractProperty[V], E](eqs: GraphBasedEquationSystem[U, V, E], widening: BoxAssignment[U, V], narrowing: BoxAssignment[U, V], ordering: Ordering[U], boxesAreIdempotent: Boolean): FiniteEquationSystem[U, V] = {
     val ingoing = eqs.targets.inverse
     val newbody = { (rho: U => V) =>
       (x: U) =>
@@ -136,7 +136,7 @@ object StructuredDriver extends Driver {
         if (contributions.isEmpty)
           rho(x)
         else {
-          val result = contributions reduce { (x: (V, Boolean), y: (V, Boolean)) => (eqs.combine(x._1, y._1), x._2 || y._2) }
+          val result = contributions reduce { (x: (V, Boolean), y: (V, Boolean)) => (x._1 union y._1, x._2 || y._2) }
           //println((x, rho(x), contributions))
           if (result._2) {
             widening(x)(rho(x), result._1)
@@ -147,8 +147,7 @@ object StructuredDriver extends Driver {
       body = newbody,
       inputUnknowns = eqs.inputUnknowns,
       unknowns = eqs.unknowns,
-      infl = if (boxesAreIdempotent) eqs.infl else eqs.infl union Relation(eqs.unknowns.toSet, { (u: U) => Set(u) }),
-      initial = eqs.initial)
+      infl = if (boxesAreIdempotent) eqs.infl else eqs.infl union Relation(eqs.unknowns.toSet, { (u: U) => Set(u) }))
   }
 
   /**
@@ -156,7 +155,7 @@ object StructuredDriver extends Driver {
    * @param eqs the equation system to solve
    * @param p parameters passed through a PMap
    */
-  def apply[U, E](dom: AbstractDomain)(eqs: LayeredEquationSystem[U, dom.Property, E], p: PNil): U => dom.Property = {
+  def apply[U, E](dom: AbstractDomain)(eqs: GraphBasedEquationSystem[U, dom.Property, E], p: PNil): U => dom.Property = {
     type V = dom.Property
 
     val solver = p(Driver.solver)
@@ -200,11 +199,11 @@ object StructuredDriver extends Driver {
         FiniteDriver(withNarrowing, ascendingAssignment, ordering, restart, p)
       case BoxStrategy.Mixed =>
         if (boxscope == BoxScope.Localized) {
-          val widening = boxFilter[U, V](eqs, wideningDefine(p(Driver.widening)), boxlocation, ordering) 
+          val widening = boxFilter[U, V](eqs, wideningDefine(p(Driver.widening)), boxlocation, ordering)
           val narrowing = boxFilter[U, V](eqs, narrowingDefine(p(Driver.narrowing)), boxlocation, ordering)
-          val withUpdate = if (widening.isEmpty && narrowing.isEmpty) 
+          val withUpdate = if (widening.isEmpty && narrowing.isEmpty)
             eqs
-          else 
+          else
             addLocalizedBoxes(eqs, widening getOrElse BoxAssignment.right[V], narrowing getOrElse BoxAssignment.right[V], ordering.get, false)
           FiniteDriver(withUpdate, eqs.initial, ordering, restart, p)
         } else {

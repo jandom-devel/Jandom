@@ -19,16 +19,22 @@
 package it.unich.jandom.fixpoint.structured
 
 import org.scalatest.FunSpec
+
 import it.unich.jandom.fixpoint._
 import it.unich.jandom.fixpoint.finite.DFOrdering
 import it.unich.jandom.utils.Relation
 import it.unich.jandom.fixpoint.finite.FiniteEquationSystem
+import it.unich.jandom.fixpoint.lattice.Magma
 
 class LayeredEquationSystemSuite extends FunSpec {
 
+  implicit object MagmaInt extends Magma[Int] {
+    def op(x: Int, y: Int) = x max y
+  }
+
   val edges = Set('a', 'b', 'c', 'd', '*')
   val unknowns = Set(0, 1, 2, 3)
-  val simpleEqs = LayeredEquationSystem[Int, Int, Char](
+  val simpleEqs = GraphBasedEquationSystem[Int, Int, Char](
     edgeBody = { (e: Char) =>
       { (rho: Int => Int) =>
         {
@@ -47,8 +53,7 @@ class LayeredEquationSystemSuite extends FunSpec {
     targets = Relation(Set(('*', 0), ('a', 1), ('b', 2), ('c', 3), ('d', 1)), edges, unknowns),
     unknowns = unknowns,
     inputUnknowns = Set(0),
-    initial = { _ => 0 },
-    combine = { _ max _ })
+    initial = { _ => 0 })
   val rho = { x: Int => x }
 
   describe("A Simple Layered equation system") {
@@ -61,7 +66,7 @@ class LayeredEquationSystemSuite extends FunSpec {
     }
 
     it("correctly computes the body with dependencies") {
-      val body = simpleEqs.bodyWithDependencies
+      val body = simpleEqs.withDependencies
       assertResult(1 -> Set())(body(rho)(0))
       assertResult(3 -> Set(0,3))(body(rho)(1))  // problem with ordering
       assertResult(1 -> Set(1))(body(rho)(2))
@@ -78,7 +83,7 @@ class LayeredEquationSystemSuite extends FunSpec {
 
     it("correctly adds input assignments") {
       val input: PartialFunction[Int, Int] = { case _ => 2 }
-      val eqs = simpleEqs.withInputAssignment(input)
+      val eqs = simpleEqs.withBaseAssignment(input)
       val body = eqs.body
       assertResult(2)(body(rho)(0))
       assertResult(3)(body(rho)(1))
@@ -95,7 +100,7 @@ class LayeredEquationSystemSuite extends FunSpec {
         assertResult(9)(body(rho)(3))
       }
 
-      val box = { (x: Int, y: Int) => x + 2 * y }      
+      val box = { (x: Int, y: Int) => x + 2 * y }
       val eqs1 = simpleEqs.withBoxes(box, true)
       val eqs2 = simpleEqs.withBoxes(box, false)
 
@@ -118,7 +123,7 @@ class LayeredEquationSystemSuite extends FunSpec {
         assertResult(9)(body(rho2)(1))
       }
 
-      val box = { (x: Int, y: Int) => x + (2 * y) }      
+      val box = { (x: Int, y: Int) => x + (2 * y) }
       val ordering = DFOrdering(simpleEqs.infl)(0)
       val eqs1 = simpleEqs.withLocalizedBoxes(box, ordering, true)
       val eqs2 = simpleEqs.withLocalizedBoxes(box, ordering, false)
