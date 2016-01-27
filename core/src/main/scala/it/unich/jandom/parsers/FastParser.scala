@@ -80,9 +80,9 @@ class FastParser extends JavaTokenParsers with NumericExpressionParser with Nume
         }
       }
 
-  private val model: Parser[(Seq[Location], Seq[Transition])] = {
-    "model" ~> ident ~> "{" ~> var_declarations ~> state_declarations ~ rep(transition_declaration) <~ "}" ^^ {
-      case states ~ transitions => (states, transitions)
+  private val model: Parser[(String, Seq[Location], Seq[Transition])] = {
+    ("model" ~> ident) ~ ("{" ~> var_declarations ~> state_declarations ~ rep(transition_declaration) <~ "}") ^^ {
+      case name ~ (states ~ transitions) => (name, states, transitions)
     }
   }
 
@@ -103,7 +103,7 @@ class FastParser extends JavaTokenParsers with NumericExpressionParser with Nume
     "strategy" ~> ident ~> "{" ~> rep(region) <~ "}"
 
   private val program: Parser[LTS] =
-    model ~ strategy ^^ { case (states, transitions) ~ regions =>  new LTS(states.toIndexedSeq, transitions, env, regions) }
+    model ~ strategy ^^ { case (name, states, transitions) ~ regions =>  new LTS(name, states.toIndexedSeq, transitions, env, regions) }
 
   /**
    * The main parse function s.

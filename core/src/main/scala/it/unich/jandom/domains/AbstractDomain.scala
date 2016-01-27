@@ -18,6 +18,8 @@
 
 package it.unich.jandom.domains
 
+import it.unich.jandom.fixpoint.lattice.Magma
+
 /**
  * The base class for all abstract domains. An abstract domain is a collection of properties,
  * which may or may not be grouped into fibers.
@@ -28,4 +30,12 @@ trait AbstractDomain {
    * The type of the properties associated to this abstract domain.
    */
   type Property <: AbstractProperty[Property]
+
+  /**
+   * An implicit magma is provided for the abstract domain, corresponding to
+   * abstract union
+   */
+  val magma: Magma[Property] = new Magma[Property] {
+    def op(x: Property, y: Property) = x union y
+  }
 }

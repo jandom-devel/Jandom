@@ -33,5 +33,7 @@ case class Region(val name: String, val state: Option[Location], val condition: 
   else
     s"region ${name} on state = ${state.get.name} with ( ${condition.mkString(vars)} );"
 
-  override def toString = mkString(Stream.from(0).map { "v" + _ })
+  def mkString: String = mkString(Stream.from(0).map { "v" + _ })
+
+  override def toString = name
 }

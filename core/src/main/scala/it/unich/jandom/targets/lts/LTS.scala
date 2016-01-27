@@ -18,15 +18,14 @@
 
 package it.unich.jandom.targets.lts
 
-import it.unich.jandom.domains.numerical.NumericalDomain
-import it.unich.jandom.targets.{ Environment, Target }
-import it.unich.jandom.targets.Annotation
-import it.unich.jandom.domains.CartesianFiberedProperty
-import it.unich.jandom.domains.DimensionFiberedDomain
 import it.unich.jandom.domains.DimensionFiberedProperty
-import it.unich.jandom.targets.IterationStrategy
-import it.unich.jandom.targets.WideningNarrowingLocation
+import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.fixpoint._
+import it.unich.jandom.fixpoint.structured.FlowEquationSystem
+import it.unich.jandom.fixpoint.structured.GraphBasedEquationSystem
+import it.unich.jandom.targets._
+import it.unich.jandom.utils.Relation
+import it.unich.jandom.fixpoint.structured.GraphBasedEquationSystem
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -37,7 +36,7 @@ import it.unich.jandom.fixpoint._
  * @author Gianluca Amato <gamato@unich.it>
  */
 
-case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transition], val env: Environment, val regions: Seq[Region] = Seq()) extends Target[LTS] {
+case class LTS(val name: String, val locations: IndexedSeq[Location], val transitions: Seq[Transition], val env: Environment, val regions: Seq[Region] = Seq()) extends Target[LTS] {
 
   type ProgramPoint = Location
   type DomainBase = NumericalDomain
@@ -100,21 +99,89 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
   }
 
   /**
-   * Converts an LTS into a finite equation system, given a numerical domain.
+   * Converts an LTS into a flow equation system, given a numerical domain. It is generally better
+   * to use toEQS, since toEQSFlow might be deprecated in the future.
    */
-  def toEQS(dom: NumericalDomain) = new FiniteEquationSystem {
-    type Unknown = Location
-    type Value = dom.Property
-    def apply(env: Assignment) = {
-      x: Unknown =>
-         val incomingValues = for ( t <- x.incoming ) yield t.analyze(env(t.start))
-         incomingValues reduce { _ union _ }
+  def toEQSFlow(dom: NumericalDomain): FlowEquationSystem[Location, dom.Property, Either[Transition, Location]] = {
+    type Edge = Either[Transition, Location]
+
+    implicit val magma = dom.magma
+
+    // build an empty property.. it is used several times, so we speed execution
+    val empty = dom.bottom(env.size)
+    val initRegion = regions find { _.name == "init" }
+
+    // this are the initial non empty states of the LTS
+    val (startrho, inputlocs) = initRegion match {
+      case Some(Region(_, Some(initloc), initcond)) =>
+        ({ loc: Location => if (loc == initloc) initcond.analyze(dom.top(env.size)) else empty }, Set(initloc))
+      case _ =>
+        ({ loc: Location =>
+          (dom.top(env.size) /: loc.conditions) {
+            (prop, cond) => cond.analyze(prop)
+          }
+        }, locations)
     }
-    val unknowns = locations
-    def infl(x: Unknown) = x.outgoing.map( _.end )
+    val edges: Set[Edge] = ((transitions map { Left(_) }) ++ (inputlocs map { Right(_) })).toSet
+    val fakeloc = new Location("fake", Seq.empty)
+    FlowEquationSystem[Location, dom.Property, Edge](
+      unknowns = fakeloc +: locations,
+      inputUnknowns = inputlocs,
+      edgeAction = { (rho: Location => dom.Property) =>
+        e: Either[Transition, Location] =>
+          e match {
+            case Left(t) => t.analyze(rho(t.start))
+            case Right(l) => startrho(l)
+          }
+      },
+      source = { _ match { case Left(t) => t.start; case Right(l) => fakeloc } },
+      target = { _ match { case Left(t) => t.end; case Right(l) => l } },
+      ingoing = { l: Location => if (l == fakeloc) Seq.empty else Right(l) :: (l.incoming map { Left(_) }) },
+      outgoing = { l: Location => if (l == fakeloc) locations map { Right(_) } else l.outgoing map { Left(_) } },
+      initial = startrho)
   }
 
   override def getAnnotation[Property] = new LTSAnnotation[Property]
+
+  /**
+   * Converts an LTS into a layered equation system, given a numerical domain.
+   */
+  def toEQS(dom: NumericalDomain): GraphBasedEquationSystem[Location, dom.Property, Either[Transition, Location]] = {
+    type Edge = Either[Transition, Location]
+
+    implicit val magma = dom.magma
+
+    // build an empty property.. it is used several times, so we speed execution
+    val empty = dom.bottom(env.size)
+    val initRegion = regions find { _.name == "init" }
+
+    // this are the initial non empty states of the LTS
+    val (startrho, inputlocs) = initRegion match {
+      case Some(Region(_, Some(initloc), initcond)) =>
+        ({ loc: Location => if (loc == initloc) initcond.analyze(dom.top(env.size)) else empty }, Set(initloc))
+      case _ =>
+        ({ loc: Location =>
+          (dom.top(env.size) /: loc.conditions) {
+            (prop, cond) => cond.analyze(prop)
+          }
+        }, locations)
+    }
+    val edges: Set[Edge] = ((transitions map { Left(_) }) ++ (inputlocs map { Right(_) })).toSet
+
+    GraphBasedEquationSystem[Location, dom.Property, Edge](
+      unknowns = locations,
+      inputUnknowns = inputlocs,
+      edgeBody = { (e: Edge) =>
+        (rho: Location => dom.Property) => (x: Location) =>
+          e match {
+            case Left(t) => t.analyze(rho(t.start))
+            case Right(l) => startrho(l)
+          }
+      },
+      sources = Relation(edges, { _ match { case Left(t) => Set(t.start); case Right(l) => Set.empty } }),
+      targets = Relation(edges, { _ match { case Left(t) => Set(t.end); case Right(l) => Set(l) } }),
+      initial = startrho)
+  }
 
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     // build widening and narrowing for each program point
@@ -220,6 +287,9 @@ case class LTS(val locations: IndexedSeq[Location], val transitions: Seq[Transit
     (for ((loc, prop) <- ann) yield loc.name + " => " + prop.mkString(env.variables)).mkString(", ")
   }
 
-  override def toString = locations.mkString("\n") + "\n" + (transitions map { _.mkString(env.variables) }).mkString("\n") + "\n" +
+  def mkString = locations.mkString("\n") + "\n" + (transitions map { _.mkString(env.variables) }).mkString("\n") + "\n" +
     (regions map { _.mkString(env.variables) }).mkString("\n")
+
+  override def toString = name
+
 }

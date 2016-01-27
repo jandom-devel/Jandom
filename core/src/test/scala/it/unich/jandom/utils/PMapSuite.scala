@@ -20,7 +20,6 @@ package it.unich.jandom.utils
 
 import org.scalatest.FunSpec
 import it.unich.jandom.utils.PMaps._
-import it.unich.jandom.utils.TLists.SubSet
 
 class PMapSuite extends FunSpec {
   val pa = Parameter[Int]
@@ -32,9 +31,12 @@ class PMapSuite extends FunSpec {
   val pc = Parameter[String]
   val valuepc = "foo"
 
+  val pz = Parameter[String]("default")
+  val valuepz = "nodefault"
+
   val m1 = (pa --> valuepa) +: (pc --> valuepc) +: PMap.empty
   val m2 = (pb --> valuepb) +: m1
-    
+  val m3 = (pz --> valuepz) +: m1
   
   describe("A PMap") {
     it("allows access to parameter of the right type") {
@@ -43,6 +45,9 @@ class PMapSuite extends FunSpec {
       assertResult(valuepc)(m1(pc))
       assertResult(valuepc)(m2(pc))
       assertResult(valuepb)(m2(pb))
+      assertResult(pz.default)(m1(pz))
+      assertResult(pz.default)(m2(pz))
+      assertResult(valuepz)(m3(pz))
     }
 
     it("allows optional access to all parameters") {
@@ -52,6 +57,9 @@ class PMapSuite extends FunSpec {
       assertResult(Some(valuepc))(m2.get(pc))
       assertResult(None)(m1.get(pb))
       assertResult(Some(valuepb))(m2.get(pb))
+      assertResult(Some(pz.default))(m1.get(pz))
+      assertResult(Some(pz.default))(m2.get(pz))
+      assertResult(Some(valuepz))(m3.get(pz))
     }
 
     it("is automatically converted to a parameter map with less parameters") {
@@ -71,6 +79,10 @@ class PMapSuite extends FunSpec {
       assertResult(valuepa)(f(m1))
       assertResult(valuepa)(f(m2))      
     }
-  }
 
+    it("may be checked for the presence of a parameter") {
+      intercept[MissingParameterException](m1.check(pb))
+      assertResult(m1)(m1.check(pa))
+    }
+  }
 }

@@ -18,44 +18,38 @@
 
 package it.unich.jandom.fixpoint
 
-import it.unich.jandom.utils.PMaps._
+import scala.language.higherKinds
 
 /**
- * This is the common trait of all equation solvers.
- * @tparam EQS the type of equation systems supported by this solver
+ * This is the common trait of all fixpoint solvers for equation systems. It is just a marker trait.
+ * All fixpoint solvers have different an apply method (with different parameters) which may be used
+ * to solve an equation system.
  */
-trait FixpointSolver[EQS <: EquationSystem] {
-
-  /**
-   * The particular equation system this solver deals with.
-   */
-  val eqs: EQS
-
-  /**
-   * A parameter for the solver: an assignment to boxes for each unknown.
-   */
-  val boxesParam = Parameter[eqs.BoxAssignment]
-
-  /**
-   * A parameter for the solver: an initial assignment
-   */
-  val startParam = Parameter[eqs.Assignment]
-
-  /**
-   * The set of parameters required by this particular solver.
-   */
-  type Parameters <: PMap
+trait FixpointSolver {
   
   /**
-   * The solver algorithm.
-   * @param params the parameters for the algorithm
-   * @return if it terminates, it returns an assignment `rho` which is a solution of the following equation, 
-   * for each unknown `x`: `rho(x) = rho(x) boxes(x) eqs(rho)(x)`. 
+   * The base class from which all the parameter types should descend.
    */
-  def apply(params: Parameters): eqs.Assignment
-
+  abstract protected class BaseParams[U,V] {
+    /**
+     * The initial assignment to start the analysis
+     */
+    val start: Assignment[U,V]
+    
+    /**
+     * A listener for debugging or tracing purposes
+     */
+    val listener: FixpointSolverListener[U,V]
+  }
+  
   /**
-   * The name of the solver.
+   * Each fixpoint solver needs an equation system and some parameters. Parameters are generally different
+   * for each fixpoint solver, hence they are provided as an inner type. 
    */
-  val name: String
+  type Params[U,V] <: BaseParams[U,V]
+  
+  /**
+   * EQS is the subclass of equation systems the solver may work with.
+   */
+  type EQS[U,V] <: EquationSystem[U,V]
 }

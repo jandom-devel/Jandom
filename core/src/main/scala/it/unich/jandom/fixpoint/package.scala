@@ -18,11 +18,42 @@
 
 package it.unich.jandom
 
+import scala.language.implicitConversions
+import it.unich.jandom.utils.IterableFunction
+import it.unich.jandom.fixpoint.lattice.DirectedSet
+import it.unich.jandom.domains.AbstractProperty
+
 /**
- * This package contains the generic equation solvers, which will be eventually
- * used for all the analysis in Jandom.
- * @author Gianluca Amato <gamato@unich.it>
+ * The fixpoint package contains everything which is related to defining and solving systems
+ * of equations. This package object defines some type aliases which are used in the API.
  */
 package object fixpoint {
+  /**
+   * An assignment for an equation system is a map from unknowns to values.
+   */
+  type Assignment[U, V] = U => V
 
+  /**
+   * A partial assignment for an equation system is an iterable function from unknowns to
+   * values.
+   */
+  type PartialAssignment[U, V] = IterableFunction[U, V]
+
+  /**
+   * A OneBox is a way to combine two values into a new one. It is an alias for the type
+   * (V,V) => V, where the first parameter is the old value and the second value is the
+   * new contribution. Both widening and narrowing are examples of boxes.
+   * @tparam V the type of the values to combine.
+   */
+  type Box[V] = (V, V) => V
+
+  /**
+   * An alias for the type returned by body
+   */
+  type Body[U, V] = (U => V) => (U => V)
+
+  /**
+   * An alias for the type returned by bodyWithDependencies
+   */
+  type BodyWithDependecies[U, V] = (U => V) => U => (V, Iterable[U])
 }

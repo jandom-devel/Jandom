@@ -16,21 +16,25 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom.fixpoint
+package it.unich.jandom.utils
 
-/**
- * This is the trait for an equation system with a finite set of unknowns
- * and static dependencies between them.
- */
-trait FiniteEquationSystem extends EquationSystem {
-  /**
-   * The collection of all unknowns.
-   */
-  val unknowns: Seq[Unknown]
+import org.scalatest.prop.PropertyChecks
+import org.scalatest.FunSpec
 
-  /**
-   * Given an unknown x, `infl` returns the collection of unknowns which
-   * it influences.
-   */
-  def infl(x: Unknown): Seq[Unknown]
+class IterableFunctionSuite extends FunSpec with PropertyChecks {
+  describe("An empty iterable function") {
+    val f = IterableFunction.empty[Int,Int]
+    it("has empty domain") {
+      assert(f.isEmpty)
+    }
+  }
+
+  describe("An interable function derived from a map") {
+    it("has the same functional behaviour of the map") {
+      forAll { (m: Map[Int, Int]) =>
+        val f: IterableFunction[Int, Int] = m
+        for ( (x,y) <- m.toSeq) assertResult(y) { f(x) } 
+      }        
+    }
+  }
 }
