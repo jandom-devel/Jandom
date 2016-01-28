@@ -1,11 +1,11 @@
 //*** Libraries
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "2.2.4" % "test",
+  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
   "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
-  "org.spire-math" %% "spire" % "0.10.1",
-  "org.scalanlp" %% "breeze" % "0.11.2",
+  "org.spire-math" %% "spire" % "0.11.0",
+  "org.scalanlp" %% "breeze" % "0.12",
   // for using native linear algebra libraries
   // "org.scalanlp" %% "breeze-natives" % "0.9",
   "org.rogach" %% "scallop" % "0.9.5",
