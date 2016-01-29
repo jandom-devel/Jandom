@@ -30,7 +30,7 @@ crossPaths in ThisBuild := false
 
 //*** Resolvers
 
-resolvers ++= Seq(
+resolvers in ThisBuild ++= Seq(
   Resolver.sonatypeRepo("releases"),
   Resolver.sonatypeRepo("snapshots")
 )
