@@ -92,11 +92,6 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   def isEmpty: Boolean
 
   /**
-   * We declare |+| (the magma operation) a synonim of union
-   */
-  @inline def |+|(that: Property) = this union that
-
-  /**
    * Determines if two properties are the same on the base of `tryCompareTo`
    */
   override def equals(other: Any): Boolean = other match {

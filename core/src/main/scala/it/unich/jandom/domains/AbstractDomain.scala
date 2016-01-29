@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
-
 package it.unich.jandom.domains
 
-import it.unich.jandom.fixpoint.lattice.Magma
+import it.unich.scalafix.lattice.Domain
 
 /**
  * The base class for all abstract domains. An abstract domain is a collection of properties,
@@ -30,12 +29,13 @@ trait AbstractDomain {
    * The type of the properties associated to this abstract domain.
    */
   type Property <: AbstractProperty[Property]
-
+  
   /**
-   * An implicit magma is provided for the abstract domain, corresponding to
-   * abstract union
+   * ScalaFixDomain is an instance of the ScalaFix type-class domain for this abstract domain. 
    */
-  val magma: Magma[Property] = new Magma[Property] {
-    def op(x: Property, y: Property) = x union y
+  val ScalaFixDomain  = new  Domain[Property] {
+    def lteq(x: Property, y: Property) = x <= y
+    def tryCompare(x: Property, y: Property) = x tryCompareTo y
+    def upperBound(x: Property, y: Property) = x union y
   }
 }

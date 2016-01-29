@@ -28,11 +28,16 @@ import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.lts._
-import it.unich.jandom.utils.PMaps._
-import it.unich.jandom.fixpoint.structured.StructuredDriver
+import it.unich.scalafix.finite.FiniteFixpointSolver
+import it.unich.scalafix.FixpointSolver._
 
 class LTSSuite extends FunSuite {
   val dom = BoxDoubleDomain()
+  
+  implicit val scalafixDomain = dom.ScalaFixDomain
+  val wideningBox = { (x: dom.Property, y: dom.Property) => x widening y }
+  val narrowingBox = { (x: dom.Property, y: dom.Property) => x narrowing y }
+  val CC77 = FiniteFixpointSolver.CC77[Location, dom.Property](Solver.PriorityWorkListSolver, wideningBox, narrowingBox)
 
   object LTS1 {
     val env = Environment("x")
@@ -55,13 +60,8 @@ class LTSSuite extends FunSuite {
 
   test("simple LTS analysis with equations") {
     val eqs = LTS1.lts.toEQS(dom)
-    val ann = StructuredDriver(dom)(eqs, PMap.empty)
-    assertResult(dom(Array(0), Array(11))) { ann(LTS1.l2) }
-  }
 
-  test("simple LTS analysis with flow equations") {
-    val eqs = LTS1.lts.toEQSFlow(dom)
-    val ann = StructuredDriver(dom)(eqs, PMap.empty)
+    val ann = FiniteFixpointSolver(eqs,CC77)
     assertResult(dom(Array(0), Array(11))) { ann(LTS1.l2) }
   }
 
@@ -77,12 +77,8 @@ class LTSSuite extends FunSuite {
     test(s"compare LTS analsysis for ${lts.name} in file ${model}") {
       val params = new Parameters[LTS] { val domain = dom }
       val ann1 = lts.analyze(params)
-
-      val ann2 = StructuredDriver(dom)(lts.toEQS(dom), PMap.empty)
+      val ann2 = FiniteFixpointSolver(lts.toEQS(dom),CC77)
       for (l <- lts.locations) assert(ann1(l) === ann2(l))
-
-      val ann3 = StructuredDriver(dom)(lts.toEQSFlow(dom), PMap.empty)
-      for (l <- lts.locations) assert(ann2(l) === ann3(l))
     }
   }
 }

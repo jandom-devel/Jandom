@@ -19,14 +19,11 @@
 package it.unich.jandom.benchmarks
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
-import it.unich.jandom.domains.numerical.ppl.PPLDomain
-import it.unich.jandom.fixpoint.Driver._
-import it.unich.jandom.fixpoint.finite.PriorityWorkListSolver
-import it.unich.jandom.fixpoint.FixpointSolverListener.PerformanceListener
-import it.unich.jandom.fixpoint.structured.StructuredDriver
-import it.unich.jandom.utils.PMaps._
-
-import parma_polyhedra_library.C_Polyhedron
+import it.unich.jandom.targets.lts.Location
+import it.unich.scalafix.Box.apply
+import it.unich.scalafix.FixpointSolver._
+import it.unich.scalafix.FixpointSolverListener.PerformanceListener
+import it.unich.scalafix.finite.FiniteFixpointSolver
 
 /**
  * An example application which compares the precision of different analysis for Alice benchmarks.
@@ -35,22 +32,24 @@ object FASTComparison extends App with FASTLoader {
   //val dom = PPLDomain[C_Polyhedron]
   val dom = BoxDoubleDomain()
 
-  //val delayedNarrowing = Narrowings.Delayed(Narrowings.Intersection, 2, Narrowings.Default)
-  val anarrowing = Narrowings.Default
-  val box = Updates.Combine(Widenings.Default, anarrowing)
-  val basebox = (boxstrategy --> BoxStrategy.Mixed) +: (update --> box) +: (solver --> Solver.PriorityWorkListSolver) +: (narrowing --> anarrowing) +: PMap.empty
+  implicit val scalafixDomain = dom.ScalaFixDomain
+  val widening = { (x: dom.Property, y: dom.Property) => x widening y }
+  val narrowing = { (x: dom.Property, y: dom.Property) => x narrowing y }
+
+  val CC77 = FiniteFixpointSolver.CC77[Location, dom.Property](Solver.WorkListSolver, widening, narrowing)
+  val SCP = CC77.copy[Location, dom.Property](solver = Solver.PriorityWorkListSolver, boxscope = BoxScope.Standard, boxstrategy = BoxStrategy.Warrowing)
 
   val parameters = Seq(
-    ("standard", (narrowing --> anarrowing) +: PMap.empty),
-    ("localized", (narrowing --> anarrowing) +: (boxscope --> BoxScope.Localized) +: PMap.empty),
-    ("mixed", basebox),
-    ("mixed localized", (boxscope --> BoxScope.Localized) +: basebox),
-    ("mixed localized restart", (boxscope --> BoxScope.Localized) +: (restartstrategy --> true) +: basebox))
+    ("standard", CC77),
+    ("localized", CC77.copy(boxscope = BoxScope.Localized)),
+    ("mixed", SCP),
+    ("mixed localized", SCP.copy(boxscope = BoxScope.Localized)),
+    ("mixed localized restart", SCP.copy(boxscope = BoxScope.Localized, restartstrategy = true)))
 
   val results = (for (lts <- ltss; eqs = lts.toEQS(dom); (name, p) <- parameters) yield {
     val l = new PerformanceListener
-    val param = (listener --> l) +: p
-    ((lts, name), (StructuredDriver(dom)(eqs, param), l.evaluations))
+    val param = p.copy(listener = l)
+    ((lts, name), (FiniteFixpointSolver(eqs, param), l.evaluations))
   }).toMap
 
   for ((name, _) <- parameters) {

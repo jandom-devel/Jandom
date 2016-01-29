@@ -20,12 +20,10 @@ package it.unich.jandom.targets.lts
 
 import it.unich.jandom.domains.DimensionFiberedProperty
 import it.unich.jandom.domains.numerical.NumericalDomain
-import it.unich.jandom.fixpoint._
-import it.unich.jandom.fixpoint.structured.FlowEquationSystem
-import it.unich.jandom.fixpoint.structured.GraphBasedEquationSystem
 import it.unich.jandom.targets._
 import it.unich.jandom.utils.Relation
-import it.unich.jandom.fixpoint.structured.GraphBasedEquationSystem
+import it.unich.scalafix.finite.GraphEquationSystem
+import it.unich.scalafix.lattice.Domain
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -99,14 +97,13 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
   }
 
   /**
-   * Converts an LTS into a flow equation system, given a numerical domain. It is generally better
-   * to use toEQS, since toEQSFlow might be deprecated in the future.
+   * Converts an LTS into an equation system, given a numerical domain.
    */
-  def toEQSFlow(dom: NumericalDomain): FlowEquationSystem[Location, dom.Property, Either[Transition, Location]] = {
+  def toEQS(dom: NumericalDomain): GraphEquationSystem[Location, dom.Property, Either[Transition, Location]] = {
     type Edge = Either[Transition, Location]
-
-    implicit val magma = dom.magma
-
+    
+    implicit val scalafixDomain = dom.ScalaFixDomain
+    
     // build an empty property.. it is used several times, so we speed execution
     val empty = dom.bottom(env.size)
     val initRegion = regions find { _.name == "init" }
@@ -123,10 +120,9 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
         }, locations)
     }
     val edges: Set[Edge] = ((transitions map { Left(_) }) ++ (inputlocs map { Right(_) })).toSet
-    val fakeloc = new Location("fake", Seq.empty)
-    FlowEquationSystem[Location, dom.Property, Edge](
-      unknowns = fakeloc +: locations,
-      inputUnknowns = inputlocs,
+    GraphEquationSystem[Location, dom.Property, Edge](
+      unknowns = locations,
+      inputUnknowns = inputlocs.toSet,
       edgeAction = { (rho: Location => dom.Property) =>
         e: Either[Transition, Location] =>
           e match {
@@ -134,54 +130,14 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
             case Right(l) => startrho(l)
           }
       },
-      source = { _ match { case Left(t) => t.start; case Right(l) => fakeloc } },
+      source = { _ match { case Left(t) => Some(t.start); case Right(l) => None } },
       target = { _ match { case Left(t) => t.end; case Right(l) => l } },
-      ingoing = { l: Location => if (l == fakeloc) Seq.empty else Right(l) :: (l.incoming map { Left(_) }) },
-      outgoing = { l: Location => if (l == fakeloc) locations map { Right(_) } else l.outgoing map { Left(_) } },
+      ingoing = { l: Location => Right(l) :: (l.incoming map { Left(_) }) },
+      outgoing = { l: Location =>  l.outgoing map { Left(_) } },
       initial = startrho)
   }
 
   override def getAnnotation[Property] = new LTSAnnotation[Property]
-
-  /**
-   * Converts an LTS into a layered equation system, given a numerical domain.
-   */
-  def toEQS(dom: NumericalDomain): GraphBasedEquationSystem[Location, dom.Property, Either[Transition, Location]] = {
-    type Edge = Either[Transition, Location]
-
-    implicit val magma = dom.magma
-
-    // build an empty property.. it is used several times, so we speed execution
-    val empty = dom.bottom(env.size)
-    val initRegion = regions find { _.name == "init" }
-
-    // this are the initial non empty states of the LTS
-    val (startrho, inputlocs) = initRegion match {
-      case Some(Region(_, Some(initloc), initcond)) =>
-        ({ loc: Location => if (loc == initloc) initcond.analyze(dom.top(env.size)) else empty }, Set(initloc))
-      case _ =>
-        ({ loc: Location =>
-          (dom.top(env.size) /: loc.conditions) {
-            (prop, cond) => cond.analyze(prop)
-          }
-        }, locations)
-    }
-    val edges: Set[Edge] = ((transitions map { Left(_) }) ++ (inputlocs map { Right(_) })).toSet
-
-    GraphBasedEquationSystem[Location, dom.Property, Edge](
-      unknowns = locations,
-      inputUnknowns = inputlocs,
-      edgeBody = { (e: Edge) =>
-        (rho: Location => dom.Property) => (x: Location) =>
-          e match {
-            case Left(t) => t.analyze(rho(t.start))
-            case Right(l) => startrho(l)
-          }
-      },
-      sources = Relation(edges, { _ match { case Left(t) => Set(t.start); case Right(l) => Set.empty } }),
-      targets = Relation(edges, { _ match { case Left(t) => Set(t.end); case Right(l) => Set(l) } }),
-      initial = startrho)
-  }
 
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     // build widening and narrowing for each program point

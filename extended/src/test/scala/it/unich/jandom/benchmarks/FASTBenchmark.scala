@@ -19,20 +19,27 @@
 package it.unich.jandom.benchmarks
 
 import com.google.caliper.SimpleBenchmark
-import it.unich.jandom.domains.numerical._
-import it.unich.jandom.fixpoint.structured.StructuredDriver
-import it.unich.jandom.fixpoint.Driver._
+
+import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.targets.Parameters
 import it.unich.jandom.targets.lts.LTS
-import it.unich.jandom.utils.PMaps._
+import it.unich.jandom.targets.lts.Location
+import it.unich.scalafix.Box.apply
+import it.unich.scalafix.FixpointSolver._
+import it.unich.scalafix.finite.FiniteFixpointSolver
 
 /**
  * This is a program which analyzes the Alice benchmarks with different settings and compares the execution time.
  */
 class FASTBenchmark extends SimpleBenchmark with FASTLoader {
- 
+
   val dom = BoxDoubleDomain()
-  
+
+  implicit val scalafixDomain = dom.ScalaFixDomain
+  val wideningBox = { (x: dom.Property, y: dom.Property) => x widening y }
+  val narrowingBox = { (x: dom.Property, y: dom.Property) => x narrowing y }
+  val CC77 = FiniteFixpointSolver.CC77[Location, dom.Property](Solver.WorkListSolver, wideningBox, narrowingBox)
+
   def timeLTS(reps: Int) {
     for (_ <- 1 to reps) {
       for (lts <- ltss) {
@@ -41,39 +48,30 @@ class FASTBenchmark extends SimpleBenchmark with FASTLoader {
       }
     }
   }
-  
+
   def timeEQSKleene(reps: Int) {
     for (_ <- 1 to reps) {
       for (lts <- ltss) {
         val eqs = lts.toEQS(dom)
-        val ann = StructuredDriver(dom)(eqs, (solver --> Solver.KleeneSolver) +: PMap.empty)
-      }
-    }
-  }
-    
-  def timeEQSRoundRobin(reps: Int) {
-    for (_ <- 1 to reps) {
-      for (lts <- ltss) {
-        val eqs = lts.toEQS(dom)
-        val ann = StructuredDriver(dom)(eqs, (solver --> Solver.RoundRobinSolver) +: PMap.empty)
-      }
-    }
-  }
-  
-  def timeEQSDefault(reps: Int) {
-    for (_ <- 1 to reps) {
-      for (lts <- ltss) {
-        val eqs = lts.toEQS(dom)
-        val ann = StructuredDriver(dom)(eqs, PMap.empty)
+        val ann = FiniteFixpointSolver(eqs, CC77.copy(solver = Solver.KleeneSolver))
       }
     }
   }
 
-  def timeEQSFlowDefault(reps: Int) {
+  def timeEQSRoundRobin(reps: Int) {
     for (_ <- 1 to reps) {
       for (lts <- ltss) {
-        val eqs = lts.toEQSFlow(dom)
-        val ann = StructuredDriver(dom)(eqs, PMap.empty)
+        val eqs = lts.toEQS(dom)
+        val ann = FiniteFixpointSolver(eqs, CC77.copy(solver = Solver.RoundRobinSolver))
+      }
+    }
+  }
+
+  def timeEQSDefault(reps: Int) {
+    for (_ <- 1 to reps) {
+      for (lts <- ltss) {
+        val eqs = lts.toEQS(dom)
+        val ann = FiniteFixpointSolver(eqs, CC77)
       }
     }
   }
@@ -82,35 +80,18 @@ class FASTBenchmark extends SimpleBenchmark with FASTLoader {
     for (_ <- 1 to reps) {
       for (lts <- ltss) {
         val eqs = lts.toEQS(dom)
-        val ann = StructuredDriver(dom)(eqs, (boxscope --> BoxScope.Localized) +: PMap.empty)
+        val ann = FiniteFixpointSolver(eqs, CC77.copy(boxscope = BoxScope.Localized))
       }
     }
   }
 
-  def timeEQSFlowLocalized(reps: Int) {
-    for (_ <- 1 to reps) {
-      for (lts <- ltss) {
-        val eqs = lts.toEQSFlow(dom)
-        val ann = StructuredDriver(dom)(eqs, (boxscope --> BoxScope.Localized) +: PMap.empty)
-      }
-    }
-  }
-  
-   def timeEQSMixedLocalized(reps: Int) {
+  def timeEQSMixedLocalized(reps: Int) {
     for (_ <- 1 to reps) {
       for (lts <- ltss) {
         val eqs = lts.toEQS(dom)
-        val ann = StructuredDriver(dom)(eqs, (boxstrategy --> BoxStrategy.Mixed) +: (boxscope --> BoxScope.Localized) +: (solver --> Solver.PriorityWorkListSolver) +: PMap.empty)
+        val ann = FiniteFixpointSolver(eqs, CC77.copy(boxscope = BoxScope.Localized, boxstrategy = BoxStrategy.Warrowing))
       }
     }
   }
 
-  def timeEQSFlowMixedLocalized(reps: Int) {
-    for (_ <- 1 to reps) {
-      for (lts <- ltss) {
-        val eqs = lts.toEQSFlow(dom)
-        val ann = StructuredDriver(dom)(eqs, (boxstrategy --> BoxStrategy.Mixed) +: (boxscope --> BoxScope.Localized) +: (solver --> Solver.PriorityWorkListSolver) +: PMap.empty)
-      }
-    }
-  }
 }
