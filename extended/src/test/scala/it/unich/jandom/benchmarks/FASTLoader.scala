@@ -41,8 +41,9 @@ trait FASTLoader {
   val ltss = for (model <- dir.listFiles()) yield {
     val fr = new FileReader(model)
     val source = new PagedSeqReader(PagedSeq.fromReader(fr))
-    val result = FastParser().parse(source)
+    val result = FastParser().parse(source).get
     fr.close()
-    result.get
+    // add filename to the model name to have an unique identifier
+    result.copy(name = s"${result.name} -- ${model.getName}")
   }
 }
