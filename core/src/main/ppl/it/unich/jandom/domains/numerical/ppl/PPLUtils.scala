@@ -58,7 +58,7 @@ private[jandom] object PPLUtils {
 	 e match {
 	   case e: Linear_Expression_Coefficient => LinearForm.c(e.argument().getBigInteger().doubleValue())
 	   case e: Linear_Expression_Difference => fromPPLExpression(e.left_hand_side()) - fromPPLExpression(e.right_hand_side())
-	   case e: Linear_Expression_Sum => fromPPLExpression(e.left_hand_side()) - fromPPLExpression(e.right_hand_side())
+	   case e: Linear_Expression_Sum => fromPPLExpression(e.left_hand_side()) + fromPPLExpression(e.right_hand_side())
 	   case e: Linear_Expression_Times => fromPPLExpression(e.linear_expression()) * e.coefficient().getBigInteger().doubleValue()
 	   case e: Linear_Expression_Unary_Minus => - fromPPLExpression(e.argument())
 	   case e: Linear_Expression_Variable => LinearForm.v(e.argument().id().toInt)
