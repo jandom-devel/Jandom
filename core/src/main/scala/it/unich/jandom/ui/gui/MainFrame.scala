@@ -30,7 +30,7 @@ class MainFrame extends Frame {
 
   object Mode extends Enumeration {
     type Mode = Value
-    val Random, Asm, Soot = Value
+    val Random, Asm, Soot, Fast = Value
     val default = Random
   }
 
@@ -51,8 +51,10 @@ class MainFrame extends Frame {
   lazy val jandomEditorPane = new JandomEditorPane(this)
   lazy val asmEditorPane = new ASMEditorPane(this)
   lazy val sootEditorPane = new SootEditorPane(this)
+  lazy val fastEditorPane = new FastEditorPane(this)
   lazy val outputPane = new OutputPane
   lazy val parametersPane = new ParametersPane
+
 
   /**
    * Map a mode to a corresponding editor pane
@@ -61,6 +63,7 @@ class MainFrame extends Frame {
     case Random => jandomEditorPane
     case Soot => sootEditorPane
     case Asm  => asmEditorPane
+    case Fast  => fastEditorPane
   }
 
   /**
@@ -117,6 +120,12 @@ class MainFrame extends Frame {
     }
   }
 
+  val fastAction: Action = new Action("Fast") {
+    toolTip = "Analysis of  Alice library"
+    def apply() {
+      mode = Fast
+    }
+  }
   init()
 
 
@@ -160,8 +169,10 @@ class MainFrame extends Frame {
     asmMode.action = asmAction
     val sootMode = new RadioMenuItem("")
     sootMode.action = sootAction
+    val fastMode = new RadioMenuItem("")
+    fastMode.action = fastAction
 
-    val buttonGroups = new ButtonGroup(randomMode, asmMode, sootMode)
+    val buttonGroups = new ButtonGroup(randomMode, asmMode, sootMode, fastMode)
     menuBar = new MenuBar {
       contents += new Menu("File")
       contents += new Menu("Edit")
@@ -179,6 +190,7 @@ class MainFrame extends Frame {
       case Random => randomMode
       case Asm => asmMode
       case Soot => sootMode
+      case Fast => fastMode
     })
   }
 
@@ -197,6 +209,7 @@ class MainFrame extends Frame {
       case Asm => asmEditorPane
       case Soot => sootEditorPane
       case Random => jandomEditorPane
+      case Fast => fastEditorPane
     }
     tabbedPane.pages(0).content = currentEditorPane
     // repaint is needed to avoid corruption in display
