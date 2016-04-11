@@ -59,16 +59,11 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
     def domain = ProductDomain.this
 
     def reduce(x1: dom1.Property, x2: dom2.Property): Property = {
-      if (x1.isEmpty && x2.isEmpty)
-        new Property(x1,x2)
-      else if (x1.isEmpty)
-        new Property(x1, x2.bottom)
-      else if (x2.isEmpty)
-        new Property(x1.bottom, x2)
-      else {
-        val y1=x1.intersection(d21(x2))
-        val y2=x2.intersection(d12(x1))
-
+      if (x1.isEmpty || x2.isEmpty)
+        new Property(x1.bottom,x2.bottom)
+      else{
+        val y1 = x1.intersection(d21(x2))
+        val y2 = x2.intersection(d12(x1))
         new Property(y1, y2)
       }
     }
