@@ -27,6 +27,7 @@ import it.unich.jandom.domains.numerical.LinearForm.c
 import it.unich.jandom.domains.numerical.NumericalDomainSuite
 
 import parma_polyhedra_library.{ Double_Box, Octagonal_Shape_double }
+import it.unich.jandom.domains.PreciseIntersectionSuite
 
 /**
  * These are configuration parameters for all the tests relative the PPL-based
@@ -42,7 +43,8 @@ private[ppl] trait PPLDomainSuiteParameters[Shape <: AnyRef] {
  * @author Gianluca Amato <gamato@unich.it>
  */
 class PPLDomainSuiteBox extends { val dom = PPLDomain[Double_Box]() } with FunSpec
-  with PPLDomainSuiteParameters[Double_Box] with NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite {
+  with PPLDomainSuiteParameters[Double_Box] with NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite
+  with PreciseIntersectionSuite {
 
   describe("Test on disequality") {
     val obj = dom.top(3).linearAssignment(0, 0.0)

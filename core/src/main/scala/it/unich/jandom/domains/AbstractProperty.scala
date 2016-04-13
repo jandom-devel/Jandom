@@ -64,8 +64,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   def union(that: Property): Property
 
   /**
-   * Compute a lower bound of two abstract properties. If it is possible and convenient, this should compute
-   * the greatest lower bound, but it is not a requirement.
+   * Compute an upper approximation of the greatest lower bound of two abstract properties.
    * @param that the abstract object to meet with `this`.
    * @note $NOTEFIBER
    * @return a lower bound of the two abstract properties.
@@ -80,7 +79,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   def widening(that: Property): Property
 
   /**
-   * The standard widening for two abstract properties.
+   * The standard narrowing for two abstract properties.
    * @param that the abstract object to be narrowed with `this`. `that` IS assumed to be smaller than `this`.
    * @return the narrowing of the two abstract properties.
    */

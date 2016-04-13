@@ -19,12 +19,13 @@
 package it.unich.jandom.domains.numerical
 
 import it.unich.jandom.domains.{EmptyExistsSuite, SeparatedTopAndBottomSuite}
+import it.unich.jandom.domains.PreciseIntersectionSuite
 
 /**
  * A private trait for all BoxDoubleDomain suites.
  * @author Gianluca Amato <gamato@unich.it>
  */
-private[numerical] trait BoxDoubleDomainSuite extends NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite {
+private[numerical] trait BoxDoubleDomainSuite extends NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite with PreciseIntersectionSuite {
 
   val dom: BoxDoubleDomain
 

@@ -196,11 +196,6 @@ trait CartesianFiberedDomainSuite extends AbstractDomainSuite {
         assert((p intersection p) === p)
       }
     }
-    it("returns a lower bound") {
-      forAll(someCoupleProperties) { (p1, p2) =>
-        assert((p1 intersection p2) <= p2)
-      }
-    }
     it("is associative") {
       forAll(someProperties) { (p1) =>
         forAll(someProperties) { (p2) =>
