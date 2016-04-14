@@ -33,7 +33,7 @@ import it.unich.scalafix.FixpointSolver._
 
 class LTSSuite extends FunSuite {
   val dom = BoxDoubleDomain()
-  
+
   implicit val scalafixDomain = dom.ScalaFixDomain
   val wideningBox = { (x: dom.Property, y: dom.Property) => x widening y }
   val narrowingBox = { (x: dom.Property, y: dom.Property) => x narrowing y }
@@ -50,6 +50,15 @@ class LTSSuite extends FunSuite {
       guard = List(AtomicCond(LinearForm(-10, 1), ComparisonOperators.LTE)),
       assignments = NumericAssignment(0, LinearForm(1, 1)))
     val lts = LTS("example", IndexedSeq(l1, l2), Seq(t1, t2), env)
+  }
+
+  test("dot translation") {
+    val output = """digraph {
+                   |  "start" -> "ciclo" [label="init"]
+                   |  "ciclo" -> "ciclo" [label="loop"]
+                   |}
+                   |""".stripMargin('|')
+    assertResult(output)(LTS1.lts.toDot)
   }
 
   test("simple LTS analysis") {

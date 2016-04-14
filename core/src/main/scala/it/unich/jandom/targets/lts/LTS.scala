@@ -97,13 +97,31 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
   }
 
   /**
+   * Converts the LTS into a graph in the DOT language.
+   */
+  def toDot: String = {
+    import org.apache.commons.lang3.StringEscapeUtils
+
+    val builder = new StringBuilder()
+    builder ++= "digraph {\n"
+    val initState = regions find { _.name == "init" } flatMap { _.state }
+    if (initState.isDefined)
+      builder ++= s"""  "${StringEscapeUtils.escapeJava(initState.get.name)}" [shape=doublecircle]\n"""
+    for (t <- transitions) {
+      builder ++= s"""  "${StringEscapeUtils.escapeJava(t.start.name)}" -> "${ StringEscapeUtils.escapeJava(t.end.name)}" [label="${StringEscapeUtils.escapeJava(t.name)}"]\n"""
+    }
+    builder ++= "}\n"
+    builder.toString
+  }
+
+  /**
    * Converts an LTS into an equation system, given a numerical domain.
    */
   def toEQS(dom: NumericalDomain): GraphEquationSystem[Location, dom.Property, Either[Transition, Location]] = {
     type Edge = Either[Transition, Location]
-    
+
     implicit val scalafixDomain = dom.ScalaFixDomain
-    
+
     // build an empty property.. it is used several times, so we speed execution
     val empty = dom.bottom(env.size)
     val initRegion = regions find { _.name == "init" }

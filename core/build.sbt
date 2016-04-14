@@ -1,6 +1,7 @@
 //*** Libraries
 
 libraryDependencies ++= Seq(
+  "org.apache.commons" % "commons-lang3" % "3.4",
   "org.scalatest" %% "scalatest" % "2.2.6" % "test",
   "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
   "org.mockito" % "mockito-core" % "1.10.19" % "test",
