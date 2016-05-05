@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Gianluca Amato, Francesca Scozzari, Simone Di Nardo Di Maio
+ * Copyright 2014, 2016 Gianluca Amato, Francesca Scozzari, Simone Di Nardo Di Maio
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -93,52 +93,53 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
         SumDomain.this(q1, p2)
     }
 
-    def linearAssignment(n: Int, lf: LinearForm[Double]): Property = {
+    def linearAssignment(n: Int, lf: LinearForm): Property = {
       // we divide the known coefficient evenly between the two domains
       // a better choice could be performed by knowing some info on the two domains
-      val newlf = new DenseLinearForm[Double](lf.known / 2 +: lf.homcoeffs)
+      val newlf = new DenseLinearForm(lf.known / 2 +: lf.homcoeffs)
       var q1 = p1.linearAssignment(n, newlf)
       var q2 = p2.linearAssignment(n, newlf)
       SumDomain.this(q1, q2)
     }
 
-    def linearInequality(lf: LinearForm[Double]): Property = {
-      if (p1.isEmpty || p2.isEmpty) return this
-
-      var w1 = p1.minimize(lf)
-      var w2 = p2.minimize(lf)
-
-      if (!w1.isInfinity && !w2.isInfinity) {
-        val lf_k1 = new DenseLinearForm[Double](w2 +: lf.homcoeffs)
-        val lf_k2 = new DenseLinearForm[Double](w1 +: lf.homcoeffs)
-        SumDomain.this(p1.linearInequality(lf_k1), p2.linearInequality(lf_k2))
-      } else if (!w1.isInfinity) {
-        val lf_k2 = new DenseLinearForm[Double](w1 +: lf.homcoeffs)
-        SumDomain.this(p1, p2.linearInequality(lf_k2));
-      } else if (!w2.isInfinity) {
-        val lf_k1 = new DenseLinearForm[Double](w2 +: lf.homcoeffs)
-        SumDomain.this(p1.linearInequality(lf_k1), p2);
-      } else
+    def linearInequality(lf: LinearForm): Property = {
+      if (p1.isEmpty || p2.isEmpty)
         this
+      else {
+        var w1 = p1.minimize(lf)
+        var w2 = p2.minimize(lf)
+        if (!w1.isInfinity && !w2.isInfinity) {
+          val lf_k1 = new DenseLinearForm(w2.value +: lf.homcoeffs)
+          val lf_k2 = new DenseLinearForm(w1.value +: lf.homcoeffs)
+          SumDomain.this(p1.linearInequality(lf_k1), p2.linearInequality(lf_k2))
+        } else if (!w1.isInfinity) {
+          val lf_k2 = new DenseLinearForm(w1.value +: lf.homcoeffs)
+          SumDomain.this(p1, p2.linearInequality(lf_k2));
+        } else if (!w2.isInfinity) {
+          val lf_k1 = new DenseLinearForm(w2.value +: lf.homcoeffs)
+          SumDomain.this(p1.linearInequality(lf_k1), p2);
+        } else
+          this
+      }
     }
 
-    def linearDisequality(lf: LinearForm[Double]): Property = this
+    def linearDisequality(lf: LinearForm): Property = this
 
-    def minimize(lf: LinearForm[Double]): Double = {
+    def minimize(lf: LinearForm) = {
       val homlf = lf.hom
       p1.minimize(homlf) + p2.minimize(homlf) + lf.known
     }
 
-    def maximize(lf: LinearForm[Double]): Double = {
+    def maximize(lf: LinearForm) = {
       val homlf = lf.hom
       p1.maximize(homlf) + p2.maximize(homlf) + lf.known
     }
 
-    def frequency(lf: LinearForm[Double]): Option[Double] = {
+    def frequency(lf: LinearForm) = {
       val homlf = lf.hom
       (p1.frequency(homlf), p2.frequency(homlf)) match {
-        case (Some(v1), Some(v2)) => Some(v1 + v2 + lf.known)
-        case _ => None
+        case (Some(v1), Some(v2)) => Option(v1 + v2 + lf.known)
+        case _ => Option.empty
       }
     }
 
@@ -148,8 +149,8 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
       else {
         val cs1 = p1.constraints
         val cs2 = p2.constraints
-        val set1 = for (c <- cs1 ++ cs2; max = maximize(c.hom); if !max.isInfinity) yield LinearForm(-max +: c.homcoeffs: _*)
-        val set2 = for (c <- cs1 ++ cs2; min = minimize(c.hom); if !min.isInfinity) yield LinearForm(min +: (-c).homcoeffs: _*)
+        val set1 = for (c <- cs1 ++ cs2; max = maximize(c.hom); if !max.isInfinity) yield LinearForm(-max.value +: c.homcoeffs: _*)
+        val set2 = for (c <- cs1 ++ cs2; min = minimize(c.hom); if !min.isInfinity) yield LinearForm(min.value +: (-c).homcoeffs: _*)
         set1 ++ set2
       }
     }
@@ -184,25 +185,25 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
     def tryCompareTo[B >: Property](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = that match {
       case that: Sum => {
         if (this.isTop && that.isTop)
-          Some(0)
+          Option(0)
         else if (this.isTop)
-          Some(1)
+          Option(1)
         else if (that.isTop)
-          Some(-1)
+          Option(-1)
         else if (this.isBottom && that.isBottom)
-          Some(0)
+          Option(0)
         else if (this.isBottom)
-          Some(-1)
+          Option(-1)
         else if (that.isBottom)
-          Some(1)
+          Option(1)
         else if (p1 == that.p1)
           p2.tryCompareTo(that.p2)
         else if (p1 > that.p1)
-          if (p2 >= that.p2) Some(1) else None
-        else if (p2 <= that.p2) Some(-1)
-        else None
+          if (p2 >= that.p2) Option(1) else Option.empty
+        else if (p2 <= that.p2) Option(-1)
+        else Option.empty
       }
-      case _ => None
+      case _ => Option.empty
     }
   }
 

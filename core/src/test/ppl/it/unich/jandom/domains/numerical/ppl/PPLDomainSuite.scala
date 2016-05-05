@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -19,15 +19,16 @@
 package it.unich.jandom.domains.numerical.ppl
 
 import org.scalatest.FunSpec
-import org.scalatest.prop.Tables.Table
 
-import it.unich.jandom.domains.{ DomainTransformation, EmptyExistsSuite, SeparatedTopAndBottomSuite }
+import it.unich.jandom.domains.DomainTransformation
+import it.unich.jandom.domains.EmptyExistsSuite
+import it.unich.jandom.domains.PreciseIntersectionSuite
+import it.unich.jandom.domains.SeparatedTopAndBottomSuite
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.LinearForm.c
 import it.unich.jandom.domains.numerical.NumericalDomainSuite
-
-import parma_polyhedra_library.{ Double_Box, Octagonal_Shape_double }
-import it.unich.jandom.domains.PreciseIntersectionSuite
+import parma_polyhedra_library.Double_Box
+import parma_polyhedra_library.Octagonal_Shape_double
 
 /**
  * These are configuration parameters for all the tests relative the PPL-based
@@ -47,7 +48,7 @@ class PPLDomainSuiteBox extends { val dom = PPLDomain[Double_Box]() } with FunSp
   with PreciseIntersectionSuite {
 
   describe("Test on disequality") {
-    val obj = dom.top(3).linearAssignment(0, 0.0)
+    val obj = dom.top(3).linearAssignment(0, 0)
     assertResult(dom.bottom(3)) { obj.linearDisequality(LinearForm(0, 1, 0, 0)) }
   }
 
@@ -74,20 +75,20 @@ class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double
 
   describe("Test for minimization/maximization") {
     val obj = full.
-      linearAssignment(0, 0.0).
+      linearAssignment(0, 0).
       linearInequality(LinearForm(-1, 0, 1, 1)).
       linearInequality(LinearForm(-1, 0, 1, -1))
-    assertResult(Double.PositiveInfinity) { obj.maximize(LinearForm(0, 0, 0, 1)) }
+    assert { obj.maximize(LinearForm(0, 0, 0, 1)).isPosInfinity }
     assertResult(1) { obj.maximize(LinearForm(0, 1, 1, 0)) }
     assertResult(None) { obj.frequency(LinearForm(0, 1, 0, 1)) }
     assertResult(Some(0)) { obj.frequency(LinearForm(0, 1, 0, 0)) }
   }
 
   describe("Test for various operations") {
-    val obj = full.linearAssignment(0, 0.0)
-    val obj2 = full.linearAssignment(1, 0.0)
-    val obj3 = full.linearAssignment(2, 0.0)
-    val obj4 = full.linearAssignment(2, 1.0)
+    val obj = full.linearAssignment(0, 0)
+    val obj2 = full.linearAssignment(1, 0)
+    val obj3 = full.linearAssignment(2, 0)
+    val obj4 = full.linearAssignment(2, 1)
     val obj5 = obj4 union obj3
     assertResult(true) { obj5 > obj4 }
     val obj7 = obj5.linearInequality(LinearForm(1, 0, 0, 1))
@@ -97,8 +98,8 @@ class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double
   }
 
   describe("Test constraints / isPolyhedral methods") {
-    val lf1 = LinearForm[Double](-1, 0, 1, 1)
-    val lf2 = LinearForm[Double](-1, 0, 1, -1)
+    val lf1 = LinearForm(-1, 0, 1, 1)
+    val lf2 = LinearForm(-1, 0, 1, -1)
     assertResult(Seq()) { full.constraints }
     assertResult(true) { full.isPolyhedral }
     val obj = full.
@@ -108,7 +109,7 @@ class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double
   }
 
   describe("Test that disequality do not crash") {
-    val obj = full.linearAssignment(0, 0.0)
+    val obj = full.linearAssignment(0, 0)
     val dis = obj.linearDisequality(LinearForm(0, 1, 0, 0))
   }
 
@@ -148,8 +149,8 @@ class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double
       linearAssignment(0, LinearForm(3, 0, 0, 1)).
       linearInequality(LinearForm(-10, 0, 0, 1))
     val obj2 = full.
-      linearAssignment(0, 1.0).
-      linearAssignment(1, 3.0).
+      linearAssignment(0, 1).
+      linearAssignment(1, 3).
       linearInequality(LinearForm(0, 0, 1, 1))
     val obj3 = dom.top(4).
       linearAssignment(0, LinearForm(4, 0, 0, 0, 0)).

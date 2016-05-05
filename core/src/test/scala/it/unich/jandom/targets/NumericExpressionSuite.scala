@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -18,17 +18,16 @@
 
 package it.unich.jandom.targets
 
-import org.mockito.Mockito
-import org.mockito.Mockito.{ verify, when }
 import org.mockito.Matchers._
-
+import org.mockito.Mockito
+import org.mockito.Mockito.when
 import org.scalatest.FunSuite
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.prop.TableDrivenPropertyChecks
 
-import it.unich.jandom.domains.numerical.{ LinearForm, NumericalProperty }
-import it.unich.jandom.targets.NumericExpression._
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
+import it.unich.jandom.domains.numerical.LinearForm
+import it.unich.jandom.targets.NumericExpression._
 
 /**
  * The test suite for NumericExpression.
@@ -39,8 +38,8 @@ class NumericExpressionSuite extends FunSuite with MockitoSugar with TableDriven
   test("toString with mocks") {
     assertResult("?") { NonDeterministicExpression.toString }
 
-    val lf = mock[LinearForm[Double]]
-    when(lf.toDouble) thenReturn (lf)
+    val lf = mock[LinearForm]
+    //when(lf.toDouble) thenReturn (lf)
     when(lf.mkString(anyObject())) thenReturn ("lf")
     assertResult("lf") { LinearExpression(lf).toString }
 
@@ -67,14 +66,14 @@ class NumericExpressionSuite extends FunSuite with MockitoSugar with TableDriven
   }
 
   test("Operators on linear expressions with mocks") {
-    val lf1 = mock[LinearForm[Double]]
-    val lf2 = mock[LinearForm[Double]]
-    val lfadd = mock[LinearForm[Double]]
-    val lfsub = mock[LinearForm[Double]]
-    val lfminus = mock[LinearForm[Double]]
-    val lfmul = mock[LinearForm[Double]]
-    val lfdiv = mock[LinearForm[Double]]
-    val lfconst = LinearForm.c(2.0)
+    val lf1 = mock[LinearForm]
+    val lf2 = mock[LinearForm]
+    val lfadd = mock[LinearForm]
+    val lfsub = mock[LinearForm]
+    val lfminus = mock[LinearForm]
+    val lfmul = mock[LinearForm]
+    val lfdiv = mock[LinearForm]
+    val lfconst = LinearForm.c(2)
 
     when(lf1 + lf2) thenReturn lfadd
     when(lf1 - lf2) thenReturn lfsub
@@ -105,29 +104,29 @@ class NumericExpressionSuite extends FunSuite with MockitoSugar with TableDriven
   }
 
   test("Operators without mocks") {
-    val v0 = VariableExpression[Int](0)
-    val v1 = VariableExpression[Int](1)
-    val v2 = VariableExpression[Int](2)
-    assertResult(LinearExpression(LinearForm[Int](3, 2, 0, -1))) { 3 + 2 * v0 + v1 - v1 - v2 }
+    val v0 = VariableExpression(0)
+    val v1 = VariableExpression(1)
+    val v2 = VariableExpression(2)
+    assertResult(LinearExpression(LinearForm(3, 2, 0, -1))) { 3 + 2 * v0 + v1 - v1 - v2 }
   }
 
   test("isZero without mocks") {
-    val le = LinearExpression(2.0)
+    val le = LinearExpression(2)
     assert(!le.isZero)
 
-    val le2 = LinearExpression(0.0)
-    assert(le2.isZero)        
-    
-    val x = VariableExpression[Double](0)
-    assert( ! (x*x).isZero )    
+    val le2 = LinearExpression(0)
+    assert(le2.isZero)
+
+    val x = VariableExpression(0)
+    assert( ! (x*x).isZero )
   }
 
   test("Methods analyze and assignTo without mocks") {
     val d = BoxDoubleDomain()
     val p = d(Array(-1, 0, 3), Array(1, 2, 3))
-    val v0 = VariableExpression[Int](0)
-    val v1 = VariableExpression[Int](1)
-    val v2 = VariableExpression[Int](2)
+    val v0 = VariableExpression(0)
+    val v1 = VariableExpression(1)
+    val v2 = VariableExpression(2)
 
     val tests = Table[NumericExpression, Double, Double](
       ("expression", "lower bound", "upper bound"),
@@ -152,4 +151,3 @@ class NumericExpressionSuite extends FunSuite with MockitoSugar with TableDriven
     }
   }
 }
-

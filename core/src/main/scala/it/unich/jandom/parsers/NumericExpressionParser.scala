@@ -19,10 +19,12 @@
 package it.unich.jandom.parsers
 
 import scala.util.parsing.combinator.JavaTokenParsers
+import scala.util.parsing.combinator.PackratParsers
+
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.NumericExpression
 import it.unich.jandom.targets.NumericExpression._
-import scala.util.parsing.combinator.PackratParsers
+import spire.math.Rational
 
 /**
  * A trait for parsing numeric expressions. To be inherited by real parsers. An implementation
@@ -50,8 +52,8 @@ trait NumericExpressionParser extends JavaTokenParsers with PackratParsers {
   private val factor: Parser[NumericExpression] =
     "?" ^^ { _ => NonDeterministicExpression } |
       "(" ~> numexpr <~ ")" |
-      variable ^^ { v => LinearExpression(LinearForm.v[Double](v)) } |
-      wholeNumber ^^ { c => LinearExpression(c.toDouble) } |
+      variable ^^ { v => LinearExpression(LinearForm.v(v)) } |
+      wholeNumber ^^ { c => LinearExpression(Rational(c)) } |
       "-" ~> factor ^^ { e => - e }
 
   private val term: PackratParser[NumericExpression] =
@@ -67,4 +69,3 @@ trait NumericExpressionParser extends JavaTokenParsers with PackratParsers {
       (numexpr <~ "-") ~ term ^^ { case e ~ t => e - t } |
       term
 }
-

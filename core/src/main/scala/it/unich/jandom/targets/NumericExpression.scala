@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -22,6 +22,7 @@ import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.LinearForm._
 import it.unich.jandom.targets.NumericExpression._
+import spire.math.Rational
 
 /**
  * This is the root of the hierarchy of all numeric expressions. Concrete instances
@@ -48,7 +49,7 @@ sealed abstract class NumericExpression {
    * This methods returns the subset of input where the expression is less or equal to 0.
    */
   def lteZero[Property <: NumericalProperty[Property]](input: Property): Property = {
-    val lf = LinearForm.v[Double](input.dimension)
+    val lf = LinearForm.v(input.dimension)
     analyze(input).linearInequality(lf).delVariable()
   }
 
@@ -57,7 +58,7 @@ sealed abstract class NumericExpression {
    * At the moment it is equivalent to lteZero since we do not support strict contraints.
    */
   def ltZero[Property <: NumericalProperty[Property]](input: Property): Property = {
-    val lf = LinearForm.v[Double](input.dimension)
+    val lf = LinearForm.v(input.dimension)
     analyze(input).linearInequality(lf).delVariable()
   }
 
@@ -65,7 +66,7 @@ sealed abstract class NumericExpression {
    * This methods returns the subset of input where the expression is different from 0.
    */
   def neqZero[Property <: NumericalProperty[Property]](input: Property): Property = {
-    val lf = LinearForm.v[Double](input.dimension)
+    val lf = LinearForm.v(input.dimension)
     analyze(input).linearDisequality(lf).delVariable()
   }
 
@@ -138,48 +139,48 @@ object NumericExpression {
    * analyzed easily. For this reason, operators `+` and `-` try to produce a linear expression
    * as a result when it is possible.
    */
-  case class LinearExpression[T: Numeric](val lf: LinearForm[T]) extends NumericExpression {
+  case class LinearExpression(val lf: LinearForm) extends NumericExpression {
 
     def analyze[Property <: NumericalProperty[Property]](input: Property): Property =
-      input.addVariable.linearAssignment(input.dimension, lf.toDouble)
+      input.addVariable.linearAssignment(input.dimension, lf)
 
     def assignTo[Property <: NumericalProperty[Property]](v: Int)(input: Property): Property =
-      input.linearAssignment(v, lf.toDouble)
+      input.linearAssignment(v, lf)
 
     override def lteZero[Property <: NumericalProperty[Property]](input: Property): Property =
-      input.linearInequality(lf.toDouble)
+      input.linearInequality(lf)
 
     override def ltZero[Property <: NumericalProperty[Property]](input: Property): Property =
-      input.linearInequality(lf.toDouble)
+      input.linearInequality(lf)
 
     override def neqZero[Property <: NumericalProperty[Property]](input: Property): Property =
-      input.linearDisequality(lf.toDouble)
+      input.linearDisequality(lf)
 
     override def +(expr: NumericExpression) = expr match {
-      case expr: LinearExpression[T] => LinearExpression[T](lf + expr.lf)
+      case expr: LinearExpression => LinearExpression(lf + expr.lf)
       case _ => AddExpression(this, expr)
     }
 
     override def -(expr: NumericExpression) = expr match {
-      case expr: LinearExpression[T] => LinearExpression[T](lf - expr.lf)
+      case expr: LinearExpression => LinearExpression(lf - expr.lf)
       case _ => SubExpression(this, expr)
     }
 
     override def *(expr: NumericExpression) = expr match {
-      case expr: LinearExpression[T] if (lf.isConstant) =>
+      case expr: LinearExpression if (lf.isConstant) =>
         LinearExpression(expr.lf * lf.known)
-      case expr: LinearExpression[T] if (expr.lf.isConstant) =>
+      case expr: LinearExpression if (expr.lf.isConstant) =>
         LinearExpression(lf * expr.lf.known)
       case _ => MulExpression(this, expr)
     }
 
     override def /(expr: NumericExpression) = expr match {
-      case expr: LinearExpression[T] if (expr.lf.isConstant) =>
+      case expr: LinearExpression if (expr.lf.isConstant) =>
         LinearExpression(lf / expr.lf.known)
       case _ => DivExpression(this, expr)
     }
 
-    override def unary_- = LinearExpression[T](-lf)
+    override def unary_- = LinearExpression(-lf)
 
     def isZero = lf.isZero
 
@@ -274,18 +275,22 @@ object NumericExpression {
   }
 
   /**
-   * Implicit coversion from constants of numeric type T to an NumericExpression.
+   * Implicit conversion from rational constants  to a NumericExpression.
    */
-  implicit def ConstantExpression[T: Numeric](c: T) = LinearExpression(c)
+  implicit def ConstantExpression(c: Rational) = LinearExpression(c)
+
+  /**
+   * Implicit conversion from constants to a NumericExpression.
+   */
+  implicit def ConstantExpression[T <% Rational](c: T) = LinearExpression(c)
 
   /**
    * Constructs an expression corresponding to the variable `v`.
    */
-  def VariableExpression[T: Numeric](v: Int) = LinearExpression(LinearForm.v[T](v))
+  def VariableExpression(v: Int) = LinearExpression(LinearForm.v(v))
 
   /**
    * Implicit conversion from LinearForm to NumericExpression.
    */
-  implicit def linearFormToLinearExpression[T: Numeric](lf: LinearForm[T]) = LinearExpression(lf)
+  implicit def linearFormToLinearExpression(lf: LinearForm) = LinearExpression(lf)
 }
-

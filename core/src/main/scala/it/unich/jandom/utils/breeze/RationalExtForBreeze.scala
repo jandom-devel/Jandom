@@ -29,11 +29,11 @@ import it.unich.jandom.utils.numberext.RationalExt
 /**
  * This object contains the implicit type classes which are needed to make RationalExt
  * work with the Breeze library. This is just what is strictly necessary for implementing
- * the Parallelotope domains, and might not work in a different context.
+ * the `ParallelotopeRational` domain, and might not work in a different context.
  */
 object RationalExtForBreeze {
 
-  implicit object fieldRationalExte extends Field[RationalExt] {
+  implicit object fieldRationalExt extends Field[RationalExt] {
     def zero = RationalExt.zero
 
     def one = RationalExt.one
@@ -69,15 +69,15 @@ object RationalExtForBreeze {
     }
   }
 
-  implicit object MulMM extends OpMulMatrix.Impl2[RationalExt, RationalExt, RationalExt] { def apply(a: RationalExt, b: RationalExt) = a * b }
+  implicit object RationalExtMulMM extends OpMulMatrix.Impl2[RationalExt, RationalExt, RationalExt] { def apply(a: RationalExt, b: RationalExt) = a * b }
 
-  implicit object MulDM extends OpDiv.Impl2[Double, RationalExt, RationalExt] { def apply(a: Double, b: RationalExt) = RationalExt(a) * b }
+  implicit object RationalExtMulDM extends OpDiv.Impl2[Double, RationalExt, RationalExt] { def apply(a: Double, b: RationalExt) = RationalExt(a) * b }
 
-  implicit object RationalExtendedIsZero extends Zero[RationalExt] {
+  implicit object RationalExtIsZero extends Zero[RationalExt] {
     val zero = RationalExt.zero
   }
 
-  implicit def dv_s_Op_RationalExtended_OpMulMatrix: OpMulMatrix.Impl2[DenseVector[RationalExt], RationalExt, DenseVector[RationalExt]] =
+  implicit def dv_s_Op_RationalExt_OpMulMatrix: OpMulMatrix.Impl2[DenseVector[RationalExt], RationalExt, DenseVector[RationalExt]] =
     new OpMulMatrix.Impl2[DenseVector[RationalExt], RationalExt, DenseVector[RationalExt]] {
       def apply(a: DenseVector[RationalExt], b: RationalExt): DenseVector[RationalExt] = {
         val ad = a.data
@@ -95,7 +95,7 @@ object RationalExtForBreeze {
       implicitly[BinaryRegistry[Vector[RationalExt], RationalExt, OpMulMatrix.type, Vector[RationalExt]]].register(this)
     }
 
-  implicit object implOpSolveMatrixBy_DRR_DRR_eq_DRR
+  implicit object RationalExt_implOpSolveMatrixBy_DRR_DRR_eq_DRR
       extends OpSolveMatrixBy.Impl2[DenseMatrix[RationalExt], DenseMatrix[RationalExt], DenseMatrix[RationalExt]] {
 
     def LUSolve(X: DenseMatrix[RationalExt], A: DenseMatrix[RationalExt]) = {
@@ -141,7 +141,7 @@ object RationalExtForBreeze {
     }
   }
 
-  implicit object implOpSolveMatrixBy_DMR_DVR_eq_DVR
+  implicit object RationalExt_implOpSolveMatrixBy_DMR_DVR_eq_DVR
       extends OpSolveMatrixBy.Impl2[DenseMatrix[RationalExt], DenseVector[RationalExt], DenseVector[RationalExt]] {
 
     override def apply(a: DenseMatrix[RationalExt], b: DenseVector[RationalExt]): DenseVector[RationalExt] = {
@@ -150,7 +150,7 @@ object RationalExtForBreeze {
     }
   }
 
-  implicit def countFromTraverseModRationalSpireExt[T](implicit traverse: CanTraverseValues[T, RationalExt]): countNonZero.Impl[T, Int] = {
+  implicit def countFromTraverseModRationalExt[T](implicit traverse: CanTraverseValues[T, RationalExt]): countNonZero.Impl[T, Int] = {
     new countNonZero.Impl[T, Int] {
       def apply(t: T): Int = {
         var count: Int = 0

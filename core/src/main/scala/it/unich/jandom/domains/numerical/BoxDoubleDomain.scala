@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -19,6 +19,8 @@
 package it.unich.jandom.domains.numerical
 
 import it.unich.jandom.domains.CachedTopBottom
+import it.unich.jandom.utils.numberext.RationalExt
+import spire.math.Rational
 
 /**
  * This is the domain of boxes, also known as the interval domain. Bounds are represented by doubles. It may be
@@ -129,7 +131,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      */
     private def dotprod_lo(x: Seq[Double], y: Seq[Double], remove: Int = -1): Double = {
       var sum: Double = 0
-      for (i <- x.indices if i != remove if x(i) != 0) sum = add_lo(sum, mul_lo(x(i), y(i)))
+      for (i <- x.indices; if i != remove && x(i) != 0) sum = add_lo(sum, mul_lo(x(i), y(i)))
       sum
     }
 
@@ -141,7 +143,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      */
     private def dotprod_hi(x: Seq[Double], y: Seq[Double], remove: Int = -1): Double = {
       var sum: Double = 0
-      for (i <- x.indices if i != remove if x(i) != 0) sum = add_hi(sum, mul_hi(x(i), y(i)))
+      for (i <- x.indices; if i != remove && x(i) != 0) sum = add_hi(sum, mul_hi(x(i), y(i)))
       sum
     }
 
@@ -199,38 +201,50 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
 
     /**
      * Compute the minimum and maximum value of a linear form in a box.
-     * @param lf a linear form.
+     * @param lf a linear form
      * @return a tuple with two components: the first component is the least value, the second component is the greatest value
      * of the linear form over the box.
      */
-    def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
-      require(lf.dimension <= dimension)
-      var newlow: Double = lf.known
-      var newhigh: Double = lf.known
-      val coeffs = lf.homcoeffs
-      if (isEmpty && coeffs.exists { _ != 0 })
+    private def linearEvaluation(lf: LinearForm): (Double, Double) = {
+      val known = lf.known.toDouble
+      val homcoeffs = lf.homcoeffs.map (_.toDouble).toArray
+      linearEvaluation(known, homcoeffs)
+    }
+
+    /**
+     * Compute the minimum and maximum value of a linear form in a box.
+     * @param known the known term of a linear form
+     * @param the homogeneous coefficients of a linear form
+     * @return a tuple with two components: the first component is the least value, the second component is the greatest value
+     * of the linear form over the box.
+     */
+    private def linearEvaluation(known: Double, homcoeffs: Array[Double]): (Double, Double) = {
+      require(homcoeffs.length <= dimension)
+      var newlow = known
+      var newhigh = known
+      if (isEmpty && homcoeffs.exists { _ != 0 })
         (Double.PositiveInfinity, Double.NegativeInfinity)
       else {
-        for (i <- coeffs.indices) {
-          if (coeffs(i) < 0) {
-            newlow = add_lo(newlow, mul_lo(coeffs(i), high(i)))
-            newhigh = add_hi(newhigh, mul_hi(coeffs(i), low(i)))
-          } else if (coeffs(i) > 0) {
-            newlow = add_lo(newlow, mul_lo(coeffs(i), low(i)))
-            newhigh = add_hi(newhigh, mul_hi(coeffs(i), high(i)))
+        for (i <- homcoeffs.indices) {
+          if (homcoeffs(i) < 0) {
+            newlow = add_lo(newlow, mul_lo(homcoeffs(i), high(i)))
+            newhigh = add_hi(newhigh, mul_hi(homcoeffs(i), low(i)))
+          } else if (homcoeffs(i) > 0) {
+            newlow = add_lo(newlow, mul_lo(homcoeffs(i), low(i)))
+            newhigh = add_hi(newhigh, mul_hi(homcoeffs(i), high(i)))
           }
         }
         (newlow, newhigh)
       }
     }
 
-    def minimize(lf: LinearForm[Double]) = linearEvaluation(lf)._1
+    def minimize(lf: LinearForm) = RationalExt(linearEvaluation(lf)._1)
 
-    def maximize(lf: LinearForm[Double]) = linearEvaluation(lf)._2
+    def maximize(lf: LinearForm) = RationalExt(linearEvaluation(lf)._2)
 
-    def frequency(lf: LinearForm[Double]) = {
+    def frequency(lf: LinearForm) = {
       val (min, max) = linearEvaluation(lf)
-      if (min == max) Some(min) else None
+      if (min == max) Option(Rational(min)) else Option.empty
     }
 
     /**
@@ -239,9 +253,9 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      * @param coeff the homogeneous coefficients.
      * @return the coordinates of the point which minimizes the linear form.
      */
-    private def linearArgmin(lf: LinearForm[Double]): Seq[Double] = {
+    private def linearArgmin(lf: LinearForm): Seq[Double] = {
       require(lf.dimension <= dimension)
-      (lf.homcoeffs.zipWithIndex) map { case (c, i) => if (c > 0) low(i) else high(i) }
+      (lf.homcoeffs.zipWithIndex) map { case (c, i) => if (c > Rational.zero) low(i) else high(i) }
     }
 
     /**
@@ -250,9 +264,9 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      * @param coeff the homogeneous coefficients
      * @return the coordinates of the point which maximizes the linear form
      */
-    private def linearArgmax(lf: LinearForm[Double]): Seq[Double] = {
+    private def linearArgmax(lf: LinearForm): Seq[Double] = {
       require(lf.dimension <= dimension)
-      (lf.homcoeffs.zipWithIndex) map { case (c, i) => if (c < 0) low(i) else high(i) }
+      (lf.homcoeffs.zipWithIndex) map { case (c, i) => if (c < Rational.zero) low(i) else high(i) }
     }
 
     /**
@@ -274,7 +288,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      * @todo @inheritdoc
      * @throws $ILLEGAL
      */
-    def linearAssignment(n: Int, lf: LinearForm[Double]): Property = {
+    def linearAssignment(n: Int, lf: LinearForm): Property = {
       require(n < low.length && n >= 0 && lf.dimension <= dimension)
       if (isEmpty)
         this
@@ -291,48 +305,49 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      * @todo @inheritdoc
      * @throws $ILLEGAL
      */
-    def linearInequality(lf: LinearForm[Double]): Property = {
+    def linearInequality(lf: LinearForm): Property = {
       require(lf.dimension <= dimension)
-
-      /* if the box is empty the result is empty */
-      if (isEmpty) return this
-
-      /* check if result is empty */
-      val lfArgmin = linearArgmin(lf)
-      val lfMin = linearEvaluation(lf)._1
-      if (lfMin > 0) return BoxDoubleDomain.this.bottom(dimension)
-
-      val newlow = low.clone
-      val newhigh = high.clone
-
-      val coeffs = lf.homcoeffs
-      val known = lf.known
-
-      val infinities = (coeffs.indices) filter { i => lfArgmin(i).isInfinity && coeffs(i) != 0 }
-      infinities.size match {
-        case 0 =>
-          for (i <- coeffs.indices) {
-            if (coeffs(i) < 0) newlow(i) = low(i) max (lfArgmin(i) - lfMin / coeffs(i))
-            if (coeffs(i) > 0) newhigh(i) = high(i) min (lfArgmin(i) - lfMin / coeffs(i))
+      // if the box is empty the result is empty
+      if (isEmpty)
+        this
+      else {
+        val homcoeffs = lf.homcoeffs.map(_.toDouble).toArray
+        val known = lf.known.toDouble
+        val lfArgmin = linearArgmin(lf)
+        val lfMin = linearEvaluation(known, homcoeffs)._1
+        // check if result is empty
+        if (lfMin > 0)
+          BoxDoubleDomain.this.bottom(dimension)
+        else {
+          val newlow = low.clone
+          val newhigh = high.clone
+          val infinities = (homcoeffs.indices) filter { i => lfArgmin(i).isInfinity && homcoeffs(i) != 0 }
+          infinities.size match {
+            case 0 =>
+              for (i <- homcoeffs.indices) {
+                if (homcoeffs(i) < 0) newlow(i) = low(i) max (lfArgmin(i) - lfMin / homcoeffs(i))
+                if (homcoeffs(i) > 0) newhigh(i) = high(i) min (lfArgmin(i) - lfMin / homcoeffs(i))
+              }
+            case 1 => {
+              val posinf = infinities.head
+              if (homcoeffs(posinf) < 0)
+                newlow(posinf) = low(posinf) max ((-dotprod_lo(homcoeffs, lfArgmin, posinf) - known) / homcoeffs(posinf))
+              else
+                newhigh(posinf) = high(posinf) min ((-dotprod_hi(homcoeffs, lfArgmin, posinf) - known) / homcoeffs(posinf))
+            }
+            case _ =>
           }
-        case 1 => {
-          val posinf = infinities.head
-          if (coeffs(posinf) < 0)
-            newlow(posinf) = low(posinf) max ((-dotprod_lo(coeffs, lfArgmin, posinf) - known) / coeffs(posinf))
-          else
-            newhigh(posinf) = high(posinf) min ((-dotprod_hi(coeffs, lfArgmin, posinf) - known) / coeffs(posinf))
+          BoxDoubleDomain.this(newlow, newhigh)
         }
-        case _ =>
       }
-      BoxDoubleDomain.this(newlow, newhigh)
     }
 
     def constraints = {
       if (isEmpty)
-        Seq(LinearForm(1))
+        List(LinearForm(1))
       else {
-        val set1 = for (i <- 0 until dimension; if !low(i).isInfinity) yield -LinearForm.v[Double](i) + low(i)
-        val set2 = for (i <- 0 until dimension; if !high(i).isInfinity) yield LinearForm.v[Double](i) - high(i)
+        val set1 = for (i <- 0 until dimension; if !low(i).isInfinity) yield -LinearForm.v(i) + low(i)
+        val set2 = for (i <- 0 until dimension; if !high(i).isInfinity) yield LinearForm.v(i) - high(i)
         set1 ++ set2
       }
     }
@@ -344,14 +359,14 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      * @note @inheritdoc
      * @throws $ILLEGAL
      */
-    def linearDisequality(lf: LinearForm[Double]): Property = {
-      val count = lf.homcoeffs.count(_ != 0)
+    def linearDisequality(lf: LinearForm): Property = {
+      val count = lf.homcoeffs.count(! _.isZero)
       count match {
         case 0 =>
-          if (lf.known == 0) bottom else this
+          if (lf.known.isZero) bottom else this
         case 1 =>
-          val dim = lf.homcoeffs.indexWhere(_ != 0)
-          if (low(dim) == lf.known && high(dim) == lf.known)
+          val dim = lf.homcoeffs.indexWhere(! _.isZero)
+          if (low(dim) == lf.known.toDouble && high(dim) == lf.known.toDouble)
             bottom
           else
             this
@@ -359,6 +374,12 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
       }
     }
 
+    /**
+     * @inheritdoc
+     * This is a complete operator for boxes.
+     * @note @inheritdoc
+     * @throws $ILLEGAL
+     */
     def addVariable: Property =
       if (isEmpty)
         BoxDoubleDomain.this.bottom(dimension + 1)
@@ -414,7 +435,8 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
         val bounds = for (i <- 0 until dimension) yield {
           if (low(i) < high(i))
             low(i) + " <= " + vars(i) + " <= " + high(i)
-          else vars(i) + " = " + high(i)
+          else
+            vars(i) + " = " + high(i)
         }
         bounds.mkString("[ ", " , ", " ]")
       }
@@ -434,22 +456,22 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
       case other: Property =>
         require(dimension == other.dimension)
         (isEmpty, other.isEmpty) match {
-          case (true, true) => Some(0)
-          case (false, true) => Some(1)
-          case (true, false) => Some(-1)
+          case (true, true) => Option(0)
+          case (false, true) => Option(1)
+          case (true, false) => Option(-1)
           case (false, false) =>
             val lowpairs = (this.low, other.low).zipped
             val highpairs = (this.high, other.high).zipped
             if (lowpairs.forall(_ == _) && highpairs.forall(_ == _))
-              Some(0)
+              Option(0)
             else if (lowpairs.forall(_ <= _) && highpairs.forall(_ >= _))
-              Some(1)
+              Option(1)
             else if (lowpairs.forall(_ >= _) && highpairs.forall(_ <= _))
-              Some(-1)
+              Option(-1)
             else
-              None
+              Option.empty
         }
-      case _ => None
+      case _ => Option.empty
     }
 
     override def hashCode: Int = 41 * (41 + low.hashCode) + high.hashCode

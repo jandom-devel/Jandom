@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -28,13 +28,13 @@ import org.scalatest.FunSuite
 class LinearFormSuite extends FunSuite {
 
   test("Variable constructor") {
-    var lf = LinearForm.v[Int](1)
+    var lf = LinearForm.v(1)
     assertResult(LinearForm(0, 0, 1)) { lf }
   }
 
   test("Sparse constructor") {
     val lf1 = LinearForm(0, 0, 2)
-    val lf2 = LinearForm(0, 1 -> 2)
+    val lf2 = LinearForm.sparse(0, 1 -> 2)
     assertResult(lf1) { lf2 }
   }
 
@@ -57,11 +57,9 @@ class LinearFormSuite extends FunSuite {
     assertResult(LinearForm(2, 4, -2)) { lf1 * 2 }
     assertResult(Some(LinearForm(2, 4, -2))) { 2 * lf1 }
     assertResult(None) { lf1 * lf2 }
-    assertResult(LinearForm(0.5, 1, -0.5)) { lf1.toDouble / 2 }
-    assertResult(Some(LinearForm(0.5, 1, -0.5))) { lf1.toDouble / LinearForm(2.0) }
-    assertResult(None) { lf1.toDouble / lf2.toDouble }
-    intercept[ClassCastException] { lf1 / 2 }
-    intercept[ClassCastException] { lf1 / lf2 }
+    assertResult(LinearForm(0.5, 1, -0.5)) { lf1 / 2 }
+    assertResult(Some(LinearForm(0.5, 1, -0.5))) { lf1 / LinearForm(2) }
+    assertResult(None) { lf1 / lf2 }
   }
 
   test("Equality") {
@@ -80,23 +78,23 @@ class LinearFormSuite extends FunSuite {
   }
 
   test("isZero and isConstant") {
-    val lf = LinearForm(2.0)
+    val lf = LinearForm(2)
     assert(lf.isConstant)
     assert(!lf.isZero)
 
-    val lf2 = LinearForm(2.0, 0.0, 0.0)
+    val lf2 = LinearForm(2, 0, 0)
     assert(lf2.isConstant)
     assert(!lf2.isZero)
 
-    val lf3 = LinearForm(0.0)
+    val lf3 = LinearForm(0)
     assert(lf3.isConstant)
     assert(lf3.isZero)
 
-    val lf4 = LinearForm(0.0, 0.0, 0.0)
+    val lf4 = LinearForm(0, 0, 0)
     assert(lf4.isConstant)
     assert(lf4.isZero)
 
-    val lf5 = LinearForm(0.0, 1.0)
+    val lf5 = LinearForm(0, 1)
     assert(! lf5.isConstant)
     assert(! lf5.isZero)
   }

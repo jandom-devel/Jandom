@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,11 +18,12 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
-import it.unich.jandom.domains.numerical.NumericalDomain
 import org.scalatest.FunSuite
+
+import it.unich.jandom.domains.numerical.LinearForm
+import it.unich.jandom.domains.numerical.NumericalDomain
 import parma_polyhedra_library.Double_Box
 import parma_polyhedra_library.Octagonal_Shape_double
-import it.unich.jandom.domains.numerical.LinearForm
 
 /**
  * Test suite for the PPLProperty numerical domain.
@@ -61,7 +62,7 @@ class PPLMacroPropertySuite extends FunSuite {
       linearAssignment(0, 0.0).
       linearInequality(LinearForm(-1, 0, 1, 1)).
       linearInequality(LinearForm(-1, 0, 1, -1))
-    assertResult(Double.PositiveInfinity) { obj.maximize(LinearForm(0.0, 0, 0, 1)) }
+    assert (obj.maximize(LinearForm(0, 0, 0, 1)).isPosInfinity)
     assertResult(1) { obj.maximize(LinearForm(0, 1, 1, 0)) }
     assertResult(None) { obj.frequency(LinearForm(0, 1, 0, 1)) }
     assertResult(Some(0)) { obj.frequency(LinearForm(0, 1, 0, 0)) }

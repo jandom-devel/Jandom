@@ -18,31 +18,21 @@
 
 package it.unich.jandom
 
-import java.io.{ File, FileReader }
-import scala.collection.immutable.PagedSeq
-import scala.util.parsing.input.PagedSeqReader
+import java.io.File
+
 import it.unich.jandom.domains.DimensionFiberedProperty
-import it.unich.jandom.domains.numerical.BoxDoubleDomain
+import it.unich.jandom.domains.numerical.BoxRationalDomain
 import it.unich.jandom.domains.numerical.LinearForm
-import it.unich.jandom.domains.numerical.ParallelotopeDomain
-import it.unich.jandom.domains.numerical.SumIntParallelotopeDomain
+import it.unich.jandom.domains.numerical.ParallelotopeRationalDomain
+import it.unich.jandom.domains.numerical.ProductDomain
 import it.unich.jandom.domains.numerical.ppl.PPLDomain
+import it.unich.jandom.narrowings.DefaultNarrowing
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.ppfactories._
 import it.unich.jandom.ppfactories.PPFactory.ConstantFactory
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.widenings.DefaultWidening
 import parma_polyhedra_library.C_Polyhedron
-import parma_polyhedra_library.PPL_Object
-import it.unich.jandom.domains.numerical.ppl.PPLDomainSuiteOctagon
-import parma_polyhedra_library.Octagonal_Shape_double
-import it.unich.jandom.narrowings.DefaultNarrowing
-import it.unich.jandom.domains.numerical.ParallelotopeRationalDomain
-import it.unich.jandom.domains.numerical.ProductDomain
-import it.unich.jandom.domains.numerical.ProductDomainSuite
-import it.unich.jandom.domains.numerical.BoxRationalDomain
-import parma_polyhedra_library.Double_Box
-import scala.collection.mutable.ArrayBuffer
 
 /**
  * Example program using ''Jandom'' to analyze the Alice benchmarks and
@@ -58,9 +48,9 @@ object JandomParallelotopeBench extends App {
   var totalUncomparable = 0
   var totalPrograms = 0
 
-  def CStoPolyehdra(dimension: Int, c: Seq[LinearForm[Double]]) = {
+  def CStoPolyehdra(dimension: Int, c: Seq[LinearForm]) = {
     val d = PPLDomain[C_Polyhedron]
-    c.foldLeft(d.top(dimension)) { (p: d.Property, lf: LinearForm[Double]) => p.linearInequality(lf) }
+    c.foldLeft(d.top(dimension)) { (p: d.Property, lf: LinearForm) => p.linearInequality(lf) }
   }
 
   def mkString[U <: DimensionFiberedProperty[U]](program: LTS, m: scala.collection.Map[LTS#ProgramPoint, U]): String = {

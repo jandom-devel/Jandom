@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -19,6 +19,8 @@
 package it.unich.jandom.domains.numerical
 
 import it.unich.jandom.domains.DimensionFiberedProperty
+import it.unich.jandom.utils.numberext.RationalExt
+import spire.math.Rational
 
 /**
  * Base class for numerical properties and their operations.
@@ -54,19 +56,19 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @param lf the linear form determining the assignment.
    * @note $NOTEN
    */
-  def linearAssignment(n: Int, lf: LinearForm[Double]): Property
+  def linearAssignment(n: Int, lf: LinearForm): Property
 
   /**
    * Intersection with the half-plane `lf <= 0`.
    * @todo $TODOGEN
    */
-  def linearInequality(lf: LinearForm[Double]): Property
+  def linearInequality(lf: LinearForm): Property
 
   /**
    * Intersection with `lf != 0`.
    * @todo $TODOGEN
    */
-  def linearDisequality(lf: LinearForm[Double]): Property
+  def linearDisequality(lf: LinearForm): Property
 
   /**
    * Determines a lower bound of a linear form in the numerical object.
@@ -74,7 +76,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @return a lower bound of the linear form. It is not guaranteed to be the
    * greatest lower bound  It is -∞ when the linear form is unbounded.
    */
-  def minimize(lf: LinearForm[Double]): Double
+  def minimize(lf: LinearForm): RationalExt
 
   /**
    * Determines an upper bound of a linear form in the numerical object.
@@ -82,7 +84,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @return an upper bound of the linear form. It is not guaranteed to be the
    * least upper bound  It is +∞ when the linear form is unbounded.
    */
-  def maximize(lf: LinearForm[Double]): Double
+  def maximize(lf: LinearForm): RationalExt
 
   /**
    * Given a linear form, determines if there is a value 'c' such that the  linear form
@@ -91,14 +93,14 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @todo $TODOGEN
    * @return `Some(c)` if such a value exists, `None` otherwise.
    */
-  def frequency(lf: LinearForm[Double]): Option[Double]
+  def frequency(lf: LinearForm): Option[Rational]
 
   /**
    * Returns a set of constraints which are bounding hyperplanes for the property.
    * The constraints may be redundant. Moreover, they exactly describe the property
    * only when `isPolyhedral` is true.
    */
-  def constraints: Seq[LinearForm[Double]]
+  def constraints: Seq[LinearForm]
 
   /**
    * Returns whether the `constraints` methods returns an exact representation of the
@@ -123,7 +125,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note $STDINST
    * @note $NOTEN
    */
-  def constantAssignment(n: Int = dimension - 1, c: Double) =
+  def constantAssignment(n: Int = dimension - 1, c: Rational) =
     linearAssignment(n, c)
 
   /**
@@ -142,7 +144,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note `m` should be within `0` and `dimension-1`.
    */
   def variableAdd(n: Int = dimension - 2, m: Int = dimension - 1) =
-    linearAssignment(n, LinearForm.v[Double](n) + LinearForm.v[Double](m))
+    linearAssignment(n, LinearForm.sparse(Rational.zero, n -> Rational.one, m -> Rational.one))
 
   /**
    * Assignments of the kind `vn = vn - vm`.
@@ -151,15 +153,15 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note `m` should be within `0` and `dimension-1`.
    */
   def variableSub(n: Int = dimension - 2, m: Int = dimension - 1) =
-    linearAssignment(n, LinearForm.v[Double](n) - LinearForm.v[Double](m))
+    linearAssignment(n, LinearForm.sparse(Rational.zero, n -> Rational.one, m -> -Rational.one))
 
   /**
    * Assignments of the kind `vn = vn + c`.
    * @note $STDINST
    * @note $NOTEN
    */
-  def constantAdd(n: Int = dimension - 1, c: Double) =
-    linearAssignment(n, LinearForm(c, n -> 1.0))
+  def constantAdd(n: Int = dimension - 1, c: Rational) =
+    linearAssignment(n, LinearForm.sparse(c, n -> Rational.one))
 
   /**
    * Assignments of the kind `vn = vn * vm`.  The standard implementation determines
@@ -169,9 +171,9 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    */
   def variableMul(n: Int = dimension - 2, m: Int = dimension - 1) = {
     frequency(LinearForm.v(n)) match {
-      case Some(c) => linearAssignment(n, LinearForm(0, m -> c))
+      case Some(c) => linearAssignment(n, LinearForm.sparse(Rational.zero, m -> c))
       case None => frequency(LinearForm.v(m)) match {
-        case Some(c) => linearAssignment(n, LinearForm(0, n -> c))
+        case Some(c) => linearAssignment(n, LinearForm.sparse(Rational.zero, n -> c))
         case None => nonDeterministicAssignment(n)
       }
     }
@@ -185,7 +187,7 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    */
   def variableDiv(n: Int = dimension - 2, m: Int = dimension - 1) = {
     frequency(LinearForm.v(m)) match {
-      case Some(c) => if (c != 0) linearAssignment(n, LinearForm(0, n -> 1 / c)) else bottom
+      case Some(c) => if (! c.isZero) linearAssignment(n, LinearForm.sparse(Rational.zero, n -> c.inverse)) else bottom
       case None => nonDeterministicAssignment(n)
     }
   }
@@ -252,6 +254,5 @@ trait NumericalProperty[Property <: NumericalProperty[Property]] extends Dimensi
    * @note $NOTEN
    */
   def variableNeg(n: Int = dimension - 1) =
-    linearAssignment(n, LinearForm(0, n -> -1.0))
-
+    linearAssignment(n, LinearForm.sparse(0, n -> -Rational.one))
 }

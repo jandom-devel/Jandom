@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -19,10 +19,10 @@
 package it.unich.jandom.domains.numerical.ppl
 
 import it.unich.jandom.domains.numerical.LinearForm
-import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.numerical.NumericalProperty
+import it.unich.jandom.utils.numberext.RationalExt
 import parma_polyhedra_library._
-import it.unich.jandom.domains.CachedTopBottom
+import spire.math.Rational
 
 /**
  * This is the universal PPL numerical property. It encapsulate an object of the PPL library and
@@ -37,7 +37,7 @@ import it.unich.jandom.domains.CachedTopBottom
  * @author Gianluca Amato <gamato@unich.it>
  */
 class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativeProperty], val pplobject: PPLNativeProperty)
-  extends NumericalProperty[PPLProperty[PPLNativeProperty]] {
+    extends NumericalProperty[PPLProperty[PPLNativeProperty]] {
 
   type Domain = PPLDomain[PPLNativeProperty]
 
@@ -81,14 +81,14 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
     new PPLProperty(domain, newpplobject)
   }
 
-  def linearAssignment(n: Int, lf: LinearForm[Double]): PPLProperty[PPLNativeProperty] = {
+  def linearAssignment(n: Int, lf: LinearForm): PPLProperty[PPLNativeProperty] = {
     val (le, den) = PPLUtils.toPPLLinearExpression(lf)
     val newpplobject = domain.copyConstructor(pplobject)
     domain.affine_image(newpplobject, new Variable(n), le, den)
     new PPLProperty(domain, newpplobject)
   }
 
-  def linearInequality(lf: LinearForm[Double]): PPLProperty[PPLNativeProperty] = {
+  def linearInequality(lf: LinearForm): PPLProperty[PPLNativeProperty] = {
     val (le, _) = PPLUtils.toPPLLinearExpression(lf)
     val newpplobject = domain.copyConstructor(pplobject)
     domain.refine_with_constraint(newpplobject, new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
@@ -100,7 +100,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
    * @note @inheritdoc
    * @note Not yet implemented.
    */
-  def linearDisequality(lf: LinearForm[Double]): PPLProperty[PPLNativeProperty] = {
+  def linearDisequality(lf: LinearForm): PPLProperty[PPLNativeProperty] = {
     val (le, _) = PPLUtils.toPPLLinearExpression(lf)
     val newpplobject1 = domain.copyConstructor(pplobject)
     val newpplobject2 = domain.copyConstructor(pplobject)
@@ -110,12 +110,12 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
     new PPLProperty(domain, newpplobject1)
   }
 
-  def minimize(lf: LinearForm[Double]) = {
+  def minimize(lf: LinearForm) = {
     if (isEmpty) {
       if (lf.homcoeffs.forall(_ == 0.0))
         lf.known
       else
-        Double.PositiveInfinity
+        RationalExt.PositiveInfinity
     } else {
       val (le, den) = PPLUtils.toPPLLinearExpression(lf)
       val exact = new By_Reference[java.lang.Boolean](false)
@@ -123,18 +123,18 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
       val val_d = new Coefficient(0)
       val result = domain.minimize(pplobject, le, val_n, val_d, exact)
       if (!result)
-        Double.NegativeInfinity
+        RationalExt.NegativeInfinity
       else
-        (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+        RationalExt(val_n.getBigInteger, val_d.getBigInteger multiply den.getBigInteger)
     }
   }
 
-  def maximize(lf: LinearForm[Double]) = {
+  def maximize(lf: LinearForm) = {
     if (isEmpty) {
       if (lf.homcoeffs.forall(_ == 0.0))
         lf.known
       else
-        Double.NegativeInfinity
+        RationalExt.NegativeInfinity
     } else {
       val (le, den) = PPLUtils.toPPLLinearExpression(lf)
       val exact = new By_Reference[java.lang.Boolean](false)
@@ -142,18 +142,18 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
       val val_d = new Coefficient(0)
       val result = domain.maximize(pplobject, le, val_n, val_d, exact)
       if (!result)
-        Double.PositiveInfinity
+        RationalExt.PositiveInfinity
       else
-        (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+        RationalExt(val_n.getBigInteger, val_d.getBigInteger multiply den.getBigInteger)
     }
   }
 
-  def frequency(lf: LinearForm[Double]) = {
+  def frequency(lf: LinearForm) = {
     if (isEmpty) {
       if (lf.homcoeffs.forall(_ == 0.0))
         Option(lf.known)
       else
-        None
+        Option.empty
     } else {
       val (le, den) = PPLUtils.toPPLLinearExpression(lf)
       val freq_n = new Coefficient(0)
@@ -162,9 +162,9 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
       val val_d = new Coefficient(0)
       val result = domain.frequency(pplobject, le, freq_n, freq_d, val_n, val_d)
       if (!result)
-        None
+        Option.empty
       else
-        Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue())
+        Option(Rational(val_n.getBigInteger, val_d.getBigInteger multiply den.getBigInteger))
     }
   }
 
@@ -218,15 +218,19 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
   def tryCompareTo[B >: PPLProperty[PPLNativeProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLProperty[_] =>
       if (pplobject.getClass != other.pplobject.getClass)
-        return None
+        Option.empty
       else {
         val other_pplobject = other.pplobject.asInstanceOf[PPLNativeProperty]
-        if (pplobject equals other_pplobject) Some(0)
-        else if (domain.strictly_contains(pplobject, other_pplobject)) Some(1)
-        else if (domain.strictly_contains(other_pplobject, pplobject)) Some(-1)
-        else None
+        if (pplobject equals other_pplobject)
+          Option(0)
+        else if (domain.strictly_contains(pplobject, other_pplobject))
+          Option(1)
+        else if (domain.strictly_contains(other_pplobject, pplobject))
+          Option(-1)
+        else
+          Option.empty
       }
-    case _ => None
+    case _ => Option.empty
   }
 
   override def hashCode: Int = pplobject.hashCode

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -27,7 +27,10 @@ import org.scalatest.prop.Checkers
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.Environment
 import it.unich.jandom.targets.NumericCondition._
-import it.unich.jandom.targets.slil._
+import it.unich.jandom.targets.slil.AssignStmt
+import it.unich.jandom.targets.slil.CompoundStmt
+import it.unich.jandom.targets.slil.SLILProgram
+import it.unich.jandom.targets.slil.WhileStmt
 
 /**
  * Test suite for RandomParser.
@@ -49,13 +52,13 @@ class RandomParserSuite extends FunSuite with Checkers {
        xyline <- function(x) {
           y = 0;
           while (y < x)
-    		y=y+1
+        y=y+1
       }
     """
     val env = Environment("x", "y")
     val program = SLILProgram(env, List(0),
       CompoundStmt(
-        AssignStmt(1, LinearForm(0, 0 -> 1)),
+        AssignStmt(1, LinearForm.sparse(0, 0 -> 1)),
         WhileStmt(AtomicCond(LinearForm(0, -1, 1), ComparisonOperators.LT),
           CompoundStmt(AssignStmt(1, LinearForm(1, 0, 1))))))
     assertResult(program) { RandomParser().parseProgram(prog).get }

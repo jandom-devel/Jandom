@@ -51,9 +51,9 @@ object JandomSumBench extends App {
   var totalUncomparable = 0
   var totalPrograms = 0
 
-  def CStoPolyehdra(dimension: Int, c: Seq[LinearForm[Double]]) = {
+  def CStoPolyehdra(dimension: Int, c: Seq[LinearForm]) = {
     val d = PPLDomain[C_Polyhedron]
-    c.foldLeft(d.top(dimension)) { (p: d.Property, lf: LinearForm[Double]) => p.linearInequality(lf) }
+    c.foldLeft(d.top(dimension)) { (p: d.Property, lf: LinearForm) => p.linearInequality(lf) }
   }
 
   def mkString[U <: DimensionFiberedProperty[U]](program: LTS, m: scala.collection.Map[LTS#ProgramPoint, U]): String = {
@@ -89,7 +89,6 @@ object JandomSumBench extends App {
     val t2 = System.currentTimeMillis
     val ann2 = program.analyze(params2)
     val tann2 = System.currentTimeMillis - t2
-
 
     val params3 = new targets.Parameters[LTS] { val domain = ParallelotopeDomain() }
     params3.wideningFactory = DelayedWideningFactory(DefaultWidening, 3) // needed for parallelotopes

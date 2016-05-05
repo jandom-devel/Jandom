@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -19,13 +19,12 @@
 package it.unich.jandom.targets.jvmasm
 
 import scala.collection.mutable.ArrayStack
-import it.unich.jandom.targets.NumericCondition._
-import it.unich.jandom.widenings.Widening
-import it.unich.jandom.narrowings.Narrowing
-import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.domains.numerical.NumericalDomain
-import it.unich.jandom.domains.numerical.LinearForm
 
+import it.unich.jandom.domains.numerical.LinearForm
+import it.unich.jandom.domains.numerical.NumericalDomain
+import it.unich.jandom.domains.numerical.NumericalProperty
+import it.unich.jandom.targets.NumericCondition._
+import spire.math.Rational
 
 /**
  * This is an abstract JVM environment using a fixed frame and stack. At the moment, it only supports
@@ -68,11 +67,11 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
 
   def if_icmp(op: ComparisonOperators.Value) {
     import ComparisonOperators._
-    val lfm = LinearForm.v[Int](property.dimension - 1)
-    val lfn = LinearForm.v[Int](property.dimension - 2)
+    val lfm = LinearForm.v(property.dimension - 1)
+    val lfn = LinearForm.v(property.dimension - 2)
     val condition = op match {
-      case LT => AtomicCond(lfn - lfm + 1, LTE)
-      case GT => AtomicCond(lfn - lfm - 1, GTE)
+      case LT => AtomicCond(lfn - lfm + Rational.one, LTE)
+      case GT => AtomicCond(lfn - lfm - Rational.one, GTE)
       // TODO we should optmized NEQ
       case _ => AtomicCond(lfn - lfm, op)
     }
@@ -106,7 +105,7 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
     property.mkString(vars ++ ((maxLocals until property.dimension) map { i => "s" + i }))
 
   override def toString = mkString((0 until maxLocals) map { i => "i" + i })
-  
+
   def isTop = property.isTop
 
   def isBottom = property.isBottom

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -19,6 +19,7 @@
 package it.unich.jandom.domains.numerical
 
 import scala.collection.mutable.WeakHashMap
+import it.unich.jandom.utils.numberext.RationalExt
 
 /**
  * The most abstract numerical domain. It has a single element top element for each dimension.
@@ -42,29 +43,29 @@ object NumericalTopDomain extends NumericalDomain {
     def narrowing(that: Property) = this
     def intersection(that: Property) = this
     def nonDeterministicAssignment(n: Int) = this
-    def linearAssignment(n: Int, lf: LinearForm[Double]) = this
-    def linearInequality(lf: LinearForm[Double]) = this
-    def linearDisequality(lf: LinearForm[Double]) = this
+    def linearAssignment(n: Int, lf: LinearForm) = this
+    def linearInequality(lf: LinearForm) = this
+    def linearDisequality(lf: LinearForm) = this
 
-    def minimize(lf: LinearForm[Double]) =
-      if (lf.homcoeffs.exists(_ != 0))
-        Double.NegativeInfinity
+    def minimize(lf: LinearForm) =
+      if (lf.homcoeffs.exists(! _.isZero))
+        RationalExt.NegativeInfinity
       else
-        lf.known
+        RationalExt(lf.known)
 
-    def maximize(lf: LinearForm[Double]) =
-      if (lf.homcoeffs.exists(_ != 0))
-        Double.PositiveInfinity
+    def maximize(lf: LinearForm) =
+      if (lf.homcoeffs.exists(! _.isZero))
+        RationalExt.PositiveInfinity
       else
-        lf.known
+        RationalExt(lf.known)
 
-    def frequency(lf: LinearForm[Double]) =
-      if (lf.homcoeffs.exists(_ != 0))
-        None
+    def frequency(lf: LinearForm) =
+      if (lf.homcoeffs.exists(! _.isZero))
+        Option.empty
       else
-        Some(lf.known)
+        Option(lf.known)
 
-    def constraints = Seq()
+    def constraints = List()
 
     def isPolyhedral = true
 

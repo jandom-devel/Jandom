@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -18,9 +18,10 @@
 
 package it.unich.jandom.domains.numerical
 
-import it.unich.jandom.domains.{EmptyExistsSuite, SeparatedTopAndBottomSuite}
-
-import breeze.linalg.{DenseMatrix, DenseVector}
+import breeze.linalg.DenseMatrix
+import breeze.linalg.DenseVector
+import it.unich.jandom.domains.EmptyExistsSuite
+import it.unich.jandom.domains.SeparatedTopAndBottomSuite
 
 /**
  * Test suite for the parallelotope domain.
@@ -33,7 +34,7 @@ class ParallelotopeDomainSuite extends NumericalDomainSuite with SeparatedTopAnd
   val diamond = dom(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
   val empty = dom.bottom(2)
   val full = dom.top(2)
-  
+
   describe("constructors") {
     they("should only work with compatible sizes of bounds and shapes") {
       intercept[IllegalArgumentException] { dom(DenseVector(0, 2), DenseMatrix.eye(2), DenseVector(0, 2, 3)) }
@@ -88,24 +89,24 @@ class ParallelotopeDomainSuite extends NumericalDomainSuite with SeparatedTopAnd
 
   describe("linear invertible assignment") {
     val li1 = dom(DenseVector(0, -1), DenseMatrix((1.0, -1.0), (0.0, 1.0)), DenseVector(2, 1))
-    assertResult(li1) { box.linearAssignment(0, LinearForm(1.0, 1, 1)) }
+    assertResult(li1) { box.linearAssignment(0, LinearForm(1, 1, 1)) }
     val li2 = dom(DenseVector(1, -1), DenseMatrix((1.0, 0.0), (-1.0, 1.0)), DenseVector(1, 0))
     val li3 = dom(DenseVector(2, -2), DenseMatrix((1.0, 0.0), (-1.0, 1.0)), DenseVector(2, -1))
-    assertResult(li3) { li2.linearAssignment(0, LinearForm(1.0, 1, 0)) }
-    assertResult(li3) { li2.linearAssignment(0, LinearForm(1.0, 1)) }
+    assertResult(li3) { li2.linearAssignment(0, LinearForm(1, 1, 0)) }
+    assertResult(li3) { li2.linearAssignment(0, LinearForm(1, 1)) }
     val li4 = dom(DenseVector(-1, -2), DenseMatrix((1.0, 0.0), (-1.0, 1.0)), DenseVector(1, 2))
-    assertResult(li4) { box.linearAssignment(1, LinearForm(0.0, 1, 2)) }
+    assertResult(li4) { box.linearAssignment(1, LinearForm(0, 1, 2)) }
     assert(empty.linearAssignment(1, LinearForm(0.0, 1, 1)).isEmpty)
   }
 
   describe("non-invertible linear assignment") {
     val ln1 = dom(DenseVector(2, -1), DenseMatrix((1.0, -1.0), (0.0, 1.0)), DenseVector(2, 1))
-    assertResult(ln1) { box.linearAssignment(0, LinearForm(2.0, 0, 1)) }
+    assertResult(ln1) { box.linearAssignment(0, LinearForm(2, 0, 1)) }
     val ln2 = dom(DenseVector(0, Double.NegativeInfinity), DenseMatrix((-1.0, 1.0), (0.0, 1.0)), DenseVector(0, Double.PositiveInfinity))
     val ln3 = dom(DenseVector(Double.NegativeInfinity, 0), DenseMatrix((1.0, -1.0), (0.0, 1.0)), DenseVector(Double.PositiveInfinity, 0))
-    assertResult(ln2) { ln3.linearAssignment(1, LinearForm(0.0, 1, 0)) }
-    assertResult(ln2) { ln3.linearAssignment(1, LinearForm(0.0, 1)) }
-    assert(empty.linearAssignment(1, LinearForm(0.0, 1, 0)).isEmpty)
+    assertResult(ln2) { ln3.linearAssignment(1, LinearForm(0, 1, 0)) }
+    assertResult(ln2) { ln3.linearAssignment(1, LinearForm(0, 1)) }
+    assert(empty.linearAssignment(1, LinearForm(0, 1, 0)).isEmpty)
   }
 
   describe("non-deterministic assignment") {
@@ -126,18 +127,18 @@ class ParallelotopeDomainSuite extends NumericalDomainSuite with SeparatedTopAnd
 
   describe("linear inequalities") {
     val li1 = dom(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(0, 0))
-    assertResult(li1) { diamond.linearInequality(LinearForm(1.0, 2, 0)) }
-    assertResult(li1) { diamond.linearInequality(LinearForm(1.0, 2)) }
-    assert(empty.linearInequality(LinearForm(-1.0, 1, 0)).isEmpty)
+    assertResult(li1) { diamond.linearInequality(LinearForm(1, 2, 0)) }
+    assertResult(li1) { diamond.linearInequality(LinearForm(1, 2)) }
+    assert(empty.linearInequality(LinearForm(-1, 1, 0)).isEmpty)
   }
 
   describe("linear disequalities") {
     val li1 = dom(DenseVector(-1, 0), DenseMatrix((1.0, 1.0), (1.0, -2.0)), DenseVector(0, 0))
     assertResult(li1) { li1.linearDisequality(1.0) }
     assertResult(empty) { li1.linearDisequality(0.0) }
-    assertResult(li1) { li1.linearDisequality(LinearForm(1.0, 0, 1)) }
+    assertResult(li1) { li1.linearDisequality(LinearForm(1, 0, 1)) }
     assertResult(li1) { li1.linearDisequality(LinearForm(0.5, 1, -2)) }
-    assertResult(empty) { li1.linearDisequality(LinearForm(0.0, 1, -2)) }
+    assertResult(empty) { li1.linearDisequality(LinearForm(0, 1, -2)) }
   }
 
   describe("union") {

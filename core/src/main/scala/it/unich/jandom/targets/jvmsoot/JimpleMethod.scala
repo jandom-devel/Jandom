@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato, Francesca Scozzari <fscozzari@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato, Francesca Scozzari
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -25,6 +25,7 @@ import it.unich.jandom.targets.NumericCondition._
 import soot._
 import soot.jimple._
 import soot.toolkits.graph._
+import spire.math.Rational
 
 /**
  * This class analyzes a method of a Java class. It uses the Jimple intermediate representation of the Soot library. It is
@@ -40,13 +41,13 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
   val graph = new soot.jandom.UnitBlockGraph(body)
 
   protected def analyzeBlock(params: Parameters)(node: Block, initprop: params.Property): Seq[params.Property] = {
-    /**
+    /*
      * Convert a `Value` into a LinearForm, if possible.
      * @param v the Value to convert.
      * @return the corresponding linear form, or `None` if `v` is not a linear form.
      */
-    def jimpleExprToLinearForm(v: Value): Option[Array[Double]] = {
-      val a = Array.fill(size + 1)(0.0)
+    def jimpleExprToLinearForm(v: Value): Option[Array[Rational]] = {
+      val a = Array.fill(size + 1)(Rational.zero)
       var c = 0.0
       v match {
         case v: IntConstant =>
@@ -64,14 +65,14 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
                 case _ =>
                   None
               }
-            case _ => return None
+            case _ => None
           }
-        case _ => return None
+        case _ => None
       }
       Some(a)
     }
 
-    /**
+    /*
      * Convert a `Value` into a LinearCond.
      * @param v the Value to convert.
      * @return the corresponding linear condition, or `None` if `v` is not a linear condition.
@@ -111,7 +112,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
       newcond
     }
 
-    /**
+    /*
      * Analyze a boolean expression in the guard of an If statement. It tries to convert v into a linear
      * condition. If it does not succeed, analyzes it recursively.
      * @param v the `Value` to analyze
@@ -144,7 +145,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
       }
     }
 
-    /**
+    /*
      * Analyze an invocation in Jimple.
      * @param v the invoke expression to analyze
      * @param prop the abstract initial state
@@ -171,7 +172,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
       callprop.connect(exitprop, method.getParameterCount() + implicitArgs)
     }
 
-    /**
+    /*
      * Analyze an expression in Jimple.
      * @param v the `Value` to analyze
      * @param prop the abstract initial state

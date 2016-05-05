@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -17,8 +17,6 @@
  */
 
 package it.unich.jandom.domains.numerical
-
-import org.scalatest.prop.TableFor1
 
 import it.unich.jandom.domains.CartesianFiberedDomainSuite
 
@@ -39,11 +37,11 @@ trait NumericalDomainSuite extends CartesianFiberedDomainSuite {
 
   lazy val someProperties = Table("property", dom.bottom(0), dom.bottom(1), dom.bottom(2), dom.bottom(3), dom.bottom(4), dom.bottom(4),
     dom.top(0), dom.top(1), dom.top(2), dom.top(3), dom.top(4), dom.top(5))
-        
+
   /**
    * Some LinearForms type to use for the tests.
    */
-  lazy val someLinearForms = Table[LinearForm[Double]]("linear form", LinearForm(1, 1, 1), LinearForm(0), LinearForm(2), LinearForm(0, -1, 0),
+  lazy val someLinearForms = Table[LinearForm]("linear form", LinearForm(1, 1, 1), LinearForm(0), LinearForm(2), LinearForm(0, -1, 0),
     LinearForm(2, 1, 1), LinearForm(2, 1, 0), LinearForm(-1, 0, 1, 1), LinearForm(-1, 0, 1, -1), LinearForm(0.25, 1, 0, 0),
     LinearForm(0.5, 1, 1, 0))
 
@@ -131,7 +129,7 @@ trait NumericalDomainSuite extends CartesianFiberedDomainSuite {
   describe("The identity linear assignment") {
     it("maps a property to itself") {
       forAll(someProperties) { (p) =>
-        for (i <- 0 until p.dimension; lf = LinearForm.v[Double](i)) {
+        for (i <- 0 until p.dimension; lf = LinearForm.v(i)) {
           assertResult(p)(p.linearAssignment(i, lf))
         }
       }

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,11 +19,12 @@
 package it.unich.jandom.domains
 
 import org.scalatest.FunSuite
+
+import breeze.linalg.DenseMatrix
+import breeze.linalg.DenseVector
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.numerical.ParallelotopeDomain
-import breeze.linalg.DenseVector
-import breeze.linalg.DenseMatrix
 
 /**
  * The test suite for domain transformations.
@@ -54,7 +55,7 @@ class DomainTransformationSuite extends FunSuite {
   }
 
   test("General transformation to Box") {
-    val transform = DomainTransformation.NumericalPropertyToBoxDouble
+    val transform = new DomainTransformation.TopTransformation[NumericalDomain, BoxDoubleDomain]
     val diamond = pardom(DenseVector(-1, -1), DenseMatrix((1.0, 1.0), (1.0, -1.0)), DenseVector(1, 1))
     val box = boxdom(Array(-1, -1), Array(1, 1))
     assertResult(boxdom.top(2)) { transform(pardom,boxdom)(diamond) }

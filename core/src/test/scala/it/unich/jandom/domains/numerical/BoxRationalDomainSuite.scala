@@ -18,10 +18,10 @@
 
 package it.unich.jandom.domains.numerical
 
-import it.unich.jandom.domains.{ EmptyExistsSuite, SeparatedTopAndBottomSuite }
+import it.unich.jandom.domains.EmptyExistsSuite
 import it.unich.jandom.domains.PreciseIntersectionSuite
+import it.unich.jandom.domains.SeparatedTopAndBottomSuite
 import it.unich.jandom.utils.numberext.RationalExt
-import scala.language.implicitConversions
 
 /**
  * This is a unit test for the box domain over rational numbers.
@@ -31,12 +31,10 @@ class BoxRationalDomainSuite extends NumericalDomainSuite with SeparatedTopAndBo
 
   lazy val dom = BoxRationalDomain()
 
-  implicit def r(x: Int) = RationalExt(x)
-
   override lazy val someProperties = Table("property", dom(Array(1, 2), Array(5, 4)), dom(Array(0, 3), Array(3, 4)), dom(Array(0, 2), Array(3, 6)),
     dom(Array(0, 0), Array(5, 5)), dom.top(2), dom.bottom(2))
 
-  override lazy val someLinearForms = Table[LinearForm[Double]]("linear form", LinearForm(1, 1, 1), LinearForm(0), LinearForm(0, -1, 0),
+  override lazy val someLinearForms = Table[LinearForm]("linear form", LinearForm(1, 1, 1), LinearForm(0), LinearForm(0, -1, 0),
     LinearForm(2, 1, 1), LinearForm(2, 1, 0))
 
   describe("constructors") {
@@ -165,7 +163,7 @@ class BoxRationalDomainSuite extends NumericalDomainSuite with SeparatedTopAndBo
     }
     they("may be rebuilt from constraints") {
       forAll(someProperties) { (p) =>
-        assertResult(p) { p.constraints.foldLeft(p.top) { (prop, lf) => prop.linearInequality(lf) } }
+        assertResult(p,p.constraints) { p.constraints.foldLeft(p.top) { (prop, lf) => prop.linearInequality(lf) } }
       }
     }
   }

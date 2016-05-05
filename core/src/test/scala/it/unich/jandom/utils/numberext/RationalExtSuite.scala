@@ -57,19 +57,19 @@ class RationalExtSuite extends FunSuite with PropertyChecks {
     assert(n3 != n2)
     assert(n3 == n3)
   }
-  
+
   test("inequalities with infinities") {
-    assert(PositiveInfinity <= PositiveInfinity, "+Inf <= +Inf")      
+    assert(PositiveInfinity <= PositiveInfinity, "+Inf <= +Inf")
     assert(! (PositiveInfinity <= NegativeInfinity), "not +Inf <= -Inf")
-    assert(NegativeInfinity <= PositiveInfinity, "-Inf <= +Inf")    
+    assert(NegativeInfinity <= PositiveInfinity, "-Inf <= +Inf")
     assert(NegativeInfinity <= NegativeInfinity, "-Inf <= -Inf")
-    
-    assert(! (PositiveInfinity < PositiveInfinity), "not +Inf < +Inf")      
+
+    assert(! (PositiveInfinity < PositiveInfinity), "not +Inf < +Inf")
     assert(! (PositiveInfinity < NegativeInfinity), "not +Inf < -Inf")
-    assert(NegativeInfinity < PositiveInfinity, "-Inf < +Inf")    
+    assert(NegativeInfinity < PositiveInfinity, "-Inf < +Inf")
     assert(! (NegativeInfinity < NegativeInfinity), "not -Inf < -Inf")
-    
-    assert(! (NaN <= PositiveInfinity))    
+
+    assert(! (NaN <= PositiveInfinity))
     assert(! (NaN < PositiveInfinity))
     assert(! (NaN <= NegativeInfinity))
     assert(! (NaN < NegativeInfinity))
@@ -77,15 +77,14 @@ class RationalExtSuite extends FunSuite with PropertyChecks {
     assert(! (PositiveInfinity < NaN))
     assert(! (NegativeInfinity <= NaN))
     assert(! (NegativeInfinity < NaN))
-    
-    
+
     forAll { (w: Int)  =>
       val rw  = RationalExt(w)
       assert(rw <= PositiveInfinity)
       assert(rw < PositiveInfinity)
       assert(NegativeInfinity <= rw)
       assert(NegativeInfinity < rw)
-    } 
+    }
   }
 
   test("binary operations on regular numbers") {
@@ -103,7 +102,7 @@ class RationalExtSuite extends FunSuite with PropertyChecks {
       val rw = RationalExt(w)
       assertResult(rw)(+rw)
       assertResult(RationalExt(-w))(-rw)
-      assertResult(RationalExt(w.abs))(rw.abs)
+      assertResult(RationalExt(Math.abs(w)))(rw.abs)
     }
   }
 

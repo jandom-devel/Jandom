@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,40 +20,50 @@ package it.unich.jandom.domains.numerical.ppl
 
 import scala.language.experimental.macros
 import scala.reflect.macros.blackbox.Context
-
 import it.unich.jandom.domains.DomainTransformation
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.numerical.NumericalProperty
-
+import it.unich.jandom.utils.numberext.RationalExt
 import parma_polyhedra_library._
+import spire.math.Rational
 
 /**
- * This is the ancestor of all PPL-based macro-generated domains. It is only a marker class.
- * @tparam PPLType the PPL class of the numerical properties handled by this domain
+ * This is the ancestor of all PPL-based macro-generated domains.
+ * @tparam PPLType the PPL class of the numerical properties handled by this domain.
  */
 abstract class PPLDomainMacro[PPLType] extends NumericalDomain {
   type Property <: PPLPropertyMacro[Property, PPLType]
 
+  /**
+   * Given an object `x` of type `PPLType`, wraps it into an abstract property.
+   */
   def apply(x: PPLType): Property
 }
 
+/**
+ * This is the ancestor of all PPL-based macro-generated abstract properties. It is only a marker class.
+ * @tparam Property the concrete instance of a `PPLPropertyMacro` for F-bounded polymorphism.
+ * @tparam PPLType the PPL class of the numerical properties handled by this domain.
+ */
 abstract class PPLPropertyMacro[Property <: PPLPropertyMacro[Property, PPLType], PPLType] extends NumericalProperty[Property] {
   this: Property =>
   type Domain <: PPLDomainMacro[PPLType]
 
+  /**
+   * The underlying PPL object corresponding to this abstract property.
+   */
   val pplobject: PPLType
 }
 
 /**
- * This class contains macros for compile-time creation of PPL backed numerical properties.
- * The aim is similar to the class [[it.unich.jandom.domains.ThisProperty]], but while
+ * This class contains macros for compile-time creation of PPL backed numerical properties and domain.
+ * The aim is similar to the class [[it.unich.jandom.domains.numerical.ppl.PPLDomain]], but while
  * that uses reflection, here we use macros to generate much faster code.
  */
 object PPLDomainMacro {
 
   /**
-   * This method returns a NumericalDomain for the PPL class specified as
-   * type parameter.
+   * This method returns a NumericalDomain for the PPL class specified as type parameter.
    * @tparam PPLType the PPL class of the numerical properties handled by this domain
    *
    */
@@ -65,10 +75,10 @@ object PPLDomainMacro {
   def transformer[PPLSource, PPLDest]: DomainTransformation[PPLDomainMacro[PPLSource], PPLDomainMacro[PPLDest]] = macro PPLTransformationImpl[PPLSource, PPLDest]
 
   /**
-   * This is the implementaton of the transformer `method`
+   * This is the implementation of the transformer method.
    */
   def PPLTransformationImpl[PPLSource: c.WeakTypeTag, PPLDest: c.WeakTypeTag](c: Context): c.Expr[DomainTransformation[PPLDomainMacro[PPLSource], PPLDomainMacro[PPLDest]]] = {
-    import c.universe._    
+    import c.universe._
 
     val template = reify {
       object PPLtoPPL extends DomainTransformation[PPLDomainMacro[Double_Box], PPLDomainMacro[C_Polyhedron]] {
@@ -81,12 +91,11 @@ object PPLDomainMacro {
     val PPLSourceTypeSymbol = implicitly[c.WeakTypeTag[PPLSource]].tpe.typeSymbol
     val PPLDestTypeSymbol = implicitly[c.WeakTypeTag[PPLDest]].tpe.typeSymbol
 
-    // Here we substitute the placeholders Double_Box and C_Polyhedron with the real types
-    val templateWithSubstitution = internal.substituteSymbols( 
+    // Here we substitute the place-holders Double_Box and C_Polyhedron with the real types
+    val templateWithSubstitution = internal.substituteSymbols(
       template.tree,
       List(typeOf[Double_Box].typeSymbol, typeOf[C_Polyhedron].typeSymbol),
-      List(PPLSourceTypeSymbol, PPLDestTypeSymbol)
-    )
+      List(PPLSourceTypeSymbol, PPLDestTypeSymbol))
 
     // Here we add the resulting domain as output of the tree
     val outputTree = templateWithSubstitution match {
@@ -95,7 +104,7 @@ object PPLDomainMacro {
 
     c.Expr[DomainTransformation[PPLDomainMacro[PPLSource], PPLDomainMacro[PPLDest]]](outputTree)
   }
-  
+
   /**
    * This is the implementation of the `apply` method.
    * @tparam PPLType the PPL class of the numerical properties handled by this domain
@@ -107,7 +116,7 @@ object PPLDomainMacro {
     val classes = reify {
       import parma_polyhedra_library._
 
-      /**
+      /*
        * This is the generic class for PPL properties. The class actually implements boxes over doubles,
        * but all references to `Double_Box` is changed by the macro and replaced by `PPLType`.
        * @author Gianluca Amato <gamato@unich.it>
@@ -147,21 +156,21 @@ object PPLDomainMacro {
           new ThisProperty(newpplobject)
         }
 
-        def linearAssignment(n: Int, lf: LinearForm[Double]): ThisProperty = {
-          val (le,den) = PPLUtils.toPPLLinearExpression(lf)
+        def linearAssignment(n: Int, lf: LinearForm): ThisProperty = {
+          val (le, den) = PPLUtils.toPPLLinearExpression(lf)
           val newpplobject = new Double_Box(pplobject)
           newpplobject.affine_image(new Variable(n), le, den)
           new ThisProperty(newpplobject)
         }
 
-        def linearInequality(lf: LinearForm[Double]): ThisProperty = {
+        def linearInequality(lf: LinearForm): ThisProperty = {
           val (le, den) = PPLUtils.toPPLLinearExpression(lf)
           val newpplobject = new Double_Box(pplobject)
           newpplobject.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
           new ThisProperty(newpplobject)
         }
 
-        def linearDisequality(lf: LinearForm[Double]): ThisProperty = {
+        def linearDisequality(lf: LinearForm): ThisProperty = {
           val (le, den) = PPLUtils.toPPLLinearExpression(lf)
           val newpplobject1 = new Double_Box(pplobject)
           val newpplobject2 = new Double_Box(pplobject)
@@ -171,31 +180,31 @@ object PPLDomainMacro {
           new ThisProperty(newpplobject1)
         }
 
-        def minimize(lf: LinearForm[Double]) = {
+        def minimize(lf: LinearForm) = {
           val (le, den) = PPLUtils.toPPLLinearExpression(lf)
           val exact = new By_Reference[java.lang.Boolean](false)
           val val_n = new Coefficient(0)
           val val_d = new Coefficient(0)
           val result = pplobject.minimize(le, val_n, val_d, exact)
           if (!result)
-            Double.NegativeInfinity
+            RationalExt.NegativeInfinity
           else
-            (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+            RationalExt(val_n.getBigInteger(), val_d.getBigInteger().multiply(den.getBigInteger()))
         }
 
-        def maximize(lf: LinearForm[Double]) = {
+        def maximize(lf: LinearForm) = {
           val (le, den) = PPLUtils.toPPLLinearExpression(lf)
           val exact = new By_Reference[java.lang.Boolean](false)
           val val_n = new Coefficient(0)
           val val_d = new Coefficient(0)
           val result = pplobject.maximize(le, val_n, val_d, exact)
           if (!result)
-            Double.PositiveInfinity
+            RationalExt.PositiveInfinity
           else
-            (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+            RationalExt(val_n.getBigInteger(), val_d.getBigInteger().multiply(den.getBigInteger()))
         }
 
-        def frequency(lf: LinearForm[Double]) = {
+        def frequency(lf: LinearForm) = {
           val (le, den) = PPLUtils.toPPLLinearExpression(lf)
           val freq_n = new Coefficient(0)
           val freq_d = new Coefficient(0)
@@ -203,9 +212,9 @@ object PPLDomainMacro {
           val val_d = new Coefficient(0)
           val result = pplobject.frequency(le, freq_n, freq_d, val_n, val_d)
           if (!result)
-            None
+            Option.empty
           else
-            Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue())
+            Option(Rational(val_n.getBigInteger(), val_d.getBigInteger().multiply(den.getBigInteger())))
         }
 
         def constraints = {
@@ -255,11 +264,15 @@ object PPLDomainMacro {
 
         def tryCompareTo[B >: ThisProperty](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
           case other: ThisProperty =>
-            if (pplobject == other.pplobject) Some(0)
-            else if (pplobject strictly_contains other.pplobject) Some(1)
-            else if (other.pplobject strictly_contains pplobject) Some(-1)
-            else None
-          case _ => None
+            if (pplobject == other.pplobject)
+              Option(0)
+            else if (pplobject strictly_contains other.pplobject)
+              Option(1)
+            else if (other.pplobject strictly_contains pplobject)
+              Option(-1)
+            else
+              Option.empty
+          case _ => Option.empty
         }
 
         override def hashCode: Int = pplobject.hashCode
@@ -267,9 +280,8 @@ object PPLDomainMacro {
         def mkString(vars: Seq[String]): String = PPLUtils.constraintsToString(pplobject.minimized_constraints(), vars)
       }
 
-      /**
+      /*
        * This is the domain of macro based PPL objects.
-       * @author Ganluca Amato <gamato@unich.it>
        */
       object ThisDomain extends PPLDomainMacro[PPLType] {
         PPLInitializer
@@ -296,8 +308,7 @@ object PPLDomainMacro {
     val classesWithSubstitution = internal.substituteSymbols(
       classes.tree,
       List(typeOf[Double_Box].typeSymbol),
-      List(PPLTypeSymbol)
-    )
+      List(PPLTypeSymbol))
 
     // Here we add the resulting domain as output of the tree
     val outputTree = classesWithSubstitution match {

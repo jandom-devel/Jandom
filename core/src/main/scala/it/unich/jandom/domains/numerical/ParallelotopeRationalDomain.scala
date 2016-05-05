@@ -18,13 +18,15 @@
 
 package it.unich.jandom.domains.numerical
 
+import scala.collection.mutable.ListBuffer
 import scala.util.Try
 
 import breeze.linalg._
 import it.unich.jandom.domains.CachedTopBottom
-import it.unich.jandom.utils.breeze.RationalExtForBreeze._
+import it.unich.jandom.utils.breeze.RationalForBreeze._
 import it.unich.jandom.utils.breeze.countNonZero
 import it.unich.jandom.utils.numberext.RationalExt
+import spire.math.Rational
 
 /**
  * This is the abstract domain of parallelotopes as appears in the NSAD 2012 paper. It is written
@@ -50,7 +52,7 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
    * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
    * square or if `A` has not the same size of `low`.
    */
-  def apply(low: DenseVector[RationalExt], A: DenseMatrix[RationalExt], high: DenseVector[RationalExt]): Property = {
+  def apply(low: DenseVector[RationalExt], A: DenseMatrix[Rational], high: DenseVector[RationalExt]): Property = {
     val isEmpty = (0 until low.size) exists { i => low(i) > high(i) }
     val isEmpty2 = (0 until low.size) exists { i => low(i).isInfinity && low(i) == high(i) }
     new Property(isEmpty || isEmpty2, low, A, high)
@@ -65,7 +67,7 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
     /* The full parallelotope of dimension 0 is not empty! */
     val low = DenseVector.fill(n)(RationalExt.NegativeInfinity)
     val high = DenseVector.fill(n)(RationalExt.PositiveInfinity)
-    val A = DenseMatrix.eye[RationalExt](n)
+    val A = DenseMatrix.eye[Rational](n)
     new Property(false, low, A, high)
   }
 
@@ -73,7 +75,7 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
    * Returns an full parallelotope whose shape is given by the matrix A.
    * @param A the shape matrix
    */
-  def top(A: DenseMatrix[RationalExt]): Property = {
+  def top(A: DenseMatrix[Rational]): Property = {
     val n = A.rows
     val low = DenseVector.fill(n)(RationalExt.NegativeInfinity)
     val high = DenseVector.fill(n)(RationalExt.PositiveInfinity)
@@ -88,7 +90,7 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
   def bottom(n: Int): Property = {
     val low = DenseVector.fill(n)(RationalExt.one)
     val high = DenseVector.fill(n)(RationalExt.zero)
-    val A = DenseMatrix.eye[RationalExt](n)
+    val A = DenseMatrix.eye[Rational](n)
     new Property(true, low, A, high)
   }
 
@@ -96,7 +98,7 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
    * Returns an empty parallelotope whose shape is given by the matrix A.
    * @param A the shape matrix
    */
-  def bottom(A: DenseMatrix[RationalExt]): Property = {
+  def bottom(A: DenseMatrix[Rational]): Property = {
     val n = A.rows
     val low = DenseVector.fill(n)(RationalExt.one)
     val high = DenseVector.fill(n)(RationalExt.zero)
@@ -112,16 +114,16 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
    * @note `low`, `high` and `lf` should be of the same length.
    * @return the least and greatest value of `lf` in the box determine by `low` and `high`.
    */
-  private def extremalsInBox(lf: DenseVector[RationalExt], low: DenseVector[RationalExt], high: DenseVector[RationalExt]): (RationalExt, RationalExt) = {
+  private def extremalsInBox(lf: DenseVector[Rational], low: DenseVector[RationalExt], high: DenseVector[RationalExt]): (RationalExt, RationalExt) = {
     var minc = RationalExt.zero
     var maxc = RationalExt.zero
     for (i <- 0 until lf.length)
-      if (lf(i) > RationalExt.zero) {
-        minc += lf(i) * low(i)
-        maxc += lf(i) * high(i)
-      } else if (lf(i) < RationalExt.zero) {
-        minc += lf(i) * high(i)
-        maxc += lf(i) * low(i)
+      if (lf(i) > Rational.zero) {
+        minc += low(i) * lf(i)
+        maxc += high(i) * lf(i)
+      } else if (lf(i) < Rational.zero) {
+        minc += high(i) * lf(i)
+        maxc += low(i) * lf(i)
       }
     (minc, maxc)
   }
@@ -132,26 +134,25 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
    * @param m a sequence of vectors, all of the same length.
    * @return a sequence of positions in m.
    */
-  private def pivoting(m: IndexedSeq[DenseVector[RationalExt]]): Seq[Int] = {
+  private def pivoting(m: IndexedSeq[DenseVector[Rational]]): List[Int] = {
     val dimension = m(0).length
-    var indexes = Seq[Int]()
-    var pivots = Seq[(DenseVector[RationalExt], Int)]()
+    val indexes = ListBuffer[Int]()
+    val pivots = ListBuffer[(DenseVector[Rational], Int)]()
     var i = 0
     while (indexes.length < dimension) {
-
       val row = m(i).copy
       for (p <- pivots) row -= p._1 * row(p._2)
-      val col = (0 until row.length) find (row(_) != RationalExt.zero)
+      val col = (0 until row.length) find (!row(_).isZero)
       col match {
         case Some(col) =>
           row /= row(col)
-          pivots = pivots :+ Tuple2(row, col)
-          indexes = indexes :+ i
+          pivots.append(Tuple2(row, col))
+          indexes.append(i)
         case None =>
       }
       i += 1
     }
-    indexes
+    indexes.toList
   }
 
   /**
@@ -170,13 +171,13 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
   final class Property(
     val isEmpty: Boolean,
     val low: DenseVector[RationalExt],
-    val A: DenseMatrix[RationalExt],
+    val A: DenseMatrix[Rational],
     val high: DenseVector[RationalExt])
       extends NumericalProperty[Property] {
 
     require(low.length == A.rows)
     require(low.length == A.cols)
-    require(Try(A \ DenseMatrix.eye[RationalExt](dimension)).isSuccess, s"The shape matrix ${A} is not invertible")
+    require(Try(A \ DenseMatrix.eye[Rational](dimension)).isSuccess, s"The shape matrix ${A} is not invertible")
     require(normalized)
 
     type Domain = ParallelotopeRationalDomain
@@ -199,26 +200,29 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
      */
     def widening(that: Property): Property = {
       require(dimension == that.dimension)
-      if (isEmpty) return that
-      val thatRotated = that.rotate(A)
-      val thisRotated = this.rotate(that.A)
-      if (thisRotated < that) {
-        val newlow = thisRotated.low.copy
-        val newhigh = thisRotated.high.copy
-        for (i <- 0 to dimension - 1) {
-          if (thisRotated.low(i) > that.low(i)) newlow(i) = RationalExt.NegativeInfinity
-          if (thisRotated.high(i) < that.high(i)) newhigh(i) = RationalExt.PositiveInfinity
-        }
-        new Property(false, newlow, that.A, newhigh)
-      } else {
-        val newlow = low.copy
-        val newhigh = high.copy
-        for (i <- 0 to dimension - 1) {
-          if (thatRotated.low(i) < low(i)) newlow(i) = RationalExt.NegativeInfinity
-          if (thatRotated.high(i) > high(i)) newhigh(i) = RationalExt.PositiveInfinity
+      if (isEmpty)
+        that
+      else {
+        val thatRotated = that.rotate(A)
+        val thisRotated = this.rotate(that.A)
+        if (thisRotated < that) {
+          val newlow = thisRotated.low.copy
+          val newhigh = thisRotated.high.copy
+          for (i <- 0 to dimension - 1) {
+            if (thisRotated.low(i) > that.low(i)) newlow(i) = RationalExt.NegativeInfinity
+            if (thisRotated.high(i) < that.high(i)) newhigh(i) = RationalExt.PositiveInfinity
+          }
+          new Property(false, newlow, that.A, newhigh)
+        } else {
+          val newlow = low.copy
+          val newhigh = high.copy
+          for (i <- 0 to dimension - 1) {
+            if (thatRotated.low(i) < low(i)) newlow(i) = RationalExt.NegativeInfinity
+            if (thatRotated.high(i) > high(i)) newhigh(i) = RationalExt.PositiveInfinity
 
+          }
+          new Property(false, newlow, A, newhigh)
         }
-        new Property(false, newlow, A, newhigh)
       }
     }
 
@@ -232,7 +236,6 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
       if (that.isEmpty) {
         that
       } else {
-
         val thatRotated = that.rotate(A)
         val newlow = low.copy
         val newhigh = high.copy
@@ -274,14 +277,14 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
        * rational and `p` is an integer, whose intended meaning is the constraint `m <= ax <= M`
        * with a given priority `p`.
        */
-      type PrioritizedConstraint = (DenseVector[RationalExt], RationalExt, RationalExt, Int)
+      type PrioritizedConstraint = (DenseVector[Rational], RationalExt, RationalExt, Int)
 
       /*
        * Given a linear form `v`, compute a prioritized constraint `(v,m,M,p)`. The parameter `ownedBy`
        * tells whether the line form under consideration is one of the "native" forms of this (1) or
        * that (2). This is used to refine priorities.
        */
-      def priority(v: DenseVector[RationalExt], ownedBy: Int = 0): PrioritizedConstraint = {
+      def priority(v: DenseVector[Rational], ownedBy: Int = 0): PrioritizedConstraint = {
         val y1 = A.t \ v
         val (l1, u1) = domain.extremalsInBox(y1, low, high)
         val y2 = that.A.t \ v
@@ -325,15 +328,15 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
        * @return `None` if `v1` and `v2` are not linearly dependent, otherwise it is
        * `Some(k)` such that `v1 = k * v2`.
        */
-      def linearDep(v1: DenseVector[RationalExt], v2: DenseVector[RationalExt]): Option[RationalExt] = {
+      def linearDep(v1: DenseVector[Rational], v2: DenseVector[Rational]): Option[Rational] = {
         var i: Int = 0
-        while (i < dimension && (v1(i) == RationalExt.zero || v2(i) == RationalExt.zero)) i += 1
+        while (i < dimension && (v1(i).isZero || v2(i).isZero)) i += 1
         if (i == dimension)
-          Some(RationalExt.one)
+          Option(Rational.one)
         else if (v1 / v1(i) == v2 / v2(i))
-          Some(v1(i) / v2(i))
+          Option(v1(i) / v2(i))
         else
-          None
+          Option.empty
       }
 
       /*
@@ -347,56 +350,67 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
        * @return None if `v1` and `v2` do not form an inversion, otherwise it is `Some(v)` where `v` is the
        * new linear form computed by the inversion procedure.
        */
-      def newConstraint(vi: DenseVector[RationalExt], vj: DenseVector[RationalExt], min1i: RationalExt, min2i: RationalExt, min1j: RationalExt, min2j: RationalExt): Option[DenseVector[RationalExt]] = {
-        if (min1i.isInfinity || min2i.isInfinity || min1j.isInfinity || min2j.isInfinity) return None
-        if (linearDep(vi, vj).isEmpty) return None
-        val (deltai, deltaj) = if (min2j - min1j >= RationalExt.zero) (min1i - min2i, min2j - min1j) else (min2i - min1i, min1j - min2j)
-        if (deltai * deltaj > RationalExt.zero)
-          Some(-vi * deltaj - vj * deltai)
-        else
-          None
+      def newConstraint(vi: DenseVector[Rational], vj: DenseVector[Rational], min1i: RationalExt, min2i: RationalExt, min1j: RationalExt, min2j: RationalExt): Option[DenseVector[Rational]] = {
+        if (min1i.isInfinity || min2i.isInfinity || min1j.isInfinity || min2j.isInfinity)
+          Option.empty
+        else if (linearDep(vi, vj).isEmpty)
+          Option.empty
+        else {
+          val (deltai, deltaj) = if (min2j.value - min1j.value >= Rational.zero)
+            (min1i.value - min2i.value, min2j.value - min1j.value)
+          else
+            (min2i.value - min1i.value, min1j.value - min2j.value)
+          if (deltai * deltaj > Rational.zero)
+            Option(-vi * deltaj - vj * deltai)
+          else
+            Option.empty
+        }
       }
 
       require(dimension == that.dimension)
 
       // special cases
-      if (isEmpty) return that
-      if (that.isEmpty) return this
-      if (dimension == 0) return this;
+      if (isEmpty)
+        that
+      else if (that.isEmpty)
+        this
+      else if (dimension == 0)
+        this
+      else {
+        val thisRotated = this.rotate(that.A)
+        val thatRotated = that.rotate(this.A)
+        val Q = scala.collection.mutable.ArrayBuffer[PrioritizedConstraint]()
 
-      val thisRotated = this.rotate(that.A)
-      val thatRotated = that.rotate(this.A)
-      val Q = scala.collection.mutable.ArrayBuffer[PrioritizedConstraint]()
+        val bulk = DenseMatrix.vertcat(this.A, that.A)
+        val min1 = DenseVector.vertcat(this.low, thisRotated.low)
+        val min2 = DenseVector.vertcat(thatRotated.low, that.low)
+        val max1 = DenseVector.vertcat(this.high, thisRotated.high)
+        val max2 = DenseVector.vertcat(thatRotated.high, that.high)
+        for (i <- 0 until dimension) Q += priority(this.A.t(::, i), 1)
+        for (i <- 0 until dimension) Q += priority(that.A.t(::, i), 2)
+        for (i <- 0 until dimension; j <- i + 1 until dimension) {
+          val v1 = bulk.t(::, i)
+          val v2 = bulk.t(::, j)
 
-      val bulk = DenseMatrix.vertcat(this.A, that.A)
-      val min1 = DenseVector.vertcat(this.low, thisRotated.low)
-      val min2 = DenseVector.vertcat(thatRotated.low, that.low)
-      val max1 = DenseVector.vertcat(this.high, thisRotated.high)
-      val max2 = DenseVector.vertcat(thatRotated.high, that.high)
-      for (i <- 0 to dimension - 1) Q += priority(this.A.t(::, i), 1)
-      for (i <- 0 to dimension - 1) Q += priority(that.A.t(::, i), 2)
-      for (i <- 0 to dimension - 1; j <- i + 1 to dimension - 1) {
-        val v1 = bulk.t(::, i)
-        val v2 = bulk.t(::, j)
+          val nc1 = newConstraint(v1, v2, min1(i), min2(i), min1(j), min2(j))
+          if (nc1.isDefined) Q += priority(nc1.get)
+          val nc2 = newConstraint(v1, -v2, min1(i), min2(i), -max1(j), -max2(j))
+          if (nc2.isDefined) Q += priority(nc2.get)
+          val nc3 = newConstraint(-v1, -v2, -max1(i), -max2(i), -max1(j), -max2(j))
+          if (nc3.isDefined) Q += priority(nc3.get)
+          val nc4 = newConstraint(-v1, v2, -max1(i), -max2(i), min1(j), min2(j))
+          if (nc4.isDefined) Q += priority(nc4.get)
 
-        val nc1 = newConstraint(v1, v2, min1(i), min2(i), min1(j), min2(j))
-        if (nc1.isDefined) Q += priority(nc1.get)
-        val nc2 = newConstraint(v1, -v2, min1(i), min2(i), -max1(j), -max2(j))
-        if (nc2.isDefined) Q += priority(nc2.get)
-        val nc3 = newConstraint(-v1, -v2, -max1(i), -max2(i), -max1(j), -max2(j))
-        if (nc3.isDefined) Q += priority(nc3.get)
-        val nc4 = newConstraint(-v1, v2, -max1(i), -max2(i), min1(j), min2(j))
-        if (nc4.isDefined) Q += priority(nc4.get)
+        }
 
+        val Qsorted = Q.sortBy[Int](_._4)
+        val pvt = domain.pivoting(Qsorted map (_._1))
+        val newA = DenseMatrix(pvt map (Qsorted(_)._1.toArray): _*)
+        val newlow = DenseVector(pvt map (Qsorted(_)._2): _*)
+        val newhigh = DenseVector(pvt map (Qsorted(_)._3): _*)
+
+        new Property(false, newlow, newA, newhigh)
       }
-
-      val Qsorted = Q.sortBy[Int](_._4)
-      val pvt = domain.pivoting(Qsorted map (_._1))
-      val newA = DenseMatrix(pvt map (Qsorted(_)._1.toArray): _*)
-      val newlow = DenseVector(pvt map (Qsorted(_)._2): _*)
-      val newhigh = DenseVector(pvt map (Qsorted(_)._3): _*)
-
-      new Property(false, newlow, newA, newhigh)
     }
 
     /**
@@ -448,47 +462,48 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
       }
     }
 
-    def linearAssignment(n: Int, lf: LinearForm[Double]): Property = linearAssignment_m(n, LinearForm(lf.coeffs map { RationalExt(_) }: _*))
-
     /**
      * @inheritdoc
      * @note @inheritdoc
      * @todo @inheritdoc
      * @throws $ILLEGAL
      */
-    def linearAssignment_m(n: Int, lf: LinearForm[RationalExt]): Property = {
+    def linearAssignment(n: Int, lf: LinearForm): Property = {
+      import it.unich.jandom.utils.breeze.RationalExtForBreeze._
       require(n <= dimension && lf.dimension <= dimension)
       val tcoeff = lf.homcoeffs
       val known = lf.known
-      if (isEmpty) return this
-      val coeff = tcoeff.padTo(dimension, RationalExt.zero).toArray
+      if (isEmpty)
+        this
+      else {
+        val coeff = tcoeff.padTo(dimension, Rational.zero).toArray
+        if (coeff(n) != Rational.zero) {
+          // invertible assignment
+          val increment = (A(::, n) :* known / coeff(n)) map RationalExt.apply
+          val newlow = low :+ increment
+          val newhigh = high :+ increment
+          val ei = DenseVector.zeros[Rational](dimension)
+          ei(n) = Rational.one
+          val newA = A :- (A(::, n) * (DenseVector(coeff) - ei).t) / coeff(n)
 
-      if (coeff(n) != RationalExt.zero) {
-        // invertible assignment
-        val increment = A(::, n) :* known / coeff(n)
-        val newlow = low :+ increment
-        val newhigh = high :+ increment
-        val ei = DenseVector.zeros[RationalExt](dimension)
-        ei(n) = RationalExt.one
-        val newA = A :- (A(::, n) * (DenseVector(coeff) - ei).t) / coeff(n)
+          new Property(false, newlow, newA, newhigh)
+        } else {
+          // non-invertible assignment
+          val newP = nonDeterministicAssignment(n)
+          val Aprime = newP.A.copy
+          val j = ((0 until Aprime.rows) find { !Aprime(_, n).isZero }).get
+          for (s <- 0 until dimension if !Aprime(s, n).isZero && s != j)
+            Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
+          val ei = DenseVector.zeros[Rational](dimension)
+          ei(n) = Rational.one
+          Aprime(j, ::) := (ei :- DenseVector(coeff)).t
+          val newlow = newP.low.copy
+          val newhigh = newP.high.copy
+          newlow(j) = known
+          newhigh(j) = known
 
-        new Property(false, newlow, newA, newhigh)
-      } else {
-        // non-invertible assignment
-        val newP = nonDeterministicAssignment(n)
-        val Aprime = newP.A.copy
-        val j = ((0 to Aprime.rows - 1) find { Aprime(_, n) != RationalExt.zero }).get
-        for (s <- 0 to dimension - 1 if Aprime(s, n) != RationalExt.zero && s != j)
-          Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
-        val ei = DenseVector.zeros[RationalExt](dimension)
-        ei(n) = RationalExt.one
-        Aprime(j, ::) := (ei :- DenseVector(coeff)).t
-        val newlow = newP.low.copy
-        val newhigh = newP.high.copy
-        newlow(j) = known
-        newhigh(j) = known
-
-        new Property(false, newlow, Aprime, newhigh)
+          new Property(false, newlow, Aprime, newhigh)
+        }
       }
     }
 
@@ -496,13 +511,11 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
      * Computes the dot product of `x` and `y` with the proviso that if `x` is zero, then `x*y`
      * is zero even when `y` is an infinite value (which is not the standard behaviour).
      */
-    private def dotprod(x: DenseVector[RationalExt], y: DenseVector[RationalExt], remove: Int = -1): RationalExt = {
+    private def dotprod(x: DenseVector[Rational], y: DenseVector[RationalExt], remove: Int = -1): RationalExt = {
       var sum = RationalExt.zero
-      for (i <- 0 until x.length if i != remove if x(i) != RationalExt.zero) sum = sum + x(i) * y(i)
+      for (i <- 0 until x.length if i != remove if x(i) != Rational.zero) sum = sum + y(i) * x(i)
       sum
     }
-
-    def linearInequality(lf: LinearForm[Double]): Property = linearInequality_m(LinearForm(lf.coeffs map { RationalExt(_) }: _*))
 
     /**
      * @inheritdoc
@@ -510,73 +523,78 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
      * @todo @inheritdoc
      * @throws ILLEGAL
      */
-    def linearInequality_m(lf: LinearForm[RationalExt]): Property = {
+    def linearInequality(lf: LinearForm): Property = {
       require(lf.dimension <= dimension)
-      if (isEmpty) return this
-      if (dimension == 0)
-        if (lf.known > RationalExt.zero)
-          return bottom
+      if (isEmpty)
+        this
+      else if (dimension == 0)
+        if (lf.known > Rational.zero)
+          bottom
         else
-          return this
+          this
+      else {
+        val known = lf.known
+        val coeffs = DenseVector(lf.homcoeffs.padTo(dimension, Rational.zero): _*)
+        val coeffsTransformed = A.t \ coeffs
 
-      val known = lf.known
-      val coeffs = DenseVector(lf.homcoeffs.padTo(dimension, RationalExt.zero): _*)
-      val coeffsTransformed = A.t \ coeffs
+        val removeCandidates = (0 until dimension) find { i => !coeffsTransformed(i).isZero && low(i).isInfinity && high(i).isInfinity }
+        removeCandidates match {
+          case None => {
+            val newlow = low.copy
+            val newhigh = high.copy
+            val (minc, maxc) = domain.extremalsInBox(coeffsTransformed, newlow, newhigh)
+            if (minc > -known)
+              bottom
+            else {
+              val lfArgmin = coeffsTransformed mapPairs { case (i, c) => if (c > Rational.zero) low(i) else high(i) }
 
-      val removeCandidates = (0 until dimension) find { i => coeffsTransformed(i) != RationalExt.zero && low(i).isInfinity && high(i).isInfinity }
-      removeCandidates match {
-        case None => {
-          val newlow = low.copy
-          val newhigh = high.copy
-          val (minc, maxc) = domain.extremalsInBox(coeffsTransformed, newlow, newhigh)
-          if (minc > -known) return bottom
-
-          val lfArgmin = coeffsTransformed mapPairs { case (i, c) => if (c > RationalExt.zero) low(i) else high(i) }
-
-          val infinities = (0 until dimension) filter { i => lfArgmin(i).isInfinity && coeffsTransformed(i) != RationalExt.zero }
-          infinities.size match {
-            case 0 =>
-              for (i <- 0 until dimension) {
-                if (coeffsTransformed(i) > RationalExt.zero) newhigh(i) = high(i) min (lfArgmin(i) + (-known - minc) / coeffsTransformed(i))
-                else if (coeffsTransformed(i) < RationalExt.zero) newlow(i) = low(i) max (lfArgmin(i) + (-known - minc) / coeffsTransformed(i))
+              val infinities = (0 until dimension) filter { i => lfArgmin(i).isInfinity && coeffsTransformed(i) != Rational.zero }
+              infinities.size match {
+                case 0 =>
+                  for (i <- 0 until dimension) {
+                    if (coeffsTransformed(i) > Rational.zero)
+                      newhigh(i) = high(i) min (lfArgmin(i) + (-RationalExt(known) - minc) / coeffsTransformed(i))
+                    else if (coeffsTransformed(i) < Rational.zero)
+                      newlow(i) = low(i) max (lfArgmin(i) + (-RationalExt(known) - minc) / coeffsTransformed(i))
+                  }
+                case 1 => {
+                  val posinf = infinities.head
+                  if (coeffsTransformed(posinf) < Rational.zero)
+                    newlow(posinf) = low(posinf) max ((-dotprod(coeffsTransformed, lfArgmin, posinf) - known) / coeffsTransformed(posinf))
+                  else
+                    newhigh(posinf) = high(posinf) min ((-dotprod(coeffsTransformed, lfArgmin, posinf) - known) / coeffsTransformed(posinf))
+                }
+                case _ =>
               }
-            case 1 => {
-              val posinf = infinities.head
-              if (coeffsTransformed(posinf) < RationalExt.zero)
-                newlow(posinf) = low(posinf) max ((-dotprod(coeffsTransformed, lfArgmin, posinf) - known) / coeffsTransformed(posinf))
-              else
-                newhigh(posinf) = high(posinf) min ((-dotprod(coeffsTransformed, lfArgmin, posinf) - known) / coeffsTransformed(posinf))
+              new Property(false, newlow, A, newhigh)
             }
-            case _ =>
           }
-          new Property(false, newlow, A, newhigh)
-        }
-        case Some(chosen) => {
-          // TODO: check.. I think this may generate non-invertible matrices
-          val newA = A.copy
-          val newhigh = high.copy
-          newA(chosen, ::) := coeffs.t
-          newhigh(chosen) = -known
-          new Property(false, low, newA, newhigh)
+          case Some(chosen) => {
+            // TODO: check.. I think this may generate non-invertible matrices
+            val newA = A.copy
+            val newhigh = high.copy
+            newA(chosen, ::) := coeffs.t
+            newhigh(chosen) = -known
+            new Property(false, low, newA, newhigh)
+          }
         }
       }
     }
 
-    def linearDisequality(lf: LinearForm[Double]): Property = linearDisequality_m(LinearForm(lf.coeffs map { RationalExt(_) }: _*))
     /**
      * @inheritdoc
      * @note @inheritdoc
      * @throws $ILLEGAL
      */
-    def linearDisequality_m(lf: LinearForm[RationalExt]): Property = {
+    def linearDisequality(lf: LinearForm): Property = {
       val tcoeff = lf.homcoeffs
       val known = lf.known
-      if (tcoeff.forall(_ == RationalExt.zero))
-        if (known == RationalExt.zero) bottom else this
+      if (tcoeff.forall(_ == Rational.zero))
+        if (known == Rational.zero) bottom else this
       else {
         val row = (0 until dimension).find { (r) =>
           val v1 = A(r, ::).t
-          val v2 = DenseVector[RationalExt](tcoeff: _*)
+          val v2 = DenseVector[Rational](tcoeff: _*)
           v1 == v2
         }
         row match {
@@ -594,50 +612,54 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
      */
     def nonDeterministicAssignment(n: Int): Property = {
       require(n <= dimension)
-      if (isEmpty) return this
+      if (isEmpty)
+        this
+      else {
+        val unsortedCandidates = (0 until dimension) filter { i => A(i, n) != Rational.zero && (!low(i).isNegInfinity || !high(i).isPosInfinity) }
+        if (unsortedCandidates.isEmpty)
+          this
+        else {
+          // We prever to use as a pivot a simple constraint. Therefore, we order constraints by the number of
+          // non-zero coefficients.
+          val countNonZeroInRows = countNonZero(A(*, ::))
+          val removeCandidates = unsortedCandidates.sortBy({ i => countNonZeroInRows(i) })
+          val removeCandidatesEq = removeCandidates filter { i => low(i) == high(i) }
+          val removeCandidatesBounded = removeCandidates filter { i => !low(i).isInfinity && !high(i).isInfinity }
 
-      val unsortedCandidates = (0 until dimension) filter { i => A(i, n) != RationalExt.zero && (!low(i).isNegInfinity || !high(i).isPosInfinity) }
-      if (unsortedCandidates.isEmpty) return this
+          val pivot =
+            if (!removeCandidatesEq.isEmpty) removeCandidatesEq.head
+            else if (!removeCandidatesBounded.isEmpty) removeCandidatesBounded.head
+            else removeCandidates.head
+          val rowPivot = A(pivot, ::)
 
-      // We prever to use as a pivot a simple constraint. Therefore, we order constraints by the number of
-      // non-zero coefficients.
-      val countNonZeroInRows = countNonZero(A(*, ::))
-      val removeCandidates = unsortedCandidates.sortBy({ i => countNonZeroInRows(i) })
-      val removeCandidatesEq = removeCandidates filter { i => low(i) == high(i) }
-      val removeCandidatesBounded = removeCandidates filter { i => !low(i).isInfinity && !high(i).isInfinity }
+          val newA = A.copy
+          val newlow = low.copy
+          val newhigh = high.copy
 
-      val pivot =
-        if (!removeCandidatesEq.isEmpty) removeCandidatesEq.head
-        else if (!removeCandidatesBounded.isEmpty) removeCandidatesBounded.head
-        else removeCandidates.head
-      val rowPivot = A(pivot, ::)
-
-      val newA = A.copy
-      val newlow = low.copy
-      val newhigh = high.copy
-
-      for (i <- removeCandidates if i != pivot) {
-        val value1 = rowPivot(n)
-        val value2 = A(i, n)
-        val rowi = A(i, ::)
-        newA(i, ::) := rowPivot * value2 - rowi * value1
-        val (minPivot, maxPivot) = if (A(i, n) < RationalExt.zero) (high(pivot), low(pivot)) else (low(pivot), high(pivot))
-        val (mini, maxi) = if (-A(pivot, n) < RationalExt.zero) (high(i), low(i)) else (low(i), high(i))
-        newlow(i) = minPivot * value2 - mini * value1
-        newhigh(i) = maxPivot * value2 - maxi * value1
+          for (i <- removeCandidates if i != pivot) {
+            val value1 = rowPivot(n)
+            val value2 = A(i, n)
+            val rowi = A(i, ::)
+            newA(i, ::) := rowPivot * value2 - rowi * value1
+            val (minPivot, maxPivot) = if (A(i, n) < Rational.zero) (high(pivot), low(pivot)) else (low(pivot), high(pivot))
+            val (mini, maxi) = if (-A(pivot, n) < Rational.zero) (high(i), low(i)) else (low(i), high(i))
+            newlow(i) = minPivot * value2 - mini * value1
+            newhigh(i) = maxPivot * value2 - maxi * value1
+          }
+          newlow(pivot) = RationalExt.NegativeInfinity
+          newhigh(pivot) = RationalExt.PositiveInfinity
+          new Property(false, newlow, newA, newhigh)
+        }
       }
-      newlow(pivot) = RationalExt.NegativeInfinity
-      newhigh(pivot) = RationalExt.PositiveInfinity
-      new Property(false, newlow, newA, newhigh)
     }
 
     def addVariable(): Property = {
       if (isEmpty)
         ParallelotopeRationalDomain.this.bottom(A.rows + 1)
       else {
-        val e = DenseMatrix.zeros[RationalExt](dimension + 1, 1)
-        e(dimension, 0) = RationalExt.one
-        val newA = DenseMatrix.horzcat(DenseMatrix.vertcat(A, DenseMatrix.zeros[RationalExt](1, dimension)), e)
+        val e = DenseMatrix.zeros[Rational](dimension + 1, 1)
+        e(dimension, 0) = Rational.one
+        val newA = DenseMatrix.horzcat(DenseMatrix.vertcat(A, DenseMatrix.zeros[Rational](1, dimension)), e)
         val newlow = DenseVector.vertcat(low, DenseVector(RationalExt.NegativeInfinity))
         val newhigh = DenseVector.vertcat(high, DenseVector(RationalExt.PositiveInfinity))
 
@@ -649,9 +671,9 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
       if (isEmpty)
         Seq(LinearForm(1))
       else {
-        val set1 = for (i <- 0 until dimension; if !low(i).isInfinity) yield -LinearForm(-low(i) +: A(i, ::).t.toScalaVector: _*)
-        val set2 = for (i <- 0 until dimension; if !high(i).isInfinity) yield LinearForm(-high(i) +: A(i, ::).t.toScalaVector: _*)
-        (set1 ++ set2) map { _.toDouble }
+        val set1 = for (i <- 0 until dimension; if !low(i).isInfinity) yield -LinearForm(-low(i).value +: A(i, ::).t.toScalaVector: _*)
+        val set2 = for (i <- 0 until dimension; if !high(i).isInfinity) yield LinearForm(-high(i).value +: A(i, ::).t.toScalaVector: _*)
+        set1 ++ set2
       }
     }
 
@@ -663,16 +685,16 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
      * @throws $ILLEGAL
      */
     def delVariable(n: Int): Property = {
-      def rowToSeq(M: DenseMatrix[RationalExt], i: Int, n: Int): Seq[RationalExt] =
+      def rowToSeq(M: DenseMatrix[Rational], i: Int, n: Int): Seq[Rational] =
         for (j <- 0 until A.rows; if j != n) yield M(i, j)
 
       if (isEmpty)
         ParallelotopeRationalDomain.this.bottom(A.rows - 1)
       else {
         val forgot = this.nonDeterministicAssignment(n)
-        val set1 = for (i <- 0 until dimension; if !forgot.low(i).isInfinity; if forgot.A(i, n) == RationalExt.zero) yield -LinearForm(-forgot.low(i) +: rowToSeq(forgot.A, i, n): _*)
-        val set2 = for (i <- 0 until dimension; if !forgot.high(i).isInfinity; if forgot.A(i, n) == RationalExt.zero) yield LinearForm(-forgot.high(i) +: rowToSeq(forgot.A, i, n): _*)
-        (set1 ++ set2).foldLeft(ParallelotopeRationalDomain.this.top(A.rows - 1)) { (p, lf) => p.linearInequality_m(lf) }
+        val set1 = for (i <- 0 until dimension; if !forgot.low(i).isInfinity; if forgot.A(i, n) == Rational.zero) yield -LinearForm(-forgot.low(i).value +: rowToSeq(forgot.A, i, n): _*)
+        val set2 = for (i <- 0 until dimension; if !forgot.high(i).isInfinity; if forgot.A(i, n) == Rational.zero) yield LinearForm(-forgot.high(i).value +: rowToSeq(forgot.A, i, n): _*)
+        (set1 ++ set2).foldLeft(ParallelotopeRationalDomain.this.top(A.rows - 1)) { (p, lf) => p.linearInequality(lf) }
       }
     }
 
@@ -692,49 +714,34 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
       }
     }
 
-    def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
-      val le = linearEvaluation_m(LinearForm(lf.coeffs map { RationalExt(_) }: _*))
-      (le._1.toDouble, le._2.toDouble)
-    }
-
     /**
      * Compute the minimum and maximum value of a linear form in a parallelotope.
      * @todo should be generalized to linear forms over arbitrary types.
      * @return a tuple with two components: the first component is the least value, the second component is the greatest value
      * of the linear form over the box.
      */
-    def linearEvaluation_m(lf: LinearForm[RationalExt]): (RationalExt, RationalExt) = {
+    def linearEvaluation(lf: LinearForm): (RationalExt, RationalExt) = {
       val tcoeff = lf.homcoeffs
-      if (isEmpty && tcoeff.exists { _ != RationalExt.zero })
+      if (isEmpty && tcoeff.exists { _ != Rational.zero })
         (RationalExt.PositiveInfinity, RationalExt.NegativeInfinity)
       else if (dimension == 0)
         (lf.known, lf.known)
       else {
-        val coeff = tcoeff.padTo(dimension, RationalExt.zero).toArray
+        val coeff = tcoeff.padTo(dimension, Rational.zero).toArray
         val vec = DenseVector(coeff)
         val newvec = A.t \ vec
-        val newlf = lf.known +: newvec.valuesIterator.toSeq
         val (min, max) = domain.extremalsInBox(newvec, low, high)
         (min + lf.known, max + lf.known)
       }
     }
 
-    def minimize_m(lf: LinearForm[RationalExt]) = linearEvaluation_m(lf)._1
+    def minimize(lf: LinearForm) = linearEvaluation(lf)._1
 
-    def maximize_m(lf: LinearForm[RationalExt]) = linearEvaluation_m(lf)._2
+    def maximize(lf: LinearForm) = linearEvaluation(lf)._2
 
-    def frequency_m(lf: LinearForm[RationalExt]) = {
-      val (min, max) = linearEvaluation_m(lf)
-      if (min == max) Some(min) else None
-    }
-
-    def minimize(lf: LinearForm[Double]) = linearEvaluation(lf)._1
-
-    def maximize(lf: LinearForm[Double]) = linearEvaluation(lf)._2
-
-    def frequency(lf: LinearForm[Double]) = {
+    def frequency(lf: LinearForm) = {
       val (min, max) = linearEvaluation(lf)
-      if (min == max) Some(min) else None
+      if (min == max) Option(min.value) else Option.empty
     }
 
     def dimension = A.rows
@@ -752,14 +759,14 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
         val lte = this <= that
         val gte = that <= this
         if (lte && gte)
-          Some(0)
+          Option(0)
         else if (lte)
-          Some(-1)
+          Option(-1)
         else if (gte)
-          Some(1)
+          Option(1)
         else
-          None
-      case _ => None
+          Option.empty
+      case _ => Option.empty
     }
 
     /**
@@ -769,32 +776,40 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
      * @note `Aprime` should be an invertible matrix of the same dimension as `this`.
      * @throws IllegalArgumentException if `Aprime` is not square or has not the correct dimension.
      */
-    def rotate(Aprime: DenseMatrix[RationalExt]): Property = {
+    def rotate(Aprime: DenseMatrix[Rational]): Property = {
+      import it.unich.jandom.utils.breeze.RationalExtForBreeze._
       require(dimension == Aprime.rows && dimension == Aprime.cols)
-      if (isEmpty) return this;
-      val B = Aprime * (A \ DenseMatrix.eye[RationalExt](dimension))
-      val newlow = DenseVector.zeros[RationalExt](dimension)
-      val newhigh = DenseVector.zeros[RationalExt](dimension)
-      B.foreachPair {
-        case ((i, j), v) =>
-
-          if (v > RationalExt.zero) {
-            newlow(i) += v * low(j)
-            newhigh(i) += v * high(j)
-          } else if (v < RationalExt.zero) {
-            newhigh(i) += v * low(j)
-            newlow(i) += v * high(j)
-          }
+      if (isEmpty)
+        this
+      else {
+        val B = Aprime * (A \ DenseMatrix.eye[Rational](dimension))
+        val newlow = DenseVector.zeros[RationalExt](dimension)
+        val newhigh = DenseVector.zeros[RationalExt](dimension)
+        B.foreachPair {
+          case ((i, j), v) =>
+            if (v > Rational.zero) {
+              newlow(i) += low(j) * v
+              newhigh(i) += high(j) * v
+            } else if (v < Rational.zero) {
+              newhigh(i) += low(j) * v
+              newlow(i) += high(j) * v
+            }
+        }
+        new Property(false, newlow, Aprime, newhigh)
       }
-      new Property(false, newlow, Aprime, newhigh)
     }
 
     def <=[B >: Property](that: Property)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean = {
-      if (isEmpty) return (true)
-      if (that.isEmpty) return (false)
-      if (that.isTop) return (true)
-      val ptemp = this.rotate(that.A)
-      (0 to ptemp.low.length - 1) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) }
+      if (isEmpty)
+        true
+      else if (that.isEmpty)
+        false
+      else if (that.isTop)
+        true
+      else {
+        val ptemp = this.rotate(that.A)
+        (0 to ptemp.low.length - 1) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) }
+      }
     }
 
     def >=[B >: Property](that: Property)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
@@ -811,27 +826,28 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
       /*
        * Returns a string representation of the linear form `lf`.
        */
-      def lfToString(lf: DenseVector[RationalExt]): String = {
+      def lfToString(lf: DenseVector[Rational]): String = {
         var first = true
-        var s = ""
+        val s = new StringBuilder
+        val minusOne = -Rational.one
 
         for (index <- 0 until dimension) {
           val coeff = lf(index)
           val term = coeff match {
-            case RationalExt.zero => ""
-            case RationalExt.one => vars(index)
-            case RationalExt.minusOne => "-" + vars(index)
+            case Rational.zero => ""
+            case Rational.one => vars(index)
+            case `minusOne` => "-" + vars(index)
             case c => c.toString + "*" + vars(index)
           }
-          if (coeff != RationalExt.zero) {
-            if (first || coeff < RationalExt.zero) {
-              s += term
+          if (!coeff.isZero) {
+            if (first || coeff < Rational.zero) {
+              s ++= term
               first = false
-            } else if (coeff != RationalExt.zero)
-              s += "+" + term
+            } else if (coeff != Rational.zero)
+              s ++= "+" + term
           }
         }
-        if (s.isEmpty) "0" else s
+        if (s.isEmpty) "0" else s.toString
       }
 
       if (isEmpty)
@@ -839,9 +855,9 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
       else {
         val eqns = for (i <- 0 until dimension) yield {
           if (low(i) < high(i))
-            low(i) + " <= " + lfToString(A.t(::, i)) + " <= " + high(i)
+            s"${low(i)} <= ${lfToString(A.t(::, i))} <= ${high(i)}"
           else
-            lfToString(A.t(::, i)) + " = " + high(i)
+            s"${lfToString(A.t(::, i))} = ${high(i)}"
         }
         eqns.mkString("[ ", " , ", " ]")
       }

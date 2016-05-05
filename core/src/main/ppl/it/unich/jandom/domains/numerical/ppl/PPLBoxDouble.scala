@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -18,10 +18,11 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
-import it.unich.jandom.domains.numerical.NumericalDomain
-import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.domains.numerical.LinearForm
+import it.unich.jandom.domains.numerical.NumericalProperty
+import it.unich.jandom.utils.numberext.RationalExt
 import parma_polyhedra_library._
+import spire.math.Rational
 
 /**
  * This is an element of the domain `PPLBoxDoubleDomain`
@@ -29,7 +30,7 @@ import parma_polyhedra_library._
  * We clone objects in order to get an immutable class.
  * @author Gianluca Amato <gamato@unich.it>
  */
-final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProperty[PPLBoxDouble] {
+final class PPLBoxDouble(val pplbox: Double_Box) extends NumericalProperty[PPLBoxDouble] {
 
   type Domain = PPLBoxDoubleDomain
 
@@ -67,14 +68,14 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
     new PPLBoxDouble(newpplbox)
   }
 
-  def linearAssignment(n: Int, lf: LinearForm[Double]): PPLBoxDouble = {
+  def linearAssignment(n: Int, lf: LinearForm): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
     val (le, den) = PPLUtils.toPPLLinearExpression(lf)
     newpplbox.affine_image(new Variable(n), le, den)
     new PPLBoxDouble(newpplbox)
   }
 
-  def linearInequality(lf: LinearForm[Double]): PPLBoxDouble = {
+  def linearInequality(lf: LinearForm): PPLBoxDouble = {
     val (le, _) = PPLUtils.toPPLLinearExpression(lf)
     val newpplbox = new Double_Box(pplbox)
     newpplbox.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
@@ -85,7 +86,7 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
    * @inheritdoc
    * @note @inheritdoc
    */
-  def linearDisequality(lf: LinearForm[Double]): PPLBoxDouble = {
+  def linearDisequality(lf: LinearForm): PPLBoxDouble = {
     val (le, _) = PPLUtils.toPPLLinearExpression(lf)
     val newpplbox1 = new Double_Box(pplbox)
     val newpplbox2 = new Double_Box(pplbox)
@@ -95,12 +96,12 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
     new PPLBoxDouble(newpplbox1)
   }
 
-  def minimize(lf: LinearForm[Double]) = {
+  def minimize(lf: LinearForm) = {
     if (isEmpty) {
-      if (lf.homcoeffs.forall(_ == 0.0))
-        lf.known
+      if (lf.homcoeffs.forall(_.isZero))
+        RationalExt(lf.known)
       else
-        Double.PositiveInfinity
+        RationalExt.PositiveInfinity
     } else {
       val (le, den) = PPLUtils.toPPLLinearExpression(lf)
       val exact = new By_Reference[java.lang.Boolean](false)
@@ -108,18 +109,18 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
       val val_d = new Coefficient(0)
       val result = pplbox.minimize(le, val_n, val_d, exact)
       if (!result)
-        Double.NegativeInfinity
+        RationalExt.NegativeInfinity
       else
-        (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+        RationalExt(val_n.getBigInteger, val_d.getBigInteger multiply den.getBigInteger)
     }
   }
 
-  def maximize(lf: LinearForm[Double]) = {
+  def maximize(lf: LinearForm) = {
     if (isEmpty) {
       if (lf.homcoeffs.forall(_ == 0.0))
-        lf.known
+        RationalExt(lf.known)
       else
-        Double.NegativeInfinity
+        RationalExt.NegativeInfinity
     } else {
       val (le, den) = PPLUtils.toPPLLinearExpression(lf)
       val exact = new By_Reference[java.lang.Boolean](false)
@@ -127,18 +128,18 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
       val val_d = new Coefficient(0)
       val result = pplbox.maximize(le, val_n, val_d, exact)
       if (!result)
-        Double.PositiveInfinity
+        RationalExt.PositiveInfinity
       else
-        (new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue()
+        RationalExt(val_n.getBigInteger, val_d.getBigInteger multiply den.getBigInteger)
     }
   }
 
-  def frequency(lf: LinearForm[Double]) = {
+  def frequency(lf: LinearForm) = {
     if (isEmpty) {
       if (lf.homcoeffs.forall(_ == 0.0))
         Option(lf.known)
       else
-        None
+        Option.empty
     } else {
       val (le, den) = PPLUtils.toPPLLinearExpression(lf)
       val freq_n = new Coefficient(0)
@@ -147,9 +148,9 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
       val val_d = new Coefficient(0)
       val result = pplbox.frequency(le, freq_n, freq_d, val_n, val_d)
       if (!result)
-        None
+        Option.empty
       else
-        Some((new java.math.BigDecimal(val_n.getBigInteger()) divide new java.math.BigDecimal(val_d.getBigInteger()) divide new java.math.BigDecimal(den.getBigInteger())).doubleValue())
+        Option(Rational(val_n.getBigInteger, val_d.getBigInteger multiply den.getBigInteger))
     }
   }
 
@@ -200,9 +201,15 @@ final class PPLBoxDouble(private val pplbox: Double_Box) extends NumericalProper
 
   def tryCompareTo[B >: PPLBoxDouble](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
     case other: PPLBoxDouble =>
-      if (pplbox == other.pplbox) Some(0) else if (pplbox strictly_contains other.pplbox) Some(1) else if (other.pplbox strictly_contains pplbox) Some(-1)
-      else None
-    case _ => None
+      if (pplbox == other.pplbox)
+        Option(0)
+      else if (pplbox strictly_contains other.pplbox)
+        Option(1)
+      else if (other.pplbox strictly_contains pplbox)
+        Option(-1)
+      else
+        Option.empty
+    case _ => Option.empty
   }
 
   override def equals(other: Any): Boolean = other match {

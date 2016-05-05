@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -19,8 +19,9 @@
 package it.unich.jandom.domains.numerical.ppl
 
 import it.unich.jandom.domains.numerical.LinearForm
-
 import parma_polyhedra_library._
+import spire.math.Rational
+import spire.math.SafeLong
 
 /**
  * This is a collection of methods used by the PPL-based numerical domains.
@@ -29,55 +30,51 @@ import parma_polyhedra_library._
 private[jandom] object PPLUtils {
   /**
    * Converts a `LinearForm` into a pair made of a `Linear_Expression` object and a
-   * `Coefficient` object, which is the denumerator to be used in linear assignments.
-   * @param coeff the homogeneous coefficients.
-   * @param known the in-homogeneous coefficient.
+   * `Coefficient` object, which is the denominator to be used in linear assignments.
    */
-  def toPPLLinearExpression(lf: LinearForm[Double]): (Linear_Expression, Coefficient) = {
+  def toPPLLinearExpression(lf: LinearForm): (Linear_Expression, Coefficient) = {
     if (lf.toPPL != null)
       lf.toPPL.asInstanceOf[(Linear_Expression, Coefficient)]
     else {
-      val coeffs = lf.coeffs map { BigDecimal.exact(_) }
-      val maxScale = (coeffs map { _.scale }).max
-      val denumerator = BigDecimal(10) pow maxScale
-      val newcoeffs = coeffs map { (x: BigDecimal) => (x * denumerator).toBigIntExact.get.bigInteger }
-      var le: Linear_Expression = new Linear_Expression_Coefficient(new Coefficient(newcoeffs(0)))
-      for (i <- 0 until lf.dimension) {
-        le = le.sum((new Linear_Expression_Variable(new Variable(i)).times(new Coefficient(newcoeffs(i + 1)))))
+      val denominator = lf.coeffs.foldLeft(SafeLong.one) { _ * _.denominator }
+      val newcoeffs = lf.coeffs map { x => (x.numerator * denominator / x.denominator).toBigInt.bigInteger }
+      val leKnown = new Linear_Expression_Coefficient(new Coefficient(newcoeffs.head))
+      val le = newcoeffs.tail.zipWithIndex.foldLeft[Linear_Expression](leKnown) {
+        (expr, term) => expr.sum((new Linear_Expression_Variable(new Variable(term._2)).times(new Coefficient(term._1))))
       }
-      val result = (le, new Coefficient(denumerator.toBigIntExact.get.bigInteger))
+      val result = (le, new Coefficient(denominator.toBigInt.bigInteger))
       lf.toPPL = result
       result
     }
   }
 
   /**
-   * Converts a PPL linear expression couple with a coefficient for the denominator into a LinearForm.
+   * Converts a PPL linear expression into a LinearForm.
    */
-  def fromPPLExpression(e: Linear_Expression): LinearForm[Double] = {
-	 e match {
-	   case e: Linear_Expression_Coefficient => LinearForm.c(e.argument().getBigInteger().doubleValue())
-	   case e: Linear_Expression_Difference => fromPPLExpression(e.left_hand_side()) - fromPPLExpression(e.right_hand_side())
-	   case e: Linear_Expression_Sum => fromPPLExpression(e.left_hand_side()) + fromPPLExpression(e.right_hand_side())
-	   case e: Linear_Expression_Times => fromPPLExpression(e.linear_expression()) * e.coefficient().getBigInteger().doubleValue()
-	   case e: Linear_Expression_Unary_Minus => - fromPPLExpression(e.argument())
-	   case e: Linear_Expression_Variable => LinearForm.v(e.argument().id().toInt)
-	 }
+  def fromPPLExpression(e: Linear_Expression): LinearForm = {
+    e match {
+      case e: Linear_Expression_Coefficient => LinearForm.c(Rational(e.argument().getBigInteger()))
+      case e: Linear_Expression_Difference => fromPPLExpression(e.left_hand_side()) - fromPPLExpression(e.right_hand_side())
+      case e: Linear_Expression_Sum => fromPPLExpression(e.left_hand_side()) + fromPPLExpression(e.right_hand_side())
+      case e: Linear_Expression_Times => fromPPLExpression(e.linear_expression()) * e.coefficient().getBigInteger().doubleValue()
+      case e: Linear_Expression_Unary_Minus => -fromPPLExpression(e.argument())
+      case e: Linear_Expression_Variable => LinearForm.v(e.argument().id().toInt)
+    }
   }
 
   /**
-   * Converts a PPL Constraints into a sequence of LinearForms. The conversion in only
+   * Converts a PPL Constraints into a sequence of LinearForms. The conversion is only
    * approximate since we cannot represent open constraints.
    */
-  def fromPPLConstraint(c: Constraint): Seq[LinearForm[Double]] = {
-	 val exp = c.left_hand_side().subtract(c.right_hand_side())
-	 val lf = fromPPLExpression(exp)
-	 c.kind match {
-	   case Relation_Symbol.EQUAL => Seq(lf, -lf)
-	   case Relation_Symbol.LESS_OR_EQUAL | Relation_Symbol.LESS_THAN => Seq(lf)
-	   case Relation_Symbol.GREATER_THAN | Relation_Symbol.GREATER_OR_EQUAL => Seq(-lf)
-	   case Relation_Symbol.NOT_EQUAL => Seq()
-	 }
+  def fromPPLConstraint(c: Constraint): Seq[LinearForm] = {
+    val exp = c.left_hand_side().subtract(c.right_hand_side())
+    val lf = fromPPLExpression(exp)
+    c.kind match {
+      case Relation_Symbol.EQUAL => Seq(lf, -lf)
+      case Relation_Symbol.LESS_OR_EQUAL | Relation_Symbol.LESS_THAN => Seq(lf)
+      case Relation_Symbol.GREATER_THAN | Relation_Symbol.GREATER_OR_EQUAL => Seq(-lf)
+      case Relation_Symbol.NOT_EQUAL => Seq()
+    }
   }
 
   /**

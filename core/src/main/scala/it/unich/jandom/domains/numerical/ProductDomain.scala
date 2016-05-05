@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato, Francesca Scozzari
+ * Copyright 2013, 2016 Gianluca Amato, Francesca Scozzari
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -94,42 +94,42 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
       reduce(q1, q2)
     }
 
-    def linearAssignment(n: Int, lf: LinearForm[Double]): Property = {
+    def linearAssignment(n: Int, lf: LinearForm): Property = {
       val q1 = p1.linearAssignment(n, lf)
       val q2 = p2.linearAssignment(n, lf)
       reduce(q1, q2)
     }
 
-    def linearInequality(lf: LinearForm[Double]): Property = {
+    def linearInequality(lf: LinearForm): Property = {
       val q1 = p1.linearInequality(lf)
       val q2 = p2.linearInequality(lf)
       reduce(q1, q2)
     }
 
-    def linearDisequality(lf: LinearForm[Double]): Property = {
+    def linearDisequality(lf: LinearForm): Property = {
       val q1 = p1.linearDisequality(lf)
       val q2 = p2.linearDisequality(lf)
       reduce(q1, q2)
     }
 
-    def minimize(lf: LinearForm[Double]): Double = {
-    	val q1=p1.minimize(lf)
-    	val q2=p2.minimize(lf)
-    	q1 max q2
+    def minimize(lf: LinearForm) = {
+      val q1=p1.minimize(lf)
+      val q2=p2.minimize(lf)
+      q1 max q2
     }
 
-    def maximize(lf: LinearForm[Double]): Double = {
-    	val q1=p1.maximize(lf)
-    	val q2=p2.maximize(lf)
-    	q1 min q2
+    def maximize(lf: LinearForm) = {
+      val q1=p1.maximize(lf)
+      val q2=p2.maximize(lf)
+      q1 min q2
     }
 
-    def frequency(lf: LinearForm[Double]): Option[Double] = {
+    def frequency(lf: LinearForm) = {
         // This could be made more precise when the concrete domain is integer
-    	p1.frequency(lf) match {
-    	  case v@ Some(c) => v
-    	  case None => p2.frequency(lf)
-    	}
+      p1.frequency(lf) match {
+        case v@ Some(c) => v
+        case None => p2.frequency(lf)
+      }
     }
 
     def constraints = p1.constraints ++ p2.constraints
@@ -181,9 +181,9 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
           else if (c1 == c2)
             c1
           else
-            None
+            Option.empty
         }
-        case _ => None
+        case _ => Option.empty
       }
     }
   }

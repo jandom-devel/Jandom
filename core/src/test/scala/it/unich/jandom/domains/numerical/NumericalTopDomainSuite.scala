@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2014, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -25,7 +25,7 @@ package it.unich.jandom.domains.numerical
  */
 class NumericalTopDomainSuite extends  NumericalDomainSuite {
   lazy val dom = NumericalTopDomain
-  
+
   val dims = Seq(0, 1, 2, 5)
 
   for (dim <- dims) {
@@ -48,36 +48,36 @@ class NumericalTopDomainSuite extends  NumericalDomainSuite {
           assertResult(x)(x union x)
           assertResult(x)(x intersection x)
           if (dim != 0) assertResult(x)(x.nonDeterministicAssignment(0))
-          if (dim != 0) assertResult(x)(x.linearAssignment(0, 1.0))
-          assertResult(x)(x.linearInequality(0.0))
-          assertResult(x)(x.linearDisequality(0.0))
+          if (dim != 0) assertResult(x)(x.linearAssignment(0, 1))
+          assertResult(x)(x.linearInequality(0))
+          assertResult(x)(x.linearDisequality(0))
         }
       }
 
       describe(s"has a minimization operator which") {
         if (dim != 0) it("should return -Inf for not constant linear forms") {
-          assertResult(Double.NegativeInfinity)(x.minimize(LinearForm(3, 0 -> 1.0)))
+          assert(x.minimize(LinearForm.sparse(3, 0 -> 1)).isNegInfinity)
         }
         it("should return the known coefficient for constant linear forms") {
-          assertResult(3)(x.minimize(3.0))
+          assertResult(3)(x.minimize(3))
         }
       }
 
       describe(s"has a maximization operator which") {
         if (dim != 0) it("should return +Inf for not constants linear forms") {
-          assertResult(Double.PositiveInfinity)(x.maximize(LinearForm(3, 0 -> 1.0)))
+          assert(x.maximize(LinearForm.sparse(3, 0 -> 1)).isPosInfinity)
         }
         it("should return the known coefficient for null linear forms") {
-          assertResult(3)(x.maximize(3.0))
+          assertResult(3)(x.maximize(3))
         }
       }
 
       describe(s"has a frequency operator which") {
         if (dim != 0) it("should return None for not null linear forms") {
-          assertResult(None)(x.frequency(LinearForm(3, 0 -> 1.0)))
+          assertResult(None)(x.frequency(LinearForm.sparse(3, 0 -> 1)))
         }
         it("should return the known coefficient for null linear forms") {
-          assertResult(Some(3))(x.frequency(3.0))
+          assertResult(Some(3))(x.frequency(3))
         }
       }
 
@@ -94,4 +94,3 @@ class NumericalTopDomainSuite extends  NumericalDomainSuite {
     }
   }
 }
-

@@ -21,16 +21,15 @@ package it.unich.jandom.targets.jvmsoot
 import scala.annotation.elidable
 import scala.annotation.elidable._
 
-import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.numerical.LinearForm
+import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.targets.NumericCondition
 import it.unich.jandom.targets.NumericCondition._
-
 import soot._
-import soot.baf.WordType
 import soot.baf.DoubleWordType
+import soot.baf.WordType
 import soot.jimple.Constant
-import soot.jimple.StaticFieldRef
+import spire.math.Rational
 
 /**
  * This class implements an abstract frame for Soot where only numerical variables are considered.
@@ -77,14 +76,14 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
     @elidable(ASSERTION)
     private def invariantCheck() {
       assert(prop.dimension == stack.size, "Numerical property and stack have different dimensions")
-      if (prop.isEmpty) return
-      for (i <- 0 until prop.dimension) stack(dimension - 1 - i) match {
-        case _: PrimType | _: WordType | _: DoubleWordType =>
-        case _ =>
-          // TODO: I should check that dimension i is unconstrained. For now I check that it is unbounded
-          assert(prop.minimize(LinearForm.v(i)).isNegInfinity, "A non-numerical variable should be unconstrained")
-          assert(prop.maximize(LinearForm.v(i)).isPosInfinity, "A non-numerical variable should be unconstrained")
-      }
+      if (!prop.isEmpty)
+        for (i <- 0 until prop.dimension) stack(dimension - 1 - i) match {
+          case _: PrimType | _: WordType | _: DoubleWordType =>
+          case _ =>
+            // TODO: I should check that dimension i is unconstrained. For now I check that it is unbounded
+            assert(prop.minimize(LinearForm.v(i)).isNegInfinity, "A non-numerical variable should be unconstrained")
+            assert(prop.maximize(LinearForm.v(i)).isPosInfinity, "A non-numerical variable should be unconstrained")
+        }
     }
 
     /**
@@ -244,7 +243,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
      * @param op the comparison operator to use
      */
     private def testComp(op: ComparisonOperators.Value) = {
-      val lf = LinearForm(0, dimension - 2 -> 1, dimension - 1 -> -1)
+      val lf = LinearForm.sparse(Rational.zero, dimension - 2 -> Rational.one, dimension - 1 -> -Rational.one)
       val tbranch = Property(AtomicCond(lf, op).analyze(prop).delVariable().delVariable(), stack.tail.tail)
       val fbranch = Property(AtomicCond(lf, ComparisonOperators.opposite(op)).analyze(prop).delVariable().delVariable(), stack.tail.tail)
       (tbranch, fbranch)

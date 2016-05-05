@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2014, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -43,10 +43,10 @@ class NumericConditionParserSuite extends FunSuite {
     val expCond = AndCond(AtomicCond(exp1Build, ComparisonOperators.EQ), AtomicCond(exp2Build, ComparisonOperators.LTE))
     assertResult(expCond) { expParsed }
   }
-  
-  test("Non-linear expressions") {    
-    val x = VariableExpression[Double](0)
-    assertResult( AtomicCond(x*x, ComparisonOperators.LTE)) {  LocalParser.parseExpr("x*x <= 0").get } 
+
+  test("Non-linear expressions") {
+    val x = VariableExpression(0)
+    assertResult( AtomicCond(x*x, ComparisonOperators.LTE)) {  LocalParser.parseExpr("x*x <= 0").get }
     assertResult( AtomicCond(x*x, ComparisonOperators.GTE)) {  LocalParser.parseExpr("0 <= x*x").get }
   }
 }

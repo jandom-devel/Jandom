@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,6 +20,7 @@ package it.unich.jandom.domains.numerical
 
 import it.unich.jandom.utils.numberext.RationalExt
 import it.unich.jandom.domains.CachedTopBottom
+import spire.math.Rational
 
 /**
  * This is the domain of boxes, also known as the interval domain. Bounds are represented by rational numbers.
@@ -77,9 +78,9 @@ class BoxRationalDomain private extends NumericalDomain {
      * If `remove` is a valid index in `x` and `y`, the factor `x(remove) * y(remove)` is
      * removed from the dot product.
      */
-    private def dotprod(x: Seq[RationalExt], y: Seq[RationalExt], remove: Int = -1): RationalExt = {
-      var sum: RationalExt = RationalExt.zero
-      for (i <- x.indices if i != remove if x(i) != RationalExt.zero) sum = (sum + (x(i) * y(i)))
+    private def dotprod(x: Seq[Rational], y: Seq[RationalExt], remove: Int = -1): RationalExt = {
+      var sum = RationalExt.zero
+      for (i <- x.indices; if i != remove && !x(i).isZero) sum += x(i) * y(i)
       sum
     }
 
@@ -126,7 +127,6 @@ class BoxRationalDomain private extends NumericalDomain {
      */
     def narrowing(that: Property) = {
       require(dimension == that.dimension)
-
       if (that.isEmpty) {
         that
       } else {
@@ -142,50 +142,35 @@ class BoxRationalDomain private extends NumericalDomain {
      * @return a tuple with two components: the first component is the least value, the second component is the greatest value
      * of the linear form over the box.
      */
-    private def linearEvaluation_r(lf: LinearForm[RationalExt]): (RationalExt, RationalExt) = {
+    private def linearEvaluation(lf: LinearForm): (RationalExt, RationalExt) = {
       require(lf.dimension <= dimension)
-      var newlow: RationalExt = lf.known
-      var newhigh: RationalExt = lf.known
-      val coeffs = lf.homcoeffs
-      if (isEmpty && coeffs.exists { _ != RationalExt.zero })
+      var newlow = RationalExt(lf.known)
+      var newhigh = RationalExt(lf.known)
+      val homcoeffs = lf.homcoeffs
+      if (isEmpty && homcoeffs.exists { !_.isZero })
         (RationalExt.PositiveInfinity, RationalExt.NegativeInfinity)
       else {
-        for (i <- coeffs.indices) {
-          if (coeffs(i) < RationalExt.zero) {
-            newlow = (newlow + (coeffs(i) * high(i)))
-            newhigh = (newhigh + (coeffs(i) * low(i)))
-          } else if (coeffs(i) > RationalExt.zero) {
-            newlow = (newlow + (coeffs(i) * low(i)))
-            newhigh = (newhigh + (coeffs(i) * high(i)))
+        for (i <- homcoeffs.indices) {
+          if (homcoeffs(i) < Rational.zero) {
+            newlow += homcoeffs(i) * high(i)
+            newhigh += homcoeffs(i) * low(i)
+          } else if (homcoeffs(i) > Rational.zero) {
+            newlow += homcoeffs(i) * low(i)
+            newhigh += homcoeffs(i) * high(i)
           }
         }
         (newlow, newhigh)
       }
     }
 
-    def minimize_r(lf: LinearForm[RationalExt]) = linearEvaluation_r(lf)._1
+    def minimize(lf: LinearForm) = linearEvaluation(lf)._1
 
-    def maximize_r(lf: LinearForm[RationalExt]) = linearEvaluation_r(lf)._2
+    def maximize(lf: LinearForm) = linearEvaluation(lf)._2
 
-    def frequency_r(lf: LinearForm[RationalExt]) = {
-      val (min, max) = linearEvaluation_r(lf)
-      if (min == max) Some(min) else None
-    }
-
-    // The following three methods are only needed because the Jandom API
-    // wants linear forms over doubles.
-    def linearEvaluation(lf: LinearForm[Double]): (Double, Double) = {
-      val le = linearEvaluation_r(LinearForm(lf.coeffs map { RationalExt(_) }: _*))
-      (le._1.toDouble, le._2.toDouble)
-    }
-
-    def minimize(lf: LinearForm[Double]) = linearEvaluation(lf)._1
-
-    def maximize(lf: LinearForm[Double]) = linearEvaluation(lf)._2
-
-    def frequency(lf: LinearForm[Double]) = {
+    def frequency(lf: LinearForm) = {
       val (min, max) = linearEvaluation(lf)
-      if (min == max) Some(min) else None
+      // min and max are equal only when they are finite
+      if (min == max) Option(min.value) else Option.empty
     }
 
     /**
@@ -194,9 +179,9 @@ class BoxRationalDomain private extends NumericalDomain {
      * @param coeff the homogeneous coefficients.
      * @return the coordinates of the point which minimizes the linear form.
      */
-    private def linearArgmin(lf: LinearForm[RationalExt]): Seq[RationalExt] = {
+    private def linearArgmin(lf: LinearForm): Seq[RationalExt] = {
       require(lf.dimension <= dimension)
-      (lf.homcoeffs.zipWithIndex) map { case (c, i) => if (c > RationalExt.zero) low(i) else high(i) }
+      (lf.homcoeffs,low,high).zipped.map{(c, l, h) => if (c > Rational.zero) l else h }
     }
 
     /**
@@ -205,9 +190,9 @@ class BoxRationalDomain private extends NumericalDomain {
      * @param coeff the homogeneous coefficients
      * @return the coordinates of the point which maximizes the linear form
      */
-    private def linearArgmax(lf: LinearForm[RationalExt]): Seq[RationalExt] = {
+    private def linearArgmax(lf: LinearForm): Seq[RationalExt] = {
       require(lf.dimension <= dimension)
-      (lf.homcoeffs.zipWithIndex) map { case (c, i) => if (c < RationalExt.zero) low(i) else high(i) }
+      (lf.homcoeffs,low,high).zipped.map{(c, l, h) => if (c < Rational.zero) l else h }
     }
 
     /**
@@ -223,20 +208,18 @@ class BoxRationalDomain private extends NumericalDomain {
         new Property(low.updated(n, RationalExt.NegativeInfinity), high.updated(n, RationalExt.PositiveInfinity), false)
     }
 
-    def linearAssignment(n: Int, lf: LinearForm[Double]): Property = linearAssignment_m(n, LinearForm(lf.coeffs map { RationalExt(_) }: _*))
-
     /**
      * @inheritdoc
      * @note @inheritdoc
      * @todo @inheritdoc
      * @throws $ILLEGAL
      */
-    def linearAssignment_m(n: Int, lf: LinearForm[RationalExt]): Property = {
+    def linearAssignment(n: Int, lf: LinearForm): Property = {
       require(n < low.length && n >= 0 && lf.dimension <= dimension)
       if (isEmpty)
         this
       else {
-        val interval = linearEvaluation_r(lf)
+        val interval = linearEvaluation(lf)
         new Property(low.updated(n, interval._1), high.updated(n, interval._2), false)
       }
 
@@ -248,52 +231,51 @@ class BoxRationalDomain private extends NumericalDomain {
      * @todo @inheritdoc
      * @throws $ILLEGAL
      */
-    def linearInequality(lf: LinearForm[Double]): Property =
-      linearInequality_r(LinearForm(lf.coeffs map { RationalExt(_) }: _*))
-
-    def linearInequality_r(lf: LinearForm[RationalExt]): Property = {
+    def linearInequality(lf: LinearForm): Property = {
       require(lf.dimension <= dimension)
 
-      /* if the box is empty the result is empty */
-      if (isEmpty) return this
-
-      /* check if result is empty */
-      val lfArgmin = linearArgmin(lf)
-      val lfMin = linearEvaluation_r(lf)._1
-      if (lfMin > RationalExt.zero) return BoxRationalDomain.this.bottom(dimension)
-
-      val newlow = low.clone
-      val newhigh = high.clone
-
-      val coeffs = lf.homcoeffs
-      val known = lf.known
-
-      val infinities = (coeffs.indices) filter { i => lfArgmin(i).isInfinity && coeffs(i) != RationalExt.zero }
-      infinities.size match {
-        case 0 =>
-          for (i <- coeffs.indices) {
-            if (coeffs(i) < RationalExt.zero) newlow(i) = low(i) max (lfArgmin(i) - lfMin / coeffs(i))
-            if (coeffs(i) > RationalExt.zero) newhigh(i) = high(i) min (lfArgmin(i) - lfMin / coeffs(i))
+      // if the box is empty the result is empty
+      if (isEmpty)
+        this
+      else {
+        // check if result is empty
+        val lfArgmin = linearArgmin(lf)
+        val lfMin = minimize(lf)
+        if (lfMin > RationalExt.zero)
+          BoxRationalDomain.this.bottom(dimension)
+        else {
+          val newlow = low.clone
+          val newhigh = high.clone
+          val homcoeffs = lf.homcoeffs
+          val known = lf.known
+          val infinities = (homcoeffs.indices) filter { i => lfArgmin(i).isInfinity && ! homcoeffs(i).isZero }
+          infinities.size match {
+            case 0 =>
+              for (i <- homcoeffs.indices) {
+                if (homcoeffs(i) < Rational.zero) newlow(i) = low(i) max (lfArgmin(i) - lfMin / homcoeffs(i))
+                if (homcoeffs(i) > Rational.zero) newhigh(i) = high(i) min (lfArgmin(i) - lfMin / homcoeffs(i))
+              }
+            case 1 => {
+              val posinf = infinities.head
+              if (homcoeffs(posinf) < Rational.zero)
+                newlow(posinf) = low(posinf) max ((-dotprod(homcoeffs, lfArgmin, posinf) - known) / homcoeffs(posinf))
+              else
+                newhigh(posinf) = high(posinf) min ((-dotprod(homcoeffs, lfArgmin, posinf) - known) / homcoeffs(posinf))
+            }
+            case _ =>
           }
-        case 1 => {
-          val posinf = infinities.head
-          if (coeffs(posinf) < RationalExt.zero)
-            newlow(posinf) = low(posinf) max ((-dotprod(coeffs, lfArgmin, posinf) - known) / coeffs(posinf))
-          else
-            newhigh(posinf) = high(posinf) min ((-dotprod(coeffs, lfArgmin, posinf) - known) / coeffs(posinf))
+          BoxRationalDomain.this(newlow, newhigh)
         }
-        case _ =>
       }
-      BoxRationalDomain.this(newlow, newhigh)
     }
 
     def constraints = {
       if (isEmpty)
-        Seq(LinearForm(1))
+        List(LinearForm(1))
       else {
-        val set1 = for (i <- 0 until dimension; if !low(i).isInfinity) yield -LinearForm.v[RationalExt](i) + low(i)
-        val set2 = for (i <- 0 until dimension; if !high(i).isInfinity) yield LinearForm.v[RationalExt](i) - high(i)
-        (set1 ++ set2) map { _.toDouble }
+        val set1 = for (i <- 0 until dimension; if !low(i).isInfinity) yield -LinearForm.v(i) + low(i).value
+        val set2 = for (i <- 0 until dimension; if !high(i).isInfinity) yield LinearForm.v(i) - high(i).value
+        (set1 ++ set2)
       }
     }
 
@@ -304,16 +286,13 @@ class BoxRationalDomain private extends NumericalDomain {
      * @note @inheritdoc
      * @throws $ILLEGAL
      */
-    def linearDisequality(lf: LinearForm[Double]): Property =
-      linearDisequality_r(LinearForm(lf.coeffs map { RationalExt(_) }: _*))
-
-    def linearDisequality_r(lf: LinearForm[RationalExt]): Property = {
-      val count = lf.homcoeffs.count(_ != RationalExt.zero)
+    def linearDisequality(lf: LinearForm): Property = {
+      val count = lf.homcoeffs.count(! _.isZero)
       count match {
         case 0 =>
-          if (lf.known == RationalExt.zero) bottom else this
+          if (lf.known.isZero) bottom else this
         case 1 =>
-          val dim = lf.homcoeffs.indexWhere(_ != RationalExt.zero)
+          val dim = lf.homcoeffs.indexWhere(!_.isZero)
           if (low(dim) == lf.known && high(dim) == lf.known)
             bottom
           else
@@ -397,22 +376,22 @@ class BoxRationalDomain private extends NumericalDomain {
       case other: Property =>
         require(dimension == other.dimension)
         (isEmpty, other.isEmpty) match {
-          case (true, true) => Some(0)
-          case (false, true) => Some(1)
-          case (true, false) => Some(-1)
+          case (true, true) => Option(0)
+          case (false, true) => Option(1)
+          case (true, false) => Option(-1)
           case (false, false) =>
             val lowpairs = (this.low, other.low).zipped
             val highpairs = (this.high, other.high).zipped
             if (lowpairs.forall(_ == _) && highpairs.forall(_ == _))
-              Some(0)
+              Option(0)
             else if (lowpairs.forall(_ <= _) && highpairs.forall(_ >= _))
-              Some(1)
+              Option(1)
             else if (lowpairs.forall(_ >= _) && highpairs.forall(_ <= _))
-              Some(-1)
+              Option(-1)
             else
-              None
+              Option.empty
         }
-      case _ => None
+      case _ => Option.empty
     }
 
     // override def hashCode: Int = 41 * (41 + low.hashCode) + high.hashCode
@@ -428,16 +407,16 @@ class BoxRationalDomain private extends NumericalDomain {
    */
   def apply(low: Array[RationalExt], high: Array[RationalExt]): Property = {
     require(low.length == high.length)
-    if ((low, high).zipped.exists(_ > _))
+    if ((low,high).zipped.exists(_ > _ ))
       bottom(low.length)
     else
       new Property(low, high, false)
   }
 
   /**
-   * Returns a box consisting of the single point `poDouble`.
+   * Returns a box consisting of the single point.
    */
-  def apply(poDouble: Array[RationalExt]): Property = apply(poDouble, poDouble)
+  def apply(point: Array[Rational]): Property = apply(point map { RationalExt(_) }, point map { RationalExt(_) })
 
   /**
    * @inheritdoc

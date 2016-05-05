@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato, Francesca Scozzari
+ * Copyright 2013, 2016 Gianluca Amato, Francesca Scozzari
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 package it.unich.jandom.domains
 
 import it.unich.jandom.domains.numerical._
-import it.unich.jandom.utils.breeze.RationalExtForBreeze._
+import it.unich.jandom.utils.breeze.RationalForBreeze._
 import it.unich.jandom.utils.numberext.RationalExt
 
 /**
@@ -30,7 +30,7 @@ import it.unich.jandom.utils.numberext.RationalExt
  * @tparam DomB target family of abstract domains
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait DomainTransformation[-DomA <: AbstractDomain, -DomB <: AbstractDomain] extends  {
+trait DomainTransformation[-DomA <: AbstractDomain, -DomB <: AbstractDomain] extends {
   /**
    * This function returns the real map from source to target property.
    * @param src the source domain
@@ -49,7 +49,7 @@ trait DomainTransformation[-DomA <: AbstractDomain, -DomB <: AbstractDomain] ext
  */
 object DomainTransformation {
   implicit object ParallelotopeToBoxDouble extends DomainTransformation[ParallelotopeDomain, BoxDoubleDomain] {
-    import breeze.linalg.{ DenseMatrix, DenseVector }
+    import breeze.linalg.DenseMatrix
     def apply(src: ParallelotopeDomain, dst: BoxDoubleDomain): src.Property => dst.Property = { (x) =>
       val newPar = x.rotate(DenseMatrix.eye(x.dimension))
       if (newPar.isEmpty)
@@ -60,23 +60,18 @@ object DomainTransformation {
   }
 
   implicit object ParallelotopeRationalToBoxDouble extends DomainTransformation[ParallelotopeRationalDomain, BoxDoubleDomain] {
-    import breeze.linalg.{ DenseMatrix, DenseVector }
+    import breeze.linalg.DenseMatrix
     def apply(src: ParallelotopeRationalDomain, dst: BoxDoubleDomain): src.Property => dst.Property = { (x) =>
       val newPar = x.rotate(DenseMatrix.eye(x.dimension))
       if (newPar.isEmpty)
         dst.bottom(newPar.dimension)
-      else {
-        val low1 = DenseVector.zeros[Double](newPar.low.length)
-        val high1 = DenseVector.zeros[Double](newPar.high.length)
-        for (i <- 0 until newPar.low.length) { low1(i) = newPar.low(i).toDouble }
-        for (i <- 0 until newPar.high.length) { high1(i) = newPar.high(i).toDouble }
-        dst(low1.toArray, high1.toArray)
-      }
+      else
+        dst(newPar.low.toArray map (_.toDouble), newPar.high.toArray map (_.toDouble))
     }
   }
 
   implicit object ParallelotopeRationalToBoxRational extends DomainTransformation[ParallelotopeRationalDomain, BoxRationalDomain] {
-    import breeze.linalg.{ DenseMatrix, DenseVector }
+    import breeze.linalg.DenseMatrix
     def apply(src: ParallelotopeRationalDomain, dst: BoxRationalDomain): src.Property => dst.Property = { (x) =>
       val newPar = x.rotate(DenseMatrix.eye(x.dimension))
       if (newPar.isEmpty)
@@ -100,12 +95,10 @@ object DomainTransformation {
     }
   }
 
-  implicit object BoxSpireToParallelotopeModQ extends DomainTransformation[BoxRationalDomain, ParallelotopeRationalDomain] {
+  implicit object BoxRationalToParallelotopeRational extends DomainTransformation[BoxRationalDomain, ParallelotopeRationalDomain] {
     import breeze.linalg.{ DenseMatrix, DenseVector }
     def apply(src: BoxRationalDomain, dst: ParallelotopeRationalDomain): src.Property => dst.Property = { (x) =>
-      {
-        dst(DenseVector(x.low), DenseMatrix.eye(x.dimension), DenseVector(x.high))
-      }
+      dst(DenseVector(x.low), DenseMatrix.eye(x.dimension), DenseVector(x.high))
     }
   }
 
@@ -125,7 +118,11 @@ object DomainTransformation {
     def apply(src: BoxRationalDomain, dst: BoxRationalDomain): src.Property => dst.Property = { (x) => { dst(x.low, x.high) } }
   }
 
-  object NumericalPropertyToBoxDouble extends DomainTransformation[NumericalDomain, BoxDoubleDomain] {
-    def apply(src: NumericalDomain, dst: BoxDoubleDomain): src.Property => dst.Property = { (x) => dst.top(x.dimension) }
+  /**
+   * This is a class for domain transformations which transform every object of the souece domin into the top object of the
+   * target domain.
+   */
+  class TopTransformation[Src  <: NumericalDomain, Dst <: NumericalDomain] extends DomainTransformation[Src, Dst] {
+    def apply(src: Src, dst: Dst): src.Property => dst.Property = { (x) => dst.top(x.dimension) }
   }
 }

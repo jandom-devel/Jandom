@@ -20,9 +20,14 @@ package it.unich.jandom.utils.numberext
 
 import java.math.RoundingMode
 
-import scala.math.{ ScalaNumber, ScalaNumericConversions }
+import scala.language.implicitConversions
+import scala.math.ScalaNumber
+import scala.math.ScalaNumericConversions
 
-import spire.math.{ Number, Rational, SafeLong }
+import spire.math.Number
+import spire.math.Rational
+import spire.math.SafeLong
+import scala.runtime.RichDouble
 
 /**
  * RationalExt is the class of rational numbers extended with infinite values and NaN's. It
@@ -99,6 +104,11 @@ class RationalExt(val value: Rational, private val special: RationalExt.SpecialV
     case POSINF | NEGINF => RationalExt.PositiveInfinity
     case _ => RationalExt.NaN
   }
+
+  /**
+   * Returns true if the value is 0
+   */
+  def isZero = special == NORMAL && value.isZero
 
   /**
    * Returns true if the value is +∞.
@@ -199,14 +209,18 @@ class RationalExt(val value: Rational, private val special: RationalExt.SpecialV
     case _ => special != that.special
   }
 
-  override def equals(that: Any): Boolean = that match {
-    case that: RationalExt => (special, that.special) match {
-      case (NORMAL, NORMAL) => value == that.value
-      case (POSINF, POSINF) | (NEGINF, NEGINF) => true
-      case _ => false
+  override def equals(that: Any): Boolean =
+    that match {
+      case that: RationalExt => (special, that.special) match {
+        case (NORMAL, NORMAL) => value == that.value
+        case (POSINF, POSINF) | (NEGINF, NEGINF) => true
+        case _ => false
+      }
+      case _ => if (special == NORMAL)
+        value == that
+      else
+        false
     }
-    case _ => false
-  }
 
   def underlying = this
 
@@ -250,7 +264,7 @@ object RationalExt {
 
   val NaN = new RationalExt(Rational.zero, NAN)
 
-  def apply(x: Rational): RationalExt = new RationalExt(x, NORMAL)
+  implicit def apply(x: Rational): RationalExt = new RationalExt(x, NORMAL)
 
   /**
    * Returns a rational corresponding to the string  `r`. Strings Infinity, -Infinity
@@ -265,32 +279,36 @@ object RationalExt {
 
   def apply(x: Number): RationalExt = apply(Rational(x))
 
-  def apply(x: SafeLong): RationalExt = apply(Rational(x))
-
-  def apply(x: BigDecimal): RationalExt = apply(Rational(x))
-
-  def apply(d: Double): RationalExt = if (d.isPosInfinity)
-    RationalExt.PositiveInfinity
-  else if (d.isNegInfinity)
-    RationalExt.NegativeInfinity
-  else if (d.isNaN)
-    RationalExt.NaN
-  else
-    new RationalExt(Rational(d), NORMAL)
-
-  def apply(x: Float): RationalExt = apply(x.toDouble)
-
-  def apply(x: BigInt): RationalExt = apply(Rational(x))
-
-  def apply(x: Long): RationalExt = apply(Rational(x))
-
-  def apply(x: Int): RationalExt = apply(Rational(x))
-
   def apply(n: SafeLong, d: SafeLong): RationalExt = apply(Rational(n, d))
 
   def apply(n: BigInt, d: BigInt): RationalExt = apply(Rational(n, d))
 
   def apply(n: Long, d: Long): RationalExt = apply(Rational(n, d))
+
+  implicit def apply(x: Int): RationalExt = apply(Rational(x))
+
+  implicit def apply(x: Long): RationalExt = apply(Rational(x))
+
+  implicit def apply(x: SafeLong): RationalExt = apply(Rational(x))
+
+  implicit def apply(x: BigInt): RationalExt = apply(Rational(x))
+
+  implicit def apply(d: Double): RationalExt = {
+    // We explicitly create a RichDouble since new implicits prevents automatic conversion
+    val rd = new RichDouble(d)
+    if (rd.isPosInfinity)
+      RationalExt.PositiveInfinity
+    else if (rd.isNegInfinity)
+      RationalExt.NegativeInfinity
+    else if (rd.isNaN)
+      RationalExt.NaN
+    else
+      new RationalExt(Rational(d), NORMAL)
+  }
+
+  implicit def apply(x: Float): RationalExt = apply(x.toDouble)
+
+  implicit def apply(x: BigDecimal): RationalExt = apply(Rational(x))
 
   /**
    * An instance of the `Fractional` type class for RationalExt.
