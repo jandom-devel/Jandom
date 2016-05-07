@@ -208,7 +208,7 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
         current = next
         next = for ((loc, n) <- locations zip narrowings) yield {
           val propnew = for (t <- loc.incoming) yield t.analyze(current(t.start.id))
-          val unionednew = (propnew.fold(empty)(_ union _)) union initial(loc.id)
+          val unionednew = current(loc.id) intersection (propnew.fold(empty)(_ union _) union initial(loc.id))
           if (n.isEmpty) unionednew else n.get(current(loc.id), unionednew)
         }
       } while (current != next)
