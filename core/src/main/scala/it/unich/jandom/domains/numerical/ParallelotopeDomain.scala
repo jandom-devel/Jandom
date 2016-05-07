@@ -45,7 +45,6 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
    * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
    * square or if `A` has not the same size of `low`.
    */
-
   def apply(low: DenseVector[Double], A: DenseMatrix[Double], high: DenseVector[Double]): Property = {
     val isEmpty = (0 until low.size) exists { i => low(i) > high(i) }
     val isEmpty2 = (0 until low.size) exists { i => low(i).isInfinite() && low(i) == high(i) }
@@ -346,10 +345,10 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
           val nc4 = newConstraint(-v1, v2, -max1(i), -max2(i), min1(j), min2(j))
           if (nc4.isDefined) Q += priority(nc4.get)
         }
-        val Qsorted = Q.sortBy[Int](_._4)
+        val Qsorted = Q.sortBy(_._4)
         val pvt = domain.pivoting(Qsorted map (_._1))
 
-        val newA = DenseMatrix(pvt map (Qsorted(_)._1.toArray): _*)
+        val newA = DenseMatrix(pvt map (Qsorted(_)._1): _*)
         val newlow = DenseVector(pvt map (Qsorted(_)._2): _*)
         val newhigh = DenseVector(pvt map (Qsorted(_)._3): _*)
 
@@ -422,13 +421,13 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
         val coeff = DenseVector(tcoeff.padTo(dimension, 0.0): _*)
         if (coeff(n) != 0) {
           // invertible assignment
-          val increment = A(::, n) :* known / coeff(n)
-          val newlow = low :+ increment
-          val newhigh = high :+ increment
+          val increment = A(::, n) * known / coeff(n)
+          val newlow = low + increment
+          val newhigh = high + increment
           // in the past we could use SparseVector instead of DenseVector, but this does not work anymore
           val ei = DenseVector.zeros[Double](dimension)
           ei(n) = 1
-          val newA = A :- (A(::, n) * (coeff - ei).t) / coeff(n)
+          val newA = A - (A(::, n) * (coeff - ei).t) / coeff(n)
           new Property(false, newlow, newA, newhigh)
         } else {
           // non-invertible assignment
@@ -439,7 +438,7 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
             Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
           val ei = DenseVector.zeros[Double](dimension)
           ei(n) = 1
-          Aprime(j, ::) := (ei :- coeff).t
+          Aprime(j, ::) := (ei - coeff).t
           val newlow = newP.low.copy
           val newhigh = newP.high.copy
           newlow(j) = known

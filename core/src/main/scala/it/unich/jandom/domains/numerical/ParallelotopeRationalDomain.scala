@@ -403,9 +403,9 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
 
         }
 
-        val Qsorted = Q.sortBy[Int](_._4)
+        val Qsorted = Q.sortBy(_._4)
         val pvt = domain.pivoting(Qsorted map (_._1))
-        val newA = DenseMatrix(pvt map (Qsorted(_)._1.toArray): _*)
+        val newA = DenseMatrix(pvt map (Qsorted(_)._1): _*)
         val newlow = DenseVector(pvt map (Qsorted(_)._2): _*)
         val newhigh = DenseVector(pvt map (Qsorted(_)._3): _*)
 
@@ -476,15 +476,15 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
       if (isEmpty)
         this
       else {
-        val coeff = tcoeff.padTo(dimension, Rational.zero).toArray
+        val coeff = DenseVector(tcoeff.padTo(dimension, Rational.zero) :_*)
         if (coeff(n) != Rational.zero) {
           // invertible assignment
-          val increment = (A(::, n) :* known / coeff(n)) map RationalExt.apply
-          val newlow = low :+ increment
-          val newhigh = high :+ increment
+          val increment = (A(::, n) * known / coeff(n)) map RationalExt.apply
+          val newlow = low + increment
+          val newhigh = high + increment
           val ei = DenseVector.zeros[Rational](dimension)
           ei(n) = Rational.one
-          val newA = A :- (A(::, n) * (DenseVector(coeff) - ei).t) / coeff(n)
+          val newA = A - (A(::, n) * (coeff - ei).t) / coeff(n)
 
           new Property(false, newlow, newA, newhigh)
         } else {
@@ -496,7 +496,7 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
             Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
           val ei = DenseVector.zeros[Rational](dimension)
           ei(n) = Rational.one
-          Aprime(j, ::) := (ei :- DenseVector(coeff)).t
+          Aprime(j, ::) := (ei - coeff).t
           val newlow = newP.low.copy
           val newhigh = newP.high.copy
           newlow(j) = known
