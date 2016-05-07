@@ -469,7 +469,6 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
      * @throws $ILLEGAL
      */
     def linearAssignment(n: Int, lf: LinearForm): Property = {
-      import it.unich.jandom.utils.breeze.RationalExtForBreeze._
       require(n <= dimension && lf.dimension <= dimension)
       val tcoeff = lf.homcoeffs
       val known = lf.known
@@ -479,9 +478,14 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
         val coeff = DenseVector(tcoeff.padTo(dimension, Rational.zero) :_*)
         if (coeff(n) != Rational.zero) {
           // invertible assignment
-          val increment = (A(::, n) * known / coeff(n)) map RationalExt.apply
-          val newlow = low + increment
-          val newhigh = high + increment
+          val increment = A(::, n) * known / coeff(n)
+          val newlow = low.copy
+          val newhigh = high.copy
+          // cannot use Breeze here since they are RationalExt
+          for (i <- 0 until dimension) {
+            newlow(i) += increment(i)
+            newhigh(i) += increment(i)
+          }
           val ei = DenseVector.zeros[Rational](dimension)
           ei(n) = Rational.one
           val newA = A - (A(::, n) * (coeff - ei).t) / coeff(n)
@@ -777,14 +781,13 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
      * @throws IllegalArgumentException if `Aprime` is not square or has not the correct dimension.
      */
     def rotate(Aprime: DenseMatrix[Rational]): Property = {
-      import it.unich.jandom.utils.breeze.RationalExtForBreeze._
       require(dimension == Aprime.rows && dimension == Aprime.cols)
       if (isEmpty)
         this
       else {
         val B = Aprime * (A \ DenseMatrix.eye[Rational](dimension))
-        val newlow = DenseVector.zeros[RationalExt](dimension)
-        val newhigh = DenseVector.zeros[RationalExt](dimension)
+        val newlow = DenseVector.fill(dimension)(RationalExt.zero)
+        val newhigh = DenseVector.fill(dimension)(RationalExt.zero)
         B.foreachPair {
           case ((i, j), v) =>
             if (v > Rational.zero) {
