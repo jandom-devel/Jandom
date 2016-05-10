@@ -25,6 +25,7 @@ import breeze.linalg.support.CanTraverseValues.ValuesVisitor
 import breeze.math.Field
 import breeze.storage.Zero
 import spire.math.Rational
+import spire.syntax.cfor._
 
 /**
  * This object contains the implicit type classes which are needed to make Rational
@@ -98,33 +99,42 @@ object RationalForBreeze {
   implicit object Rational_implOpSolveMatrixBy_DRR_DRR_eq_DRR
       extends OpSolveMatrixBy.Impl2[DenseMatrix[Rational], DenseMatrix[Rational], DenseMatrix[Rational]] {
 
-    def LUSolve(X: DenseMatrix[Rational], A: DenseMatrix[Rational]) = {
-      var perm = (0 until A.rows).toArray
-      for (i <- 0 until A.rows - 1) {
-        val optPivot = (i until A.rows) find { p => A(perm(p), i) != Rational.zero }
+    def LUSolveArray(X: Array[Rational], A: Array[Rational], Xrows: Int, Xcols: Int): Array[Rational] = {
+      val perm = (0 until Xrows).toArray
+      for (i <- 0 until Xrows - 1) {
+        val optPivot = (i until Xrows) find { p => !A(perm(p) + i * Xrows).isZero }
         val pivotRow = optPivot.getOrElse(throw new MatrixSingularException())
         val tmp = perm(i)
         perm(i) = perm(pivotRow)
         perm(pivotRow) = tmp
-        val pivot = A(perm(i), i)
-        for (j <- i + 1 until A.rows) {
-          val coeff = A(perm(j), i) / pivot
-          A(perm(j), ::) -= A(perm(i), ::) * coeff
-          X(perm(j), ::) -= X(perm(i), ::) * coeff
+        val pivot = A(perm(i) + i * Xrows)
+        for (j <- i + 1 until Xrows) {
+          val coeff = A(perm(j) + i * Xrows) / pivot
+          cfor(0)(_ < Xrows, _ + 1) { (k) =>
+            A(perm(j) + k * Xrows) -= A(perm(i) + k * Xrows) * coeff
+          }
+          cfor(0)(_ < Xcols, _ + 1) { (k) =>
+            X(perm(j) + k * Xrows) -= X(perm(i) + k * Xrows) * coeff
+          }
         }
       }
-      val X1 = new DenseMatrix[Rational](X.rows, X.cols)
-      for (i <- A.rows - 1 to (0, -1)) {
-        X1(i, ::) := X(perm(i), ::)
-        for (j <- i + 1 until A.rows) {
-          X1(i, ::) -= X1(j, ::) * A(perm(i), j)
+      val X1 = new Array[Rational](Xrows * Xcols)
+      for (i <- Xrows - 1 to (0, -1)) {
+        cfor(0)(_ < Xcols, _ + 1) { (k) =>
+          X1(i + k * Xrows) = X(perm(i) + k * Xrows)
         }
-        X1(i, ::) /= A(perm(i), i)
+        for (j <- i + 1 until Xrows)
+          cfor(0)(_ < Xcols, _ + 1) { (k) =>
+            X1(i + k * Xrows) -= X1(j + k * Xrows) * A(perm(i) + j * Xrows)
+          }
+        cfor(0)(_ < Xcols, _ + 1) { (k) =>
+          X1(i + k * Xrows) /= A(perm(i) + i * Xrows)
+        }
       }
-      X := X1.copy
+      X1
     }
 
-    override def apply(A: DenseMatrix[Rational], V: DenseMatrix[Rational]): DenseMatrix[Rational] = {
+    def apply(A: DenseMatrix[Rational], V: DenseMatrix[Rational]): DenseMatrix[Rational] = {
       require(A.rows == V.rows, "Non-conformant matrix sizes")
 
       if (A.size == 0) {
@@ -134,8 +144,7 @@ object RationalForBreeze {
         val Y = DenseMatrix.zeros[Rational](A.rows, A.cols)
         X := V
         Y := A
-        LUSolve(X, Y)
-        X
+        new DenseMatrix(X.rows, X.cols, LUSolveArray(X.data, Y.data, X.rows, X.cols), 0, X.rows)
       } else
         throw new IllegalArgumentException("We only support solving a square matrix")
     }
@@ -144,7 +153,7 @@ object RationalForBreeze {
   implicit object Rational_implOpSolveMatrixBy_DMR_DVR_eq_DVR
       extends OpSolveMatrixBy.Impl2[DenseMatrix[Rational], DenseVector[Rational], DenseVector[Rational]] {
 
-    override def apply(a: DenseMatrix[Rational], b: DenseVector[Rational]): DenseVector[Rational] = {
+    def apply(a: DenseMatrix[Rational], b: DenseVector[Rational]): DenseVector[Rational] = {
       val rv: DenseMatrix[Rational] = a \ new DenseMatrix[Rational](b.size, 1, b.data, b.offset, b.stride, true)
       new DenseVector[Rational](rv.data)
     }
