@@ -18,50 +18,31 @@
 
 package it.unich.jandom.ui
 
-import soot.Scene
-import it.unich.jandom.targets.jvmsoot.BafMethod
-import it.unich.jandom.domains.numerical.NumericalDomain
-import it.unich.jandom.domains.objects.ObjectDomain
-import it.unich.jandom.targets.jvmsoot.SootObjectModel
-import it.unich.jandom.targets.jvmsoot.SootFrameDomain
-import it.unich.jandom.targets.jvmsoot.SootFrameNumericalDomain
-import it.unich.jandom.targets.jvmsoot.SootFrameObjectDomain
-import it.unich.jandom.domains.DimensionFiberedDomain
-import it.unich.jandom.targets.Parameters
-import it.unich.jandom.ppfactories.MemoizingFactory
-import it.unich.jandom.targets.jvmsoot.TopSootInterpretation
-import it.unich.jandom.targets.WideningScope
-import it.unich.jandom.targets.NarrowingStrategy
-import it.unich.jandom.ppfactories.DelayedWideningFactory
-import it.unich.jandom.widenings.DefaultWidening
-import it.unich.jandom.ppfactories.DelayedNarrowingFactory
-import it.unich.jandom.narrowings.NoNarrowing
-import it.unich.jandom.targets.jvmsoot.UnsupportedSootUnitException
-import scala.swing.Dialog
-import it.unich.jandom.targets.jvmsoot.SootCFG
-import soot.toolkits.graph.Block
-import it.unich.jandom.targets.jvmsoot.JimpleMethod
-import java.nio.file.Paths
-import java.nio.file.Path
-import java.nio.file.SimpleFileVisitor
-import java.nio.file.FileVisitResult
-import java.nio.file.attribute.BasicFileAttributes
-import scala.util.Try
-import java.nio.file.Files
-import it.unich.jandom.ui.gui.SootEditorPane
-import scala.collection.JavaConversions._
 import java.io.FileInputStream
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.tree.{ ClassNode, MethodNode }
-import it.unich.jandom.targets.jvmasm.AsmMethod
-import it.unich.jandom.targets.jvmasm.JVMEnvFixedFrameDomain
-import it.unich.jandom.targets.jvmasm.UnsupportedASMInsnException
-import it.unich.jandom.parsers.RandomParser
 import java.io.IOException
-import it.unich.jandom.targets.slil.SLILTarget
-import it.unich.jandom.objectmodels.ObjectModel
-import it.unich.jandom.targets.jvmsoot.SootObjectModel
+import java.nio.file._
+import java.nio.file.attribute.BasicFileAttributes
+
+import scala.collection.JavaConversions._
+import scala.util.Try
+
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.tree.ClassNode
+import org.objectweb.asm.tree.MethodNode
+
+import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.objects.ObjectDomainFactory
+import it.unich.jandom.parsers.FastParser
+import it.unich.jandom.parsers.RandomParser
+import it.unich.jandom.ppfactories.MemoizingFactory
+import it.unich.jandom.targets._
+import it.unich.jandom.targets.jvmasm._
+import it.unich.jandom.targets.jvmsoot._
+import it.unich.jandom.targets.lts._
+import it.unich.jandom.targets.slil._
+
+import soot.Scene
+import soot.toolkits.graph.Block
 
 /**
  * An output interface is a collection of methods for implementing an external interface.
@@ -87,6 +68,7 @@ object OutputInterface {
   def getNumericalDomains = {
     NumericalDomains.values.map(x => x.name)
   }
+
   def getNumericalDomainsTips = {
     NumericalDomains.values.map(x => x.description)
   }
@@ -276,20 +258,44 @@ object OutputInterface {
       case e: IOException => "File not found"
     }
   }
+  
+  def analyzeRandomStr(program: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean) = {
+    val parser = RandomParser()
+    val numericalDomain = NumericalDomains.values(domain).value
+    val result = parser.parseProgram(program) match {
+      case parser.Success(program, _) =>
+        val params = new Parameters[SLILTarget] { val domain = numericalDomain }
+        params.setParameters(widening, narrowing, delay, debug)
+        val ann = program.analyze(params)
+        params.debugWriter.toString + program.mkString(ann)
+      case parser.NoSuccess(msg, next) =>
+        msg + " in line " + next.pos.line + " column " + next.pos.column + " Error in parsing source code"
+      case _ => "Error in parsing"
+    }
+    result
+  }
 
-  def analyzeRandom(dir: String, file: String, domain: Int, widening: Int,
-    narrowing: Int, delay: Int, debug: Boolean) = {
+  def analyzeRandom(dir: String, file: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean) = {
     try {
       val program = getRandomText(dir, file)
-      val parser = RandomParser()
-
+      analyzeRandomStr(program, domain, widening, narrowing, delay, debug)
+    } catch {
+      case e: IOException => "I/O error"
+    }
+  }
+ 
+  def analyzeFastModelStr(program: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean) = {
+    try {
+      val parser = FastParser()
       val numericalDomain = NumericalDomains.values(domain).value
-      val result = parser.parseProgram(program) match {
+
+      val result = parser.parse(program) match {
         case parser.Success(program, _) =>
-          val params = new Parameters[SLILTarget] { val domain = numericalDomain }
+          val params = new Parameters[LTS] { val domain = numericalDomain }
           params.setParameters(widening, narrowing, delay, debug)
           val ann = program.analyze(params)
-          params.debugWriter.toString + program.mkString(ann)
+          val grafo = program.toDot
+          (grafo, params.debugWriter.toString + program.mkString(ann) )
         case parser.NoSuccess(msg, next) =>
           msg + " in line " + next.pos.line + " column " + next.pos.column + " Error in parsing source code"
         case _ => "Error in parsing"
