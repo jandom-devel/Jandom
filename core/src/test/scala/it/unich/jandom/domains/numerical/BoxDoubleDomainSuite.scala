@@ -133,8 +133,8 @@ private[numerical] trait BoxDoubleDomainSuite extends NumericalDomainSuite with 
 
   describe("Test on string conversion") {
     val i = dom(Array(0, -1), Array(2, 3))
-    assertResult("[ 0.0 <= x <= 2.0 , -1.0 <= y <= 3.0 ]") { i.mkString(Seq("x", "y")) }
-    assertResult("[ 0.0 <= v0 <= 2.0 , -1.0 <= v1 <= 3.0 ]") { i.toString }
+    assertResult("[ 0.0 ≤ x ≤ 2.0 , -1.0 ≤ y ≤ 3.0 ]") { i.mkString(Seq("x", "y")) }
+    assertResult("[ 0.0 ≤ v0 ≤ 2.0 , -1.0 ≤ v1 ≤ 3.0 ]") { i.toString }
   }
 }
 

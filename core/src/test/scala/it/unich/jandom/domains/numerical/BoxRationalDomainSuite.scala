@@ -152,8 +152,8 @@ class BoxRationalDomainSuite extends NumericalDomainSuite with SeparatedTopAndBo
   describe("String conversion") {
     it("should behave as expected") {
       val i = dom(Array(0, -1), Array(2, 3))
-      assertResult("[ 0 <= x <= 2 , -1 <= y <= 3 ]") { i.mkString(Seq("x", "y")) }
-      assertResult("[ 0 <= v0 <= 2 , -1 <= v1 <= 3 ]") { i.toString }
+      assertResult("[ 0 ≤ x ≤ 2 , -1 ≤ y ≤ 3 ]") { i.mkString(Seq("x", "y")) }
+      assertResult("[ 0 ≤ v0 ≤ 2 , -1 ≤ v1 ≤ 3 ]") { i.toString }
     }
   }
 

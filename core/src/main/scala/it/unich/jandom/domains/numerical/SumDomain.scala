@@ -179,7 +179,7 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
       if (isEmpty)
         "empty"
       else
-        "FIRST PROP:  " + p1.mkString(vars) + " -- SECOND PROP: " + p2.mkString(vars)
+        s"${p1.mkString(vars)} + ${p2.mkString(vars)}"
     }
 
     def tryCompareTo[B >: Property](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = that match {

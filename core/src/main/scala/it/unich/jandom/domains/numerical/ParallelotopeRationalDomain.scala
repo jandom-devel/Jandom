@@ -858,7 +858,7 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
       else {
         val eqns = for (i <- 0 until dimension) yield {
           if (low(i) < high(i))
-            s"${low(i)} <= ${lfToString(A.t(::, i))} <= ${high(i)}"
+            s"${if (low(i).isNegInfinity) "-∞" else low(i)} ≤ ${lfToString(A.t(::, i))} ≤ ${if (high(i).isPosInfinity) "+∞" else high(i)}"
           else
             s"${lfToString(A.t(::, i))} = ${high(i)}"
         }

@@ -434,7 +434,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
       else {
         val bounds = for (i <- 0 until dimension) yield {
           if (low(i) < high(i))
-            low(i) + " <= " + vars(i) + " <= " + high(i)
+            s"${if (low(i).isNegInfinity) "-∞" else low(i)} ≤ ${vars(i)} ≤ ${if (high(i).isPosInfinity) "+∞" else high(i)}"
           else
             vars(i) + " = " + high(i)
         }

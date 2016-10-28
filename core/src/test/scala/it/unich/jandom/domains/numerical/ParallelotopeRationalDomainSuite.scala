@@ -236,9 +236,9 @@ class ParallelotopeRationalDomainSuite extends NumericalDomainSuite with Separat
 
   describe("string representation") {
     they("should behave as expected") {
-      assertResult("[ -1 <= x+y <= 1 , -1 <= x-y <= 1 ]") { diamond.mkString(Seq("x", "y")) }
+      assertResult("[ -1 ≤ x+y ≤ 1 , -1 ≤ x-y ≤ 1 ]") { diamond.mkString(Seq("x", "y")) }
       assertResult("empty") { empty.toString }
-      assertResult("[ -Infinity <= v0 <= Infinity , -Infinity <= v1 <= Infinity ]", full.toString) { full.toString }
+      assertResult("[ -∞ ≤ v0 ≤ +∞ , -∞ ≤ v1 ≤ +∞ ]", full.toString) { full.toString }
     }
   }
 

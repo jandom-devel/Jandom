@@ -192,9 +192,9 @@ class ParallelotopeDomainSuite extends NumericalDomainSuite with SeparatedTopAnd
   }
 
   describe("string representation") {
-    assertResult("[ -1.0 <= x+y <= 1.0 , -1.0 <= x-y <= 1.0 ]") { diamond.mkString(Seq("x", "y")) }
+    assertResult("[ -1.0 ≤ x+y ≤ 1.0 , -1.0 ≤ x-y ≤ 1.0 ]") { diamond.mkString(Seq("x", "y")) }
     assertResult("empty") { empty.toString }
-    assertResult("[ -Infinity <= v0 <= Infinity , -Infinity <= v1 <= Infinity ]") { full.toString }
+    assertResult("[ -∞ ≤ v0 ≤ +∞ , -∞ ≤ v1 ≤ +∞ ]", full.toString) { full.toString }
   }
 
   describe("all parallelotopes are polyhedral") {

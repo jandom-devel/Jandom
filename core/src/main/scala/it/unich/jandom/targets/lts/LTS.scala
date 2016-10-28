@@ -258,7 +258,7 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
   }
 
   def mkString[U <: DimensionFiberedProperty[U]](ann: Annotation[ProgramPoint, U]): String = {
-    (for ((loc, prop) <- ann) yield loc.name + " => " + prop.mkString(env.variables)).mkString(", ")
+    (for ((loc, prop) <- ann) yield loc.name + " : " + prop.mkString(env.variables)).mkString(", \n")
   }
 
   def mkString = locations.mkString("\n") + "\n" + (transitions map { _.mkString(env.variables) }).mkString("\n") + "\n" +
