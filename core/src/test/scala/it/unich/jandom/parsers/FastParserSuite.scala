@@ -21,10 +21,6 @@ package it.unich.jandom.parsers
 import java.io.File
 import java.io.FileReader
 
-import scala.IndexedSeq
-import scala.collection.immutable.PagedSeq
-import scala.util.parsing.input.PagedSeqReader
-
 import org.scalatest.FunSuite
 
 import it.unich.jandom.domains.numerical.LinearForm
@@ -44,10 +40,9 @@ class FastParserSuite extends FunSuite {
   val dir = new File(getClass.getResource("/fast/").toURI);
   for (model <- dir.listFiles()) {
     test(s"parsing file ${model}") {
-      val fr = new FileReader(model)
-      val source = new PagedSeqReader(PagedSeq.fromReader(fr))
+      val source = new FileReader(model)
       val result = FastParser().parse(source)
-      fr.close()
+      source.close()
       if (result.isEmpty) fail(result.toString)
     }
   }

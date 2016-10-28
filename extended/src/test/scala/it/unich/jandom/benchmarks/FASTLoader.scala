@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Gianluca Amato <gamato@unich.it>
+ * Copyright 2015, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,10 +19,9 @@
 package it.unich.jandom.benchmarks
 
 import java.io.File
-import scala.collection.immutable.PagedSeq
-import it.unich.jandom.parsers.FastParser
-import scala.util.parsing.input.PagedSeqReader
 import java.io.FileReader
+
+import it.unich.jandom.parsers.FastParser
 
 /**
  * This trait loads and parser all models in Alice directory.
@@ -34,15 +33,14 @@ trait FASTLoader {
    * The directory from where benchmarks are loaded
    */
   val dir = new File(getClass.getResource("/fast/").toURI);
-  
+
   /**
    * A sequence of Alice models.
    */
   val ltss = for (model <- dir.listFiles()) yield {
-    val fr = new FileReader(model)
-    val source = new PagedSeqReader(PagedSeq.fromReader(fr))
+    val source = new FileReader(model)
     val result = FastParser().parse(source).get
-    fr.close()
+    source.close()
     // add filename to the model name to have an unique identifier
     result.copy(name = s"${result.name} -- ${model.getName}")
   }

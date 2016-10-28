@@ -18,11 +18,11 @@
 
 package it.unich.jandom.targets
 
-import org.mockito.Matchers._
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
 import org.scalatest.FunSuite
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.prop.TableDrivenPropertyChecks
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
@@ -40,13 +40,13 @@ class NumericExpressionSuite extends FunSuite with MockitoSugar with TableDriven
 
     val lf = mock[LinearForm]
     //when(lf.toDouble) thenReturn (lf)
-    when(lf.mkString(anyObject())) thenReturn ("lf")
+    when(lf.mkString(any())) thenReturn ("lf")
     assertResult("lf") { LinearExpression(lf).toString }
 
     val exp1 = mock[NumericExpression]
     val exp2 = mock[NumericExpression]
-    when(exp1.mkString(anyObject())) thenReturn ("exp1")
-    when(exp2.mkString(anyObject())) thenReturn ("exp2")
+    when(exp1.mkString(any())) thenReturn ("exp1")
+    when(exp2.mkString(any())) thenReturn ("exp2")
 
     assertResult("(- exp1)") { UnaryMinusExpression(exp1).toString }
     assertResult("(exp1 * exp2)") { MulExpression(exp1, exp2).toString }

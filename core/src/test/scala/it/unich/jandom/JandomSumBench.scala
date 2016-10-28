@@ -20,9 +20,6 @@ package it.unich.jandom
 
 import java.io.{ File, FileReader }
 
-import scala.collection.immutable.PagedSeq
-import scala.util.parsing.input.PagedSeqReader
-
 import it.unich.jandom.domains.DimensionFiberedProperty
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.LinearForm
@@ -65,10 +62,9 @@ object JandomSumBench extends App {
 
     println(s"------>${model}")
 
-    val fr = new FileReader(model)
-    val source = new PagedSeqReader(PagedSeq.fromReader(fr))
+    val source = new FileReader(model)
     val parsed = FastParser().parse(source)
-    fr.close()
+    source.close()
     val program = parsed.get
     println("WIDENINGS: " + program.locations.filter(program.isJoinNode).map(_.name).mkString(", "))
 

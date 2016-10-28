@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -35,17 +35,17 @@ import it.unich.jandom.targets.NumericAssignmentMultiple
  */
 class FastParser extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
   private val env: Environment = new Environment()
-  
+
   private val location_env = new HashMap[String, Location]
 
   // handle // as the start of a comment
-  override val whiteSpace = """(\s|//.*\r?\n)+""".r 
+  override val whiteSpace = """(\s|//.*\r?\n)+""".r
 
   override val mulExpr: Parser[Any] = "*" | guard(ident)
 
   protected val variable: Parser[Int] =
     ident ^^ { env(_) }
-  
+
   private val var_declaration: Parser[Int] =
     ident ^^ { case v => env.addBinding(v) }
 
@@ -102,7 +102,7 @@ class FastParser extends JavaTokenParsers with NumericExpressionParser with Nume
   private val strategy: Parser[Seq[Region]] =
     "strategy" ~> ident ~> "{" ~> rep(region) <~ "}"
 
-  private val program: Parser[LTS] =
+  val program: Parser[LTS] =
     model ~ strategy ^^ { case (name, states, transitions) ~ regions =>  new LTS(name, states.toIndexedSeq, transitions, env, regions) }
 
   /**
@@ -111,6 +111,13 @@ class FastParser extends JavaTokenParsers with NumericExpressionParser with Nume
    * @return a ParseResult with the transition system parsed in the target LTS
    */
   def parse(s: Reader[Char]) = parseAll(program, s)
+
+  /**
+   * The main parse function s.
+   * @param s the reader containing the FAST model
+   * @return a ParseResult with the transition system parsed in the target LTS
+   */
+  def parse(s: java.io.Reader) = parseAll(program, s)
 
   /**
    * The main parse function s.

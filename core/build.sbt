@@ -1,16 +1,16 @@
 //*** Libraries
 
 libraryDependencies ++= Seq(
-  "org.apache.commons" % "commons-lang3" % "3.4",
-  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.12.5" % "test",
-  "org.mockito" % "mockito-core" % "1.10.19" % "test",
-  "org.spire-math" %% "spire" % "0.11.0",
+  "org.apache.commons" % "commons-lang3" % "3.5",
+  "org.scalatest" %% "scalatest" % "3.0.0" % "test",
+  "org.scalacheck" %% "scalacheck" % "1.13.3" % "test",
+  "org.mockito" % "mockito-core" % "2.2.9" % "test",
+  "org.spire-math" %% "spire" % "0.12.0",
   "org.scalanlp" %% "breeze" % "0.12",
   "it.unich.scalafix" %% "scalafix" % "0.9-SNAPSHOT",
   // for using native linear algebra libraries
-  // "org.scalanlp" %% "breeze-natives" % "0.9",
-  "org.rogach" %% "scallop" % "0.9.5",
+  // "org.scalanlp" %% "breeze-natives" % "0.12",
+  "org.rogach" %% "scallop" % "2.0.3",
   "org.scala-lang.modules" %% "scala-swing" % "1.0.2",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
   // ASM is included in the Soot Jar

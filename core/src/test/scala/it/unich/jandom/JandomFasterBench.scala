@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,9 +19,6 @@
 package it.unich.jandom
 
 import java.io.{ File, FileReader }
-
-import scala.collection.immutable.PagedSeq
-import scala.util.parsing.input.PagedSeqReader
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.narrowings.DefaultNarrowing
@@ -43,10 +40,9 @@ object JandomFasterBench extends App {
   def fastModelAnalyze(model: File) = {
     println(s"------>${model}")
 
-    val fr = new FileReader(model)
-    val source = new PagedSeqReader(PagedSeq.fromReader(fr))
+    val source = new FileReader(model)
     val parsed = FastParser().parse(source)
-    fr.close()
+    source.close()
     val program = parsed.get
     val params = new targets.Parameters[LTS] { val domain = BoxDoubleDomain(false) }
 

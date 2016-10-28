@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2015 Gianluca Amato
+ * Copyright 2013, 2015, 2016 Gianluca Amato
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -20,9 +20,9 @@ package it.unich.jandom.targets
 
 import java.io.File
 import java.io.FileReader
-import scala.collection.immutable.PagedSeq
-import scala.util.parsing.input.PagedSeqReader
+
 import org.scalatest.FunSuite
+
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.parsers.FastParser
@@ -77,10 +77,9 @@ class LTSSuite extends FunSuite {
   val dir = new File(getClass.getResource("/fast/").toURI);
   for (model <- dir.listFiles()) {
 
-    val fr = new FileReader(model)
-    val source = new PagedSeqReader(PagedSeq.fromReader(fr))
+    val source = new FileReader(model)
     val result = FastParser().parse(source)
-    fr.close()
+    source.close()
     val lts = result.getOrElse(fail(result.toString))
 
     test(s"compare LTS analsysis for ${lts.name} in file ${model}") {

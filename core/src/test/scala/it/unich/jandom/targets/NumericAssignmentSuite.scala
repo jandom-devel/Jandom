@@ -21,9 +21,8 @@ package it.unich.jandom.targets
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
-
 import org.scalatest.FunSuite
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.NumericalProperty
@@ -46,10 +45,10 @@ class NumericAssignmentSuite extends FunSuite with MockitoSugar {
     when(m.exp) thenReturn exp
     assertResult(s"v${TESTVAR} := numexp") { m.toString }
   }
-  
+
   test("analyze Method with mocks") {
     val exp = mock[NumericExpression]
-    val m = mock[MockNumericProperty]    
+    val m = mock[MockNumericProperty]
     val ass = NumericAssignment(TESTVAR, exp)
     ass.analyze(m)
     verify(exp).assignTo(TESTVAR)(m)
@@ -66,4 +65,3 @@ class NumericAssignmentSuite extends FunSuite with MockitoSugar {
     assertResult(BoxDouble(Array(0, 1), Array(0, 1))) { d2 }
   }
 }
-

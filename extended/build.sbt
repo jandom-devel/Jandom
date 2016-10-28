@@ -24,3 +24,5 @@ cappiSettings
 EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE17)
 
 EclipseKeys.eclipseOutput := Some("target.eclipse")
+
+incOptions := incOptions.value.withLogRecompileOnMacro(false)
