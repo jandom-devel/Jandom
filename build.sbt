@@ -18,15 +18,11 @@ run in Test <<= run in ("Jandom", Test)
 
 //*** Scala configuration
 
-version in ThisBuild := "0.1.3-SNAPSHOT"
-
 scalaVersion in ThisBuild := "2.11.7"
 
 scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-Xlint", "-Xlint:-delayedinit-select", "-Xlint:-missing-interpolator")
 
 fork in ThisBuild := true
-
-crossPaths in ThisBuild := false
 
 //*** Resolvers
 
@@ -51,3 +47,38 @@ pplJar in ThisBuild := optionalPPLPathName
 // javaOptions in ThisBuild ++= Seq("-Dcom.github.fommil.netlib.BLAS=com.github.fommil.netlib.F2jBLAS",
 //   "-Dcom.github.fommil.netlib.LAPACK=com.github.fommil.netlib.F2jLAPACK",
 //   "-Dcom.github.fommil.netlib.ARPACK=com.github.fommil.netlib.F2jARPACK")
+
+// Metadata
+
+name in ThisBuild := "Jandom"
+
+version in ThisBuild := "0.1.3-SNAPSHOT"
+
+description in ThisBuild := "A static analyzer based on abstract interpretation"
+
+organization in ThisBuild := "it.unich.jandom"
+
+licenses in ThisBuild := Seq("LGPL-3.0" -> url("https://opensource.org/licenses/LGPL-3.0"))
+
+homepage in ThisBuild := Some(url("https://github.com/jandom-devel/Jandom"))
+
+startYear in ThisBuild := Some(2011)
+
+developers := List(
+  new Developer(
+    "amato",
+    "Gianluca Amato", "gianluca.amato@unich.it",
+    url("http://www.sci.unich.it/~amato/")
+  ),
+  new Developer(
+    "scozzari",
+    "Francesca Scozzari", "francesca.scozzari@unich.it",
+    url("http://www.sci.unich.it/~scozzari/")
+  )
+)
+
+scmInfo := Some(new ScmInfo(
+  url("https://github.com/jandom-devel/Jandom"),
+  "scm:git:https://github.com/jandom-devel/Jandom.git",
+  Some("scm:git:https://github.com/jandom-devel/Jandom.git")
+))
