@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Francesca Scozzari <fscozzari@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>,  Francesca Scozzari <fscozzari@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -143,7 +143,7 @@ object OutputInterface {
     }
   }
 
-  def analyze(dir: String, klass: Int, method: Int, isNumerical: Boolean, isBaf: Boolean, domain: Int, wideningIndex: Int,
+  def analyze(dir: Path, klass: Int, method: Int, isNumerical: Boolean, isBaf: Boolean, domain: Int, wideningIndex: Int,
     narrowingIndex: Int, delay: Int, debug: Boolean): String = {
     val methods = getSootMethods(dir, klass)
     val selectedMethod = methods.get(method)
@@ -158,56 +158,66 @@ object OutputInterface {
       analyze(new JimpleMethod(selectedMethod), aDomain, wideningIndex, narrowingIndex, delay, debug)
   }
 
-  private def getScene(dir: String) = {
+  private def getScene(dir: Path) = {
     val scene = Scene.v()
-    scene.setSootClassPath(scene.defaultClassPath + java.io.File.pathSeparator + dir)
+    scene.loadBasicClasses()
+    scene.setSootClassPath(scene.defaultClassPath + java.io.File.pathSeparator + dir.toString)
     scene
   }
 
   def unzipJar(dir: String, jarFile: String, destDir: String) = {
-    val jar = new java.util.jar.JarFile(dir + java.io.File.separator + jarFile);
-    val enum = jar.entries();
+    val jar = new java.util.jar.JarFile(dir + java.io.File.separator + jarFile)
+    val enum = jar.entries()
     while (enum.hasMoreElements()) {
       val file = enum.nextElement(); //(java.util.jar.JarEntry)
-      val f = new java.io.File(destDir + java.io.File.separator + file.getName());
+      val f = new java.io.File(destDir + java.io.File.separator + file.getName())
       if (file.isDirectory()) { // if its a directory, create it
-        f.mkdir();
+        f.mkdir()
       } else {
         val is = jar.getInputStream(file); // get the input stream
         val fos = new java.io.FileOutputStream(f);
         while (is.available() > 0) { // write contents of 'is' to 'fos'
-          fos.write(is.read());
+          fos.write(is.read())
         }
-        fos.close();
-        is.close();
+        fos.close()
+        is.close()
       }
     }
   }
 
-  def getMethods(dir: String, klassIndex: Int) = {
+  def getMethods(dir: Path, klassIndex: Int) = {
     val scene = getScene(dir)
     val sootKlass = scene.loadClassAndSupport(getClasses(dir)(klassIndex))
-    sootKlass.setApplicationClass()
     sootKlass.getMethods().map(x => x.getName())
   }
 
-  private def getSootMethods(dir: String, klassIndex: Int) = {
+  private def getSootMethods(dir: Path, klassIndex: Int) = {
     val scene = getScene(dir)
     val sootKlass = scene.loadClassAndSupport(getClasses(dir)(klassIndex))
     sootKlass.setApplicationClass()
     sootKlass.getMethods()
   }
 
-  def getClasses(classPathField: String): Seq[String] = {
-    val rootPath = Paths.get(classPathField)
-    val fileProcessor = new ClassFileVisitor(rootPath)
-    if (Try(Files.walkFileTree(rootPath, fileProcessor)).isSuccess) {
-      // these two lines are a mess because Scala Swing does not play well with Java 1.7
-      fileProcessor.classNameList
-    } else Seq[String]()
+  def getClasses(dir: Path): Seq[String] = {
+    if (Files.isDirectory(dir)) {
+      val fileProcessor = new ClassFileVisitor(dir)
+      if (Try(Files.walkFileTree(dir, fileProcessor)).isSuccess) {
+        // these two lines are a mess because Scala Swing does not play well with Java 1.7
+        fileProcessor.classNameList
+      } else Seq[String]()
+    } else {
+      val classNames = scala.collection.mutable.SortedSet[String]()
+      val jar = new java.util.jar.JarFile(dir.toFile)
+      val enum = jar.entries()
+      while (enum.hasMoreElements()) {
+        val file = enum.nextElement().getName
+        if (file.endsWith(".class")) classNames += file stripSuffix ".class"
+      }
+      classNames.toSeq
+    }
   }
 
-  def getSootAbstraction(dir: String, klassIndex: Int, methodIndex: Int, isBaf: Boolean) = {
+  def getSootAbstraction(dir: Path, klassIndex: Int, methodIndex: Int, isBaf: Boolean) = {
     val myMethod = getSootMethods(dir, klassIndex).get(methodIndex)
     if (isBaf)
       new BafMethod(myMethod).toString
@@ -258,7 +268,7 @@ object OutputInterface {
       case e: IOException => "File not found"
     }
   }
-  
+
   def analyzeRandomStr(program: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean) = {
     val parser = RandomParser()
     val numericalDomain = NumericalDomains.values(domain).value
@@ -283,7 +293,7 @@ object OutputInterface {
       case e: IOException => "I/O error"
     }
   }
- 
+
   def analyzeFastModelStr(program: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean) = {
     try {
       val parser = FastParser()
