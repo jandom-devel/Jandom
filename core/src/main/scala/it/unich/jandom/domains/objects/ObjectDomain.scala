@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,6 +20,7 @@ package it.unich.jandom.domains.objects
 
 import it.unich.jandom.domains.CartesianFiberedDomain
 import it.unich.jandom.domains.CartesianFiberedProperty
+import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.objectmodels.ObjectModel
 
 /**
@@ -39,6 +40,8 @@ trait ObjectDomain[+OM <: ObjectModel] extends CartesianFiberedDomain {
    * The type of the fiber components corresponds to the type of the object model.
    */
   type FiberComponent = om.Type
+
+  val widenings = Seq(WideningDescription.default[Property])
 
   /**
    * The object model of this domain. An object model abstracts the details of the ways

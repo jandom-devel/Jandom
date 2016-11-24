@@ -1,6 +1,6 @@
 /**
- * Copyright 2013 Gianluca Amato
- * 
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -21,8 +21,22 @@ package it.unich.jandom.ui
 /**
  * A parameter value is a possible instance of a given enumerative parameter.
  * @tparam V the type of the instance
+ * @param value the value
  * @param name name of the value
  * @param description description of the value
  */
-case class ParameterValue[+V] (val value: V, val name: String, val description: String)
-   
+class ParameterValue[+V](val value: V, val name: String, val description: String)
+
+/**
+ * The companion object for ParameterValue. It contains factory methods
+ */
+object ParameterValue {
+  /**
+   * Builds a parameter value.
+   * @tparam V the type of the instance
+   * @param value the value
+   * @param name name of the value
+   * @param description description of the value
+   */
+  def apply[V](value: V, name: String, description: String) = new ParameterValue(value, name, description)
+}

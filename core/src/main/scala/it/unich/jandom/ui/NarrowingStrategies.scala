@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -24,13 +24,13 @@ import it.unich.jandom.targets.NarrowingStrategy._
  * The ParameterEnumeration for NarrowingStrategy.
  */
 object NarrowingStrategies extends ParameterEnumeration[Value] {
-	val name = "Narrowing Strategy"
-	val description = "This parameter specifies when and whether to build descending sequences during the analysis."
-	val values = Seq(
-		ParameterValue(None, "None","No narrowing is performed"),
-		ParameterValue(Separate, "Separate","Standard narrowing, where first all the ascendings steps are performed, then all descending steps."),
-		ParameterValue(Restart, "Restart", "Localized narrowing with Restart strategy, as described in the paper submitted to SAS 2013."),
-		ParameterValue(Continue, "Continue", "Localized narrowing with Continue strategy, as described in the paper submitted to SAS 2013.")
-	    )
-	val default = values(1)
+  val name = "Narrowing Strategy"
+  val description = "This parameter specifies when and whether to build descending sequences during the analysis."
+  val values = Seq(
+    ParameterValue(None, "None","No narrowing is performed"),
+    ParameterValue(Separate, "Separate","Standard narrowing, where first all the ascendings steps are performed, then all descending steps."),
+    ParameterValue(Restart, "Restart", "Localized narrowing with Restart strategy, as described in the paper submitted to SAS 2013."),
+    ParameterValue(Continue, "Continue", "Localized narrowing with Continue strategy, as described in the paper submitted to SAS 2013.")
+      )
+  val default = values(1)
 }

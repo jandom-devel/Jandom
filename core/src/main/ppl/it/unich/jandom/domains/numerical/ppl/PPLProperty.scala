@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -169,14 +169,14 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
   }
 
   def constraints = {
-    import collection.JavaConversions._
+    import scala.collection.JavaConversions._
 
     val cs = domain.minimized_constraints(pplobject)
     cs flatMap PPLUtils.fromPPLConstraint
   }
 
   def isPolyhedral = {
-    import collection.JavaConversions._
+    import scala.collection.JavaConversions._
     val cs = domain.minimized_constraints(pplobject)
     // we explicitly check if the object is empty since, in this case, it has a unsatisfiable
     // congruence.

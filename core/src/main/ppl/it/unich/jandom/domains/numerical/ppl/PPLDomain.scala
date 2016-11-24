@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,9 +18,13 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
+import it.unich.jandom.domains.DomainTransformation
+import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.domains.numerical.NumericalDomain
 import parma_polyhedra_library.By_Reference
 import parma_polyhedra_library.Coefficient
+import parma_polyhedra_library.Complexity_Class
+import parma_polyhedra_library.Congruence_System
 import parma_polyhedra_library.Constraint
 import parma_polyhedra_library.Constraint_System
 import parma_polyhedra_library.Degenerate_Element
@@ -29,10 +33,6 @@ import parma_polyhedra_library.Partial_Function
 import parma_polyhedra_library.Polyhedron
 import parma_polyhedra_library.Variable
 import parma_polyhedra_library.Variables_Set
-import it.unich.jandom.domains.DomainTransformation
-import parma_polyhedra_library.Complexity_Class
-import java.lang.reflect.Constructor
-import parma_polyhedra_library.Congruence_System
 
 /**
  * This is the domain of PPL properties.  It is able to represent (almost) any property
@@ -49,6 +49,8 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   type Property = PPLProperty[PPLNativeProperty]
 
   PPLInitializer
+
+  val widenings = Seq(WideningDescription.default[Property])
 
   /*
    * The class object corresponding to PPLNativeProperty

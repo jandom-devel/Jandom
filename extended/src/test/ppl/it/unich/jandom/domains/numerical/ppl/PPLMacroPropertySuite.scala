@@ -30,8 +30,8 @@ import parma_polyhedra_library.Octagonal_Shape_double
  * @author Gianluca Amato <g.amato@unich.it>
  */
 class PPLMacroPropertySuite extends FunSuite {
-  val octDomain: PPLDomainMacro[Octagonal_Shape_double] = PPLDomainMacro[Octagonal_Shape_double]
-  val boxDomain: PPLDomainMacro[Double_Box] = PPLDomainMacro[Double_Box]
+  val octDomain = PPLDomainMacro[Octagonal_Shape_double]
+  val boxDomain = PPLDomainMacro[Double_Box]
 
   val full = octDomain.top(3)
   val empty = octDomain.bottom(3)

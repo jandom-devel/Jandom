@@ -19,6 +19,8 @@
 package it.unich.jandom.domains.numerical
 
 import it.unich.jandom.domains.DomainTransformation
+import it.unich.jandom.domains.WideningDescription
+import it.unich.scalafix.Box
 
 /**
  * This class implements the reduced product of two abstract domains. It is not a
@@ -30,11 +32,19 @@ import it.unich.jandom.domains.DomainTransformation
  * @param dom2 second abstract domain
  * @param dom1Todom2 domain transformer from D1 to D2
  * @param dom2Todom1 domain transformer from D1 to D2
- * @author Gianluca Amato <gamato@unich.it>
- * @author Francesca Scozzari <fscozzari@unich.it>
+ * @author Gianluca Amato <gianluca.amato@unich.it>
+ * @author Francesca Scozzari <francesca.scozzari@unich.it>
  */
 class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val dom2: D2)(
       implicit val dom1Todom2: DomainTransformation[D1,D2], val dom2Todom1: DomainTransformation[D2,D1]) extends NumericalDomain {
+
+  val widenings = {
+    for (w1 <- dom1.widenings; w2 <- dom2.widenings) yield
+       WideningDescription(s"${w1.name} X ${w2.name}",s"Component-wise combination of the two widenings.",
+           Box { (a: Property, b: Property) =>
+             new Property( w1.box(a.p1, b.p1), w2.box(a.p2, b.p2) )
+           })
+  }
 
   private val d12 = dom1Todom2(dom1,dom2)
   private val d21 = dom2Todom1(dom2,dom1)

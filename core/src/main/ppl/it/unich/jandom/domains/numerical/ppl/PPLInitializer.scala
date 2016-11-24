@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,8 +19,7 @@
 package it.unich.jandom.domains.numerical.ppl
 
 import scala.sys.process.Process
-import it.unich.jandom.ui.NumericalDomains
-import it.unich.jandom.ui.ParameterValue
+
 import parma_polyhedra_library.Parma_Polyhedra_Library
 
 /**

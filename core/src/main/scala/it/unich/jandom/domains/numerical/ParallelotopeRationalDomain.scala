@@ -20,9 +20,9 @@ package it.unich.jandom.domains.numerical
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Try
-
 import breeze.linalg._
 import it.unich.jandom.domains.CachedTopBottom
+import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.utils.breeze.RationalForBreeze._
 import it.unich.jandom.utils.breeze.countNonZero
 import it.unich.jandom.utils.numberext.RationalExt
@@ -37,10 +37,12 @@ import spire.math.Rational
  * is `-1`. If `favorAxis` is `0`, axis are considered like all the other constraints
  *
  * @author Gianluca Amato <gianluca.amato@unich.it>
- * @author Francesca Scozzari <fscozzari@unich.it>
+ * @author Francesca Scozzari <francesca.scozzari@unich.it>
  * @author Marco Rubino <marco.rubino@unich.it>
  */
 class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDomain {
+
+  val widenings = Seq(WideningDescription.default[Property])
 
   /**
    * Build a non-empty parallelotope. If the parallelotope is not empty, the result is undetermined.

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,16 +18,17 @@
 
 package it.unich.jandom.domains.numerical
 
-import scala.collection.mutable.WeakHashMap
+import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.utils.numberext.RationalExt
+import it.unich.scalafix.Box
 
 /**
- * The most abstract numerical domain. It has a single element top element for each dimension.
+ * The most abstract numerical domain. It has a single top element for each dimension.
  * @author Gianluca Amato <gamato@unich.it>
  */
 object NumericalTopDomain extends NumericalDomain {
 
-  case class Property private[NumericalTopDomain](val dimension: Int) extends NumericalProperty[Property] {
+  case class Property private[NumericalTopDomain] (val dimension: Int) extends NumericalProperty[Property] {
     require(dimension >= 0)
 
     type Domain = NumericalTopDomain.type
@@ -48,19 +49,19 @@ object NumericalTopDomain extends NumericalDomain {
     def linearDisequality(lf: LinearForm) = this
 
     def minimize(lf: LinearForm) =
-      if (lf.homcoeffs.exists(! _.isZero))
+      if (lf.homcoeffs.exists(!_.isZero))
         RationalExt.NegativeInfinity
       else
         RationalExt(lf.known)
 
     def maximize(lf: LinearForm) =
-      if (lf.homcoeffs.exists(! _.isZero))
+      if (lf.homcoeffs.exists(!_.isZero))
         RationalExt.PositiveInfinity
       else
         RationalExt(lf.known)
 
     def frequency(lf: LinearForm) =
-      if (lf.homcoeffs.exists(! _.isZero))
+      if (lf.homcoeffs.exists(!_.isZero))
         Option.empty
       else
         Option(lf.known)
@@ -80,6 +81,9 @@ object NumericalTopDomain extends NumericalDomain {
     def top = this
     def mkString(vars: Seq[String]): String = "full"
   }
+
+  val widenings = Seq(
+    WideningDescription("default", "The trivial widening which just returns top.", Box.right[Property]))
 
   def top(n: Int) = Property(n)
   def bottom(n: Int) = Property(n)

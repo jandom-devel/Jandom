@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
+ * Copyright 2013, 2016 Jandom Team
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -21,16 +21,17 @@ package it.unich.jandom.targets.jvmsoot
 import scala.annotation.elidable
 import scala.annotation.elidable._
 
+import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.domains.objects.ObjectDomain
 import it.unich.jandom.targets.NumericCondition
-
+import it.unich.scalafix.Box
 import soot._
 import soot.jimple.Constant
 
 /**
  * An abstract frame for analysis of object properties. It depends on an analysis of class reachability
  * which determines whether it is possible to reach a class B from a class A.
- * @author Gianluca Amato <gamato@unich.it>
+ * @author Gianluca Amato <gianluca.amato@unich.it>
  * @author Luca Mangifesta
  * @param dom the basic object domain to use for the analysis
  * @param classAnalysis the analysis of class reachability
@@ -41,6 +42,9 @@ class SootFrameObjectDomain(val dom: ObjectDomain[SootObjectModel]) extends Soot
   def top(vars: Seq[Type]) = Property(dom.top(vars), List(vars.reverse: _*), Map())
 
   def bottom(vars: Seq[Type]) = Property(dom.bottom(vars), List(vars.reverse: _*), Map())
+
+  val widenings = for (w <- dom.widenings) yield WideningDescription(w.name, w.description,
+    Box { (a: Property, b: Property) => Property(w(a.prop, b.prop), a.stack, a.globals) })
 
   /**
    * This class represents a single abstract frame. It tries to support global variables, but it is a kind of hack.
@@ -202,8 +206,10 @@ class SootFrameObjectDomain(val dom: ObjectDomain[SootObjectModel]) extends Soot
 
     def connect(p: Property, common: Int): Property = Property(prop.connect(p.prop, common), p.stack.dropRight(common) ++ stack.drop(common), globals)
 
-    def widening(that: Property) = this union that
-
+    def widening(that: Property) = {
+      assert(stack == that.stack)
+      Property(prop widening that.prop, stack, globals)
+    }
     def narrowing(that: Property) = this intersection that
 
     def evalGlobal(o: Constant) = {

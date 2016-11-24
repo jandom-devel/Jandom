@@ -24,6 +24,8 @@ import it.unich.jandom.domains.DomainTransformation
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.numerical.NumericalProperty
 import parma_polyhedra_library.Polyhedron
+import it.unich.jandom.widenings.Widening
+import it.unich.scalafix.Box
 
 /**
  * This is the ancestor of all PPL-based macro-generated domains.
@@ -101,10 +103,45 @@ object PPLDomainMacro {
   def PPLDomainImpl[PPLType](c: Context)(implicit PPLTypeTag: c.WeakTypeTag[PPLType]): c.Expr[PPLDomainMacro[PPLType]] = {
     import c.universe._
 
-        val outputTree = q"""
+    val supportsCC76Narrowing = PPLTypeTag.tpe.member(TermName("CC76_narrowing_assign")) != NoSymbol
+
+    val widenings = for {
+      m <- PPLTypeTag.tpe.members
+      name = m.name
+      if name.toString.endsWith("_widening_assign")
+      wideningName = name.toString.stripSuffix("_widening_assign")
+    } yield q"""
+      WideningDescription($wideningName, "The PPL widening using the "+${name.toString}+" method",
+         Box.apply[Property] { (a: Property, b: Property) => {
+           val newpplobject = new $PPLTypeTag(a.pplobject)
+           newpplobject.upper_bound_assign(b.pplobject)
+           newpplobject.$m(a.pplobject, null)
+           new Property(newpplobject)
+         }
+      })
+   """
+
+    val narrowing = if (supportsCC76Narrowing)
+      q"""
+          def narrowing(that: ThisProperty): ThisProperty = {
+            val newpplobject = new $PPLTypeTag(pplobject)
+            newpplobject.CC76_narrowing_assign(pplobject)
+            new ThisProperty(newpplobject)
+          }
+       """
+    else
+      q"""
+          def narrowing(that: ThisProperty): ThisProperty = {
+            this
+          }
+      """
+
+    val outputTree = q"""
+      import it.unich.jandom.domains.WideningDescription
       import it.unich.jandom.domains.numerical.LinearForm
       import it.unich.jandom.domains.numerical.ppl._
       import it.unich.jandom.utils.numberext.RationalExt
+      import it.unich.scalafix.Box
 
       import spire.math.Rational
       import parma_polyhedra_library._
@@ -121,9 +158,7 @@ object PPLDomainMacro {
           new ThisProperty(newpplobject)
         }
 
-        def narrowing(that: ThisProperty): ThisProperty = {
-          this
-        }
+       $narrowing
 
         def union(that: ThisProperty): ThisProperty = {
           val newpplobject = new $PPLTypeTag(pplobject)
@@ -287,6 +322,8 @@ object PPLDomainMacro {
         }
 
         def apply(x: $PPLTypeTag): ThisProperty = new ThisProperty(x)
+
+        val widenings = Seq(..$widenings)
       }
 
       ThisDomain

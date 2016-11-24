@@ -29,7 +29,7 @@ trait DimensionFiberedDomain extends CartesianFiberedDomain {
   type FiberComponent = Unit
 
   type Property <: DimensionFiberedProperty[Property]
-  
+
   /**
    * Returns the top element of the given dimension.
    */

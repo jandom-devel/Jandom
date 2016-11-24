@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -23,12 +23,9 @@ import java.awt.GridBagConstraints
 import scala.swing._
 import scala.swing.ListView.Renderer
 
-import it.unich.jandom.narrowings.NoNarrowing
-import it.unich.jandom.ppfactories._
+import it.unich.jandom.ui.ParameterValue
 import it.unich.jandom.targets._
 import it.unich.jandom.ui._
-import it.unich.jandom.widenings.DefaultWidening
-
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
 
@@ -82,7 +79,7 @@ class ParametersPane extends GridBagPanel {
   def selectedObjectDomain = ObjectDomains.values(objectDomainComboBox.selection.index).value
 
   def setParameters[T <: Target[T]](parameters: Parameters[T]) {
-    parameters.setParameters(wideningComboBox.selection.index, narrowingComboBox.selection.index, 
+    parameters.setParameters(wideningComboBox.selection.index, narrowingComboBox.selection.index,
         delayModel.getValue().asInstanceOf[Double].toInt, debug.selected)
   }
 

@@ -43,6 +43,18 @@ final class PPLBoxDouble(val pplbox: Double_Box) extends NumericalProperty[PPLBo
     new PPLBoxDouble(newpplbox)
   }
 
+  /**
+   * The CC76 widening for two boxes.
+   * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
+   * @return the widening of the two abstract properties.
+   */
+  def CC76Widening(that: PPLBoxDouble): PPLBoxDouble = {
+    val newpplbox = new Double_Box(pplbox)
+    newpplbox.upper_bound_assign(that.pplbox)
+    newpplbox.CC76_widening_assign(pplbox, null)
+    new PPLBoxDouble(newpplbox)
+  }
+
   def narrowing(that: PPLBoxDouble): PPLBoxDouble = {
     val newpplbox = new Double_Box(that.pplbox)
     newpplbox.CC76_narrowing_assign(pplbox)
@@ -155,14 +167,14 @@ final class PPLBoxDouble(val pplbox: Double_Box) extends NumericalProperty[PPLBo
   }
 
   def constraints = {
-    import collection.JavaConversions._
+    import scala.collection.JavaConversions._
 
     val cs = pplbox.constraints()
     cs flatMap PPLUtils.fromPPLConstraint
   }
 
   def isPolyhedral = {
-    import collection.JavaConversions._
+    import scala.collection.JavaConversions._
     val cs = pplbox.constraints()
     cs forall PPLUtils.isRepresentableAsLinearForms
   }

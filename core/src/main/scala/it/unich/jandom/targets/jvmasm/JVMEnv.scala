@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,9 +19,8 @@
 package it.unich.jandom.targets.jvmasm
 
 import it.unich.jandom.domains.AbstractDomain
-import it.unich.jandom.narrowings.Narrowing
-import it.unich.jandom.widenings.Widening
 import it.unich.jandom.domains.AbstractProperty
+import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.targets.NumericCondition._
 
 /**
@@ -63,6 +62,8 @@ abstract class JVMEnv[Property <: JVMEnv[Property]] extends AbstractProperty[Pro
  */
 abstract class JVMEnvDomain extends AbstractDomain {
   type Property <: JVMEnv[Property]
+
+  val widenings = Seq(WideningDescription.default[Property])
 
   /**
    * Returns the top elements for the given number of locals

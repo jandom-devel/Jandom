@@ -1,4 +1,4 @@
-/* Copyright 2013 Gianluca Amato
+/** Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -7,7 +7,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -17,9 +17,9 @@
 
 package it.unich.jandom.ui
 
-import it.unich.jandom.domains.numerical._
 import scala.collection.mutable.Buffer
 import scala.util.Try
+import it.unich.jandom.domains.numerical._
 
 /**
  * The ParameterEnumeration for numerical domains.

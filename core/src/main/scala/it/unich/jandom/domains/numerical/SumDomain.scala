@@ -18,10 +18,13 @@
 
 package it.unich.jandom.domains.numerical
 
+import it.unich.jandom.domains.WideningDescription
+import it.unich.scalafix.Box
+
 /**
  * This is the trait which implements the sum of two abstract domains.
- * @author Gianluca Amato
- * @author Francesca Scozzari
+ * @author Gianluca Amato <gianluca.amato@unich.it>
+ * @author Francesca Scozzari <francesca.scozzari@unich.it>
  * @author Simone Di Nardo Di Maio
  */
 
@@ -32,6 +35,12 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
   val dom2: D2
 
   type Property <: Sum
+
+  val widenings = for (w1 <- dom1.widenings; w2 <- dom2.widenings)
+    yield WideningDescription(s"${w1.name} + ${w2.name}", s"Component-wise combination of the two widenings.",
+    Box { (a: Property, b: Property) =>
+      this(w1.box(a.p1, b.p1), w2.box(a.p2, b.p2))
+    })
 
   abstract class Sum extends NumericalProperty[Property] {
 

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -93,7 +93,7 @@ private[jandom] object PPLUtils {
    * @param vars the variables to use for the string form
    */
   def constraintsToString(cs: Constraint_System, vars: Seq[String]): String = {
-    import collection.JavaConversions._
+    import scala.collection.JavaConversions._
 
     val vs = new Variable_Stringifier {
       def stringify(x: Long) = vars(x.toInt)

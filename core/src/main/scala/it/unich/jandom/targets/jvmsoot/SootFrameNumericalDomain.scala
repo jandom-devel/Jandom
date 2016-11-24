@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
+ * Copyright 2013, 2016 Jandom Team
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -21,10 +21,12 @@ package it.unich.jandom.targets.jvmsoot
 import scala.annotation.elidable
 import scala.annotation.elidable._
 
+import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.targets.NumericCondition
 import it.unich.jandom.targets.NumericCondition._
+import it.unich.scalafix.Box
 import soot._
 import soot.baf.DoubleWordType
 import soot.baf.WordType
@@ -34,7 +36,7 @@ import spire.math.Rational
 /**
  * This class implements an abstract frame for Soot where only numerical variables are considered.
  * @param numdom the numerical domain to use for representing properties of numerical variables.
- * @author Gianluca Amato <gamato@unich.it>
+ * @author Gianluca Amato <gianluca.amato@unich.it>
  * @author Luca Mangifesta
  */
 class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDomain {
@@ -42,6 +44,9 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
   def top(types: Seq[Type]) = Property(numdom.top(types.size), List(types.reverse: _*))
 
   def bottom(types: Seq[Type]) = Property(numdom.bottom(types.size), List(types.reverse: _*))
+
+  val widenings = for (w <- numdom.widenings) yield WideningDescription(w.name, w.description,
+    Box { (a: Property, b: Property) => Property(w(a.prop, b.prop), a.stack) })
 
   /**
    * A simple helper method for the analogous constructor of abstract numerical frames.

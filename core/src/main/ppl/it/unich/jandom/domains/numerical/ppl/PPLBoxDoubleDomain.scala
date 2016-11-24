@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,9 +18,11 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
-import parma_polyhedra_library.Double_Box
-import parma_polyhedra_library.Degenerate_Element
+import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.domains.numerical.NumericalDomain
+import it.unich.scalafix.Box
+import parma_polyhedra_library.Degenerate_Element
+import parma_polyhedra_library.Double_Box
 
 /**
  * The domain for possibly opened box over doubles implemented within $PPL.
@@ -38,14 +40,19 @@ class PPLBoxDoubleDomain extends NumericalDomain {
 
   type Property = PPLBoxDouble
 
-  def top(n: Int): PPLBoxDouble = {
+  val widenings = Seq(
+    WideningDescription.default[Property],
+    WideningDescription("CC76", "The widening on boxes described in Cousot & Cousot '76",
+      Box { (a: Property, b: Property) => a CC76Widening b }))
+
+  def top(n: Int): Property = {
     val pplbox = new Double_Box(n, Degenerate_Element.UNIVERSE)
-    new PPLBoxDouble(pplbox)
+    new Property(pplbox)
   }
 
-  def bottom(n: Int): PPLBoxDouble = {
+  def bottom(n: Int): Property = {
     val pplbox = new Double_Box(n, Degenerate_Element.EMPTY)
-    new PPLBoxDouble(pplbox)
+    new Property(pplbox)
   }
 }
 

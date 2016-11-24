@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Jandom Team
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,8 +18,9 @@
 
 package it.unich.jandom.domains.numerical
 
-import it.unich.jandom.utils.numberext.RationalExt
 import it.unich.jandom.domains.CachedTopBottom
+import it.unich.jandom.domains.WideningDescription
+import it.unich.jandom.utils.numberext.RationalExt
 import spire.math.Rational
 
 /**
@@ -413,6 +414,8 @@ class BoxRationalDomain private extends NumericalDomain {
     else
       new Property(low, high, false)
   }
+  
+  val widenings = Seq(WideningDescription.default[Property])
 
   /**
    * Returns a box consisting of the single point.

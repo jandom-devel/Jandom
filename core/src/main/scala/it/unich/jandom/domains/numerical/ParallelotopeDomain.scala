@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -20,9 +20,9 @@ package it.unich.jandom.domains.numerical
 
 import scala.collection.mutable.ListBuffer
 import scala.util.Try
-
 import breeze.linalg._
 import it.unich.jandom.domains.CachedTopBottom
+import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.utils.breeze.countNonZero
 import it.unich.jandom.utils.numberext.RationalExt
 
@@ -30,10 +30,11 @@ import it.unich.jandom.utils.numberext.RationalExt
  * This is the abstract domain of parallelotopes as appears in the NSAD 2012 paper. It is written
  * using the Breeze Math library. It is not safe, due to rounding problem of arithmetic.
  *
- * @author Gianluca Amato <g.amato@unich.it>
- * @author Francesca Scozzari <fscozzari@unich.it>
+ * @author Gianluca Amato <gianluca.amato@unich.it>
+ * @author Francesca Scozzari <francesca.scozzari@unich.it>
  */
 class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
+  val widenings = Seq(WideningDescription.default[Property])
 
   /**
    * Build a non-empty parallelotope. If the parallelotope is not empty, the result is undetermined.

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,6 +19,7 @@
 package it.unich.jandom.domains.numerical
 
 import it.unich.jandom.domains.CachedTopBottom
+import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.utils.numberext.RationalExt
 import spire.math.Rational
 
@@ -476,6 +477,8 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
 
     override def hashCode: Int = 41 * (41 + low.hashCode) + high.hashCode
   }
+
+  val widenings = Seq(WideningDescription.default[Property])
 
   /**
    * Returns a normalized box with given bounds.
