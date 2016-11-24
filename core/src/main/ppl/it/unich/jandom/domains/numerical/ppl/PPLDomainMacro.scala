@@ -23,9 +23,7 @@ import scala.reflect.macros.blackbox.Context
 import it.unich.jandom.domains.DomainTransformation
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.utils.numberext.RationalExt
-import parma_polyhedra_library._
-import spire.math.Rational
+import parma_polyhedra_library.Polyhedron
 
 /**
  * This is the ancestor of all PPL-based macro-generated domains.
@@ -77,30 +75,21 @@ object PPLDomainMacro {
   /**
    * This is the implementation of the transformer method.
    */
-  def PPLTransformationImpl[PPLSource: c.WeakTypeTag, PPLDest: c.WeakTypeTag](c: Context): c.Expr[DomainTransformation[PPLDomainMacro[PPLSource], PPLDomainMacro[PPLDest]]] = {
+  def PPLTransformationImpl[PPLSource, PPLDest](c: Context)(implicit PPLSourceTypeTag: c.WeakTypeTag[PPLSource], PPLDestTypeTag: c.WeakTypeTag[PPLDest]) = {
     import c.universe._
 
-    val template = reify {
-      object PPLtoPPL extends DomainTransformation[PPLDomainMacro[Double_Box], PPLDomainMacro[C_Polyhedron]] {
-        def apply(src: PPLDomainMacro[Double_Box], dst: PPLDomainMacro[C_Polyhedron]): src.Property => dst.Property = { (x) =>
-          dst(new C_Polyhedron(x.pplobject))
+    val outputTree = q"""
+      import it.unich.jandom.domains.DomainTransformation
+      import parma_polyhedra_library._
+
+      object PPLtoPPL extends DomainTransformation[PPLDomainMacro[$PPLSourceTypeTag], PPLDomainMacro[$PPLDestTypeTag]] {
+        def apply(src: PPLDomainMacro[$PPLSourceTypeTag], dst: PPLDomainMacro[$PPLDestTypeTag]): src.Property => dst.Property = { (x) =>
+          dst(new $PPLDestTypeTag(x.pplobject))
         }
       }
-    }
 
-    val PPLSourceTypeSymbol = implicitly[c.WeakTypeTag[PPLSource]].tpe.typeSymbol
-    val PPLDestTypeSymbol = implicitly[c.WeakTypeTag[PPLDest]].tpe.typeSymbol
-
-    // Here we substitute the place-holders Double_Box and C_Polyhedron with the real types
-    val templateWithSubstitution = internal.substituteSymbols(
-      template.tree,
-      List(typeOf[Double_Box].typeSymbol, typeOf[C_Polyhedron].typeSymbol),
-      List(PPLSourceTypeSymbol, PPLDestTypeSymbol))
-
-    // Here we add the resulting domain as output of the tree
-    val outputTree = templateWithSubstitution match {
-      case Block(stats, expr) => Block(stats, Ident(TermName("PPLtoPPL")))
-    }
+      PPLtoPPL
+    """
 
     c.Expr[DomainTransformation[PPLDomainMacro[PPLSource], PPLDomainMacro[PPLDest]]](outputTree)
   }
@@ -109,25 +98,24 @@ object PPLDomainMacro {
    * This is the implementation of the `apply` method.
    * @tparam PPLType the PPL class of the numerical properties handled by this domain
    */
-  def PPLDomainImpl[PPLType: c.WeakTypeTag](c: Context): c.Expr[PPLDomainMacro[PPLType]] = {
+  def PPLDomainImpl[PPLType](c: Context)(implicit PPLTypeTag: c.WeakTypeTag[PPLType]): c.Expr[PPLDomainMacro[PPLType]] = {
     import c.universe._
-    import it.unich.jandom.domains.numerical.LinearForm
 
-    val classes = reify {
+        val outputTree = q"""
+      import it.unich.jandom.domains.numerical.LinearForm
+      import it.unich.jandom.domains.numerical.ppl._
+      import it.unich.jandom.utils.numberext.RationalExt
+
+      import spire.math.Rational
       import parma_polyhedra_library._
 
-      /*
-       * This is the generic class for PPL properties. The class actually implements boxes over doubles,
-       * but all references to `Double_Box` is changed by the macro and replaced by `PPLType`.
-       * @author Gianluca Amato <gamato@unich.it>
-       */
-      class ThisProperty(val pplobject: Double_Box) extends PPLPropertyMacro[ThisProperty, Double_Box] {
+      class ThisProperty(val pplobject: $PPLTypeTag) extends PPLPropertyMacro[ThisProperty, $PPLTypeTag] {
         type Domain = ThisDomain.type
 
         def domain = ThisDomain
 
         def widening(that: ThisProperty): ThisProperty = {
-          val newpplobject = new Double_Box(pplobject)
+          val newpplobject = new $PPLTypeTag(pplobject)
           newpplobject.upper_bound_assign(that.pplobject)
           newpplobject.widening_assign(pplobject, null)
           new ThisProperty(newpplobject)
@@ -138,42 +126,42 @@ object PPLDomainMacro {
         }
 
         def union(that: ThisProperty): ThisProperty = {
-          val newpplobject = new Double_Box(pplobject)
-          val x = new Double_Box(pplobject.space_dimension(), Degenerate_Element.EMPTY)
+          val newpplobject = new $PPLTypeTag(pplobject)
+          val x = new $PPLTypeTag(pplobject.space_dimension(), Degenerate_Element.EMPTY)
           newpplobject.upper_bound_assign(that.pplobject)
           new ThisProperty(newpplobject)
         }
 
         def intersection(that: ThisProperty): ThisProperty = {
-          val newpplobject = new Double_Box(pplobject)
+          val newpplobject = new $PPLTypeTag(pplobject)
           newpplobject.intersection_assign(that.pplobject)
           new ThisProperty(newpplobject)
         }
 
         def nonDeterministicAssignment(n: Int): ThisProperty = {
-          val newpplobject = new Double_Box(pplobject)
+          val newpplobject = new $PPLTypeTag(pplobject)
           newpplobject.unconstrain_space_dimension(new Variable(n))
           new ThisProperty(newpplobject)
         }
 
         def linearAssignment(n: Int, lf: LinearForm): ThisProperty = {
           val (le, den) = PPLUtils.toPPLLinearExpression(lf)
-          val newpplobject = new Double_Box(pplobject)
+          val newpplobject = new $PPLTypeTag(pplobject)
           newpplobject.affine_image(new Variable(n), le, den)
           new ThisProperty(newpplobject)
         }
 
         def linearInequality(lf: LinearForm): ThisProperty = {
           val (le, den) = PPLUtils.toPPLLinearExpression(lf)
-          val newpplobject = new Double_Box(pplobject)
+          val newpplobject = new $PPLTypeTag(pplobject)
           newpplobject.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_OR_EQUAL, new Linear_Expression_Coefficient(new Coefficient(0))))
           new ThisProperty(newpplobject)
         }
 
         def linearDisequality(lf: LinearForm): ThisProperty = {
           val (le, den) = PPLUtils.toPPLLinearExpression(lf)
-          val newpplobject1 = new Double_Box(pplobject)
-          val newpplobject2 = new Double_Box(pplobject)
+          val newpplobject1 = new $PPLTypeTag(pplobject)
+          val newpplobject2 = new $PPLTypeTag(pplobject)
           newpplobject1.refine_with_constraint(new Constraint(le, Relation_Symbol.LESS_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
           newpplobject2.refine_with_constraint(new Constraint(le, Relation_Symbol.GREATER_THAN, new Linear_Expression_Coefficient(new Coefficient(0))))
           newpplobject1.upper_bound_assign(newpplobject2)
@@ -231,13 +219,13 @@ object PPLDomainMacro {
         }
 
         def addVariable: ThisProperty = {
-          val newpplobject = new Double_Box(pplobject)
+          val newpplobject = new $PPLTypeTag(pplobject)
           newpplobject.add_space_dimensions_and_embed(1)
           new ThisProperty(newpplobject)
         }
 
         def delVariable(n: Int): ThisProperty = {
-          val newpplobject = new Double_Box(pplobject)
+          val newpplobject = new $PPLTypeTag(pplobject)
           val dims = new Variables_Set
           dims.add(new Variable(n))
           newpplobject.remove_space_dimensions(dims)
@@ -245,7 +233,7 @@ object PPLDomainMacro {
         }
 
         def mapVariables(rho: Seq[Int]): ThisProperty = {
-          val newpplobject = new Double_Box(pplobject)
+          val newpplobject = new $PPLTypeTag(pplobject)
           newpplobject.map_space_dimensions(PPLUtils.sequenceToPartialFunction(rho))
           new ThisProperty(newpplobject)
         }
@@ -283,37 +271,26 @@ object PPLDomainMacro {
       /*
        * This is the domain of macro based PPL objects.
        */
-      object ThisDomain extends PPLDomainMacro[PPLType] {
+      object ThisDomain extends PPLDomainMacro[$PPLTypeTag] {
         PPLInitializer
 
         type Property = ThisProperty
 
         def top(n: Int): ThisProperty = {
-          val pplobject = new Double_Box(n, Degenerate_Element.UNIVERSE)
+          val pplobject = new $PPLTypeTag(n, Degenerate_Element.UNIVERSE)
           new ThisProperty(pplobject)
         }
 
         def bottom(n: Int): ThisProperty = {
-          val pplobject = new Double_Box(n, Degenerate_Element.EMPTY)
+          val pplobject = new $PPLTypeTag(n, Degenerate_Element.EMPTY)
           new ThisProperty(pplobject)
         }
 
-        def apply(x: Double_Box): ThisProperty = new ThisProperty(x)
+        def apply(x: $PPLTypeTag): ThisProperty = new ThisProperty(x)
       }
-    }
 
-    val PPLTypeSymbol = implicitly[c.WeakTypeTag[PPLType]].tpe.typeSymbol
-
-    // Here we substitute the placeholder Double_Box symbol with the real type
-    val classesWithSubstitution = internal.substituteSymbols(
-      classes.tree,
-      List(typeOf[Double_Box].typeSymbol),
-      List(PPLTypeSymbol))
-
-    // Here we add the resulting domain as output of the tree
-    val outputTree = classesWithSubstitution match {
-      case Block(stats, expr) => Block(stats, Ident(TermName("ThisDomain")))
-    }
+      ThisDomain
+    """
 
     c.Expr[PPLDomainMacro[PPLType]](outputTree)
   }

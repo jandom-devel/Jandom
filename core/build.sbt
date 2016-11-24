@@ -13,6 +13,7 @@ libraryDependencies ++= Seq(
   "org.rogach" %% "scallop" % "2.0.3",
   "org.scala-lang.modules" %% "scala-swing" % "1.0.2",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+  "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   // ASM is included in the Soot Jar
   "soot" % "soot" % "2.5.0+git2" from "https://ssebuild.cased.de/nightly/soot/lib/soot-trunk.jar"
 )
