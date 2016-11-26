@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2014, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -21,9 +21,8 @@ package it.unich.jandom.targets.lts
 import it.unich.jandom.domains.DimensionFiberedProperty
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.targets._
-import it.unich.jandom.utils.Relation
+import it.unich.jandom.targets.parameters._
 import it.unich.scalafix.finite.GraphEquationSystem
-import it.unich.scalafix.lattice.Domain
 
 /**
  * The class for the target of Linear Transition Systems.
@@ -31,7 +30,7 @@ import it.unich.scalafix.lattice.Domain
  * @param transitions the transitions which makes the LTS
  * @param env the environment of the LTS
  * @param regions the regions which are part of the LTS description
- * @author Gianluca Amato <gamato@unich.it>
+ * @author Gianluca Amato <gianluca.amato@unich.it>
  */
 
 case class LTS(val name: String, val locations: IndexedSeq[Location], val transitions: Seq[Transition], val env: Environment, val regions: Seq[Region] = Seq()) extends Target[LTS] {
@@ -162,14 +161,14 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
     val widenings = locations map { l =>
       if (params.wideningLocation == WideningNarrowingLocation.All ||
         (params.wideningLocation == WideningNarrowingLocation.Loop && isJoinNode(l)))
-        Some(params.wideningFactory(l))
+        Some(params.wideningAssignment(l))
       else
         None
     }
     val narrowings = locations map { l =>
       if (params.narrowingLocation == WideningNarrowingLocation.All ||
         (params.narrowingLocation == WideningNarrowingLocation.Loop && isJoinNode(l)))
-        Some(params.narrowingFactory(l))
+        Some(params.narrowingAssignment(l))
       else
         None
     }

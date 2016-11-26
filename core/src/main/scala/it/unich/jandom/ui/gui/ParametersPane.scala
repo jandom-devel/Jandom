@@ -26,6 +26,8 @@ import scala.swing.ListView.Renderer
 import it.unich.jandom.ui.ParameterValue
 import it.unich.jandom.targets._
 import it.unich.jandom.ui._
+import it.unich.jandom.targets.parameters.Widenings._
+import it.unich.jandom.targets.parameters.Narrowings._
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
 
@@ -78,9 +80,14 @@ class ParametersPane extends GridBagPanel {
 
   def selectedObjectDomain = ObjectDomains.values(objectDomainComboBox.selection.index).value
 
-  def setParameters[T <: Target[T]](parameters: Parameters[T]) {
-    parameters.setParameters(wideningComboBox.selection.index, narrowingComboBox.selection.index,
-        delayModel.getValue().asInstanceOf[Double].toInt, debug.selected)
+  def setParameters[T <: Target[T]](params: Parameters[T]) {
+    params.wideningScope = WideningScopes.values(wideningComboBox.selection.index).value
+    params.narrowingStrategy = NarrowingStrategies.values(narrowingComboBox.selection.index).value
+    if (delay != 0) {
+      params.widening = DelayedWidening(DefaultWidening, delayModel.getValue().asInstanceOf[Double].toInt)
+    }
+    params.narrowing = DelayedNarrowing(TrivialNarrowing, 2)
+    if (debug.selected) params.debugWriter = new java.io.StringWriter
   }
 
 }

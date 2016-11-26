@@ -1,6 +1,6 @@
 /**
- * Copyright 2013 Gianluca Amato
- * 
+ * Copyright 2014, 2016 Gianluca Amato <gianluca.amato@unich.it>
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -16,25 +16,17 @@
  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package it.unich.jandom.ppfactories
-
-import org.scalatest.FunSpec
-
-import it.unich.jandom.targets.MockTarget
+package it.unich.jandom.targets.parameters
 
 /**
- * Test suite for constant "per program point" factories.
- * @author Gianluca Amato <gamato@unich.it>
+ * This parameter specifies which kind of iterations strategy to use for the analysis:
+ * - Kleene: compute all state transformers at the same time (Kleene non-chaotic iteration)
+ * - WorkList: simple worklist-based iteration strategy
+ * At the moment, this is only supported by the LTS target.
  */
-class ConstantFactorySuite extends FunSpec  {
-  describe("Constant Factory") {
-    it ("should return the same object each time it is called")  {
-      val dwf: PPFactory[MockTarget,String] = "prova"
-      val d0 = dwf(0)
-      val d1= dwf(0)
-      val d2= dwf(2)
-      assertResult(d0) { d1 }
-      assertResult(d1) { d2 }
-    }
-  }
+object IterationStrategy extends Enumeration {
+  type IterationStrategy = Value
+
+  val Kleene = Value
+  val Worklist = Value
 }

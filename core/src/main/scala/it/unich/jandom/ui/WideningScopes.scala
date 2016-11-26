@@ -18,7 +18,7 @@
 
 package it.unich.jandom.ui
 
-import it.unich.jandom.targets.WideningScope._
+import it.unich.jandom.targets.parameters.WideningScope._
 
 /**
  * The ParameterEnumeration for WideningScope.

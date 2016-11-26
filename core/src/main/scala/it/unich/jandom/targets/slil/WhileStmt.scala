@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -21,6 +21,7 @@ package it.unich.jandom.targets.slil
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.targets.Annotation
 import it.unich.jandom.targets.NumericCondition
+import it.unich.jandom.targets.parameters._
 
 /**
  * The class for a while statement. Each while statement has a corresponding program
@@ -42,15 +43,16 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
   var lastBodyResult: NumericalProperty[_] = null
 
   override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property = {
-    import it.unich.jandom.targets.WideningScope._
-    import it.unich.jandom.targets.NarrowingStrategy._
+
+    import WideningScope._
+    import NarrowingStrategy._
 
     // Increase nesting level since we are entering a loop
     params.nestingLevel += 1
 
     // Determines widening/narrowing operators to use
-    val widening = params.wideningFactory((this, 1))
-    val narrowing = params.narrowingFactory((this, 1))
+    val widening = params.wideningAssignment((this, 1))
+    val narrowing = params.narrowingAssignment((this, 1))
 
     // Determines initial values for the analysis, depending on the calling phase
     var (bodyResult, invariant) =

@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -18,26 +18,21 @@
 
 package it.unich.jandom.targets
 
-import it.unich.jandom.narrowings.DefaultNarrowing
-import it.unich.jandom.narrowings.Narrowing
-import it.unich.jandom.ppfactories.PPFactory
-import it.unich.jandom.widenings.DefaultWidening
-import it.unich.jandom.widenings.Widening
-import it.unich.jandom.ui.WideningScopes
+import it.unich.jandom.targets.parameters._
+import it.unich.jandom.targets.parameters.Narrowings._
+import it.unich.jandom.targets.parameters.Widenings._
 import it.unich.jandom.ui.NarrowingStrategies
-import it.unich.jandom.ppfactories.DelayedWideningFactory
-import it.unich.jandom.ppfactories.DelayedNarrowingFactory
-import it.unich.jandom.narrowings.NoNarrowing
+import it.unich.jandom.ui.WideningScopes
+import it.unich.scalafix.BoxAssignment
 
 /**
  * This class is used to provide parameters for analyzers. Each instance of `Parameters` is
  * connected to a specific target and domain. Other parameters may be changed freely.
  * @tparam Tgt the type of the target
- * @param tgt the target for the analysis
- * @author Gianluca Amato <gamato@unich.it>
+ * @author Gianluca Amato <gianluca.amato@unich.it>
  *
  */
-abstract class Parameters[Tgt <: Target[Tgt]]  {
+abstract class Parameters[Tgt <: Target[Tgt]] {
   /**
    * This is the domain to use for the analysis. It need to be compatible with the target type.
    */
@@ -48,15 +43,51 @@ abstract class Parameters[Tgt <: Target[Tgt]]  {
    */
   type Property = domain.Property
 
-  /**
-   * The widening factory used in the analysis. Defaults to the factory for the standard domain widening.
-   */
-  var wideningFactory: PPFactory[Tgt#ProgramPoint, Widening] = DefaultWidening
+  private var _widening: Widening = DefaultWidening
+
+  // we cannot initialize here to `_widening.get(domain)` since domain is initialized later
+  private var _wideningAssignment: BoxAssignment[Tgt#ProgramPoint, domain.Property] = null
 
   /**
-   * The narrowing factory used in the analysis. Defaults to the standard domain narrowing.
+   * The widening specification used in the analysis. Defaults to the standard widening.
    */
-  var narrowingFactory: PPFactory[Tgt#ProgramPoint, Narrowing] = DefaultNarrowing
+  def widening: Widening = _widening
+
+  def widening_=(w: Widening) = {
+    _widening = w
+    _wideningAssignment = widening.get(domain)
+  }
+
+  /**
+   * The widening assignment corresponding to the current widening specification.
+   */
+  def wideningAssignment = {
+    if (_wideningAssignment == null) _wideningAssignment = _widening.get(domain)
+    _wideningAssignment
+  }
+
+  private var _narrowing: Narrowing = DefaultNarrowing
+
+  // we cannot initialize here to `_narrowing.get(domain)` since domain is initialized later
+  private var _narrowingAssignment: BoxAssignment[Tgt#ProgramPoint, domain.Property] = null
+
+  /**
+   * The narrowing used in the analysis. Defaults to the standard narrowing.
+   */
+  def narrowing: Narrowing = _narrowing
+
+  def narrowing_=(n: Narrowing) = {
+    _narrowing = n
+    _narrowingAssignment = narrowing.get(domain)
+  }
+
+  /**
+   * The narrowing assignment corresponding to the current narrowing specification.
+   */
+  def narrowingAssignment = {
+    if (_narrowingAssignment == null) _narrowingAssignment = _narrowing.get(domain)
+    _narrowingAssignment
+  }
 
   /**
    * This parameter determines whether results are saved for each program point or only for widening points.
@@ -73,17 +104,17 @@ abstract class Parameters[Tgt <: Target[Tgt]]  {
    * by the SLSL target.
    */
   var wideningScope = WideningScope.Output
-  
+
   /**
    * This parameter determines where to put widenings.
    */
   var wideningLocation = WideningNarrowingLocation.Loop
-  
+
   /**
    * This parameter determines where to put narrowings.
    */
   var narrowingLocation = WideningNarrowingLocation.Loop
-  
+
   /**
    * This parameter determine the interlacing strategy between narrowing and widening
    */
@@ -93,7 +124,7 @@ abstract class Parameters[Tgt <: Target[Tgt]]  {
    * This parameter specify the strategy used to compute data-flow equations.
    */
   var iterationStrategy = IterationStrategy.Worklist
-  
+
   /**
    * If it is true, computes an io semantic
    */
@@ -122,15 +153,5 @@ abstract class Parameters[Tgt <: Target[Tgt]]  {
   def log(msg: String) {
     debugWriter.write(" " * nestingLevel * 3)
     debugWriter.write(msg)
-  }
-  
-  def setParameters[T <: Target[T]](wideningIndex:Int, narrowingIindex:Int, delay:Int, debug:Boolean) {
-    wideningScope = WideningScopes.values(wideningIndex).value
-    narrowingStrategy = NarrowingStrategies.values(narrowingIindex).value
-    if (delay != 0) {
-      wideningFactory = DelayedWideningFactory(DefaultWidening, delay)
-    }
-    narrowingFactory = DelayedNarrowingFactory(NoNarrowing, 2)
-    if (debug) debugWriter = new java.io.StringWriter
   }
 }

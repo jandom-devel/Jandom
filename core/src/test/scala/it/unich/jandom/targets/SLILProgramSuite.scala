@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -20,16 +20,17 @@ package it.unich.jandom.targets
 
 import org.scalatest.FunSuite
 
+import NumericCondition._
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.parsers.RandomParser
-
-import NumericCondition._
-import slil._
+import it.unich.jandom.targets.parameters.NarrowingStrategy
+import it.unich.jandom.targets.parameters.WideningScope
+import it.unich.jandom.targets.slil._
 
 /**
  * Test suite for SLIL programs.
- * @author Gianluca Amato <gamato@unich.it>
+ * @author Gianluca Amato <gianluca.amato@unich.it>
  *
  */
 class SLILProgramSuite extends FunSuite {
@@ -50,13 +51,13 @@ class SLILProgramSuite extends FunSuite {
   test("input vs output widening") {
     val source = """
       localwidening = function() {
-    		i = 0
-    		while (TRUE) {
+        i = 0
+        while (TRUE) {
               tag(0)
-    		  if (brandom())
-    		     i = 1
-    		  else
-    		     i = -1
+          if (brandom())
+             i = 1
+          else
+             i = -1
             }
       }
     """

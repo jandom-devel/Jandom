@@ -32,9 +32,14 @@ trait AbstractDomain {
   type Property <: AbstractProperty[Property]
 
   /**
+   * Returns the default widening of the domain. It should correspond to the widening method of
+   * the ``it.unich.jandom.domains.AbstractProperty`` class.
+   */
+  def defaultWidening = widenings.head.box
+
+  /**
    * A non-empty set of widenings supported by the abstract domain. The first element is supposed to be
-   * the standard widening and should correspond to the widening method of the ``it.unich.jandom.domains.AbstractProperty``
-   * class.
+   * the default widening.
    */
   def widenings: Seq[WideningDescription[Property]]
 

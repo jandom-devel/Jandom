@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -23,9 +23,6 @@ import scala.reflect.macros.blackbox.Context
 import it.unich.jandom.domains.DomainTransformation
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.numerical.NumericalProperty
-import parma_polyhedra_library.Polyhedron
-import it.unich.jandom.widenings.Widening
-import it.unich.scalafix.Box
 
 /**
  * This is the ancestor of all PPL-based macro-generated domains.

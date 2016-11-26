@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>,  Francesca Scozzari <fscozzari@unich.it>
+ * Copyright 2013, 2016 Jandom Team
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -32,20 +32,22 @@ import org.objectweb.asm.tree.MethodNode
 
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.objects.ObjectDomainFactory
+import it.unich.jandom.targets.parameters.Widenings._
+import it.unich.jandom.targets.parameters.Narrowings._
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.parsers.RandomParser
-import it.unich.jandom.ppfactories.MemoizingFactory
 import it.unich.jandom.targets._
 import it.unich.jandom.targets.jvmasm._
 import it.unich.jandom.targets.jvmsoot._
 import it.unich.jandom.targets.lts._
 import it.unich.jandom.targets.slil._
-
 import soot.Scene
 import soot.toolkits.graph.Block
 
 /**
  * An output interface is a collection of methods for implementing an external interface.
+ * @author Gianluca Amato <gianluca.amato@unich.it>
+ * @author Francesca Scozzari <francesca.scozzari@unich.it>
  */
 object OutputInterface {
 
@@ -92,35 +94,26 @@ object OutputInterface {
   def getIRTypeTip = "Type of intermediate representation to use"
   def getAnalysisTypeTip = "Choose between an analysis of numerical properties or object-related properties"
 
+  def setParameters[T <: Target[T]](params: Parameters[T], wideningIndex:Int, narrowingIindex:Int, delay:Int, debug:Boolean) {
+    params.wideningScope = WideningScopes.values(wideningIndex).value
+    params.narrowingStrategy = NarrowingStrategies.values(narrowingIindex).value
+    if (delay != 0) {
+      params.widening = DelayedWidening(DefaultWidening, delay)
+    }
+    params.narrowing = DelayedNarrowing(TrivialNarrowing, 2)
+    if (debug) params.debugWriter = new java.io.StringWriter
+  }
+
   /**
-   * Analyze a class using Baf.
+   * Analyze a class using Soot.
    * @param method the method to be analyzed
    * @param domain the abstract domain to be used (either numerical or object)
-   * @param widening the widening strategy
-   * @param narrowing the narrowing strategy
+   * @param wideningIndex the widening strategy
+   * @param narrowingIndex the narrowing strategy
    * @param delay the widening delay
    * @param debug is true when the debug is active
    * @return a string with the program annotated with the analysis result
    */
-
-  private def setParameters[T <: SootCFG[T, Block]](tMethod: T, aDomain: T#DomainBase, wideningIndex: Int,
-    narrowingIndex: Int, delay: Int, debug: Boolean) = {
-    val params = new Parameters[T] { val domain = aDomain }
-    params.setParameters(wideningIndex, narrowingIndex, delay, debug)
-    params.wideningFactory = MemoizingFactory(tMethod)(params.wideningFactory)
-    params.narrowingFactory = MemoizingFactory(tMethod)(params.narrowingFactory)
-    val inte = new TopSootInterpretation[T, params.type](params)
-    params.interpretation = Some(inte)
-    params
-  }
-
-  private def setParameters(tMethod: AsmMethod, aDomain: JVMEnvFixedFrameDomain, wideningIndex: Int,
-    narrowingIndex: Int, delay: Int, debug: Boolean) = {
-    val params = new Parameters[AsmMethod] { val domain = aDomain }
-    params.setParameters(wideningIndex, narrowingIndex, delay, debug)
-    params
-  }
-
   private def analyze[T <: SootCFG[T, Block]](method: SootCFG[T, Block], domain: Any, wideningIndex: Int,
     narrowingIndex: Int, delay: Int, debug: Boolean): String = {
     try {
@@ -132,7 +125,10 @@ object OutputInterface {
         case domain: ObjectDomainFactory => new SootFrameObjectDomain(domain(om))
       }
       val tMethod = method.asInstanceOf[T]
-      val params = setParameters[T](tMethod, sootDomain, wideningIndex, narrowingIndex, delay, debug)
+      val params = new Parameters[T] { val domain = sootDomain }
+      setParameters(params, wideningIndex, narrowingIndex, delay, debug)
+      val inte = new TopSootInterpretation[T, params.type](params)
+      params.interpretation = Some(inte)
       val ann = tMethod.analyze(params)
       tMethod.mkString(params)(ann)
     } catch {
@@ -243,13 +239,14 @@ object OutputInterface {
     getASMMethodsList(dir, klassName) map { _.name }
   }
 
-  def analyzeASM(dir: String, klassName: String, methodIndex: Int, domain: Int, widening: Int,
-    narrowing: Int, delay: Int, debug: Boolean) = {
+  def analyzeASM(dir: String, klassName: String, methodIndex: Int, domain: Int, wideningIndex: Int,
+    narrowingIndex: Int, delay: Int, debug: Boolean) = {
     try {
       val numericalDomain = NumericalDomains.values(domain).value
-      val aDomain = new JVMEnvFixedFrameDomain(numericalDomain)
+      val jvmDomain = new JVMEnvFixedFrameDomain(numericalDomain)
       val method = new AsmMethod(getASMMethodsList(dir, klassName).get(methodIndex))
-      val params = setParameters(method, aDomain, widening, narrowing, delay, debug)
+      val params = new Parameters[AsmMethod] { val domain = jvmDomain }
+      setParameters(params, wideningIndex, narrowingIndex, delay, debug)
       val ann = method.analyze(params)
       method.mkString(ann)
     } catch {
@@ -275,7 +272,7 @@ object OutputInterface {
     val result = parser.parseProgram(program) match {
       case parser.Success(program, _) =>
         val params = new Parameters[SLILTarget] { val domain = numericalDomain }
-        params.setParameters(widening, narrowing, delay, debug)
+        setParameters(params, widening, narrowing, delay, debug)
         val ann = program.analyze(params)
         params.debugWriter.toString + program.mkString(ann)
       case parser.NoSuccess(msg, next) =>
@@ -302,7 +299,7 @@ object OutputInterface {
       val result = parser.parse(program) match {
         case parser.Success(program, _) =>
           val params = new Parameters[LTS] { val domain = numericalDomain }
-          params.setParameters(widening, narrowing, delay, debug)
+          setParameters(params, widening, narrowing, delay, debug)
           val ann = program.analyze(params)
           val grafo = program.toDot
           (grafo, params.debugWriter.toString + program.mkString(ann) )

@@ -26,12 +26,10 @@ import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.ParallelotopeRationalDomain
 import it.unich.jandom.domains.numerical.ProductDomain
 import it.unich.jandom.domains.numerical.ppl.PPLDomain
-import it.unich.jandom.narrowings.DefaultNarrowing
 import it.unich.jandom.parsers.FastParser
-import it.unich.jandom.ppfactories._
-import it.unich.jandom.ppfactories.PPFactory.ConstantFactory
 import it.unich.jandom.targets.lts.LTS
-import it.unich.jandom.widenings.DefaultWidening
+import it.unich.jandom.targets.parameters.Narrowings._
+import it.unich.jandom.targets.parameters.Widenings._
 import parma_polyhedra_library.C_Polyhedron
 
 /**
@@ -68,8 +66,8 @@ object JandomParallelotopeBench extends App {
     println("WIDENINGS: " + program.locations.filter(program.isJoinNode).map(_.name).mkString(", "))
 
     val params1 = new targets.Parameters[LTS] { val domain = new ProductDomain(BoxRationalDomain(), ParallelotopeRationalDomain(-1)) }
-    params1.wideningFactory = DelayedWideningFactory(DefaultWidening, 1)
-    params1.narrowingFactory = DelayedNarrowingFactory(DefaultNarrowing, 1)
+    params1.widening = DelayedWidening(DefaultWidening, 1)
+    params1.narrowing = DelayedNarrowing(DefaultNarrowing, 1)
     //params1.debugWriter = new java.io.PrintWriter(System.out)
     program.analyze(params1) // warmup JVM
     //params1.debugWriter.flush()
@@ -79,8 +77,8 @@ object JandomParallelotopeBench extends App {
     val tann1 = System.currentTimeMillis - t1
 
     val params2 = new targets.Parameters[LTS] { val domain = BoxRationalDomain() }
-    params2.wideningFactory = DelayedWideningFactory(DefaultWidening, 1)
-    params2.narrowingFactory = DelayedNarrowingFactory(DefaultNarrowing, 1)
+    params2.widening = DelayedWidening(DefaultWidening, 1)
+    params2.narrowing = DelayedNarrowing(DefaultNarrowing, 1)
     // params2.debugWriter = new java.io.PrintWriter(System.out)
     program.analyze(params2) // warmup JVM
     //params2.debugWriter.flush()
@@ -90,8 +88,8 @@ object JandomParallelotopeBench extends App {
     val tann2 = System.currentTimeMillis - t2
 
     val params3 = new targets.Parameters[LTS] { val domain = ParallelotopeRationalDomain(1) }
-    params3.wideningFactory = DelayedWideningFactory(DefaultWidening, 1)
-    params3.narrowingFactory = DelayedNarrowingFactory(DefaultNarrowing, 1)
+    params3.widening = DelayedWidening(DefaultWidening, 1)
+    params3.narrowing = DelayedNarrowing(DefaultNarrowing, 1)
     //params6Bis.debugWriter = new java.io.PrintWriter(System.out)
     program.analyze(params2) // warmup JVM
     //params6Bis.debugWriter.flush()

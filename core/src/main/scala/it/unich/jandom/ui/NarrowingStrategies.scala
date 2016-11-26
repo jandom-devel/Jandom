@@ -18,7 +18,7 @@
 
 package it.unich.jandom.ui
 
-import it.unich.jandom.targets.NarrowingStrategy._
+import it.unich.jandom.targets.parameters.NarrowingStrategy._
 
 /**
  * The ParameterEnumeration for NarrowingStrategy.

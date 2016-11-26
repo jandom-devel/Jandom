@@ -1,6 +1,6 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>, Francesca Scozzari <fscozzari@unich.it>
- *
+ * Copyright 2013, 2016 Jandom Team
+ * 
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -22,17 +22,15 @@ import scala.collection.mutable.Queue
 
 import it.unich.jandom.targets.Annotation
 import it.unich.jandom.targets.Target
-
 import soot.toolkits.graph.DirectedGraph
-import soot.util.Chain
 
 /**
  * This is a generic analyzer for control flow graphs. It uses the `Soot` library and exploits F-bounded
  * polymorphism to ensure type safety.
  * @tparam Node the type of the nodes for the control flow graph.
  * @tparam Tgt the real class we are endowing with the ControlFlowGraph quality.
- * @author Gianluca Amato <gamato@unich.it>
- * @author Francesca Scozzari <fscozzari@unich.it>
+ * @author Gianluca Amato <gianluca.amato@unich.it>
+ * @author Francesca Scozzari <francesca.scozzari@unich.it>
  */
 abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extends Target[Tgt] {
   import scala.collection.JavaConversions._
@@ -142,7 +140,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
           params.log(s"join $succ : ${ann(succ)} with $out")
           val succval: params.Property = if (ordering.lteq(succ, node)) {
             params.log(s" widening")
-            val widening = params.wideningFactory(node)
+            val widening = params.wideningAssignment(node)
             widening(ann(succ), out)
           } else
             ann(succ) union out
@@ -174,7 +172,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
         params.log(s"narrow $succ : ${ann(succ)} with $newinput ")
         // this may probably cause an infinite loop
         val succval = if (ordering.lteq(succ, node)) {
-          val narrowing = params.narrowingFactory(node)
+          val narrowing = params.narrowingAssignment(node)
           narrowing(ann(succ), newinput)
         } else
           newinput

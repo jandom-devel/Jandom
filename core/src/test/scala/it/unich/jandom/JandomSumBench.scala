@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -18,7 +18,8 @@
 
 package it.unich.jandom
 
-import java.io.{ File, FileReader }
+import java.io.File
+import java.io.FileReader
 
 import it.unich.jandom.domains.DimensionFiberedProperty
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
@@ -27,11 +28,8 @@ import it.unich.jandom.domains.numerical.ParallelotopeDomain
 import it.unich.jandom.domains.numerical.SumIntParallelotopeDomain
 import it.unich.jandom.domains.numerical.ppl.PPLDomain
 import it.unich.jandom.parsers.FastParser
-import it.unich.jandom.ppfactories._
-import it.unich.jandom.ppfactories.PPFactory.ConstantFactory
 import it.unich.jandom.targets.lts.LTS
-import it.unich.jandom.widenings.DefaultWidening
-
+import it.unich.jandom.targets.parameters.Widenings._
 import parma_polyhedra_library.C_Polyhedron
 
 /**
@@ -69,7 +67,7 @@ object JandomSumBench extends App {
     println("WIDENINGS: " + program.locations.filter(program.isJoinNode).map(_.name).mkString(", "))
 
     val params = new targets.Parameters[LTS] { val domain = BoxDoubleDomain(false) }
-    params.wideningFactory = DelayedWideningFactory(DefaultWidening, 3) // needed for parallelotopes
+    params.widening = DelayedWidening(DefaultWidening, 3) // needed for parallelotopes
     program.analyze(params) // warmup JVM
 
     val t1 = System.currentTimeMillis
@@ -77,7 +75,7 @@ object JandomSumBench extends App {
     val tann1 = System.currentTimeMillis - t1
 
     val params2 = new targets.Parameters[LTS] { val domain = SumIntParallelotopeDomain() }
-    params2.wideningFactory = DelayedWideningFactory(DefaultWidening, 3) // needed for parallelotopes
+    params2.widening = DelayedWidening(DefaultWidening, 3) // needed for parallelotopes
     //params2.debugWriter = new java.io.PrintWriter(System.out)
     program.analyze(params2) // warmup JVM
     //params2.debugWriter.flush()
@@ -87,7 +85,7 @@ object JandomSumBench extends App {
     val tann2 = System.currentTimeMillis - t2
 
     val params3 = new targets.Parameters[LTS] { val domain = ParallelotopeDomain() }
-    params3.wideningFactory = DelayedWideningFactory(DefaultWidening, 3) // needed for parallelotopes
+    params3.widening = DelayedWidening(DefaultWidening, 3) // needed for parallelotopes
     //params3.debugWriter = new java.io.PrintWriter(System.out)
 
     program.analyze(params3) // warmup JVM

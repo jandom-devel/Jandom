@@ -1,5 +1,5 @@
 /**
- * Copyright 2014, 2016 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -18,16 +18,15 @@
 
 package it.unich.jandom
 
-import java.io.{ File, FileReader }
+import java.io.File
+import java.io.FileReader
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
-import it.unich.jandom.narrowings.DefaultNarrowing
 import it.unich.jandom.parsers.FastParser
-import it.unich.jandom.ppfactories._
-import it.unich.jandom.ppfactories.PPFactory.ConstantFactory
-import it.unich.jandom.targets.IterationStrategy
 import it.unich.jandom.targets.lts.LTS
-import it.unich.jandom.widenings.DefaultWidening
+import it.unich.jandom.targets.parameters.IterationStrategy
+import it.unich.jandom.targets.parameters.Narrowings._
+import it.unich.jandom.targets.parameters.Widenings._
 
 /**
  * Example program using ''Jandom'' to analyze the Alice benchmarks and
@@ -47,8 +46,8 @@ object JandomFasterBench extends App {
     val params = new targets.Parameters[LTS] { val domain = BoxDoubleDomain(false) }
 
     // We specify some parameters for the analysis, although these are the standard ones.
-    params.wideningFactory = DefaultWidening
-    params.narrowingFactory = DefaultNarrowing
+    params.widening = DefaultWidening
+    params.narrowing = DefaultNarrowing
     params.iterationStrategy = IterationStrategy.Worklist
     //params.debugWriter = new java.io.PrintWriter(System.out)
     program.analyze(params) // warmup JVM

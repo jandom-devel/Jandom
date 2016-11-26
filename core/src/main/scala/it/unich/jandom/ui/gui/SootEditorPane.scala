@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -18,28 +18,26 @@
 
 package it.unich.jandom.ui.gui
 
-import java.awt.event.{ InputEvent, KeyEvent }
+import java.awt.event.InputEvent
+import java.awt.event.KeyEvent
 import java.io.File
 import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
+
 import scala.collection.JavaConversions._
 import scala.swing._
+import scala.swing.event.ActionEvent
 import scala.swing.event.EditDone
 import scala.swing.event.SelectionChanged
+import scala.util.Try
+
 import it.unich.jandom._
-import it.unich.jandom.ppfactories.MemoizingFactory
 import it.unich.jandom.targets.Parameters
 import it.unich.jandom.targets.jvmsoot._
+import it.unich.jandom.ui.OutputInterface
 import javax.swing.KeyStroke
 import soot.Scene
 import soot.SootMethod
-import javax.swing.JFileChooser
-import scala.swing.event.EditDone
-import scala.swing.event.SelectionEvent
-import scala.swing.event.ActionEvent
-import scala.util.Try
-import it.unich.jandom.ui.OutputInterface
-import soot.SootClass
 
 /**
  * This is the pane used to select the class and method to analyze for
@@ -49,11 +47,10 @@ import soot.SootClass
  */
 
 class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
-  import frame.Mode._
- 
+
   private val sootScene = Scene.v()
   sootScene.loadBasicClasses()
-  
+
   private val editorPane = new EditorPane
   editorPane.editable = false
   private val classPathField = new TextField(new File("examples/Java").getCanonicalPath())
@@ -145,8 +142,8 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
       } else
         classPathField.foreground = java.awt.Color.red
 
-    case SelectionChanged(`classComboBox`) =>      
-      val klass = sootScene.loadClassAndSupport(classComboBox.selection.item)   
+    case SelectionChanged(`classComboBox`) =>
+      val klass = sootScene.loadClassAndSupport(classComboBox.selection.item)
       val methodList = klass.getMethods()
       // these two lines are a mess because Scala Swing does not play well with Java 1.7
       val comboModel = ComboBox.newConstantModel(methodList).asInstanceOf[javax.swing.ComboBoxModel[SootMethod]]
@@ -214,8 +211,6 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               val bafMethod = method.asInstanceOf[BafMethod]
               val params = new Parameters[BafMethod] { val domain = sootDomain }
               frame.parametersPane.setParameters(params)
-              params.wideningFactory = MemoizingFactory(bafMethod)(params.wideningFactory)
-              params.narrowingFactory = MemoizingFactory(bafMethod)(params.narrowingFactory)
               val inte = new TopSootInterpretation[BafMethod, params.type](params)
               params.interpretation = Some(inte)
               val ann = bafMethod.analyze(params)
@@ -224,8 +219,6 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
               val jimpleMethod = method.asInstanceOf[JimpleMethod]
               val params = new Parameters[JimpleMethod] { val domain = sootDomain }
               frame.parametersPane.setParameters(params)
-              params.wideningFactory = MemoizingFactory(jimpleMethod)(params.wideningFactory)
-              params.narrowingFactory = MemoizingFactory(jimpleMethod)(params.narrowingFactory)
               val inte = new TopSootInterpretation[JimpleMethod, params.type](params)
               params.interpretation = Some(inte)
               val ann = jimpleMethod.analyze(params)
