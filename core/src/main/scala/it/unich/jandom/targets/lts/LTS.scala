@@ -161,14 +161,14 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
     val widenings = locations map { l =>
       if (params.wideningLocation == WideningNarrowingLocation.All ||
         (params.wideningLocation == WideningNarrowingLocation.Loop && isJoinNode(l)))
-        Some(params.wideningAssignment(l))
+        Some(params.widening(l))
       else
         None
     }
     val narrowings = locations map { l =>
       if (params.narrowingLocation == WideningNarrowingLocation.All ||
         (params.narrowingLocation == WideningNarrowingLocation.Loop && isJoinNode(l)))
-        Some(params.narrowingAssignment(l))
+        Some(params.narrowing(l))
       else
         None
     }

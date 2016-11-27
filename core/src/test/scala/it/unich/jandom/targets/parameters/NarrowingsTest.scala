@@ -21,7 +21,7 @@ package it.unich.jandom.targets.parameters
 import org.scalatest.FunSpec
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
-import it.unich.jandom.targets.parameters.Narrowings._
+import it.unich.jandom.targets.parameters.NarrowingSpecs._
 
 /**
  * A test for Narrowing hierarchy.

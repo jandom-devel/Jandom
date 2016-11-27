@@ -18,22 +18,24 @@
 
 package it.unich.jandom.targets.parameters
 
+import scala.language.implicitConversions
+
 import it.unich.jandom.domains.AbstractDomain
 import it.unich.scalafix.Box
 
 /**
- * This object contains the Widening class and its subclasses. They are used
+ * This object contains the WideningSpec class and its subclasses. They are used
  * to specify which kind of widening to use for the analyses.
  * @author Gianluca Amato <gianluca.amato@unich.it>
  */
-object Widenings {
+object WideningSpecs {
 
   /**
-   * An  object of the Widening class is a specification for the widening to use in the
+   * An  object of the WideningSpec class is a specification for the widening to use in the
    * analysis. Each object has a get method which, once provided with an abstract domain,
    * provides the correct widening in the form of a box.
    */
-  sealed abstract class Widening {
+  sealed abstract class WideningSpec {
     /**
      * Returns the box corresponding to the specification of this object.
      */
@@ -43,7 +45,7 @@ object Widenings {
   /**
    * This specifies the default widening of an abstract domain.
    */
-  case object DefaultWidening extends Widening {
+  case object DefaultWidening extends WideningSpec {
     def get(dom: AbstractDomain) = dom.defaultWidening
   }
 
@@ -52,14 +54,23 @@ object Widenings {
    * this is not formally a real narrowing since it may lead to non-terminating
    * computations.
    */
-  case object UpperBoundWidening extends Widening {
+  case object UpperBoundWidening extends WideningSpec {
     def get(dom: AbstractDomain) = Box.upperBound[dom.Property](dom.ScalaFixDomain)
   }
 
   /**
    * This specifies to delay the application of the `base` widening for `d` steps.
    */
-  case class DelayedWidening(base: Widening, d: Int) extends Widening {
-    def get(dom: AbstractDomain) = Box.cascade(UpperBoundWidening.get(dom), d, base.get(dom))
+  case class DelayedWidening(base: WideningSpec, d: Int) extends WideningSpec {
+    def get(dom: AbstractDomain) = if (d > 0) Box.cascade(UpperBoundWidening.get(dom), d, base.get(dom)) else base.get(dom)
   }
+
+  /**
+   * This specified a widening given its name
+   */
+  case class NamedWidening(name: String) extends WideningSpec {
+    def get(dom: AbstractDomain) = dom.widening(name)
+  }
+
+  implicit def stringToNameWidening(name: String): WideningSpec = NamedWidening(name)
 }

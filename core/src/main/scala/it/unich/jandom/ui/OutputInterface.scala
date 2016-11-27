@@ -32,8 +32,8 @@ import org.objectweb.asm.tree.MethodNode
 
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.objects.ObjectDomainFactory
-import it.unich.jandom.targets.parameters.Widenings._
-import it.unich.jandom.targets.parameters.Narrowings._
+import it.unich.jandom.targets.parameters.WideningSpecs._
+import it.unich.jandom.targets.parameters.NarrowingSpecs._
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.parsers.RandomParser
 import it.unich.jandom.targets._
@@ -43,6 +43,7 @@ import it.unich.jandom.targets.lts._
 import it.unich.jandom.targets.slil._
 import soot.Scene
 import soot.toolkits.graph.Block
+import it.unich.scalafix.Box
 
 /**
  * An output interface is a collection of methods for implementing an external interface.
@@ -97,9 +98,7 @@ object OutputInterface {
   def setParameters[T <: Target[T]](params: Parameters[T], wideningIndex:Int, narrowingIindex:Int, delay:Int, debug:Boolean) {
     params.wideningScope = WideningScopes.values(wideningIndex).value
     params.narrowingStrategy = NarrowingStrategies.values(narrowingIindex).value
-    if (delay != 0) {
-      params.widening = DelayedWidening(DefaultWidening, delay)
-    }
+    params.widening = DelayedWidening(DefaultWidening, delay)
     params.narrowing = DelayedNarrowing(TrivialNarrowing, 2)
     if (debug) params.debugWriter = new java.io.StringWriter
   }

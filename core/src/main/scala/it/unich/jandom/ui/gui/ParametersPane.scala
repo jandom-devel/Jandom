@@ -26,10 +26,11 @@ import scala.swing.ListView.Renderer
 import it.unich.jandom.ui.ParameterValue
 import it.unich.jandom.targets._
 import it.unich.jandom.ui._
-import it.unich.jandom.targets.parameters.Widenings._
-import it.unich.jandom.targets.parameters.Narrowings._
+import it.unich.jandom.targets.parameters.WideningSpecs._
+import it.unich.jandom.targets.parameters.NarrowingSpecs._
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
+import it.unich.scalafix.Box
 
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)
@@ -83,9 +84,8 @@ class ParametersPane extends GridBagPanel {
   def setParameters[T <: Target[T]](params: Parameters[T]) {
     params.wideningScope = WideningScopes.values(wideningComboBox.selection.index).value
     params.narrowingStrategy = NarrowingStrategies.values(narrowingComboBox.selection.index).value
-    if (delay != 0) {
-      params.widening = DelayedWidening(DefaultWidening, delayModel.getValue().asInstanceOf[Double].toInt)
-    }
+    val delay = delayModel.getValue().asInstanceOf[Double].toInt
+    params.widening = DelayedWidening(DefaultWidening, delay)
     params.narrowing = DelayedNarrowing(TrivialNarrowing, 2)
     if (debug.selected) params.debugWriter = new java.io.StringWriter
   }

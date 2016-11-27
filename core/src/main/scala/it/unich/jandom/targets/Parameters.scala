@@ -19,8 +19,8 @@
 package it.unich.jandom.targets
 
 import it.unich.jandom.targets.parameters._
-import it.unich.jandom.targets.parameters.Narrowings._
-import it.unich.jandom.targets.parameters.Widenings._
+import it.unich.jandom.targets.parameters.NarrowingSpecs._
+import it.unich.jandom.targets.parameters.WideningSpecs._
 import it.unich.jandom.ui.NarrowingStrategies
 import it.unich.jandom.ui.WideningScopes
 import it.unich.scalafix.BoxAssignment
@@ -34,7 +34,7 @@ import it.unich.scalafix.BoxAssignment
  */
 abstract class Parameters[Tgt <: Target[Tgt]] {
   /**
-   * This is the domain to use for the analysis. It need to be compatible with the target type.
+   * This is the domain to use for the analysis. It needs to be compatible with the target type.
    */
   val domain: Tgt#DomainBase
 
@@ -43,50 +43,55 @@ abstract class Parameters[Tgt <: Target[Tgt]] {
    */
   type Property = domain.Property
 
-  private var _widening: Widening = DefaultWidening
-
-  // we cannot initialize here to `_widening.get(domain)` since domain is initialized later
-  private var _wideningAssignment: BoxAssignment[Tgt#ProgramPoint, domain.Property] = null
+  // we cannot initialize here to `domain.defaultWidening` since domain is initialized later
+  private var _widening: BoxAssignment[Tgt#ProgramPoint, domain.Property] = null
 
   /**
-   * The widening specification used in the analysis. Defaults to the standard widening.
+   * The current widening returned as a box assignment.
    */
-  def widening: Widening = _widening
-
-  def widening_=(w: Widening) = {
-    _widening = w
-    _wideningAssignment = widening.get(domain)
+  def widening: BoxAssignment[Tgt#ProgramPoint, domain.Property] = {
+    if (_widening == null)
+      _widening = domain.defaultWidening
+    _widening
   }
 
   /**
-   * The widening assignment corresponding to the current widening specification.
+   * Set the widening starting from a box assignment.
    */
-  def wideningAssignment = {
-    if (_wideningAssignment == null) _wideningAssignment = _widening.get(domain)
-    _wideningAssignment
+  def widening_=(box: BoxAssignment[Tgt#ProgramPoint, domain.Property]): Unit = {
+    _widening = box
   }
 
-  private var _narrowing: Narrowing = DefaultNarrowing
+  /**
+   * Set the widening starting from a widening specification.
+   */
+  def widening_=(wspec: WideningSpec): Unit = {
+    _widening = wspec.get(domain)
+  }
 
   // we cannot initialize here to `_narrowing.get(domain)` since domain is initialized later
-  private var _narrowingAssignment: BoxAssignment[Tgt#ProgramPoint, domain.Property] = null
+  private var _narrowing: BoxAssignment[Tgt#ProgramPoint, domain.Property] = null
 
   /**
-   * The narrowing used in the analysis. Defaults to the standard narrowing.
+   * The current narrowing, returned as a box assignment.
    */
-  def narrowing: Narrowing = _narrowing
-
-  def narrowing_=(n: Narrowing) = {
-    _narrowing = n
-    _narrowingAssignment = narrowing.get(domain)
+  def narrowing = {
+    if (_narrowing == null) _narrowing = DefaultNarrowing.get(domain)
+    _narrowing
   }
 
   /**
-   * The narrowing assignment corresponding to the current narrowing specification.
+   * Set the narrowing starting from a box assignment.
    */
-  def narrowingAssignment = {
-    if (_narrowingAssignment == null) _narrowingAssignment = _narrowing.get(domain)
-    _narrowingAssignment
+  def narrowing_=(box: BoxAssignment[Tgt#ProgramPoint, domain.Property]): Unit = {
+    _narrowing = box
+  }
+
+  /**
+   * Set the widening starting from a narrowing specification.
+   */
+  def narrowing_=(nspec: NarrowingSpec): Unit = {
+    _narrowing = nspec.get(domain)
   }
 
   /**

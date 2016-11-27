@@ -20,9 +20,9 @@ package it.unich.jandom
 
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.targets.parameters.NarrowingStrategy
-import it.unich.jandom.targets.parameters.Narrowings._
+import it.unich.jandom.targets.parameters.NarrowingSpecs._
 import it.unich.jandom.targets.parameters.WideningScope
-import it.unich.jandom.targets.parameters.Widenings._
+import it.unich.jandom.targets.parameters.WideningSpecs._
 import it.unich.jandom.targets.slil.SLILTarget
 
 /**

@@ -1,6 +1,6 @@
 /**
  * Copyright 2013, 2016 Jandom Team
- * 
+ *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
           params.log(s"join $succ : ${ann(succ)} with $out")
           val succval: params.Property = if (ordering.lteq(succ, node)) {
             params.log(s" widening")
-            val widening = params.wideningAssignment(node)
+            val widening = params.widening(node)
             widening(ann(succ), out)
           } else
             ann(succ) union out
@@ -172,7 +172,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
         params.log(s"narrow $succ : ${ann(succ)} with $newinput ")
         // this may probably cause an infinite loop
         val succval = if (ordering.lteq(succ, node)) {
-          val narrowing = params.narrowingAssignment(node)
+          val narrowing = params.narrowing(node)
           narrowing(ann(succ), newinput)
         } else
           newinput

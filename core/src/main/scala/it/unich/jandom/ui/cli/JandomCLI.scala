@@ -21,7 +21,7 @@ package it.unich.jandom.ui.cli
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.parsers.RandomParser
 import it.unich.jandom.targets.Parameters
-import it.unich.jandom.targets.parameters.Narrowings._
+import it.unich.jandom.targets.parameters.NarrowingSpecs._
 import it.unich.jandom.targets.slil.SLILTarget
 
 /**

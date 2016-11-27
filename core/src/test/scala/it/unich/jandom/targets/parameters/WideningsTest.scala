@@ -21,7 +21,7 @@ package it.unich.jandom.targets.parameters
 import org.scalatest.FunSuite
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
-import it.unich.jandom.targets.parameters.Widenings._
+import it.unich.jandom.targets.parameters.WideningSpecs._
 
 /**
  * A test for the Widening hierarchy.
@@ -41,7 +41,7 @@ class WideningsTest extends FunSuite {
 
   test("delayed widening for boxes") {
     val d1 = BoxDouble(Array(0), Array(1))
-    val wd = new DelayedWidening(DefaultWidening, 2).get(BoxDouble)
+    val wd = DelayedWidening(DefaultWidening, 2).get(BoxDouble)
     val d2 = BoxDouble(Array(1), Array(2))
     val d3 = wd(d1, d2)
     assertResult(BoxDouble(Array(0), Array(2))) { d3 }
@@ -55,9 +55,18 @@ class WideningsTest extends FunSuite {
 
   test("delayed widening with 0 delay") {
     val d1 = BoxDouble(Array(0), Array(1))
-    val wd = new DelayedWidening(DefaultWidening, 0).get(BoxDouble)
+    val wd = DelayedWidening(DefaultWidening, 0).get(BoxDouble)
     val d2 = BoxDouble(Array(1), Array(2))
     val d3 = wd(d1, d2)
     assertResult(BoxDouble(Array(0), Array(Double.PositiveInfinity))) { d3 }
+  }
+
+  test("named widenings") {
+    val d1 = BoxDouble(Array(0), Array(1))
+    val d2 = BoxDouble(Array(1), Array(2))
+    val wd = NamedWidening("default").get(BoxDouble)
+    assertResult(BoxDouble(Array(0), Array(Double.PositiveInfinity))) { wd(d1,d2) }
+    val wd2: WideningSpec = "default"
+    assertResult(BoxDouble(Array(0), Array(Double.PositiveInfinity))) { wd2.get(BoxDouble)(d1,d2) }
   }
 }

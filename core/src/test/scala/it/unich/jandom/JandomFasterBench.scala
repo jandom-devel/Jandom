@@ -25,8 +25,10 @@ import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.targets.parameters.IterationStrategy
-import it.unich.jandom.targets.parameters.Narrowings._
-import it.unich.jandom.targets.parameters.Widenings._
+import it.unich.jandom.targets.parameters.NarrowingSpecs._
+import it.unich.jandom.targets.parameters.WideningSpecs._
+import it.unich.jandom.domains.numerical.ppl.PPLDomainMacro
+import parma_polyhedra_library.C_Polyhedron
 
 /**
  * Example program using ''Jandom'' to analyze the Alice benchmarks and
@@ -43,7 +45,7 @@ object JandomFasterBench extends App {
     val parsed = FastParser().parse(source)
     source.close()
     val program = parsed.get
-    val params = new targets.Parameters[LTS] { val domain = BoxDoubleDomain(false) }
+    val params = new targets.Parameters[LTS] { val domain = PPLDomainMacro[C_Polyhedron] }
 
     // We specify some parameters for the analysis, although these are the standard ones.
     params.widening = DefaultWidening

@@ -28,8 +28,8 @@ import it.unich.jandom.domains.numerical.ProductDomain
 import it.unich.jandom.domains.numerical.ppl.PPLDomain
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.targets.lts.LTS
-import it.unich.jandom.targets.parameters.Narrowings._
-import it.unich.jandom.targets.parameters.Widenings._
+import it.unich.jandom.targets.parameters.NarrowingSpecs._
+import it.unich.jandom.targets.parameters.WideningSpecs._
 import parma_polyhedra_library.C_Polyhedron
 
 /**

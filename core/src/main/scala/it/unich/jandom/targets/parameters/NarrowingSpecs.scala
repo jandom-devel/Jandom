@@ -22,18 +22,18 @@ import it.unich.jandom.domains.AbstractDomain
 import it.unich.scalafix.Box
 
 /**
- * This object contains the Narrowing class and its subclasses. They are used
+ * This object contains the NarrowingSpec class and its subclasses. They are used
  * to specify which kind of narrowing to use for the analyses.
  * @author Gianluca Amato <gianluca.amato@unich.it>
  */
-object Narrowings {
+object NarrowingSpecs {
 
   /**
-   * An  object of the Narrowing class is a specification for the narrowing to use in th
+   * An  object of the NarrowingSpec class is a specification for the narrowing to use in th
    * analysis. Each object has a get method which, once provided with an abstract domain,
    * provides the correct narrowing in the form of a box.
    */
-  sealed abstract class Narrowing {
+  sealed abstract class NarrowingSpec {
     /**
      * Returns the box corresponding to the specification of this object.
      */
@@ -43,14 +43,14 @@ object Narrowings {
   /**
    * This specifies the default narrowing of an abstract domain.
    */
-  case object DefaultNarrowing extends Narrowing {
+  case object DefaultNarrowing extends NarrowingSpec {
     def get(dom: AbstractDomain) = Box { (a: dom.Property, b: dom.Property) => a narrowing b }
   }
 
   /**
    * This specifies the trivial narrowing which never improves results.
    */
-  case object TrivialNarrowing extends Narrowing {
+  case object TrivialNarrowing extends NarrowingSpec {
     def get(dom: AbstractDomain) = Box.left[dom.Property]
   }
 
@@ -58,14 +58,14 @@ object Narrowings {
    * This always returns its right argument. Therefore, this is not formally a
    * real widening since it may lead to non-terminating computations.
    */
-  case object LowerBoundNarrowing extends Narrowing {
+  case object LowerBoundNarrowing extends NarrowingSpec {
     def get(dom: AbstractDomain) = Box.right[dom.Property]
   }
 
   /**
    * This specifies to delay the application of the `base` widening for `d` steps.
    */
-  case class DelayedNarrowing(base: Narrowing, d: Int) extends Narrowing {
+  case class DelayedNarrowing(base: NarrowingSpec, d: Int) extends NarrowingSpec {
     def get(dom: AbstractDomain) = base.get(dom).delayed(d)
   }
 }

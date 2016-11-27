@@ -38,6 +38,11 @@ trait AbstractDomain {
   def defaultWidening = widenings.head.box
 
   /**
+   * Returns the widening with the given name.
+   */
+  def widening(name: String) = widenings.find ( _.name == name ).get.box
+
+  /**
    * A non-empty set of widenings supported by the abstract domain. The first element is supposed to be
    * the default widening.
    */
