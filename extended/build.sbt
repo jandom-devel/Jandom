@@ -15,14 +15,27 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   }
 }
 
-//*** Cappi plugin
-
-cappiSettings
-
 //*** Eclipse plugin
+
+EclipseKeys.createSrc := EclipseCreateSrc.ValueSet()
+
+EclipseKeys.configurations += config("jmh")
 
 EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE17)
 
 EclipseKeys.eclipseOutput := Some("target.eclipse")
 
 incOptions := incOptions.value.withLogRecompileOnMacro(false)
+
+//*** JMH Plugin
+
+enablePlugins(JmhPlugin)
+
+run in Jmh <<= (run in Jmh) dependsOn (compile in Jmh)
+
+// We prefer to change resourceDirectories instead of resourceDirectory so that directories do not
+// appear in the Eclipse project.
+resourceDirectories in Jmh := ((baseDirectory in ThisBuild).value / "core" / "src" / "test" / "resources") +:
+  ( (managedResourceDirectories in Jmh).value ++ (unmanagedResourceDirectories in Jmh).value )
+
+dependencyClasspath in Jmh := (fullClasspath in Test).value

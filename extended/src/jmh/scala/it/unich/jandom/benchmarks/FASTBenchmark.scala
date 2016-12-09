@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Gianluca Amato <gamato@unich.it>
+ * Copyright 2015, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,8 +18,6 @@
 
 package it.unich.jandom.benchmarks
 
-import com.google.caliper.SimpleBenchmark
-
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.targets.Parameters
 import it.unich.jandom.targets.lts.LTS
@@ -27,11 +25,14 @@ import it.unich.jandom.targets.lts.Location
 import it.unich.scalafix.Box.apply
 import it.unich.scalafix.FixpointSolver._
 import it.unich.scalafix.finite.FiniteFixpointSolver
+import org.openjdk.jmh.annotations._
 
 /**
  * This is a program which analyzes the Alice benchmarks with different settings and compares the execution time.
  */
-class FASTBenchmark extends SimpleBenchmark with FASTLoader {
+@State(Scope.Thread)
+@Warmup(iterations = 5)
+class FASTBenchmark extends FASTLoader {
 
   val dom = BoxDoubleDomain()
 
@@ -40,58 +41,50 @@ class FASTBenchmark extends SimpleBenchmark with FASTLoader {
   val narrowingBox = { (x: dom.Property, y: dom.Property) => x narrowing y }
   val CC77 = FiniteFixpointSolver.CC77[Location, dom.Property](Solver.WorkListSolver, wideningBox, narrowingBox)
 
-  def timeLTS(reps: Int) {
-    for (_ <- 1 to reps) {
-      for (lts <- ltss) {
-        val params = new Parameters[LTS] { val domain = dom }
-        val ann = lts.analyze(params)
-      }
+  @Benchmark
+  def timeLTS() {
+    val params = new Parameters[LTS] { val domain = dom }
+    for (lts <- ltss) lts.analyze(params)
+  }
+
+  @Benchmark
+  def timeEQSKleene() {
+    for (lts <- ltss) {
+      val eqs = lts.toEQS(dom)
+      FiniteFixpointSolver(eqs, CC77.copy(solver = Solver.KleeneSolver))
+    }
+
+  }
+
+  @Benchmark
+  def timeEQSRoundRobin() {
+    for (lts <- ltss) {
+      val eqs = lts.toEQS(dom)
+      FiniteFixpointSolver(eqs, CC77.copy(solver = Solver.RoundRobinSolver))
     }
   }
 
-  def timeEQSKleene(reps: Int) {
-    for (_ <- 1 to reps) {
-      for (lts <- ltss) {
-        val eqs = lts.toEQS(dom)
-        val ann = FiniteFixpointSolver(eqs, CC77.copy(solver = Solver.KleeneSolver))
-      }
+  @Benchmark
+  def timeEQSDefault() {
+    for (lts <- ltss) {
+      val eqs = lts.toEQS(dom)
+      FiniteFixpointSolver(eqs, CC77)
     }
   }
 
-  def timeEQSRoundRobin(reps: Int) {
-    for (_ <- 1 to reps) {
-      for (lts <- ltss) {
-        val eqs = lts.toEQS(dom)
-        val ann = FiniteFixpointSolver(eqs, CC77.copy(solver = Solver.RoundRobinSolver))
-      }
+  @Benchmark
+  def timeEQSLocalized() {
+    for (lts <- ltss) {
+      val eqs = lts.toEQS(dom)
+      FiniteFixpointSolver(eqs, CC77.copy(boxscope = BoxScope.Localized))
     }
   }
 
-  def timeEQSDefault(reps: Int) {
-    for (_ <- 1 to reps) {
-      for (lts <- ltss) {
-        val eqs = lts.toEQS(dom)
-        val ann = FiniteFixpointSolver(eqs, CC77)
-      }
+  @Benchmark
+  def timeEQSMixedLocalized() {
+    for (lts <- ltss) {
+      val eqs = lts.toEQS(dom)
+      FiniteFixpointSolver(eqs, CC77.copy(boxscope = BoxScope.Localized, boxstrategy = BoxStrategy.Warrowing))
     }
   }
-
-  def timeEQSLocalized(reps: Int) {
-    for (_ <- 1 to reps) {
-      for (lts <- ltss) {
-        val eqs = lts.toEQS(dom)
-        val ann = FiniteFixpointSolver(eqs, CC77.copy(boxscope = BoxScope.Localized))
-      }
-    }
-  }
-
-  def timeEQSMixedLocalized(reps: Int) {
-    for (_ <- 1 to reps) {
-      for (lts <- ltss) {
-        val eqs = lts.toEQS(dom)
-        val ann = FiniteFixpointSolver(eqs, CC77.copy(boxscope = BoxScope.Localized, boxstrategy = BoxStrategy.Warrowing))
-      }
-    }
-  }
-
 }
