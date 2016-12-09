@@ -124,6 +124,8 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    * The analyzer. At the moment, it implements a work-list based analysis.
    */
   def analyzeFromAnnotation(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): Annotation[ProgramPoint, params.Property] = {
+    val widening = params.widening.copy
+    val narrowing = params.narrowing.copy
     val annEdge = HashMap[Edge, params.Property]()
     val taskList = Queue[ProgramPoint](graph.getHeads: _*)
 
@@ -140,8 +142,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
           params.log(s"join $succ : ${ann(succ)} with $out")
           val succval: params.Property = if (ordering.lteq(succ, node)) {
             params.log(s" widening")
-            val widening = params.widening(node)
-            widening(ann(succ), out)
+            widening(node)(ann(succ), out)
           } else
             ann(succ) union out
           if (succval > ann(succ)) {
@@ -172,8 +173,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
         params.log(s"narrow $succ : ${ann(succ)} with $newinput ")
         // this may probably cause an infinite loop
         val succval = if (ordering.lteq(succ, node)) {
-          val narrowing = params.narrowing(node)
-          narrowing(ann(succ), newinput)
+          narrowing(node)(ann(succ), newinput)
         } else
           newinput
         params.log(s"result $succval\n")
