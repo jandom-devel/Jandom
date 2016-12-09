@@ -7,7 +7,7 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "2.2.9" % "test",
   "org.spire-math" %% "spire" % "0.12.0",
   "org.scalanlp" %% "breeze" % "0.12",
-  "it.unich.scalafix" %% "scalafix" % "0.5.0",
+  "it.unich.scalafix" %% "scalafix" % "0.5.1",
   // for using native linear algebra libraries
   // "org.scalanlp" %% "breeze-natives" % "0.12",
   "org.rogach" %% "scallop" % "2.0.3",
