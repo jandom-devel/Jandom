@@ -116,7 +116,7 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
   /**
    * Converts an LTS into an equation system, given a numerical domain.
    */
-  def toEQS(dom: NumericalDomain): GraphEquationSystem[Location, dom.Property, Either[Transition, Location]] = {
+  override def toEQS(dom: NumericalDomain): GraphEquationSystem[Location, dom.Property, Either[Transition, Location]] = {
     type Edge = Either[Transition, Location]
 
     implicit val scalafixDomain = dom.ScalaFixDomain

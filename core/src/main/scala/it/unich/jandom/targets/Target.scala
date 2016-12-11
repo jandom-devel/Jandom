@@ -21,6 +21,7 @@ package it.unich.jandom.targets
 import scala.collection.mutable.HashMap
 
 import it.unich.jandom.domains.AbstractDomain
+import it.unich.scalafix.EquationSystem
 
 /**
  * The abstract class for targets, which are the static analyzers for the
@@ -63,4 +64,9 @@ abstract class Target[Tgt <: Target[Tgt]] {
    * @return an annotation for the program
    */
   def analyze(params: Parameters): Annotation[ProgramPoint,params.Property]
+
+  /**
+   * Return an Equation System corresponding to the target
+   */
+  def toEQS(dom: DomainBase): EquationSystem[ProgramPoint, dom.Property] = ???
 }
