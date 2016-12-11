@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1, TableFor2}
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait AbstractDomainSuite extends FunSpec with TableDrivenPropertyChecks {
- 
+
   /**
    * The abstract domain to test
    */
@@ -118,11 +118,10 @@ trait AbstractDomainSuite extends FunSpec with TableDrivenPropertyChecks {
   describe("The narrowing method") {
     it("it returns an abstract object which is a possible lower bound of the first parameter") {
       forAll(someCoupleProperties) { (p1, p2) =>
-        if (p2 <= p1) {
-          // the check is convoluted since we only have an approximation of the abstract ordering          
-          assert(!((p1 narrowing p2) > p1))
-          assert(!((p1 narrowing p2) < p2))
-        }
+        // the check is convoluted since we only have an approximation of the abstract ordering
+        assert(!((p1 narrowing p2) > p1))
+        // the following test depends on the fact that intersection is precise enough
+        assert(!((p1 narrowing p2) < (p1 intersection p2)))
       }
     }
   }

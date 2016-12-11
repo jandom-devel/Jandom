@@ -1,5 +1,5 @@
 /**
- * Copyright 2014 Gianluca Amato <gamato@unich.it>
+ * Copyright 2014, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -456,7 +456,7 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
 
     def widening(that: Property): Property = this union that
 
-    def narrowing(that: Property): Property = that
+    def narrowing(that: Property): Property = this intersection that
 
     def union(other: Property): Property = (this unionWithMorphisms other)._1
 

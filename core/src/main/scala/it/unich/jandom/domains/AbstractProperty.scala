@@ -1,5 +1,5 @@
 /**
- * Copyright 2013 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -8,7 +8,7 @@
  * (at your option) any later version.
  *
  * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of a
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
@@ -55,7 +55,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   def domain: Domain
 
   /**
-   * Compute an upper bound of two abstract properties. If it is possible and convenient, this should compute
+   * Computes an upper bound of two abstract properties. If it is possible and convenient, this should compute
    * the least upper bound, but it is not a requirement.
    * @param that the abstract object to join with `this`.
    * @note $NOTEFIBER
@@ -64,7 +64,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   def union(that: Property): Property
 
   /**
-   * Compute an upper approximation of the greatest lower bound of two abstract properties.
+   * Computes an upper approximation of the greatest lower bound of two abstract properties.
    * @param that the abstract object to meet with `this`.
    * @note $NOTEFIBER
    * @return a lower bound of the two abstract properties.
@@ -72,15 +72,29 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   def intersection(that: Property): Property
 
   /**
-   * The standard widening for two abstract properties.
-   * @param that the abstract object to be widened with `this`. `that` is NOT assumed to be bigger than `this`.
+   * The standard widening for two abstract properties. The object `this` should be widened with `that`. The
+   * result should be an upper bound of the two properties, and converge of the sequence s(i+1) = s(i) widening v(i)
+   * should be ensured for any sequence of v(i)'s.
+   *
+   * Important: `that` is not required to be bigger than `this`. This generality is needed in order to deal with
+   * non-monotonic domains or initial assignments which are not pre-fixpoints of the equation system. An alternative
+   * could be requiring `that` to be always bigger than `this` but unconditionally applying union before widening. However,
+   * this would preclude the possibily to apply heuristics for widening in non-monotonic domains.
+   * @param that the abstract object to be widened with `this`.
    * @return the widening of the two abstract properties.
    */
   def widening(that: Property): Property
 
   /**
-   * The standard narrowing for two abstract properties.
-   * @param that the abstract object to be narrowed with `this`. `that` IS assumed to be smaller than `this`.
+   * The standard narrowing for two abstract properties. The object `this` should be widened with `that`. The
+   * result should be smaller than `this` but bigger than `this intersection that` (or, more generally, a correct
+   * approximation of the concrete intersection). Moreover, converge of the sequence s(i+1) = s(i) narrowing v(i)
+   * should be ensured for any sequence of v(i)'s.
+   *
+   * Important: `that` is not required to be bigger than `this`. This generality is needed in order to deal with
+   * non-monotonic domains. When the domain is monotonic, `that` is smaller than `this`, we fall in the standard
+   * notion of narrowing we found in the literature.
+   * @param that the abstract object to be narrowed with `this`.
    * @return the narrowing of the two abstract properties.
    */
   def narrowing(that: Property): Property

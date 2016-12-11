@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato, Francesca Scozzari
+ * Copyright 2013, 2016 Jandom Team
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -39,7 +39,8 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
     implicit val dom1Todom2: DomainTransformation[D1, D2], val dom2Todom1: DomainTransformation[D2, D1]) extends NumericalDomain {
 
   val widenings = {
-    for (w1 <- dom1.widenings; w2 <- dom2.widenings) yield WideningDescription(s"${w1.name} X ${w2.name}", s"Component-wise combination of the two widenings.",
+    for (w1 <- dom1.widenings; w2 <- dom2.widenings)
+      yield WideningDescription(s"${w1.name} X ${w2.name}", s"Component-wise combination of the two widenings.",
       Box { (a: Property, b: Property) =>
         new Property(w1.box(a.p1, b.p1), w2.box(a.p2, b.p2))
       })

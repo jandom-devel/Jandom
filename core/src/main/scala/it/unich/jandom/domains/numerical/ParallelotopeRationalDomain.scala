@@ -237,13 +237,15 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
       require(dimension == that.dimension)
       if (that.isEmpty) {
         that
+      } else if (this.isEmpty) {
+        this
       } else {
         val thatRotated = that.rotate(A)
         val newlow = low.copy
         val newhigh = high.copy
         for (i <- 0 to dimension - 1) {
-          if (low(i).isInfinity) newlow(i) = thatRotated.low(i) else newlow(i) = newlow(i) min thatRotated.low(i)
-          if (high(i).isInfinity) newhigh(i) = thatRotated.high(i) else newhigh(i) = newhigh(i) max thatRotated.high(i)
+          if (low(i).isInfinity) newlow(i) = thatRotated.low(i)
+          if (high(i).isInfinity) newhigh(i) = thatRotated.high(i)
         }
         new Property(false, newlow, A, newhigh)
       }

@@ -57,6 +57,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
   def narrowing(that: PPLProperty[PPLNativeProperty]): PPLProperty[PPLNativeProperty] = {
     if (domain.supportsNarrowing) {
       val newpplobject = domain.copyConstructor(that.pplobject)
+      domain.intersection_assign(newpplobject, pplobject)
       domain.narrowing_assign(newpplobject, pplobject)
       new PPLProperty(domain, newpplobject)
     } else

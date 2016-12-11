@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -57,6 +57,7 @@ final class PPLBoxDouble(val pplbox: Double_Box) extends NumericalProperty[PPLBo
 
   def narrowing(that: PPLBoxDouble): PPLBoxDouble = {
     val newpplbox = new Double_Box(that.pplbox)
+    newpplbox.intersection_assign(this.pplbox)
     newpplbox.CC76_narrowing_assign(pplbox)
     new PPLBoxDouble(newpplbox)
   }

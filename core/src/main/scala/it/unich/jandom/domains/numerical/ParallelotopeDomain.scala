@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato <gamato@unich.it>
+ * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -195,13 +195,15 @@ class ParallelotopeDomain private (favorAxes: Boolean) extends NumericalDomain {
       require(dimension == that.dimension)
       if (that.isEmpty) {
         that
+      } else if (this.isEmpty) {
+        this
       } else {
         val thatRotated = that.rotate(A)
         val newlow = low.copy
         val newhigh = high.copy
         for (i <- 0 until dimension) {
-          if (low(i).isInfinity) newlow(i) = thatRotated.low(i) else newlow(i) = newlow(i) min thatRotated.low(i)
-          if (high(i).isInfinity) newhigh(i) = thatRotated.high(i) else newhigh(i) = newhigh(i) max thatRotated.high(i)
+          if (low(i).isInfinity) newlow(i) = thatRotated.low(i)
+          if (high(i).isInfinity) newhigh(i) = thatRotated.high(i)
         }
         new Property(false, newlow, A, newhigh)
       }

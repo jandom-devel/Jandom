@@ -121,7 +121,8 @@ object PPLDomainMacro {
     val narrowing = if (supportsCC76Narrowing)
       q"""
           def narrowing(that: ThisProperty): ThisProperty = {
-            val newpplobject = new $PPLTypeTag(pplobject)
+            val newpplobject = new $PPLTypeTag(that.pplobject)
+            newpplobject.intersection_assign(pplobject)
             newpplobject.CC76_narrowing_assign(pplobject)
             new ThisProperty(newpplobject)
           }

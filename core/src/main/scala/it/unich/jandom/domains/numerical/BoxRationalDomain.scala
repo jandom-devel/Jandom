@@ -131,8 +131,8 @@ class BoxRationalDomain private extends NumericalDomain {
       if (that.isEmpty) {
         that
       } else {
-        val newlow = (low, that.low).zipped.map((l1, l2) => if (l1 == RationalExt.NegativeInfinity) l2 else l1 min l2)
-        val newhigh = (high, that.high).zipped.map((l1, l2) => if (l1 == RationalExt.PositiveInfinity) l2 else l1 max l2)
+        val newlow = (low, that.low).zipped.map((l1, l2) => if (l1 == RationalExt.NegativeInfinity) l2 else l1)
+        val newhigh = (high, that.high).zipped.map((l1, l2) => if (l1 == RationalExt.PositiveInfinity) l2 else l1)
         BoxRationalDomain.this(newlow, newhigh)
       }
     }
@@ -414,7 +414,7 @@ class BoxRationalDomain private extends NumericalDomain {
     else
       new Property(low, high, false)
   }
-  
+
   val widenings = Seq(WideningDescription.default[Property])
 
   /**
