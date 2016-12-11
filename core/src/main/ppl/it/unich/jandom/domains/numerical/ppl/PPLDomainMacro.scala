@@ -159,7 +159,6 @@ object PPLDomainMacro {
 
         def union(that: ThisProperty): ThisProperty = {
           val newpplobject = new $PPLTypeTag(pplobject)
-          val x = new $PPLTypeTag(pplobject.space_dimension(), Degenerate_Element.EMPTY)
           newpplobject.upper_bound_assign(that.pplobject)
           new ThisProperty(newpplobject)
         }

@@ -63,7 +63,6 @@ final class PPLBoxDouble(val pplbox: Double_Box) extends NumericalProperty[PPLBo
 
   def union(that: PPLBoxDouble): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
-    val x = new Double_Box(pplbox.space_dimension(), Degenerate_Element.EMPTY)
     newpplbox.upper_bound_assign(that.pplbox)
     new PPLBoxDouble(newpplbox)
   }
