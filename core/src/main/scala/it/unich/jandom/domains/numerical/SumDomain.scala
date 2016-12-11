@@ -76,7 +76,11 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def narrowing(that: Property): Property = {
       require(dimension == that.dimension)
-      SumDomain.this(p1 narrowing that.p1, p2 narrowing that.p2)
+      // we can apply component-wise narrowing only when both components in this w.r.t. those in that
+      if (that.p1 < p1 && that.p2 < p2)
+        SumDomain.this(p1 narrowing that.p1, p2 narrowing that.p2)
+      else
+        this
     }
 
     def intersection(that: Property): Property = {
