@@ -1,5 +1,5 @@
 /**
- * Copyright 2014, 2016 Gianluca Amato, Francesca Scozzari, Simone Di Nardo Di Maio
+ * Copyright 2014, 2016 Jandom Team
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -85,14 +85,7 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def intersection(that: Property): Property = {
       require(dimension == that.dimension)
-      if (isEmpty)
-        this
-      else if (that.isEmpty)
-        that
-      else if (that.isTop)
-        this
-      else
-        that
+      if (this < that) this else that
     }
 
     def nonDeterministicAssignment(n: Int): Property = {
