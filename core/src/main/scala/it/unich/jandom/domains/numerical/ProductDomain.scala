@@ -36,18 +36,17 @@ import it.unich.scalafix.Box
  * @author Francesca Scozzari <francesca.scozzari@unich.it>
  */
 class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, val dom2: D2)(
-      implicit val dom1Todom2: DomainTransformation[D1,D2], val dom2Todom1: DomainTransformation[D2,D1]) extends NumericalDomain {
+    implicit val dom1Todom2: DomainTransformation[D1, D2], val dom2Todom1: DomainTransformation[D2, D1]) extends NumericalDomain {
 
   val widenings = {
-    for (w1 <- dom1.widenings; w2 <- dom2.widenings) yield
-       WideningDescription(s"${w1.name} X ${w2.name}",s"Component-wise combination of the two widenings.",
-           Box { (a: Property, b: Property) =>
-             new Property( w1.box(a.p1, b.p1), w2.box(a.p2, b.p2) )
-           })
+    for (w1 <- dom1.widenings; w2 <- dom2.widenings) yield WideningDescription(s"${w1.name} X ${w2.name}", s"Component-wise combination of the two widenings.",
+      Box { (a: Property, b: Property) =>
+        new Property(w1.box(a.p1, b.p1), w2.box(a.p2, b.p2))
+      })
   }
 
-  private val d12 = dom1Todom2(dom1,dom2)
-  private val d21 = dom2Todom1(dom2,dom1)
+  private val d12 = dom1Todom2(dom1, dom2)
+  private val d21 = dom2Todom1(dom2, dom1)
 
   def top(n: Int) =
     new Property(dom1.top(n), dom2.top(n))
@@ -70,8 +69,8 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
 
     def reduce(x1: dom1.Property, x2: dom2.Property): Property = {
       if (x1.isEmpty || x2.isEmpty)
-        new Property(x1.bottom,x2.bottom)
-      else{
+        new Property(x1.bottom, x2.bottom)
+      else {
         val y1 = x1.intersection(d21(x2))
         val y2 = x2.intersection(d12(x1))
         new Property(y1, y2)
@@ -123,21 +122,21 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
     }
 
     def minimize(lf: LinearForm) = {
-      val q1=p1.minimize(lf)
-      val q2=p2.minimize(lf)
+      val q1 = p1.minimize(lf)
+      val q2 = p2.minimize(lf)
       q1 max q2
     }
 
     def maximize(lf: LinearForm) = {
-      val q1=p1.maximize(lf)
-      val q2=p2.maximize(lf)
+      val q1 = p1.maximize(lf)
+      val q2 = p2.maximize(lf)
       q1 min q2
     }
 
     def frequency(lf: LinearForm) = {
-        // This could be made more precise when the concrete domain is integer
+      // This could be made more precise when the concrete domain is integer
       p1.frequency(lf) match {
-        case v@ Some(c) => v
+        case v @ Some(c) => v
         case None => p2.frequency(lf)
       }
     }
@@ -179,20 +178,25 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
         p1.mkString(vars) + " / " + p2.mkString(vars)
     }
 
-    def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = {
-      other match {
-        case other: Property => {
-          val c1 = p1.tryCompareTo(other.p1)
-          val c2 = p2.tryCompareTo(other.p2)
-          if (c1 == Some(0))
-            c2
-          else if (c2 == Some(0))
-            c1
-          else if (c1 == c2)
-            c1
+    def tryCompareTo[B >: Property](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = {
+      that match {
+        case that: Property =>
+          if (this.isBottom && that.isBottom)
+            Option(0)
+          else if (this.isBottom)
+            Option(-1)
+          else if (that.isBottom)
+            Option(1)
+          else if (this.isTop && that.isTop)
+            Option(0)
+          else if (this.isTop)
+            Option(1)
+          else if (that.isTop)
+            Option(-1)
+          else if (p1 == this.p1 && p2 == that.p2)
+            Option(0)
           else
             Option.empty
-        }
         case _ => Option.empty
       }
     }
