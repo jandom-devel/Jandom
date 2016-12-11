@@ -194,21 +194,29 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
       var next = initial
       var current = initial
 
+      params.log("Beginning ascending chain\n")
       do {
         current = next
         next = for ((loc, w) <- locations zip widenings) yield {
           val propnew = for (t <- loc.incoming) yield t.analyze(current(t.start.id))
-          val unionednew = propnew.fold(empty)(_ union _)
-          if (w.isEmpty) unionednew else w.get(current(loc.id), unionednew)
+          val unionednew = propnew.fold(initial(loc.id))(_ union _)
+          params.log(s"Node: ${loc.name} Oldvalue: ${current(loc.id).mkString(env.variables)} Newinput: ${unionednew.mkString(env.variables)}")
+          val newvalue = if (w.isEmpty) unionednew else w.get(current(loc.id), unionednew)
+          params.log(s" Newvalue: ${newvalue.mkString(env.variables)}\n")
+          newvalue
         }
       } while (current != next)
 
+      params.log("Beginning descending chain\n")
       do {
         current = next
         next = for ((loc, n) <- locations zip narrowings) yield {
           val propnew = for (t <- loc.incoming) yield t.analyze(current(t.start.id))
-          val unionednew = current(loc.id) intersection (propnew.fold(empty)(_ union _) union initial(loc.id))
-          if (n.isEmpty) unionednew else n.get(current(loc.id), unionednew)
+          val unionednew = propnew.fold(initial(loc.id))(_ union _)
+          params.log(s"Node: ${loc.name} Oldvalue: ${current(loc.id).mkString(env.variables)} Newinput: ${unionednew.mkString(env.variables)}")
+          val newvalue = if (n.isEmpty) unionednew else n.get(current(loc.id), unionednew)
+          params.log(s" Newvalue: ${newvalue.mkString(env.variables)}\n")
+          newvalue
         }
       } while (current != next)
       locations.foreach { loc => ann(loc) = current(loc.id) }
@@ -224,29 +232,28 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
         val loc = locations(locid)
         val w = widenings(locid)
         val propnew = for (t <- loc.incoming) yield t.analyze(current(t.start.id))
-        val unionednew = propnew.fold(empty)(_ union _)
+        val unionednew = propnew.fold(initial(locid))(_ union _)
         params.log(s"Node: ${loc.name} Oldvalue: ${current(loc.id).mkString(env.variables)} Newinput: ${unionednew.mkString(env.variables)}")
         val newvalue = if (w.isEmpty) unionednew else w.get(current(locid), unionednew)
         params.log(s" Newvalue: ${newvalue.mkString(env.variables)}\n")
-        if (newvalue > current(locid)) {
+        if (newvalue != current(locid)) {
           current(locid) = newvalue
           for (t <- loc.outgoing) { if (!workList.contains(t.end.id)) workList.enqueue(t.end.id) }
         }
       }
 
       params.log("Beginning descending chain\n")
-
       workList ++= 0 until numlocs
       while (!workList.isEmpty) {
         val locid = workList.dequeue()
         val loc = locations(locid)
         val n = narrowings(locid)
         val propnew = for (t <- loc.incoming) yield t.analyze(current(t.start.id))
-        val unionednew = current(locid) intersection (propnew.fold(empty)(_ union _) union initial(locid))
+        val unionednew = propnew.fold(initial(locid))(_ union _)
         params.log(s"Node: ${loc.name} Oldvalue: ${current(loc.id).mkString(env.variables)} Newinput: ${unionednew.mkString(env.variables)}")
         val newvalue = if (n.isEmpty) unionednew else n.get(current(locid), unionednew)
         params.log(s" Newvalue: ${newvalue.mkString(env.variables)}\n")
-        if (newvalue < current(locid)) {
+        if (newvalue != current(locid)) {
           current(locid) = newvalue
           for (t <- loc.outgoing) { if (!workList.contains(t.end.id)) workList.enqueue(t.end.id) }
         }
