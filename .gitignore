@@ -1,12 +1,17 @@
 *~
-target/
-.project
-.cache
-.classpath
-.worksheet
-.history
-*.sc
-.settings/
-.idea/
-.cache-*
 
+# sbt-specific
+target/
+
+# eclipse
+.classpath
+.worksheet/
+.settings/
+.project
+target.eclipse/
+.cache-main
+.cache-tests
+*.sc
+
+# intellij idea
+.idea/
