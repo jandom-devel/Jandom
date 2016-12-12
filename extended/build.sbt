@@ -15,6 +15,12 @@ mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) =>
   }
 }
 
+//** IntelliJ Idea
+
+ideOutputDirectory in Compile := Some(new File("extended/target/idea/classes"))
+
+ideOutputDirectory in Test := Some(new File("extended/target/idea/test-classes"))
+
 //*** Eclipse plugin
 
 EclipseKeys.createSrc := EclipseCreateSrc.ValueSet()
@@ -37,3 +43,4 @@ resourceDirectories in Jmh := ((baseDirectory in ThisBuild).value / "core" / "sr
   ( (managedResourceDirectories in Jmh).value ++ (unmanagedResourceDirectories in Jmh).value )
 
 dependencyClasspath in Jmh := (fullClasspath in Test).value
+

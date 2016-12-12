@@ -26,6 +26,12 @@ unmanagedSourceDirectories in Compile ++= (pplJar.value map { _ => (sourceDirect
 
 unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory in Test).value / "ppl" }).toSeq
 
+//*** IntelliJ Idea
+
+ideOutputDirectory in Compile := Some(new File("core/target/idea/classes"))
+
+ideOutputDirectory in Test := Some(new File("core/target/idea/test-classes"))
+
 //*** Eclipse plugin
 
 EclipseKeys.createSrc := EclipseCreateSrc.Default +  EclipseCreateSrc.Managed
@@ -51,3 +57,5 @@ gitHeadCommitSHA := Process("git rev-parse HEAD").lines.head
 buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, gitHeadCommitSHA)
 
 buildInfoPackage := "it.unich.jandom"
+
+
