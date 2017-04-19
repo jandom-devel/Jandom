@@ -501,7 +501,7 @@ class ParallelotopeRationalDomain private (favorAxis: Int) extends NumericalDoma
           val Aprime = newP.A.copy
           val j = ((0 until Aprime.rows) find { !Aprime(_, n).isZero }).get
           for (s <- 0 until dimension if !Aprime(s, n).isZero && s != j)
-            Aprime(s, ::) :-= Aprime(j, ::) * Aprime(s, n) / Aprime(j, n)
+            Aprime(s, ::) :-= Aprime(j, ::) * (Aprime(s, n) / Aprime(j, n))
           val ei = DenseVector.zeros[Rational](dimension)
           ei(n) = Rational.one
           Aprime(j, ::) := (ei - coeff).t
