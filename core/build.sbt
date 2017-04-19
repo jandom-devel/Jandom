@@ -18,6 +18,8 @@ libraryDependencies ++= Seq(
   "ca.mcgill.sable" % "soot" %"3.0.0-SNAPSHOT"
 )
 
+updateOptions := updateOptions.value.withLatestSnapshots(false)
+
 //*** Additional source directories for PPL
 
 unmanagedJars in Compile ++= (pplJar.value map file).toSeq

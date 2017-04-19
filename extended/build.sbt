@@ -1,3 +1,5 @@
+updateOptions := updateOptions.value.withLatestSnapshots(false)
+
 //*** Additional source directories for PPL
 
 unmanagedSourceDirectories in Compile ++= (pplJar.value map { _ => (sourceDirectory in Compile).value / "ppl" }).toSeq
