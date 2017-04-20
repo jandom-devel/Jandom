@@ -18,20 +18,11 @@
 
 package it.unich.jandom.benchmarks
 
-import it.unich.jandom.domains.numerical.BoxDoubleDomain
-import it.unich.jandom.targets.EQSSolver
-import it.unich.jandom.targets.Parameters
+import it.unich.jandom.domains.numerical.ParallelotopeRationalDomain
+import it.unich.jandom.targets.{EQSSolver, Parameters}
 import it.unich.jandom.targets.lts._
 import it.unich.jandom.targets.parameters._
-import it.unich.scalafix.Assignment
-import it.unich.jandom.domains.numerical.ParallelotopeDomain
-import parma_polyhedra_library.C_Polyhedron
-import it.unich.jandom.domains.numerical.ppl.PPLDomainMacro
-import java.io.Writer
-import java.io.PrintWriter
-import java.io.OutputStreamWriter
-import it.unich.jandom.domains.numerical.ParallelotopeRationalDomain
-import it.unich.scalafix.FixpointSolverListener
+import it.unich.scalafix.{Assignment, FixpointSolverListener}
 
 /**
  * This program compares standard (legacy) analyzer with the new one based on Scalafix for
@@ -41,7 +32,7 @@ import it.unich.scalafix.FixpointSolverListener
 
 object EQSLegacyFASTComparison extends App with FASTLoader {
 
-  val dom = ParallelotopeDomain()
+  val dom = ParallelotopeRationalDomain()
 
   def compareResults(locations: Seq[Location], ann1: Assignment[Location, dom.Property], ann2: Assignment[Location, dom.Property]) = {
     var lt, eq, gt, un = 0

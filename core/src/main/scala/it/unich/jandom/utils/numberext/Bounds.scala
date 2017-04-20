@@ -83,4 +83,9 @@ object Bounds {
     * Builds a bound vector for a sequence of extended rationals.
     */
   def apply(elem: RationalExt*) = new Bounds(elem.toArray)
+
+  /**
+    * Builds a bound vector for an array of extended rationals.
+    */
+  def apply(data: Array[RationalExt]) = new Bounds(data)
 }

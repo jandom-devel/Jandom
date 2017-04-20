@@ -25,33 +25,33 @@ package it.unich.jandom.domains.numerical
  * @author Simone Di Nardo Di Maio
  */
 
-class SumIntParallelotopeDomain(val dom1: BoxDoubleDomain, val dom2: ParallelotopeDomain) extends SumDomain[BoxDoubleDomain, ParallelotopeDomain] {
-  type Property = SumIntParallelotope
+class SumBoxDoubleParallelotopeRationDomain(val dom1: BoxDoubleDomain, val dom2: ParallelotopeRationalDomain) extends SumDomain[BoxDoubleDomain, ParallelotopeRationalDomain] {
+  type Property = SumBoxDoubleParallelotopeRational
 
-  class SumIntParallelotope(val p1: dom1.Property, val p2: dom2.Property) extends Sum {
+  class SumBoxDoubleParallelotopeRational(val p1: dom1.Property, val p2: dom2.Property) extends Sum {
     override def linearAssignment(n: Int, lf: LinearForm): Property = {
       if ((n >= lf.homcoeffs.size) || (lf.homcoeffs(n) == 0)) {
         val q1 = p1.linearAssignment(n, lf)
         val q2 = p2.linearAssignment(n, lf.hom)
-        SumIntParallelotopeDomain.this(q1, q2)
+        SumBoxDoubleParallelotopeRationDomain.this(q1, q2)
       } else {
         val q1 = p1.linearAssignment(n, lf.hom)
         val q2 = p2.linearAssignment(n,lf)
-        SumIntParallelotopeDomain.this(q1, q2)
+        SumBoxDoubleParallelotopeRationDomain.this(q1, q2)
       }
     }
   }
 
-  def apply(p1: dom1.Property, p2: dom2.Property) = new SumIntParallelotope(p1, p2)
+  def apply(p1: dom1.Property, p2: dom2.Property) = new SumBoxDoubleParallelotopeRational(p1, p2)
 }
 
 /**
  * Companion class for the Int+Parallelotope domain
  */
-object SumIntParallelotopeDomain {
+object SumBoxDoubleParallelotopeRationDomain {
   /**
    *  Returns the standard Int+Parallelotope Domain
    */
   def apply() = v
-  private lazy val v = new SumIntParallelotopeDomain(BoxDoubleDomain(), ParallelotopeDomain(favorAxes = true))
+  private lazy val v = new SumBoxDoubleParallelotopeRationDomain(BoxDoubleDomain(), ParallelotopeRationalDomain(favorAxis = 1))
 }

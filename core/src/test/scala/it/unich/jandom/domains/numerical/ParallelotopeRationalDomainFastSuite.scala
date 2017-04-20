@@ -34,7 +34,7 @@ import spire.syntax.literals._
  * @author Gianluca Amato <gamato@unich.it>
  */
 class ParallelotopeRationalDomainFastSuite extends NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite {
-  lazy val dom = ParallelotopeRationalDomainFast()
+  lazy val dom = ParallelotopeRationalDomain()
 
   val box = dom(Bounds(r"-1",r"-1"), DenseMatrix.eye(2), Bounds(r"1", r"1"))
   val diamond = dom(Bounds(r"-1", r"-1"), DenseMatrix((r"1", r"1"), (r"1", r"-1")), Bounds(r"1", r"1"))

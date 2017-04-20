@@ -19,8 +19,7 @@
 package it.unich.jandom.domains
 
 import it.unich.jandom.domains.numerical._
-import it.unich.jandom.utils.breeze.RationalForBreeze._
-import it.unich.jandom.utils.numberext.RationalExt
+import it.unich.jandom.utils.numberext.{DenseMatrix, Bounds, RationalExt}
 
 /**
  * This is the trait for domain transformations, i.e. maps from properties of one abstract domain to
@@ -48,62 +47,36 @@ trait DomainTransformation[-DomA <: AbstractDomain, -DomB <: AbstractDomain] ext
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
 object DomainTransformation {
-  implicit object ParallelotopeToBoxDouble extends DomainTransformation[ParallelotopeDomain, BoxDoubleDomain] {
-    import breeze.linalg.DenseMatrix
-    def apply(src: ParallelotopeDomain, dst: BoxDoubleDomain): src.Property => dst.Property = { (x) =>
-      val newPar = x.rotate(DenseMatrix.eye(x.dimension))
-      if (newPar.isEmpty)
-        dst.bottom(newPar.dimension)
-      else
-        dst(newPar.low.toArray, newPar.high.toArray)
-    }
-  }
-
   implicit object ParallelotopeRationalToBoxDouble extends DomainTransformation[ParallelotopeRationalDomain, BoxDoubleDomain] {
-    import breeze.linalg.DenseMatrix
     def apply(src: ParallelotopeRationalDomain, dst: BoxDoubleDomain): src.Property => dst.Property = { (x) =>
       val newPar = x.rotate(DenseMatrix.eye(x.dimension))
       if (newPar.isEmpty)
         dst.bottom(newPar.dimension)
       else
-        dst(newPar.low.toArray map (_.toDouble), newPar.high.toArray map (_.toDouble))
+        dst(newPar.low.data map (_.toDouble), newPar.high.data map (_.toDouble))
     }
   }
 
   implicit object ParallelotopeRationalToBoxRational extends DomainTransformation[ParallelotopeRationalDomain, BoxRationalDomain] {
-    import breeze.linalg.DenseMatrix
     def apply(src: ParallelotopeRationalDomain, dst: BoxRationalDomain): src.Property => dst.Property = { (x) =>
       val newPar = x.rotate(DenseMatrix.eye(x.dimension))
       if (newPar.isEmpty)
         dst.bottom(newPar.dimension)
       else
-        dst(newPar.low.toArray, newPar.high.toArray)
-    }
-  }
-
-  implicit object BoxDoubleToParallelotope extends DomainTransformation[BoxDoubleDomain, ParallelotopeDomain] {
-    import breeze.linalg.{ DenseMatrix, DenseVector }
-    def apply(src: BoxDoubleDomain, dst: ParallelotopeDomain): src.Property => dst.Property = { (x) =>
-      dst(DenseVector(x.low), DenseMatrix.eye(x.dimension), DenseVector(x.high))
+        dst(newPar.low.data, newPar.high.data)
     }
   }
 
   implicit object BoxDoubleToParallelotopeRational extends DomainTransformation[BoxDoubleDomain, ParallelotopeRationalDomain] {
-    import breeze.linalg.{ DenseMatrix, DenseVector }
     def apply(src: BoxDoubleDomain, dst: ParallelotopeRationalDomain): src.Property => dst.Property = { (x) =>
-      dst(DenseVector(x.low map { RationalExt(_) }), DenseMatrix.eye(x.dimension), DenseVector(x.high map { RationalExt(_) }))
+      dst(Bounds(x.low map { RationalExt(_) }), DenseMatrix.eye(x.dimension), Bounds(x.high map { RationalExt(_) }))
     }
   }
 
   implicit object BoxRationalToParallelotopeRational extends DomainTransformation[BoxRationalDomain, ParallelotopeRationalDomain] {
-    import breeze.linalg.{ DenseMatrix, DenseVector }
-    def apply(src: BoxRationalDomain, dst: ParallelotopeRationalDomain): src.Property => dst.Property = { (x) =>
-      dst(DenseVector(x.low), DenseMatrix.eye(x.dimension), DenseVector(x.high))
+    def apply(src: BoxRationalDomain, dst: ParallelotopeRationalDomain  ): src.Property => dst.Property = { (x) =>
+      dst(Bounds(x.low), DenseMatrix.eye(x.dimension), Bounds(x.high))
     }
-  }
-
-  implicit object ParallelotopeToParallelotope extends DomainTransformation[ParallelotopeDomain, ParallelotopeDomain] {
-    def apply(src: ParallelotopeDomain, dst: ParallelotopeDomain): src.Property => dst.Property = { (x) => new dst.Property(x.isEmpty, x.low, x.A, x.high) }
   }
 
   implicit object ParallelotopeRationalParallelotopeRational extends DomainTransformation[ParallelotopeRationalDomain, ParallelotopeRationalDomain] {

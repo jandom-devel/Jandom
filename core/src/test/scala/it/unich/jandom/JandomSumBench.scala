@@ -24,8 +24,8 @@ import java.io.FileReader
 import it.unich.jandom.domains.DimensionFiberedProperty
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.LinearForm
-import it.unich.jandom.domains.numerical.ParallelotopeDomain
-import it.unich.jandom.domains.numerical.SumIntParallelotopeDomain
+import it.unich.jandom.domains.numerical.ParallelotopeRationalDomain
+import it.unich.jandom.domains.numerical.SumBoxDoubleParallelotopeRationDomain
 import it.unich.jandom.domains.numerical.ppl.PPLDomain
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.targets.lts.LTS
@@ -74,7 +74,7 @@ object JandomSumBench extends App {
     val ann1 = program.analyze(params)
     val tann1 = System.currentTimeMillis - t1
 
-    val params2 = new targets.Parameters[LTS] { val domain = SumIntParallelotopeDomain() }
+    val params2 = new targets.Parameters[LTS] { val domain = SumBoxDoubleParallelotopeRationDomain() }
     params2.widening = DelayedWidening(DefaultWidening, 3) // needed for parallelotopes
     //params2.debugWriter = new java.io.PrintWriter(System.out)
     program.analyze(params2) // warmup JVM
@@ -84,7 +84,7 @@ object JandomSumBench extends App {
     val ann2 = program.analyze(params2)
     val tann2 = System.currentTimeMillis - t2
 
-    val params3 = new targets.Parameters[LTS] { val domain = ParallelotopeDomain() }
+    val params3 = new targets.Parameters[LTS] { val domain = ParallelotopeRationalDomain() }
     params3.widening = DelayedWidening(DefaultWidening, 3) // needed for parallelotopes
     //params3.debugWriter = new java.io.PrintWriter(System.out)
 

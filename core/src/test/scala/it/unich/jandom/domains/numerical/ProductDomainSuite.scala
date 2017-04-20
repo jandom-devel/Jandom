@@ -24,7 +24,7 @@ package it.unich.jandom.domains.numerical
  */
 class ProductDomainSuite extends NumericalDomainSuite {
  
-  val dom = new ProductDomain(BoxDoubleDomain(), ParallelotopeDomain())
+  val dom = new ProductDomain(BoxDoubleDomain(), ParallelotopeRationalDomain())
   
   val n = 2
 

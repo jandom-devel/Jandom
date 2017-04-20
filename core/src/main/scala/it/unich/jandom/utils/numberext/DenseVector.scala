@@ -272,6 +272,11 @@ object DenseVector {
   def apply(elem: Rational*): DenseVector = new DenseVector(elem.toArray)
 
   /**
+    * Builds a DenseVector from an arrray of rationals.
+    */
+  def apply(data: Array[Rational]): DenseVector = new DenseVector(data)
+
+  /**
     * Returns the null vector of dimension `n`.
     */
   def zeros(n: Int) = {
