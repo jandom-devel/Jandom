@@ -54,8 +54,10 @@ class LTSSuite extends FunSuite {
 
   test("dot translation") {
     val output = """digraph {
-                   |  "start" -> "ciclo" [label="init"]
-                   |  "ciclo" -> "ciclo" [label="loop"]
+                   |  "0" [label="start"]
+                   |  "1" [label="ciclo"]
+                   |  "0" -> "1" [label="init"]
+                   |  "1" -> "1" [label="loop"]
                    |}
                    |""".stripMargin('|')
     assertResult(output)(LTS1.lts.toDot)

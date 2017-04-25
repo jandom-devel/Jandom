@@ -103,11 +103,14 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
 
     val builder = new StringBuilder()
     builder ++= "digraph {\n"
-    val initState = regions find { _.name == "init" } flatMap { _.state }
+    val initState = regions find (_.name == "init") flatMap (_.state)
     if (initState.isDefined)
-      builder ++= s"""  "${StringEscapeUtils.escapeJava(initState.get.name)}" [shape=doublecircle]\n"""
+      builder ++= s"""  "${initState.get.id}" [shape=doublecircle]\n"""
+    for (l <- locations) {
+      builder ++= s"""  "${l.id}" [label="${StringEscapeUtils.escapeJava(l.name)}"]\n"""
+    }
     for (t <- transitions) {
-      builder ++= s"""  "${StringEscapeUtils.escapeJava(t.start.name)}" -> "${ StringEscapeUtils.escapeJava(t.end.name)}" [label="${StringEscapeUtils.escapeJava(t.name)}"]\n"""
+      builder ++= s"""  "${t.start.id}" -> "${t.end.id}" [label="${StringEscapeUtils.escapeJava(t.name)}"]\n"""
     }
     builder ++= "}\n"
     builder.toString
