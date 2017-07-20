@@ -29,8 +29,8 @@ fork in ThisBuild := true
 resolvers in ThisBuild ++= Seq(
   Resolver.sonatypeRepo("releases"),
   Resolver.sonatypeRepo("snapshots"),
-  "Soot snapshot" at "http://soot-build.cs.uni-paderborn.de/nexus/repository/soot-snapshot/",
-  "Soot release" at "http://soot-build.cs.uni-paderborn.de/nexus/repository/soot-release/"
+  "Soot snapshot" at "https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-snapshot/",
+  "Soot release" at "https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-release/"
 )
 
 //*** Detect PPL
