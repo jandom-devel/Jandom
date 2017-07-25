@@ -206,7 +206,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      * @return a tuple with two components: the first component is the least value, the second component is the greatest value
      * of the linear form over the box.
      */
-    private def linearEvaluation(lf: LinearForm): (Double, Double) = {
+    def linearEvaluation(lf: LinearForm): (Double, Double) = {
       val known = lf.known.toDouble
       val homcoeffs = lf.homcoeffs.map (_.toDouble).toArray
       linearEvaluation(known, homcoeffs)
