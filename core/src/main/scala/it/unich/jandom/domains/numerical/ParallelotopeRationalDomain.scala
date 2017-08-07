@@ -202,7 +202,6 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
       if (isEmpty)
         that
       else {
-        val thatRotated = that.rotate(A)
         val thisRotated = this.rotate(that.A)
         if (thisRotated < that) {
           val newlow = thisRotated.low.copy
@@ -213,6 +212,7 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
           }
           new Property(false, newlow, that.A, newhigh)
         } else {
+          val thatRotated = that.rotate(A)
           val newlow = low.copy
           val newhigh = high.copy
           for (i <- 0 to dimension - 1) {
