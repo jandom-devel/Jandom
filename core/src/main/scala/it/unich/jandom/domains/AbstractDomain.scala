@@ -38,15 +38,32 @@ trait AbstractDomain {
   def defaultWidening = widenings.head.box
 
   /**
+    * Returns the default narrowing of the domain. It should correspond to the narrowing method of
+    * the ``it.unich.jandom.domains.AbstractProperty`` class.
+    */
+  def defaultNarrowing = narrowings.head.box
+
+  /**
    * Returns the widening with the given name.
    */
   def widening(name: String) = widenings.find ( _.name == name ).get.box
+
+  /**
+    * Returns the narrowing with the given name.
+    */
+  def narrowing(name: String) = narrowings.find ( _.name == name ).get.box
 
   /**
    * A non-empty set of widenings supported by the abstract domain. The first element is supposed to be
    * the default widening.
    */
   def widenings: Seq[WideningDescription[Property]]
+
+  /**
+    * A non-empty set of narrowings supported by the abstract domain. The first element is supposed to be
+    * the default narrowing.
+    */
+  def narrowings: Seq[NarrowingDescription[Property]] = Seq(NarrowingDescription.default[Property])
 
   /**
    * ScalaFixDomain is an instance of the ScalaFix type-class Domain for this abstract domain.
