@@ -201,27 +201,35 @@ object PPLDomainMacro {
         }
 
         def minimize(lf: LinearForm) = {
-          val (le, den) = PPLUtils.toPPLLinearExpression(lf)
-          val exact = new By_Reference[java.lang.Boolean](false)
-          val val_n = new Coefficient(0)
-          val val_d = new Coefficient(0)
-          val result = pplobject.minimize(le, val_n, val_d, exact)
-          if (!result)
-            RationalExt.NegativeInfinity
-          else
-            RationalExt(val_n.getBigInteger(), val_d.getBigInteger().multiply(den.getBigInteger()))
+          if (pplobject.is_empty())
+            RationalExt.PositiveInfinity
+          else {
+            val (le, den) = PPLUtils.toPPLLinearExpression(lf)
+            val exact = new By_Reference[java.lang.Boolean](false)
+            val val_n = new Coefficient(0)
+            val val_d = new Coefficient(0)
+            val result = pplobject.minimize(le, val_n, val_d, exact)
+            if (!result)
+              RationalExt.NegativeInfinity
+            else
+              RationalExt(val_n.getBigInteger(), val_d.getBigInteger().multiply(den.getBigInteger()))
+          }
         }
 
         def maximize(lf: LinearForm) = {
-          val (le, den) = PPLUtils.toPPLLinearExpression(lf)
-          val exact = new By_Reference[java.lang.Boolean](false)
-          val val_n = new Coefficient(0)
-          val val_d = new Coefficient(0)
-          val result = pplobject.maximize(le, val_n, val_d, exact)
-          if (!result)
-            RationalExt.PositiveInfinity
-          else
-            RationalExt(val_n.getBigInteger(), val_d.getBigInteger().multiply(den.getBigInteger()))
+          if (pplobject.is_empty())
+            RationalExt.NegativeInfinity
+          else {
+            val (le, den) = PPLUtils.toPPLLinearExpression(lf)
+            val exact = new By_Reference[java.lang.Boolean](false)
+            val val_n = new Coefficient(0)
+            val val_d = new Coefficient(0)
+            val result = pplobject.maximize(le, val_n, val_d, exact)
+            if (!result)
+              RationalExt.PositiveInfinity
+            else
+              RationalExt(val_n.getBigInteger(), val_d.getBigInteger().multiply(den.getBigInteger()))
+          }
         }
 
         def frequency(lf: LinearForm) = {
