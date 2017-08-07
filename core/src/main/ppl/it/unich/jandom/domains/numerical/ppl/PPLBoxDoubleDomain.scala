@@ -32,7 +32,6 @@ import parma_polyhedra_library.Double_Box
  *
  * This class could me removed in favor of `PPLDomain[C_Polyehdron]` and the analogous macro-based
  * domain, but we keep it here since it the simplest PPL class in which to tinker around.
- * @param pplbox an object of class `Double_Box` which is the $PPL wrapped object.
  * @author Gianluca Amato <gamato@unich.it>
  */
 class PPLBoxDoubleDomain extends NumericalDomain {

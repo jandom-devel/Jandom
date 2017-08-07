@@ -21,14 +21,14 @@ import it.unich.scalafix.Box
 
 /**
  * The description of a widening.
- * @tparam the type of objects on which the widening operates.
- * @param box the box which implements the widening.
+ * @tparam Property type of objects on which the widening operates.
  * @param name short name of the widening.
- * @param description long description of the widening.
+ * @param description long description of the widening
+ * @param box the box which implements the widening.
  */
 class WideningDescription[Property](val name: String, val description: String, val box: Box[Property]) {
   /**
-   * Application of widening is equivalent to the application of the underlying box.
+   * Application of widening description is equivalent to the application of the underlying box.
    */
   def apply(a: Property, b: Property) = box(a, b)
 }
@@ -39,10 +39,10 @@ class WideningDescription[Property](val name: String, val description: String, v
 object WideningDescription {
   /**
    * Builds a widening description.
-   * @tparam the type of objects on which the widening operates.
-   * @param box the box which implements the widening.
+   * @tparam Property type of objects on which the widening operates.
    * @param name short name of the widening.
    * @param description long description of the widening.
+   * @param box the box which implements the widening.
    */
   def apply[Property](name: String, description: String, box: Box[Property]) =
     new WideningDescription(name, description, box)
