@@ -113,7 +113,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
 
   def minimize(lf: LinearForm) = {
     if (isEmpty) {
-      if (lf.homcoeffs.forall(_ == 0.0))
+      if (lf.homcoeffs.forall(_ == Rational.zero))
         lf.known
       else
         RationalExt.PositiveInfinity
@@ -132,7 +132,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
 
   def maximize(lf: LinearForm) = {
     if (isEmpty) {
-      if (lf.homcoeffs.forall(_ == 0.0))
+      if (lf.homcoeffs.forall(_ ==  Rational.zero))
         lf.known
       else
         RationalExt.NegativeInfinity
@@ -151,7 +151,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
 
   def frequency(lf: LinearForm) = {
     if (isEmpty) {
-      if (lf.homcoeffs.forall(_ == 0.0))
+      if (lf.homcoeffs.forall(_ == Rational.zero))
         Option(lf.known)
       else
         Option.empty

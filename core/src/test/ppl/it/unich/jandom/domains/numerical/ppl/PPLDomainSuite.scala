@@ -121,8 +121,8 @@ class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double
   }
 
   describe("Test string conversion for high-dimensional spaces") {
-    val a = Array.fill(34)(0.0)
-    a(27) = 1.0
+    val a = Array.fill(34)(0)
+    a(27) = 1
     val obj3 = dom.top(33).linearInequality(LinearForm.v(27))
     assertResult("[ -v27 >= 0 ]") { obj3.toString }
   }

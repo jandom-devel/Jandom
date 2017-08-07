@@ -65,16 +65,16 @@ class ProductDomainSuite extends NumericalDomainSuite {
   }
 
   describe("assignment on product") {
-    val x2 = full.linearAssignment(0, 0.0)
+    val x2 = full.linearAssignment(0, 0)
     assertResult(x2) {
       new dom.Property(
-        dom.dom1.top(2).linearAssignment(0, 0.0),
-        ptopeFull.linearAssignment(0, 0.0))
+        dom.dom1.top(2).linearAssignment(0, 0),
+        ptopeFull.linearAssignment(0, 0))
     }
   }
 
   describe("dimension on product") {
-    val x2 = full.linearAssignment(0, 0.0)
+    val x2 = full.linearAssignment(0, 0)
     assertResult(3) { x2.addVariable().dimension }
     assertResult(n + 1) { full.addVariable().dimension }
   }

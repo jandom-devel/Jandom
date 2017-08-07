@@ -129,7 +129,7 @@ final class PPLBoxDouble(val pplbox: Double_Box) extends NumericalProperty[PPLBo
 
   def maximize(lf: LinearForm) = {
     if (isEmpty) {
-      if (lf.homcoeffs.forall(_ == 0.0))
+      if (lf.homcoeffs.forall(_ == Rational.zero))
         RationalExt(lf.known)
       else
         RationalExt.NegativeInfinity
@@ -148,7 +148,7 @@ final class PPLBoxDouble(val pplbox: Double_Box) extends NumericalProperty[PPLBo
 
   def frequency(lf: LinearForm) = {
     if (isEmpty) {
-      if (lf.homcoeffs.forall(_ == 0.0))
+      if (lf.homcoeffs.forall(_ == Rational.zero))
         Option(lf.known)
       else
         Option.empty

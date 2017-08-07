@@ -48,7 +48,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
      */
     def jimpleExprToLinearForm(v: Value): Option[Array[Rational]] = {
       val a = Array.fill(size + 1)(Rational.zero)
-      var c = 0.0
+      var c = Rational.zero
       v match {
         case v: IntConstant =>
           a(0) = v.value
