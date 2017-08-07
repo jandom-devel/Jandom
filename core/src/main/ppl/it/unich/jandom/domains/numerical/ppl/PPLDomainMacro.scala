@@ -328,7 +328,7 @@ object PPLDomainMacro {
 
         def apply(x: $PPLTypeTag): ThisProperty = new ThisProperty(x)
 
-        val widenings = Seq(..$widenings)
+        val widenings = WideningDescription.default[Property] +: Seq(..$widenings)
       }
 
       ThisDomain
