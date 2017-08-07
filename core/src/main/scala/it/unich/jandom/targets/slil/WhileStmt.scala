@@ -51,8 +51,8 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
     params.nestingLevel += 1
 
     // Determines widening/narrowing operators to use
-    val widening = params.widening((this, 1)).copy
-    val narrowing = params.narrowing((this, 1)).copy
+    val widening = params.widening((this,1))
+    val narrowing = params.narrowing((this,1))
 
     // Determines initial values for the analysis, depending on the calling phase
     var (bodyResult, invariant) =

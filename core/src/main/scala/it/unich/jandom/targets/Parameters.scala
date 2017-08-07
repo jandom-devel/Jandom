@@ -21,8 +21,6 @@ package it.unich.jandom.targets
 import it.unich.jandom.targets.parameters._
 import it.unich.jandom.targets.parameters.NarrowingSpecs._
 import it.unich.jandom.targets.parameters.WideningSpecs._
-import it.unich.jandom.ui.NarrowingStrategies
-import it.unich.jandom.ui.WideningScopes
 import it.unich.scalafix.BoxAssignment
 
 /**
@@ -75,7 +73,7 @@ abstract class Parameters[Tgt <: Target[Tgt]] {
   /**
    * The current narrowing, returned as a box assignment.
    */
-  def narrowing = {
+  def narrowing: BoxAssignment[Tgt#ProgramPoint, domain.Property] = {
     if (_narrowing == null) _narrowing = DefaultNarrowing.get(domain)
     _narrowing
   }

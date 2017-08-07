@@ -6,7 +6,7 @@ libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.13.3" % "test",
   "org.mockito" % "mockito-core" % "2.2.9" % "test",
   "org.spire-math" %% "spire" % "0.12.0",
-  "it.unich.scalafix" %% "scalafix" % "0.5.2",
+  "it.unich.scalafix" %% "scalafix" % "0.6.0",
   "org.rogach" %% "scallop" % "2.0.3",
   "org.scala-lang.modules" %% "scala-swing" % "1.0.2",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",

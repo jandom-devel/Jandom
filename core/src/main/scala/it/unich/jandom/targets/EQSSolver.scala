@@ -18,17 +18,10 @@
 
 package it.unich.jandom.targets
 
-import it.unich.jandom.targets.parameters.NarrowingSpecs._
-import it.unich.jandom.targets.parameters.WideningNarrowingLocation
-import it.unich.jandom.targets.parameters.WideningSpecs._
-import it.unich.scalafix._
+import it.unich.jandom.targets.parameters.{IterationStrategy, WideningNarrowingLocation, WideningScope}
 import it.unich.scalafix.FixpointSolver._
-import it.unich.scalafix.FixpointSolverListener.EmptyListener
-import it.unich.scalafix.finite.FiniteFixpointSolver
-import it.unich.scalafix.finite.FiniteFixpointSolver._
-import it.unich.scalafix.finite.GraphEquationSystem
-import it.unich.jandom.targets.parameters.IterationStrategy
-import it.unich.jandom.domains.AbstractDomain
+import it.unich.scalafix._
+import it.unich.scalafix.finite.{FiniteFixpointSolver, GraphEquationSystem}
 
 /**
  * This is a solver for equations systems which takes a Parameters object in order to drive
@@ -36,35 +29,38 @@ import it.unich.jandom.domains.AbstractDomain
  */
 
 object EQSSolver {
-  def apply[Tgt <: Target[Tgt]](tgt: Tgt)(dom: tgt.DomainBase)
-        (params: Parameters[Tgt], listener: FixpointSolverListener[tgt.ProgramPoint, dom.Property] = FixpointSolverListener.EmptyListener)
-        : Assignment[tgt.ProgramPoint, dom.Property] = {
-    implicit val scalafixDomain = dom.ScalaFixDomain
+  def apply[Tgt <: Target[Tgt]](tgt: Tgt)(dom: tgt.DomainBase)(params: Parameters[Tgt] { val domain: dom.type })(listener: FixpointSolverListener[tgt.ProgramPoint, params.domain.Property] = FixpointSolverListener.EmptyListener)
+        : Assignment[tgt.ProgramPoint, params.domain.Property] = {
+    import params._
+    implicit val scalafixDomain = params.domain.ScalaFixDomain
 
     if (params.wideningLocation != params.narrowingLocation)
-      throw new IllegalArgumentException("widening and narrowing locations shoule be the same");
+      throw new IllegalArgumentException("widening and narrowing locations should be the same");
 
-    val widening = DefaultWidening.get(dom)
-    val narrowing = DefaultNarrowing.get(dom)
-
-    val boxlocation = params.wideningLocation match {
+    val boxlocation = wideningLocation match {
       case WideningNarrowingLocation.None => BoxLocation.None
       case WideningNarrowingLocation.All => BoxLocation.All
       case WideningNarrowingLocation.Loop => BoxLocation.Loop
     }
 
-    val solver = params.iterationStrategy match {
+    val solver = iterationStrategy match {
       case IterationStrategy.Kleene => Solver.KleeneSolver
       case IterationStrategy.Worklist => Solver.WorkListSolver
     }
 
-    val eqs = tgt.toEQS(dom)
-    val eqsParams = FiniteFixpointSolver.CC77[tgt.ProgramPoint, dom.Property](solver, widening, narrowing).copy(
-        boxlocation = boxlocation, listener = listener
+    val scope = wideningScope match  {
+      case WideningScope.Output => BoxScope.Standard
+      case WideningScope.Random => BoxScope.Localized
+      case WideningScope.BackEdges => ???
+    }
+
+    val eqs = tgt.toEQS(params.domain)
+    val eqsParams = FiniteFixpointSolver.CC77[tgt.ProgramPoint, params.domain.Property](solver, widening, narrowing).copy(
+        boxlocation = boxlocation, boxscope = scope, listener = listener
     )
 
     eqs match {
-      case eqs: GraphEquationSystem[tgt.ProgramPoint, dom.Property, _] => FiniteFixpointSolver(eqs, eqsParams)
+      case eqs: GraphEquationSystem[tgt.ProgramPoint, domain.Property, _] => FiniteFixpointSolver(eqs, eqsParams)
       case _ => ???
     }
   }

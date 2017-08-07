@@ -19,7 +19,6 @@
 package it.unich.jandom.targets.cfg
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
-
 import it.unich.jandom.targets.Annotation
 import it.unich.jandom.targets.Target
 import soot.toolkits.graph.DirectedGraph
@@ -98,7 +97,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
 
   /**
    * Analyzes the target, starting from a given property.
-   * @param param the parameters which drive the analyzer
+   * @param params the parameters which drive the analyzer
    * @param input the starting property
    * @return the resulting annotation
    * @note this should be moved in the Target class.
@@ -111,7 +110,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
 
   /**
    * Perform a static analysis over the target, from a standard initial annotation
-   * @param param the parameters which drive the analyzer
+   * @param params the parameters which drive the analyzer
    * @return an annotation for the program
    */
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
@@ -124,8 +123,6 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    * The analyzer. At the moment, it implements a work-list based analysis.
    */
   def analyzeFromAnnotation(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): Annotation[ProgramPoint, params.Property] = {
-    val widening = params.widening.copy
-    val narrowing = params.narrowing.copy
     val annEdge = HashMap[Edge, params.Property]()
     val taskList = Queue[ProgramPoint](graph.getHeads: _*)
 
@@ -142,7 +139,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
           params.log(s"join $succ : ${ann(succ)} with $out")
           val succval: params.Property = if (ordering.lteq(succ, node)) {
             params.log(s" widening")
-            widening(node)(ann(succ), out)
+            params.widening(node)(ann(succ), out)
           } else
             ann(succ) union out
           if (succval > ann(succ)) {
@@ -173,7 +170,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
         params.log(s"narrow $succ : ${ann(succ)} with $newinput ")
         // this may probably cause an infinite loop
         val succval = if (ordering.lteq(succ, node)) {
-          narrowing(node)(ann(succ), newinput)
+          params.narrowing(node)(ann(succ), newinput)
         } else
           newinput
         params.log(s"result $succval\n")

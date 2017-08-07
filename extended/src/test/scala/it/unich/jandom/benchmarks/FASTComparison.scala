@@ -44,7 +44,7 @@ object FASTComparison extends App with FASTLoader {
     ("localized", CC77.copy(boxscope = BoxScope.Localized)),
     ("mixed", SCP),
     ("mixed localized", SCP.copy(boxscope = BoxScope.Localized)),
-    ("mixed localized restart", SCP.copy(boxscope = BoxScope.Localized, restartstrategy = true)))
+    ("mixed localized restart", SCP.copy(boxscope = BoxScope.Localized, restartstrategy = RestartStrategy.Restart)))
 
   val results = (for (lts <- ltss; eqs = lts.toEQS(dom); (name, p) <- parameters) yield {
     val l = new PerformanceListener

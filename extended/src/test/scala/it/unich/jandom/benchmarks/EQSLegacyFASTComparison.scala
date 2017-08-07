@@ -82,7 +82,7 @@ object EQSLegacyFASTComparison extends App with FASTLoader {
     var globaleq, globallt, globalgt, globalun = 0
     for (lts <- ltss) {
       timeTemp = java.lang.System.currentTimeMillis()
-      val res1 = EQSSolver(lts)(dom)(params, FixpointSolverListener.EmptyListener)
+      val res1 = EQSSolver(lts)(dom)(params)(FixpointSolverListener.EmptyListener)
       timeEQS += (java.lang.System.currentTimeMillis() - timeTemp)
       timeTemp = java.lang.System.currentTimeMillis()
       val res2 = lts.analyze(params)
