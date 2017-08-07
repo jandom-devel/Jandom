@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
+ * Copyright 2013, 2016, 2017 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,21 +18,10 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
-import it.unich.jandom.domains.DomainTransformation
-import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.domains.numerical.NumericalDomain
-import parma_polyhedra_library.By_Reference
-import parma_polyhedra_library.Coefficient
-import parma_polyhedra_library.Complexity_Class
-import parma_polyhedra_library.Congruence_System
-import parma_polyhedra_library.Constraint
-import parma_polyhedra_library.Constraint_System
-import parma_polyhedra_library.Degenerate_Element
-import parma_polyhedra_library.Linear_Expression
-import parma_polyhedra_library.Partial_Function
-import parma_polyhedra_library.Polyhedron
-import parma_polyhedra_library.Variable
-import parma_polyhedra_library.Variables_Set
+import it.unich.jandom.domains.{DomainTransformation, WideningDescription}
+import it.unich.scalafix.Box
+import parma_polyhedra_library._
 
 /**
  * This is the domain of PPL properties.  It is able to represent (almost) any property
@@ -49,8 +38,6 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   type Property = PPLProperty[PPLNativeProperty]
 
   PPLInitializer
-
-  val widenings = Seq(WideningDescription.default[Property])
 
   /*
    * The class object corresponding to PPLNativeProperty
@@ -123,10 +110,27 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   private[domains] def frequency(me: PPLNativeProperty, le: Linear_Expression, freq_n: Coefficient, freq_d: Coefficient, val_n: Coefficient, val_d: Coefficient) =
     frequencyHandle.invoke(me, le, freq_n, freq_d, val_n, val_d).asInstanceOf[java.lang.Boolean].booleanValue()
 
-    /**
+  /**
    * It is true if `PPLNativeProperty` has the `CC76_narrowing_assign` method.
    */
   val supportsNarrowing = narrowingAssignHandle != null
+
+  private val wideningsList = for {
+    m <- myClass.getMethods()
+    name = m.getName
+    if name.toString.endsWith("_widening_assign")
+    wideningName = name.toString.stripSuffix("_widening_assign")
+  } yield
+      WideningDescription(wideningName, s"The PPL widening using the ${name.toString} method",
+         Box.apply[Property] { (a: Property, b: Property) => {
+           val newpplobject = copyConstructor(a.pplobject)
+           upper_bound_assign(newpplobject,b.pplobject)
+           m.invoke(newpplobject, a.pplobject, null)
+           new PPLProperty(this, newpplobject)
+         }
+      })
+
+  val widenings = WideningDescription.default[Property] +: wideningsList.toSeq
 
   def top(n: Int): Property = {
     val pplobject = constructor(n, Degenerate_Element.UNIVERSE)
@@ -141,7 +145,6 @@ class PPLDomain[PPLNativeProperty <: AnyRef: Manifest] extends NumericalDomain {
   /**
    * Build a PPL property from a PPL property of other type. Conversion is slow because the right constructor
    * is looked up at runtime.
-   * @tparam PPLSourceProperty the class of the native PPL property
    * @param x the source `PPLProperty`
    * @return x transformed into a `PPLPropert[PPLNativeProperty]`
    */
