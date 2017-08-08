@@ -73,7 +73,7 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
 
   /**
    * The standard widening for two abstract properties. The object `this` should be widened with `that`. The
-   * result should be an upper bound of the two properties, and converge of the sequence s(i+1) = s(i) widening v(i)
+   * result should be an upper bound of the two properties, and convergemce of the sequence s(i+1) = s(i) widening v(i)
    * should be ensured for any sequence of v(i)'s.
    *
    * Important: `that` is not required to be bigger than `this`. This generality is needed in order to deal with
@@ -86,9 +86,9 @@ trait AbstractProperty[Property <: AbstractProperty[Property]] extends Partially
   def widening(that: Property): Property
 
   /**
-   * The standard narrowing for two abstract properties. The object `this` should be widened with `that`. The
+   * The standard narrowing for two abstract properties. The object `this` should be narrowed with `that`. The
    * result should be smaller than `this` but bigger than `this intersection that` (or, more generally, a correct
-   * approximation of the concrete intersection). Moreover, converge of the sequence s(i+1) = s(i) narrowing v(i)
+   * approximation of the concrete intersection). Moreover, convergence of the sequence s(i+1) = s(i) narrowing v(i)
    * should be ensured for any sequence of v(i)'s.
    *
    * Important: `that` is not required to be bigger than `this`. This generality is needed in order to deal with

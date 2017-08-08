@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 Gianluca Amato <gianluca.amato@unich.it>
+ * Copyright 2016, 2017 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -25,7 +25,8 @@ import it.unich.scalafix.Box
 
 /**
  * This object contains the WideningSpec class and its subclasses. They are used
- * to specify which kind of widening to use for the analyses.
+ * to specify which kind of widening to use for the analyses, in a way which is indepedent
+ * from abstract domains and targets.
  * @author Gianluca Amato <gianluca.amato@unich.it>
  */
 object WideningSpecs {

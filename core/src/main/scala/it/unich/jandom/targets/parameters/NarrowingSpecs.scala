@@ -1,5 +1,5 @@
 /**
- * Copyright 2016 Gianluca Amato <gianluca.amato@unich.it>
+ * Copyright 2016, 2017 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,12 +18,15 @@
 
 package it.unich.jandom.targets.parameters
 
+import scala.language.implicitConversions
+
 import it.unich.jandom.domains.AbstractDomain
 import it.unich.scalafix.Box
 
 /**
  * This object contains the NarrowingSpec class and its subclasses. They are used
- * to specify which kind of narrowing to use for the analyses.
+ * to specify which kind of narrowing to use for the analyses, in a way which is indepedent
+ * from abstract domains and targets.
  * @author Gianluca Amato <gianluca.amato@unich.it>
  */
 object NarrowingSpecs {
@@ -56,9 +59,9 @@ object NarrowingSpecs {
 
   /**
    * This always returns its right argument. Therefore, this is not formally a
-   * real widening since it may lead to non-terminating computations.
+   * real narrowing since it may lead to non-terminating computations.
    */
-  case object LowerBoundNarrowing extends NarrowingSpec {
+  case object RightNarrowing extends NarrowingSpec {
     def get(dom: AbstractDomain) = Box.right[dom.Property]
   }
 
@@ -68,4 +71,15 @@ object NarrowingSpecs {
   case class DelayedNarrowing(base: NarrowingSpec, d: Int) extends NarrowingSpec {
     def get(dom: AbstractDomain) = base.get(dom).delayed(d)
   }
+
+  /**
+    * This specified a narrowing given its name
+    */
+  case class NamedNarrowing(name: String) extends NarrowingSpec {
+    def get(dom: AbstractDomain) = dom.narrowing(name)
+
+  }
+
+  implicit def stringToNameNarrowing(name: String): NarrowingSpec = NamedNarrowing(name)
+
 }
