@@ -22,10 +22,10 @@ import it.unich.jandom.domains.numerical._
 import it.unich.jandom.domains.numerical.ppl._
 import it.unich.jandom.targets.lts.{LTS, Location}
 import it.unich.jandom.targets.parameters.NarrowingSpecs._
-import it.unich.jandom.targets.parameters.WideningScope
 import it.unich.jandom.targets.parameters.WideningSpecs._
 import it.unich.jandom.targets.{EQSSolver, Parameters}
 import it.unich.jandom.utils.numberext.RationalExt
+import it.unich.scalafix.finite.DFOrdering
 import it.unich.scalafix.{Assignment, FixpointSolverListener}
 import parma_polyhedra_library._
 import spire.math.Rational
@@ -69,6 +69,30 @@ object NSAD17Comparison extends App with FASTLoader {
 
   val bounds = Map.empty[Cell, Map[CellConstraint, RationalExt]]
 
+  def reportLoopLocations(): Unit = {
+    var totalLocations, totalHeads = 0
+    var maxVar, maxLocs, maxHeads = 0
+    for (lts <- ltss) {
+      val eqs = lts.toEQS(box)
+      val dfo = DFOrdering(eqs)
+      val locations = eqs.unknowns.size
+      val vars = lts.env.size
+      val heads = eqs.unknowns.count( dfo.isHead(_) )
+      println(s"LTS: ${lts.name} locs: $locations heads: $heads vars: $vars")
+      totalLocations += locations
+      totalHeads += heads
+      maxVar = maxVar max vars
+      maxLocs = maxLocs max locations
+      maxHeads = maxHeads max heads
+    }
+    println(s"${ltss.size} models")
+    println(s"$totalLocations locations")
+    println(s"$totalHeads loop heads")
+    println(s"$maxVar maximum number of variables for model")
+    println(s"$maxLocs maximum number of location for model")
+    println(s"$maxHeads maximum number of loop heads for model")
+
+  }
 
   def CStoPolyehdra(dimension: Int, c: Seq[LinearForm]) = {
     c.foldLeft(polyhedra.top(dimension)) { (p: polyhedra.Property, lf: LinearForm) => p.linearInequality(lf) }
@@ -420,6 +444,8 @@ object NSAD17Comparison extends App with FASTLoader {
       print(f"$meantime%6s \u00B1 $stddev%-3s")
     }
   }
+
+  reportLoopLocations()
 
   //timeAnalysisPrecisely()
   //computeAnalysis()
