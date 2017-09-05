@@ -42,12 +42,27 @@ object NSAD17Comparison extends App with FASTLoader {
   val ptope = ParallelotopeRationalDomain(favorAxis = 1)
   val ptopeproduct = new ProductDomain(BoxRationalDomain(), ParallelotopeRationalDomain(favorAxis = -1))
 
+  /**
+    * A Config contains the specification of a domain in the NSAD 2017 paper. More precisely, it
+    * is a triple consisting of an identifier, a numerical domain and a widening specification.
+    */
   type Config = (String, NumericalDomain, WideningSpec)
 
+  /**
+    * A Cell identifies a single cell in the tables published in the NSAD 2017 paper. More precisely,
+    * it is a triple consisting of a widening delay, a narrowing delay and a Config.
+    */
   type Cell = (Int, Int, Config)
 
+  /**
+    * A CellConstraint is one of the bounds associated to each cell. It is a triple given by an LTS,
+    * a location in the same LTS and a linear form represented as a sequence of rationals.
+    */
   type CellConstraint = (LTS, Location, Seq[Rational])
 
+  /**
+    * The list of all Config's to use for the analysis.
+    */
   val configs: Seq[Config] = Seq(
     ("box", box, DefaultWidening),
     ("octagons", octagons, DefaultWidening),
@@ -57,18 +72,40 @@ object NSAD17Comparison extends App with FASTLoader {
     ("polyhedra BHRZ03", polyhedra, NamedWidening("BHRZ03"))
   )
 
+  /**
+    * The list of all widening delays to use for the analysis.
+    */
   val wideningDelays = Seq(0, 1, 2, 3, 4, 5, 6)
 
+  /**
+    * The list of all narrowing delays to use for the analysis.
+    */
   val narrowingDelays = Seq(0, 1, 2, 3)
 
+  /**
+    * The list of all the cells, computed by wideningDelays, narrowingDelays and configs.
+    */
   val cells = for (nd <- narrowingDelays; wd <- wideningDelays; c <- configs) yield  (nd, wd, c)
 
+  /**
+    * The list of results for each cell, lts and location.
+    */
   val results = Map.empty[(Cell, LTS), Assignment[Location, NumericalProperty[_]]]
 
+  /**
+    * The time taken to analyze each lts in each cell configurations.
+    */
   val times = Map.empty[(Cell, LTS), Long]
 
+  /**
+    * The
+    */
   val bounds = Map.empty[Cell, Map[CellConstraint, RationalExt]]
 
+  /**
+    * Reports, for each LTS, the number of locations, loop heads an variables. Moreover,
+    * determines total and maximum values.
+    */
   def reportLoopLocations(): Unit = {
     var totalLocations, totalHeads = 0
     var maxVar, maxLocs, maxHeads = 0
@@ -91,13 +128,21 @@ object NSAD17Comparison extends App with FASTLoader {
     println(s"$maxVar maximum number of variables for model")
     println(s"$maxLocs maximum number of location for model")
     println(s"$maxHeads maximum number of loop heads for model")
-
   }
 
-  def CStoPolyehdra(dimension: Int, c: Seq[LinearForm]) = {
-    c.foldLeft(polyhedra.top(dimension)) { (p: polyhedra.Property, lf: LinearForm) => p.linearInequality(lf) }
+  /**
+    * Returns the polyhedron corresponding to a set of linear forms.
+    * @param dimension dimension of the resulting polyhedron.
+    * @param cs a sequence of linear forms to be transformed into a polyhedron
+    */
+  def CStoPolyehdra(dimension: Int, cs: Seq[LinearForm]) = {
+    cs.foldLeft(polyhedra.top(dimension)) { (p: polyhedra.Property, lf: LinearForm) => p.linearInequality(lf) }
   }
 
+  /**
+    * A warm-up procedure which analyzes each LTS once. To be called before timing
+    * the analysis.
+    */
   def warmupJVM(): Unit = {
     println("Warmup JVM")
     for (config <- configs; lts <- ltss) {
@@ -111,6 +156,10 @@ object NSAD17Comparison extends App with FASTLoader {
     }
   }
 
+  /**
+    * Analyze each LTS according to the configuration of each cell, updating maps
+    * results and times.
+    */
   def computeAnalysis(): Unit = {
     println("Computing analysis")
     val size = cells.size
@@ -135,6 +184,10 @@ object NSAD17Comparison extends App with FASTLoader {
     println
   }
 
+  /**
+    * Computes the bounds for variables and put results in the map `bounds`. It requires
+    * the map `results` to be already filled.
+    */
   def computeIntervalBounds(): Unit = {
     println("Computing interval bounds")
     for {
@@ -156,6 +209,61 @@ object NSAD17Comparison extends App with FASTLoader {
     }
   }
 
+  /**
+    * Reports LTSs and locations for which there is a regression when widening delay changes from
+    * wideningDelays(0) to wideningDelays(1)
+    */
+  def reportDelayRegression(): Unit = {
+    println(s"Reporting Delay Regression")
+    for (narrowingDelay <- narrowingDelays) {
+      println(s"narrowing delay $narrowingDelay")
+      for (config <- configs) {
+        val (namedom,_,_) = config
+        print(f"$namedom%17s")
+        val wDelay1 = wideningDelays(0)
+        val wDelay2 = wideningDelays(1)
+        val cC1 = bounds((narrowingDelay, wDelay1, config))
+        val cC2 = bounds((narrowingDelay, wDelay2, config))
+        for ((constraint, bound) <- cC1) {
+          val lts = constraint._1
+          if (cC2(constraint) > bound && lts.locations.size == 1)
+            println(s"LTS ${lts} size  ${lts.locations.size} vars ${lts.env.size} location ${constraint._2}")
+        }
+        println
+      }
+      println
+    }
+  }
+
+  /**
+    * Reports LTSs and locations for which there is a regression when config changes from
+    * configs(0) to configs(1).
+    */
+  def reportDomainRegression(): Unit = {
+    println(s"Reporting Domain Regression")
+    for (narrowingDelay <- narrowingDelays) {
+      println(s"narrowing delay $narrowingDelay")
+      val wDelay = 0
+      val config0 = configs(0)
+      val config1 = configs(1)
+      val cC1 = bounds((narrowingDelay, wDelay, config0))
+      val cC2 = bounds((narrowingDelay, wDelay, config1))
+      for ((constraint, bound) <- cC1) {
+        val lts = constraint._1
+        if (cC2(constraint) > bound && lts.locations.size == 1)
+          println(s"LTS ${lts} size  ${lts.locations.size} vars ${lts.env.size} location ${constraint._2}")
+      }
+      println
+    }
+  }
+
+  /**
+    * Report the result of the analysis. It essentially calls the function `reportCell` for each cell
+    * and format the output.
+    * @param name the name of this analysis.
+    * @param reportCell a function which is called for each cell and should output the result of
+    *                   the analysis.
+    */
   def reportAnalysis(name: String, reportCell: Cell => Unit): Unit = {
     println(s"Reporting Analysis: $name")
     for (narrowingDelay <- narrowingDelays) {
@@ -171,12 +279,22 @@ object NSAD17Comparison extends App with FASTLoader {
     }
   }
 
+  /**
+    * A function reporting the time taken to analyze each cell. The map `times` should
+    * be already computed.
+    * @param cell
+    */
   def reportCellTime(cell: Cell): Unit = {
     var time: Long = 0
     for (lts <- ltss) time += times((cell, lts))
     print(f"$time%6s")
   }
 
+  /**
+    * A function reporting the number of non-trivial bounds found in a given cell. The map
+    * `bounds` should be already computed.
+    * @param cell
+    */
   def reportCellFiniteBounds(cell: Cell): Unit = {
     var finiteBounds: Int = 0
     for ((_, bound) <- bounds(cell))
@@ -184,6 +302,10 @@ object NSAD17Comparison extends App with FASTLoader {
     print(f"$finiteBounds%4s")
   }
 
+  /**
+    * A function that analyze and reports the total number of non-trivial octagon bounds found in
+    * each cell.
+    */
   def reportFiniteBoundsOctagon(): Unit = {
     for (narrowingDelay <- narrowingDelays) {
       println(s"narrowing delay ${
@@ -227,7 +349,10 @@ object NSAD17Comparison extends App with FASTLoader {
     }
   }
 
-
+  /**
+    * A function which analyze and reports the number of non-trivial interval bounds in a cell which
+    * are no worse of the similar bound in another cell in the same config.
+    */
   def reportBestFiniteBounds(): Unit = {
     for (narrowingDelay <- narrowingDelays) {
       val upper_bounds = collection.mutable.HashMap.empty[(Int, String, LTS, Location, Int), RationalExt]
@@ -284,6 +409,10 @@ object NSAD17Comparison extends App with FASTLoader {
     }
   }
 
+  /**
+    * A function which analyze and reports the number of non-trivial octagonal bounds in a cell which
+    * are no worse of the similar bound in another cell in the same config.
+    */
   def reportBestFiniteBoundsOctagon(): Unit = {
     for (narrowingDelay <- narrowingDelays) {
       val bounds = collection.mutable.HashMap.empty[(Int, String, LTS, Location, Seq[Rational]), RationalExt]
@@ -356,6 +485,10 @@ object NSAD17Comparison extends App with FASTLoader {
     }
   }
 
+  /**
+    * Analyze and reports the number of bounds which are strictly better or worse in a config
+    * w.r.t. another config, separately for each cell.
+    */
   def reportBoundImprovements(): Unit = {
     for (narrowingDelay <- narrowingDelays) {
       val upper_bounds = collection.mutable.HashMap.empty[(Int, String, LTS, Location, Int), RationalExt]
@@ -416,6 +549,10 @@ object NSAD17Comparison extends App with FASTLoader {
     }
   }
 
+  /**
+    * Compute with good precision the time taken for the analysis of each cell, by warming up JVM
+    * and computing the average of several attempts.
+    */
   def timeAnalysisPrecisely(): Unit = {
 
     val numtries = 5
