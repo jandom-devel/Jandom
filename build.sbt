@@ -1,20 +1,28 @@
+import CustomKeys._
+
 //*** Declare projects
 
-val Jandom = project in file("core") enablePlugins(BuildInfoPlugin)
+lazy val JandomCore = project in file("core") enablePlugins(BuildInfoPlugin)
 
-val JandomExtended = project in file("extended")  dependsOn Jandom % "compile->compile;test->test"
+lazy val JandomExtended = project in file("extended") dependsOn JandomCore % "compile->compile;test->test"
 
-val root = project in file(".")  aggregate (Jandom, JandomExtended) 
+lazy val Jandom = project in file(".") aggregate (JandomCore, JandomExtended) 
 
-// This delegates the root run task to the run task in the Jandom project
+//*** This delegates the Jandom run task to execute the run task in the Jandom sub-projects
 
-run <<= run in ("Jandom", Compile)
+aggregate in assembly := false
 
-run in Test <<= run in ("Jandom", Test)
+assembly := (assembly in JandomExtended).value
 
-// Add a new benchmark configuration...
-// val Bench = config("bench") extend(Test)
-// val root = project in file(".") configs(Bench) settings( inConfig(Bench) (Defaults.testSettings):_*) aggregate (Jandom, JandomExtended) 
+run := (run in JandomCore in Compile).evaluated
+
+run in Test := (run in JandomCore in Test).evaluated
+
+run in Jmh := (run in JandomExtended in Jmh).evaluated
+
+//*** Do not update snapshots every time
+
+updateOptions in ThisBuild := updateOptions.value.withLatestSnapshots(false)
 
 //*** Scala configuration
 
@@ -26,31 +34,34 @@ fork in ThisBuild := true
 
 //*** Resolvers
 
-resolvers in ThisBuild ++= Seq(
+resolvers in ThisBuild ++= Seq (
   Resolver.sonatypeRepo("releases"),
   Resolver.sonatypeRepo("snapshots"),
   "Soot snapshot" at "https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-snapshot/",
-  "Soot release" at "https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-release/"
+  "Soot release" at
+   "https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-release/"
 )
 
-//*** Detect PPL
+//*** Custom keys
 
-val optionalPPLPathName = try {
-    val PPLPathName = Process("ppl-config -l").lines.head+"/ppl/ppl_java.jar"
+pplJar in ThisBuild := {
+  try {
+    val PPLPathName = scala.sys.process.Process("ppl-config -l").lineStream.head+"/ppl/ppl_java.jar"
     if (file(PPLPathName).exists) Some(PPLPathName) else None
   } catch {
     case _ : Exception => None 
   }
+}
 
-pplJar in ThisBuild := optionalPPLPathName
+gitHeadCommitSHA in ThisBuild := scala.sys.process.Process("git rev-parse HEAD").lineStream.head
 
-// for removing warnings when Breeze does not find native libraries
-//
-// javaOptions in ThisBuild ++= Seq("-Dcom.github.fommil.netlib.BLAS=com.github.fommil.netlib.F2jBLAS",
-//   "-Dcom.github.fommil.netlib.LAPACK=com.github.fommil.netlib.F2jLAPACK",
-//   "-Dcom.github.fommil.netlib.ARPACK=com.github.fommil.netlib.F2jARPACK")
+//*** Eclipse plugin
 
-// Metadata
+// unfortunately, it is not possible to choose the compiler version with the eclipse plugin.
+
+EclipseKeys.eclipseOutput := Some("target.eclipse")
+
+//*** Metadata for the build
 
 name in ThisBuild := "Jandom"
 
@@ -66,20 +77,20 @@ homepage in ThisBuild := Some(url("https://github.com/jandom-devel/Jandom"))
 
 startYear in ThisBuild := Some(2011)
 
-developers := List(
-  new Developer(
+developers in ThisBuild := List(
+  Developer(
     "amato",
     "Gianluca Amato", "gianluca.amato@unich.it",
     url("http://www.sci.unich.it/~amato/")
   ),
-  new Developer(
+  Developer(
     "scozzari",
     "Francesca Scozzari", "francesca.scozzari@unich.it",
     url("http://www.sci.unich.it/~scozzari/")
   )
 )
 
-scmInfo := Some(new ScmInfo(
+scmInfo in ThisBuild := Some(ScmInfo(
   url("https://github.com/jandom-devel/Jandom"),
   "scm:git:https://github.com/jandom-devel/Jandom.git",
   Some("scm:git:https://github.com/jandom-devel/Jandom.git")

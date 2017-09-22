@@ -1,4 +1,4 @@
-updateOptions := updateOptions.value.withLatestSnapshots(false)
+import CustomKeys._
 
 //*** Additional source directories for PPL
 
@@ -8,41 +8,26 @@ unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory
 
 //*** Assembly plugin
 
-test in assembly := {}
+test in assembly := { }
 
-mergeStrategy in assembly <<= (mergeStrategy in assembly) { (old) => 
-  {
+assemblyMergeStrategy in assembly ~= { (oldStrategy) =>  {
     case PathList(ps @ _*) if ps.last.endsWith(".class")  => MergeStrategy.last
-    case x => old(x)
+    case x => oldStrategy(x)
   }
 }
 
-//** IntelliJ Idea
-
-ideOutputDirectory in Compile := Some(new File("extended/target/idea/classes"))
-
-ideOutputDirectory in Test := Some(new File("extended/target/idea/test-classes"))
-
 //*** Eclipse plugin
 
-EclipseKeys.createSrc := EclipseCreateSrc.ValueSet()
+EclipseKeys.configurations += Jmh
 
-EclipseKeys.configurations += config("jmh")
+//*** IDEA plugin
 
-EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE17)
+ideOutputDirectory in Compile := Some(file("extended/target/idea/classes"))
 
-EclipseKeys.eclipseOutput := Some("target.eclipse")
+ideOutputDirectory in Test := Some(file("extended/target/idea/test-classes"))
 
 //*** JMH Plugin
 
 enablePlugins(JmhPlugin)
 
-run in Jmh <<= (run in Jmh) dependsOn (compile in Jmh)
-
-// We prefer to change resourceDirectories instead of resourceDirectory so that directories do not
-// appear in the Eclipse project.
-resourceDirectories in Jmh := ((baseDirectory in ThisBuild).value / "core" / "src" / "test" / "resources") +:
-  ( (managedResourceDirectories in Jmh).value ++ (unmanagedResourceDirectories in Jmh).value )
-
-dependencyClasspath in Jmh := (fullClasspath in Test).value
-
+dependencyClasspath in Jmh ++= (exportedProducts in Test).value

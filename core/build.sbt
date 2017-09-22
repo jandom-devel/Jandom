@@ -1,10 +1,12 @@
+import CustomKeys._
+
 //*** Libraries
 
 libraryDependencies ++= Seq(
   "org.apache.commons" % "commons-lang3" % "3.5",
-  "org.scalatest" %% "scalatest" % "3.0.0" % "test",
-  "org.scalacheck" %% "scalacheck" % "1.13.3" % "test",
-  "org.mockito" % "mockito-core" % "2.2.9" % "test",
+  "org.scalatest" %% "scalatest" % "3.0.0" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.13.3" % Test,
+  "org.mockito" % "mockito-core" % "2.2.9" % Test,
   "org.spire-math" %% "spire" % "0.12.0",
   "it.unich.scalafix" %% "scalafix" % "0.6.0",
   "org.rogach" %% "scallop" % "2.0.3",
@@ -15,46 +17,23 @@ libraryDependencies ++= Seq(
   "ca.mcgill.sable" % "soot" %"3.0.0-SNAPSHOT"
 )
 
-updateOptions := updateOptions.value.withLatestSnapshots(false)
-
 //*** Additional source directories for PPL
-
-unmanagedJars in Compile ++= (pplJar.value map file).toSeq
 
 unmanagedSourceDirectories in Compile ++= (pplJar.value map { _ => (sourceDirectory in Compile).value / "ppl" }).toSeq
 
 unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory in Test).value / "ppl" }).toSeq
 
-//*** IntelliJ Idea
-
-ideOutputDirectory in Compile := Some(new File("core/target/idea/classes"))
-
-ideOutputDirectory in Test := Some(new File("core/target/idea/test-classes"))
-
-//*** Eclipse plugin
-
-EclipseKeys.createSrc := EclipseCreateSrc.Default +  EclipseCreateSrc.Managed
-
-EclipseKeys.executionEnvironment := Some(EclipseExecutionEnvironment.JavaSE17)
-
-EclipseKeys.eclipseOutput := Some("target.eclipse")
-
-// It would be nice to be able to exclude resource directories from compilation.
-
-managedSourceDirectories in Test := Seq()
-
-managedResourceDirectories in Test := Seq()
-
-managedResourceDirectories in Compile := Seq()
-
-unmanagedResourceDirectories in Compile := Seq()
+unmanagedJars in Compile ++= (pplJar.value map file).toSeq
 
 //*** BuildInfo plugin
 
-gitHeadCommitSHA := Process("git rev-parse HEAD").lines.head
-
-buildInfoKeys := Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, gitHeadCommitSHA)
+buildInfoKeys ++= Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, gitHeadCommitSHA)
 
 buildInfoPackage := "it.unich.jandom"
 
+//*** IDEA plugin
+
+ideOutputDirectory in Compile := Some(file("core/target/idea/classes"))
+
+ideOutputDirectory in Test := Some(file("core/target/idea/test-classes"))
 

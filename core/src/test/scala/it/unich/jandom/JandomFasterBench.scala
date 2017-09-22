@@ -78,7 +78,7 @@ object JandomFasterBench extends App {
     }
   }
 
-  val resources = getClass.getResource("/fast/").toURI;
+  val resources = getClass.getResource("/fast/").toURI
 
   // This analyzes all models (does not terminate for descending2 with
   for (model <- new File(resources).listFiles()) fastModelAnalyze(model)
