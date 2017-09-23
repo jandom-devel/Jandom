@@ -1,5 +1,5 @@
 /**
- * Copyright 2015 Gianluca Amato <gamato@unich.it>
+ * Copyright 2015, 2017 Gianluca Amato <gamato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -18,12 +18,13 @@
 
 package it.unich.jandom.benchmarks
 
+import it.unich.jandom.benchmark.FASTLoader
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.targets.lts.Location
-import it.unich.scalafix.Box.apply
 import it.unich.scalafix.FixpointSolver._
 import it.unich.scalafix.FixpointSolverListener.PerformanceListener
 import it.unich.scalafix.finite.FiniteFixpointSolver
+import it.unich.scalafix.lattice.Domain
 
 /**
  * An example application which compares the precision of different analysis for Alice benchmarks.
@@ -32,7 +33,7 @@ object FASTComparison extends App with FASTLoader {
   //val dom = PPLDomain[C_Polyhedron]
   val dom = BoxDoubleDomain()
 
-  implicit val scalafixDomain = dom.ScalaFixDomain
+  implicit val scalafixDomain: Domain[dom.Property] = dom.ScalaFixDomain
   val widening = { (x: dom.Property, y: dom.Property) => x widening y }
   val narrowing = { (x: dom.Property, y: dom.Property) => x narrowing y }
 
@@ -55,10 +56,10 @@ object FASTComparison extends App with FASTLoader {
   for ((name, _) <- parameters) {
     var numiters = 0
     for (l <- ltss) numiters += results((l, name))._2
-    println(s"solver ${name} iterations ${numiters}")
+    println(s"solver $name iterations $numiters")
   }
 
-  for (i <- 0 until parameters.size; j <- i + 1 until parameters.size) {
+  for (i <- parameters.indices; j <- i + 1 until parameters.size) {
     val name1 = parameters(i)._1
     val name2 = parameters(j)._1
     var globalun, globaleq, globallt, globalgt = 0
@@ -95,7 +96,7 @@ object FASTComparison extends App with FASTLoader {
     }
     // for comparison, the old solver integrated in the LTS class has 1170 evaluations for worklist based analysis and 1706 evaluations for Kleene.
     println(s"\n-------------------")
-    println(s"${name1} vs ${name2}")
+    println(s"$name1 vs $name2")
     println("Uncomparable: " + globalun)
     println("Equal : " + globaleq)
     println("First Better: " + globallt)
@@ -105,9 +106,9 @@ object FASTComparison extends App with FASTLoader {
   for (lts <- ltss; if lts.name.indexOf("amato") >= 0) {
     println(lts.name)
     for ((name, _) <- parameters) {
-      print(s"Solver ${name} -> ")
+      print(s"Solver $name -> ")
       val result = results((lts, name))
-      for (l <- lts.locations) print(s"${l} : ${result._1(l)} ")
+      for (l <- lts.locations) print(s"$l : ${result._1(l)} ")
       println("")
     }
   }

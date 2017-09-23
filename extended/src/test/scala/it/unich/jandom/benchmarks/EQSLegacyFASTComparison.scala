@@ -1,35 +1,35 @@
 /**
- * Copyright 2016 Gianluca Amato <gianluca.amato@unich.it>
- *
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of a
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
- */
+  * Copyright 2016, 2017 Gianluca Amato <gianluca.amato@unich.it>
+  *
+  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+  * JANDOM is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * JANDOM is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of a
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+  */
 
 package it.unich.jandom.benchmarks
 
+import it.unich.jandom.benchmark.FASTLoader
 import it.unich.jandom.domains.numerical.ParallelotopeRationalDomain
-import it.unich.jandom.targets.{EQSSolver, Parameters}
 import it.unich.jandom.targets.lts._
 import it.unich.jandom.targets.parameters._
+import it.unich.jandom.targets.{EQSSolver, Parameters}
 import it.unich.scalafix.{Assignment, FixpointSolverListener}
 
 /**
- * This program compares standard (legacy) analyzer with the new one based on Scalafix for
- * the LTS target. The aim is to compare both precision of results and speed. This should be used to
- * guide the progressive removal of legacy analyzers.
- */
-
+  * This program compares standard (legacy) analyzer with the new one based on Scalafix for
+  * the LTS target. The aim is to compare both precision of results and speed. This should be used to
+  * guide the progressive removal of legacy analyzers.
+  */
 object EQSLegacyFASTComparison extends App with FASTLoader {
 
   val dom = ParallelotopeRationalDomain()
@@ -93,10 +93,10 @@ object EQSLegacyFASTComparison extends App with FASTLoader {
       globalgt += comparison._3
       globalun += comparison._4
       if (comparison._2 != 0 || comparison._3 != 0 || comparison._4 != 0)
-        println (s"Found differences in ${lts.name}")
+        println(s"Found differences in ${lts.name}")
     }
     println(s"\n-------------------")
-    println(s"${name} EQS vs Legacy")
+    println(s"$name EQS vs Legacy")
     println(s"Time ${timeEQS}ms vs ${timeLTS}ms")
     println("Equal : " + globaleq)
     println("First Better: " + globallt)
