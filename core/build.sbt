@@ -3,15 +3,15 @@ import CustomKeys._
 //*** Libraries
 
 libraryDependencies ++= Seq(
-  "org.apache.commons" % "commons-lang3" % "3.5",
-  "org.scalatest" %% "scalatest" % "3.0.0" % Test,
-  "org.scalacheck" %% "scalacheck" % "1.13.3" % Test,
-  "org.mockito" % "mockito-core" % "2.2.9" % Test,
-  "org.spire-math" %% "spire" % "0.12.0",
-  "it.unich.scalafix" %% "scalafix" % "0.6.0",
-  "org.rogach" %% "scallop" % "2.0.3",
-  "org.scala-lang.modules" %% "scala-swing" % "1.0.2",
-  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
+  "org.apache.commons" % "commons-lang3" % "3.6",
+  "org.scalatest" %% "scalatest" % "3.0.4" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.13.5" % Test,
+  "org.mockito" % "mockito-core" % "2.10.0" % Test,
+  "org.typelevel" %% "spire" % "0.14.1",
+  "it.unich.scalafix" %% "scalafix" % "0.7.0-SNAPSHOT",
+  "org.rogach" %% "scallop" % "3.1.0",
+  "org.scala-lang.modules" %% "scala-swing" % "2.0.0",
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   // ASM is included in the Soot Jar
   "ca.mcgill.sable" % "soot" %"3.0.0-SNAPSHOT"

@@ -26,9 +26,9 @@ updateOptions in ThisBuild := updateOptions.value.withLatestSnapshots(false)
 
 //*** Scala configuration
 
-scalaVersion in ThisBuild := "2.11.8"
+scalaVersion in ThisBuild := "2.11.11"
 
-scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-Xlint", "-Xlint:-delayedinit-select", "-Xlint:-missing-interpolator")
+scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint", "-Xlint:-missing-interpolator")
 
 fork in ThisBuild := true
 

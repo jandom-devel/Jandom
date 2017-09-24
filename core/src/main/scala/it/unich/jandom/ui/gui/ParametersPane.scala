@@ -52,13 +52,14 @@ class ParametersPane extends GridBagPanel {
     GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0)
 
   object ParameterRenderer extends Renderer[ParameterValue[_]] {
-    val r = implicitly[Renderer[String]]
-    def componentFor(list: ListView[_], isSelected: Boolean,
+    private val r = implicitly[Renderer[String]]
+    def componentFor(list: ListView[_ <: ParameterValue[_]], isSelected: Boolean,
       focused: Boolean, a: ParameterValue[_], index: Int): Component =
       {
-        val c = r.componentFor(list, isSelected, focused, a.name, index)
+        // The asInstanceOf in the line below is a bad trick... it works for now.
+        val c = r.componentFor(list.asInstanceOf[ListView[String]], isSelected, focused, a.name, index)
         c.tooltip = a.description
-        return c
+        c
       }
   }
 
