@@ -34,4 +34,5 @@ class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
   val wideningScope = opt[WideningScope.Value]("widening", default = Some(WideningScopes.default.value))(enumConverter(WideningScope))
   val narrowingStrategy = opt[NarrowingStrategy.Value]("narrowing", default = Some(NarrowingStrategies.default.value))(enumConverter(NarrowingStrategy))
   val file = opt[String]("input", required = true)
+  verify()
 }
