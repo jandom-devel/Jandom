@@ -24,7 +24,7 @@ import java.io.File
 import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.swing._
 import scala.swing.event.ActionEvent
 import scala.swing.event.EditDone
@@ -144,9 +144,9 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
 
     case SelectionChanged(`classComboBox`) =>
       val klass = sootScene.loadClassAndSupport(classComboBox.selection.item)
-      val methodList = klass.getMethods()
+      val methodList = klass.getMethods().asScala
       // these two lines are a mess because Scala Swing does not play well with Java 1.7
-      val comboModel = ComboBox.newConstantModel(methodList).asInstanceOf[javax.swing.ComboBoxModel[SootMethod]]
+      val comboModel = ComboBox.newConstantModel(methodList)
       methodComboBox.peer.asInstanceOf[javax.swing.JComboBox[SootMethod]].setModel(comboModel)
       publish(SelectionChanged(methodComboBox))
 
@@ -169,7 +169,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
     private val privateClassNamesList = scala.collection.mutable.SortedSet[String]()
     def classNameList = privateClassNamesList.toSeq
     override def visitFile(aFile: Path, aAttrs: BasicFileAttributes): FileVisitResult = {
-      val relativePath = rootPath.relativize(aFile)
+      val relativePath = rootPath.relativize(aFile).asScala
       val className = (relativePath.head.toString /: relativePath.tail)(_ + "." + _.toString)
       if (className endsWith ".class")
         privateClassNamesList += className stripSuffix ".class"

@@ -43,7 +43,6 @@ case class IfStmt(condition: NumericCondition, then_branch: SLILStmt, else_branc
 
   override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: SLILPrinterSpec, row: Int, level: Int): String = {
     val spaces = ppspec.indent(level)
-    val innerspaces = ppspec.indent(level+1)
     val then_string = then_branch.mkString(ann, ppspec, row + 1, level + 1)
     val else_string = else_branch.mkString(ann, ppspec, row + 2 + then_string.count(_ == '\n'), level + 1)
     val s = spaces + "if (" + condition.mkString(ppspec.env.names) + ") {\n" +

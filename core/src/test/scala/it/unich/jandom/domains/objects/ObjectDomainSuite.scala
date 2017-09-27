@@ -20,7 +20,6 @@ package it.unich.jandom.domains.objects
 
 import org.scalatest.FunSpec
 import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.prop.TableFor1
 
 import it.unich.jandom.domains.CartesianFiberedDomainSuite
 import it.unich.jandom.objectmodels.ObjectModel

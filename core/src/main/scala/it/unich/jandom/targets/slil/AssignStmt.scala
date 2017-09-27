@@ -19,7 +19,6 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.Annotation
 import AnalysisPhase.AnalysisPhase
 import it.unich.jandom.targets.NumericExpression

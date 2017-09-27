@@ -101,7 +101,7 @@ object Relation {
    * This is a trait which may be mixed in with a Relation to automatically derive
    * compare and equality functions.
    */
-  trait AutomaticPartialOrdering[U, V] {
+  trait AutomaticPartialOrdering[U, V] extends PartiallyOrdered[Relation[U,V]] {
     original: Relation[U, V] =>
 
     def tryCompareTo[B >: Relation[U, V]](that: B)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Option[Int] = {

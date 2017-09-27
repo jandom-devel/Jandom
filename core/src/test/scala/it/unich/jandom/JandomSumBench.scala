@@ -81,7 +81,7 @@ object JandomSumBench extends App with FASTLoader {
       val domain = ParallelotopeRationalDomain()
     }
     params3.widening = DelayedWidening(DefaultWidening, 3) // needed for parallelotopes
-    //params3.debugWriter = new java.io.PrintWriter(System.out)
+    //params3.debugWriter = tann1new java.io.PrintWriter(System.out)
 
     program.analyze(params3) // warmup JVM
     //params3.debugWriter.flush()
@@ -94,7 +94,7 @@ object JandomSumBench extends App with FASTLoader {
     val cann2 = ann2 mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }
     val cann3 = ann3 mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }
 
-    println(s"Times: $tann1 vs  $tann2")
+    println(s"Times: box $tann1  sum: $tann2  ptope: $tann3")
     print("Box: ")
     println(mkString(program, cann1))
     print("PTope: ")

@@ -18,6 +18,8 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
+import scala.collection.JavaConverters._
+
 import it.unich.jandom.domains.numerical.LinearForm
 import parma_polyhedra_library._
 import spire.math.Rational
@@ -93,13 +95,11 @@ private[jandom] object PPLUtils {
    * @param vars the variables to use for the string form
    */
   def constraintsToString(cs: Constraint_System, vars: Seq[String]): String = {
-    import scala.collection.JavaConversions._
-
     val vs = new Variable_Stringifier {
       def stringify(x: Long) = vars(x.toInt)
     }
     Variable.setStringifier(vs)
-    val result = for (c <- cs) yield c.toString
+    val result = for (c <- cs.asScala) yield c.toString
     Variable.setStringifier(null)
     result.mkString("[ ", " , ", " ]")
   }

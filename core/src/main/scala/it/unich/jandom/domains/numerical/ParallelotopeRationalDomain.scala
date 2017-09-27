@@ -1,20 +1,20 @@
 /**
- * Copyright 2013, 2017 Jandom Team
- *
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of a
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
- */
+  * Copyright 2013, 2017 Jandom Team
+  *
+  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+  * JANDOM is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * JANDOM is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of a
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+  */
 
 package it.unich.jandom.domains.numerical
 
@@ -26,31 +26,31 @@ import scala.collection.mutable.ListBuffer
 import scala.util.Try
 
 /**
- * This is the abstract domain of parallelotopes as appears in the NSAD 2012 paper. It is written
- * using the Breeze Math library and uses rational numbers.
- *
- * @param favorAxis determines whether the heuristics built into the domain should try to keep constraints
- * corresponding to Cartesian axis. If `favorAxis` is `1`, axis are favorite. The opposite happens when favorAxis
- * is `-1`. If `favorAxis` is `0`, axis are considered like all the other constraints
- *
- * @author Gianluca Amato <gianluca.amato@unich.it>
- * @author Francesca Scozzari <francesca.scozzari@unich.it>
- * @author Marco Rubino <marco.rubino@unich.it>
- */
+  * This is the abstract domain of parallelotopes as appears in the NSAD 2012 paper. It is written
+  * using the Breeze Math library and uses rational numbers.
+  *
+  * @param favorAxis determines whether the heuristics built into the domain should try to keep constraints
+  *                  corresponding to Cartesian axis. If `favorAxis` is `1`, axis are favorite. The opposite happens when favorAxis
+  *                  is `-1`. If `favorAxis` is `0`, axis are considered like all the other constraints
+  * @author Gianluca Amato <gianluca.amato@unich.it>
+  * @author Francesca Scozzari <francesca.scozzari@unich.it>
+  * @author Marco Rubino <marco.rubino@unich.it>
+  */
 class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomain {
 
   val widenings = Seq(WideningDescription.default[Property])
 
   /**
-   * Build a non-empty parallelotope. If the parallelotope is not empty, the result is undetermined.
-   * @param A is the constraint matrix. It should be invertible.
-   * @param low lower bounds.
-   * @param high higher bounds.
-   * @note `low` and `high` should have the same length. The  matrix `A` should be invertiible
-   * of the same size of the two vectors.
-   * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
-   * square or if `A` has not the same size of `low`.
-   */
+    * Build a non-empty parallelotope. If the parallelotope is not empty, the result is undetermined.
+    *
+    * @param A    is the constraint matrix. It should be invertible.
+    * @param low  lower bounds.
+    * @param high higher bounds.
+    * @note `low` and `high` should have the same length. The  matrix `A` should be invertiible
+    *       of the same size of the two vectors.
+    * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
+    *                                  square or if `A` has not the same size of `low`.
+    */
   def apply(low: Bounds, A: DenseMatrix, high: Bounds): Property = {
     val isEmpty = (0 until low.length) exists { i => low(i) > high(i) }
     val isEmpty2 = (0 until low.length) exists { i => low(i).isInfinity && low(i) == high(i) }
@@ -58,10 +58,10 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
   }
 
   /**
-   * @inheritdoc
-   * @note @inheritdoc
-   * @throws $ILLEGAL
-   */
+    * @inheritdoc
+    * @note @inheritdoc
+    * @throws $ILLEGAL
+    */
   def top(n: Int): Property = {
     /* The full parallelotope of dimension 0 is not empty! */
     val low = Bounds.fill(n)(RationalExt.NegativeInfinity)
@@ -71,9 +71,10 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
   }
 
   /**
-   * Returns an full parallelotope whose shape is given by the matrix A.
-   * @param A the shape matrix
-   */
+    * Returns an full parallelotope whose shape is given by the matrix A.
+    *
+    * @param A the shape matrix
+    */
   def top(A: DenseMatrix): Property = {
     val n = A.rows
     val low = Bounds.fill(n)(RationalExt.NegativeInfinity)
@@ -82,10 +83,10 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
   }
 
   /**
-   * @inheritdoc
-   * @note @inheritdoc
-   * @throws $ILLEGAL
-   */
+    * @inheritdoc
+    * @note @inheritdoc
+    * @throws $ILLEGAL
+    */
   def bottom(n: Int): Property = {
     val low = Bounds.fill(n)(RationalExt.one)
     val high = Bounds.fill(n)(RationalExt.zero)
@@ -94,9 +95,10 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
   }
 
   /**
-   * Returns an empty parallelotope whose shape is given by the matrix A.
-   * @param A the shape matrix
-   */
+    * Returns an empty parallelotope whose shape is given by the matrix A.
+    *
+    * @param A the shape matrix
+    */
   def bottom(A: DenseMatrix): Property = {
     val n = A.rows
     val low = Bounds.fill(n)(RationalExt.one)
@@ -105,14 +107,15 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
   }
 
   /**
-   * Given the box specified by `low` and `high` and the linear form `lf`, determines the pair
-   * of the least and greatest value of the linear form in the box.
-   * @param lf  a linear form.
-   * @param low lower bound of the box.
-   * @param high higher bound of the box.
-   * @note `low`, `high` and `lf` should be of the same length.
-   * @return the least and greatest value of `lf` in the box determine by `low` and `high`.
-   */
+    * Given the box specified by `low` and `high` and the linear form `lf`, determines the pair
+    * of the least and greatest value of the linear form in the box.
+    *
+    * @param lf   a linear form.
+    * @param low  lower bound of the box.
+    * @param high higher bound of the box.
+    * @note `low`, `high` and `lf` should be of the same length.
+    * @return the least and greatest value of `lf` in the box determine by `low` and `high`.
+    */
   private def extremalsInBox(lf: DenseVector, low: Bounds, high: Bounds): (RationalExt, RationalExt) = {
     var minc = RationalExt.zero
     var maxc = RationalExt.zero
@@ -128,11 +131,12 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
   }
 
   /**
-   * Given a sequence of vectors of the same length `n`, returns a sequence of `n` indexes
-   * of vectors which are linearly independent. It is based on Gaussian elimination.
-   * @param m a sequence of vectors, all of the same length.
-   * @return a sequence of positions in m.
-   */
+    * Given a sequence of vectors of the same length `n`, returns a sequence of `n` indexes
+    * of vectors which are linearly independent. It is based on Gaussian elimination.
+    *
+    * @param m a sequence of vectors, all of the same length.
+    * @return a sequence of positions in m.
+    */
   private def pivoting(m: IndexedSeq[DenseVector]): List[Int] = {
     val dimension = m(0).length
     val indexes = ListBuffer[Int]()
@@ -155,24 +159,24 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
   }
 
   /**
-   * This is an element of the parallelotope domain.
-   *
-   * @constructor Builds a parallelotope
-   * @param isEmpty is true if the parallelotope is empty. In this case, the other parameters are not relevant.
-   * @param A is the constraint matrix. It should be invertible.
-   * @param low lower bounds.
-   * @param high higher bounds.
-   * @note `low` and `high` should have the same length. The  matrix `A` should be invertible
-   * of the same size of the two vectors.
-   * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
-   * square or if `A` has not the same size of `low`.
-   */
+    * This is an element of the parallelotope domain.
+    *
+    * @constructor Builds a parallelotope
+    * @param isEmpty is true if the parallelotope is empty. In this case, the other parameters are not relevant.
+    * @param A       is the constraint matrix. It should be invertible.
+    * @param low     lower bounds.
+    * @param high    higher bounds.
+    * @note `low` and `high` should have the same length. The  matrix `A` should be invertible
+    *       of the same size of the two vectors.
+    * @throws IllegalArgumentException if `low` and `high` are not of the same length, if `A` is not
+    *                                  square or if `A` has not the same size of `low`.
+    */
   final class Property(
-    val isEmpty: Boolean,
-    val low: Bounds,
-    val A: DenseMatrix,
-    val high: Bounds)
-      extends NumericalProperty[Property] {
+                        val isEmpty: Boolean,
+                        val low: Bounds,
+                        val A: DenseMatrix,
+                        val high: Bounds)
+    extends NumericalProperty[Property] {
 
     require(low.length == A.rows)
     require(low.length == A.cols)
@@ -193,10 +197,10 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * @inheritdoc
-     * @note @inheritdoc
-     * @throws $ILLEGAL
-     */
+      * @inheritdoc
+      * @note @inheritdoc
+      * @throws $ILLEGAL
+      */
     def widening(that: Property): Property = {
       require(dimension == that.dimension)
       if (isEmpty)
@@ -226,10 +230,10 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * @inheritdoc
-     * @note @inheritdoc
-     * @throws $ILLEGAL
-     */
+      * @inheritdoc
+      * @note @inheritdoc
+      * @throws $ILLEGAL
+      */
     def narrowing(that: Property): Property = {
       require(dimension == that.dimension)
       if (that.isEmpty) {
@@ -249,11 +253,11 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * @inheritdoc
-     * It is equivalent to `intersectionWeak`.
-     * @note @inheritdoc
-     * @throws $ILLEGAL
-     */
+      * @inheritdoc
+      * It is equivalent to `intersectionWeak`.
+      * @note @inheritdoc
+      * @throws $ILLEGAL
+      */
     def intersection(that: Property): Property = {
       if (that.isEmpty)
         that
@@ -264,13 +268,13 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * @inheritdoc
-     * The union of two parallelotopes is not a parallelotope. Moreover, there is no least
-     * parallelotopes containing the union of two parallelotopes. Hence, this methods uses
-     * heuristics to find a good result.
-     * @note @inheritdoc
-     * @throws $ILLEGAL
-     */
+      * @inheritdoc
+      * The union of two parallelotopes is not a parallelotope. Moreover, there is no least
+      * parallelotopes containing the union of two parallelotopes. Hence, this methods uses
+      * heuristics to find a good result.
+      * @note @inheritdoc
+      * @throws $ILLEGAL
+      */
     def union(that: Property): Property = {
 
       /*
@@ -414,12 +418,13 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * This is a variant of `union` using weak join. The shape of the resulting
-     * parallelotope is the same shap of `this`.
-     * @param that the abstract object to be joined with `this`.
-     * @note $NOTEDIMENSION
-     * @return the weak union of the two abstract objects.
-     */
+      * This is a variant of `union` using weak join. The shape of the resulting
+      * parallelotope is the same shap of `this`.
+      *
+      * @param that the abstract object to be joined with `this`.
+      * @note $NOTEDIMENSION
+      * @return the weak union of the two abstract objects.
+      */
     def unionWeak(that: Property): Property = {
       require(dimension == that.dimension)
       if (isEmpty)
@@ -437,12 +442,13 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * This is the weak intersection of two abstract objects. The shape of the resulting
-     * parallelotope is the same shape of `this`.
-     * @param that the abstract object to be intersected with `this`.
-     * @note $NOTEDIMENSION
-     * @return the intersection of the two abstract objects.
-     */
+      * This is the weak intersection of two abstract objects. The shape of the resulting
+      * parallelotope is the same shape of `this`.
+      *
+      * @param that the abstract object to be intersected with `this`.
+      * @note $NOTEDIMENSION
+      * @return the intersection of the two abstract objects.
+      */
     def intersectionWeak(that: Property): Property = {
       require(dimension == that.dimension)
       if (isEmpty)
@@ -463,11 +469,11 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * @inheritdoc
-     * @note @inheritdoc
-     * @todo @inheritdoc
-     * @throws $ILLEGAL
-     */
+      * @inheritdoc
+      * @note @inheritdoc
+      * @todo @inheritdoc
+      * @throws $ILLEGAL
+      */
     def linearAssignment(n: Int, lf: LinearForm): Property = {
       require(n <= dimension && lf.dimension <= dimension)
       val tcoeff = lf.homcoeffs
@@ -476,7 +482,7 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
         this
       else {
         val coeff = DenseVector(tcoeff.padTo(dimension, Rational.zero): _*)
-        if (! coeff(n).isZero) {
+        if (!coeff(n).isZero) {
           // invertible assignment
           val increment = A.col(n) * known / coeff(n)
           val newlow = low.copy
@@ -495,7 +501,9 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
           // non-invertible assignment
           val newP = nonDeterministicAssignment(n)
           val Aprime = newP.A.copy
-          val j = ((0 until Aprime.rows) find { !Aprime(_, n).isZero }).get
+          val j = ((0 until Aprime.rows) find {
+            !Aprime(_, n).isZero
+          }).get
           for (s <- 0 until dimension if !Aprime(s, n).isZero && s != j)
             Aprime.rowUpdate(s, Aprime.row(s) - Aprime.row(j) * (Aprime(s, n) / Aprime(j, n)))
           val ei = DenseVector.zeros(dimension)
@@ -512,21 +520,21 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * Computes the dot product of `x` and `y` with the proviso that if `x` is zero, then `x*y`
-     * is zero even when `y` is an infinite value (which is not the standard behaviour).
-     */
-    private def dotprod(x: DenseVector, y: Bounds, remove: Int = -1): RationalExt = {
+      * Computes the dot product of `x` and `y` with the proviso that if `x` is zero, then `x*y`
+      * is zero even when `y` is an infinite value (which is not the standard behaviour).
+      */
+    private def dotprod(x: DenseVector, y: Bounds, remove: Int): RationalExt = {
       var sum = RationalExt.zero
       for (i <- 0 until x.length if i != remove if x(i) != Rational.zero) sum = sum + y(i) * x(i)
       sum
     }
 
     /**
-     * @inheritdoc
-     * @note @inheritdoc
-     * @todo @inheritdoc
-     * @throws ILLEGAL
-     */
+      * @inheritdoc
+      * @note @inheritdoc
+      * @todo @inheritdoc
+      * @throws ILLEGAL
+      */
     def linearInequality(lf: LinearForm): Property = {
       require(lf.dimension <= dimension)
       if (isEmpty)
@@ -586,10 +594,10 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * @inheritdoc
-     * @note @inheritdoc
-     * @throws $ILLEGAL
-     */
+      * @inheritdoc
+      * @note @inheritdoc
+      * @throws $ILLEGAL
+      */
     def linearDisequality(lf: LinearForm): Property = {
       val tcoeff = lf.homcoeffs
       val known = lf.known
@@ -613,10 +621,10 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * @inheritdoc
-     * @note @inheritdoc
-     * @throws $ILLEGAL
-     */
+      * @inheritdoc
+      * @note @inheritdoc
+      * @throws $ILLEGAL
+      */
     def nonDeterministicAssignment(n: Int): Property = {
       require(n <= dimension)
       if (isEmpty)
@@ -687,10 +695,10 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     def isPolyhedral = true
 
     /**
-     * @inheritdoc
-     * @note @inheritdoc
-     * @throws $ILLEGAL
-     */
+      * @inheritdoc
+      * @note @inheritdoc
+      * @throws $ILLEGAL
+      */
     def delVariable(n: Int): Property = {
       def rowToSeq(M: DenseMatrix, i: Int, n: Int): Seq[Rational] =
         for (j <- 0 until A.rows; if j != n) yield M(i, j)
@@ -706,8 +714,8 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * @inheritdoc
-     */
+      * @inheritdoc
+      */
     def mapVariables(rho: Seq[Int]): Property = {
       if (isEmpty)
         this
@@ -722,14 +730,17 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * Compute the minimum and maximum value of a linear form in a parallelotope.
-     * @todo should be generalized to linear forms over arbitrary types.
-     * @return a tuple with two components: the first component is the least value, the second component is the greatest value
-     * of the linear form over the box.
-     */
+      * Compute the minimum and maximum value of a linear form in a parallelotope.
+      *
+      * @todo should be generalized to linear forms over arbitrary types.
+      * @return a tuple with two components: the first component is the least value, the second component is the greatest value
+      *         of the linear form over the box.
+      */
     def linearEvaluation(lf: LinearForm): (RationalExt, RationalExt) = {
       val tcoeff = lf.homcoeffs
-      if (isEmpty && tcoeff.exists { _ != Rational.zero })
+      if (isEmpty && tcoeff.exists {
+        _ != Rational.zero
+      })
         (RationalExt.PositiveInfinity, RationalExt.NegativeInfinity)
       else if (dimension == 0)
         (lf.known, lf.known)
@@ -762,7 +773,8 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     def top = ParallelotopeRationalDomain.this.top(dimension)
 
     def tryCompareTo[B >: Property](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = that match {
-      case that: Property =>
+      // we use ParallelotopeRationalDomain#Property instead of just Property to avoid a warning
+      case that: ParallelotopeRationalDomain#Property =>
         val lte = this <= that
         val gte = that <= this
         if (lte && gte)
@@ -777,12 +789,13 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     }
 
     /**
-     * It computes the smallest parallelotope which contains `this` and is definable
-     * over a new shape matrix `Aprime`.
-     * @param Aprime the new shape matrix.
-     * @note `Aprime` should be an invertible matrix of the same dimension as `this`.
-     * @throws IllegalArgumentException if `Aprime` is not square or has not the correct dimension.
-     */
+      * It computes the smallest parallelotope which contains `this` and is definable
+      * over a new shape matrix `Aprime`.
+      *
+      * @param Aprime the new shape matrix.
+      * @note `Aprime` should be an invertible matrix of the same dimension as `this`.
+      * @throws IllegalArgumentException if `Aprime` is not square or has not the correct dimension.
+      */
     def rotate(Aprime: DenseMatrix): Property = {
       require(dimension == Aprime.rows && dimension == Aprime.cols)
       if (isEmpty)
@@ -805,26 +818,31 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
       }
     }
 
-    def <=[B >: Property](that: Property)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean = {
-      if (isEmpty)
-        true
-      else if (that.isEmpty)
-        false
-      else if (that.isTop)
-        true
-      else {
-        val ptemp = this.rotate(that.A)
-        (0 to ptemp.low.length - 1) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) }
+    override def <=[B >: Property](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
+      that match {
+        // we use ParallelotopeRationalDomain#Property instead of just Property to avoid a warning
+        case that: ParallelotopeRationalDomain#Property =>
+          if (isEmpty)
+            true
+          else if (that.isEmpty)
+            false
+          else if (that.isTop)
+            true
+          else {
+            val ptemp = this.rotate(that.A)
+            (0 to ptemp.low.length - 1) forall { i => ptemp.low(i) >= that.low(i) && ptemp.high(i) <= that.high(i) }
+          }
+        case _ => false
       }
-    }
 
-    def >=[B >: Property](that: Property)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
+
+    override def >=[B >: Property](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
       that <= this
 
-    def <[B >: Property](that: Property)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
+    override def <[B >: Property](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
       (this <= that) && !(this >= that)
 
-    def >[B >: Property](that: Property)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
+    override def >[B >: Property](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Boolean =
       (this >= that) && !(this <= that)
 
     def mkString(vars: Seq[String]): String = {
@@ -869,22 +887,24 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
       }
     }
   }
+
 }
 
 /**
- * Companion class for the parallelotope domain
- */
+  * Companion class for the parallelotope domain
+  */
 object ParallelotopeRationalDomain {
   private lazy val standard = new ParallelotopeRationalDomain(0) with CachedTopBottom
   private lazy val favoring = new ParallelotopeRationalDomain(1) with CachedTopBottom
   private lazy val unfavoring = new ParallelotopeRationalDomain(-1) with CachedTopBottom
 
   /**
-   * Returns an abstract domain for parallelotopes.
-   * @param favorAxis determines whether the heuristics built into the domain should try to keep constraints
-   * corresponding to Cartesian axis. If favorAxis is `1`, axis are favorite. The opposite happens when favorAxis
-   * is -1. If favorAxis is 0, axis are considered like all the other constraints
-   */
+    * Returns an abstract domain for parallelotopes.
+    *
+    * @param favorAxis determines whether the heuristics built into the domain should try to keep constraints
+    *                  corresponding to Cartesian axis. If favorAxis is `1`, axis are favorite. The opposite happens when favorAxis
+    *                  is -1. If favorAxis is 0, axis are considered like all the other constraints
+    */
   def apply(favorAxis: Int = 0) = favorAxis match {
     case -1 => unfavoring
     case 0 => standard

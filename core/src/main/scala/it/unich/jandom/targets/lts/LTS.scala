@@ -139,7 +139,6 @@ case class LTS(val name: String, val locations: IndexedSeq[Location], val transi
           }
         }, locations)
     }
-    val edges: Set[Edge] = ((transitions map { Left(_) }) ++ (inputlocs map { Right(_) })).toSet
     GraphEquationSystem[Location, dom.Property, Edge](
       unknowns = locations,
       inputUnknowns = inputlocs.toSet,

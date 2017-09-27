@@ -27,7 +27,6 @@ import org.objectweb.asm._
 import org.objectweb.asm.tree._
 import org.objectweb.asm.util._
 
-import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.targets.Annotation
 import it.unich.jandom.targets.Target
 import it.unich.jandom.targets.NumericCondition._
@@ -86,7 +85,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
       import Opcodes._
       val s = state.clone
       var node = startNode
-      var lastNode = endNode.getNext()
+      val lastNode = endNode.getNext()
       var exits = Seq[(BasicBlock, Property)]()
       while (node != lastNode) {
         val op = node.getOpcode
@@ -167,9 +166,6 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
    * It is called by the constructor.
    */
   private def createControlFlowGraph(): (BasicBlock, BasicBlock) = {
-    import scala.collection.JavaConversions._
-    import AbstractInsnNode._
-
     // the use of asInstanceOf is needed because the standard
     // asm library in the maven repositories is compiled without
     // support for generics

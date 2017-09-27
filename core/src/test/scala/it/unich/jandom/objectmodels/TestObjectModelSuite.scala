@@ -19,7 +19,6 @@
 package it.unich.jandom.objectmodels
 
 import org.scalatest.FunSpec
-import org.scalatest.prop.TableFor1
 
 /**
  * A test for the TestObjectModel.

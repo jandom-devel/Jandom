@@ -90,7 +90,6 @@ class BoxDoubleBenchmark {
   @Benchmark
   def timeJandomNoPPL() {
     var db = BoxDouble.bottom(numvars)
-    val zero = Array.fill(numvars)(0.0)
     val full = BoxDouble.top(numvars)
     for (i <- 1 to numpoints) {
       val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, i.toDouble) }
@@ -125,7 +124,6 @@ class BoxDoubleBenchmark {
     // we explicitly type domain in order to avoid generation of existential types.
     val domain: NumericalDomain = PPLDomainMacro[Double_Box]
     var db = domain.bottom(numvars)
-    val zero = Array.fill(numvars)(0.0)
     val full = domain.top(numvars)
     for (i <- 1 to numpoints) {
       val point = (0 until numvars).foldLeft(full) { (box, v) => box.linearAssignment(v, i.toDouble) }

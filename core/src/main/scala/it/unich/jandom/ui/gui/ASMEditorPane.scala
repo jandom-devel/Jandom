@@ -18,6 +18,7 @@
 
 package it.unich.jandom.ui.gui
 
+import scala.collection.JavaConverters._
 import java.awt.event.{ InputEvent, KeyEvent }
 import java.io.{ File, FileInputStream }
 import scala.swing.{Action, BorderPanel, BoxPanel, ComboBox, EditorPane, FileChooser, Label, MenuItem, Orientation, ScrollPane}
@@ -77,8 +78,6 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   val openAction = new Action("Open...") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
     def apply() {
-      import scala.collection.JavaConversions._
-
       val returnVal = fileChooser.showOpenDialog(ASMEditorPane.this)
       if (returnVal != FileChooser.Result.Approve) return ;
       val file = fileChooser.selectedFile
@@ -86,7 +85,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
       val cr = new ClassReader(is)
       val node = new ClassNode()
       cr.accept(node, ClassReader.SKIP_DEBUG)
-      methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
+      methodList = node.methods.asScala
       methodComboBox = new ComboBox(methodList map { _.name })
       methodComboBox.peer.setAction(methodSelectAction.peer)
       methodSelector.contents(1) = methodComboBox

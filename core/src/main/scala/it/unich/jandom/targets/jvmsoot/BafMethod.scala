@@ -17,6 +17,8 @@
 
 package it.unich.jandom.targets.jvmsoot
 
+import scala.collection.JavaConverters._
+
 import soot._
 import soot.baf._
 import soot.jimple._
@@ -30,8 +32,6 @@ import soot.toolkits.graph._
  * @author Luca Mangifesta
  */
 class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
-  import scala.collection.JavaConversions._
-
   val body = Baf.v().newBody(method.retrieveActiveBody())
   val graph = new soot.jandom.UnitBlockGraph(body)
 
@@ -62,7 +62,7 @@ class BafMethod(method: SootMethod) extends SootCFG[BafMethod, Block](method) {
       case _: IfNullInst => prop.evalNull().testEq
     }
 
-    for (unit <- node.iterator())
+    for (unit <- node.iterator().asScala)
       currprop = unit match {
         case unit: AddInst =>
         unit.getOpType() match {

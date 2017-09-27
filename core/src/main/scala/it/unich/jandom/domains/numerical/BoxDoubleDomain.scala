@@ -130,7 +130,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      * If `remove` is a valid index in `x` and `y`, the factor `x(remove) * y(remove)` is
      * removed from the dot product.
      */
-    private def dotprod_lo(x: Seq[Double], y: Seq[Double], remove: Int = -1): Double = {
+    private def dotprod_lo(x: Seq[Double], y: Seq[Double], remove: Int): Double = {
       var sum: Double = 0
       for (i <- x.indices; if i != remove && x(i) != 0) sum = add_lo(sum, mul_lo(x(i), y(i)))
       sum
@@ -142,7 +142,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      * If `remove` is a valid index in `x` and `y`, the factor `x(remove) * y(remove)` is
      * removed from the dot product.
      */
-    private def dotprod_hi(x: Seq[Double], y: Seq[Double], remove: Int = -1): Double = {
+    private def dotprod_hi(x: Seq[Double], y: Seq[Double], remove: Int): Double = {
       var sum: Double = 0
       for (i <- x.indices; if i != remove && x(i) != 0) sum = add_hi(sum, mul_hi(x(i), y(i)))
       sum
@@ -257,17 +257,6 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
     private def linearArgmin(lf: LinearForm): Seq[Double] = {
       require(lf.dimension <= dimension)
       (lf.homcoeffs.zipWithIndex) map { case (c, i) => if (c > Rational.zero) low(i) else high(i) }
-    }
-
-    /**
-     * Compute the corner of the box which maximizes a linear form.
-     * @todo should be generalized to linear forms over arbitrary types.
-     * @param coeff the homogeneous coefficients
-     * @return the coordinates of the point which maximizes the linear form
-     */
-    private def linearArgmax(lf: LinearForm): Seq[Double] = {
-      require(lf.dimension <= dimension)
-      (lf.homcoeffs.zipWithIndex) map { case (c, i) => if (c < Rational.zero) low(i) else high(i) }
     }
 
     /**
@@ -454,7 +443,8 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
     def top = BoxDoubleDomain.this.top(low.length)
 
     def tryCompareTo[B >: Property](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
-      case other: Property =>
+      // we use BoxDoubleDomain#Property instead of just Property to avoid a warning
+      case other: BoxDoubleDomain#Property =>
         require(dimension == other.dimension)
         (isEmpty, other.isEmpty) match {
           case (true, true) => Option(0)

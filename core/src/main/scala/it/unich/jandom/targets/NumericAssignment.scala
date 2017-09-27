@@ -18,8 +18,7 @@
 
 package it.unich.jandom.targets
 
-import it.unich.jandom.domains.numerical.{ LinearForm, NumericalProperty }
-import it.unich.jandom.targets.NumericExpression._
+import it.unich.jandom.domains.numerical.NumericalProperty
 
 /**
  * This is a target class for the numeric assignments "v := exp".

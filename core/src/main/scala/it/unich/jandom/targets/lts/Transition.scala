@@ -19,9 +19,7 @@
 package it.unich.jandom.targets.lts
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.NumericAssignment
 import it.unich.jandom.targets.NumericCondition
-import it.unich.jandom.targets.NumericAssignment
 import it.unich.jandom.targets.NumericAssignmentMultiple
 
 /**

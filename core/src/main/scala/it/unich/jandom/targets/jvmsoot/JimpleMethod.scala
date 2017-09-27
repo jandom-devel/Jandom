@@ -18,6 +18,8 @@
 
 package it.unich.jandom.targets.jvmsoot
 
+import scala.collection.JavaConverters._
+
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets._
 import it.unich.jandom.targets.NumericCondition._
@@ -35,8 +37,6 @@ import spire.math.Rational
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
 class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](method) {
-  import scala.collection.JavaConversions._
-
   val body = method.retrieveActiveBody()
   val graph = new soot.jandom.UnitBlockGraph(body)
 
@@ -48,7 +48,6 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
      */
     def jimpleExprToLinearForm(v: Value): Option[Array[Rational]] = {
       val a = Array.fill(size + 1)(Rational.zero)
-      var c = Rational.zero
       v match {
         case v: IntConstant =>
           a(0) = v.value
@@ -163,7 +162,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
         case v: DynamicInvokeExpr =>
           throw new IllegalArgumentException("Invoke dynamic not yet supported")
       }
-      val callprop = v.getArgs().foldLeft(baseprop) { case (p, arg) => analyzeExpr(arg, p) }
+      val callprop = v.getArgs().asScala.foldLeft(baseprop) { case (p, arg) => analyzeExpr(arg, p) }
       val inputprop = callprop.extract(v.getArgCount() + implicitArgs)
       val exitprop = params.interpretation match {
         case Some(inte) => inte(method, inputprop)
@@ -221,7 +220,6 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
             case v: NeExpr => res2.evalNe
           }
         case v: UnopExpr =>
-          val res = analyzeExpr(v.getOp(), prop)
           v match {
             case v: LengthExpr => prop.evalLength
             case v: NegExpr => prop.evalNeg
@@ -236,7 +234,7 @@ class JimpleMethod(method: SootMethod) extends SootCFG[JimpleMethod, Block](meth
 
     var exits = Seq[params.Property]()
     var currprop = initprop
-    for (unit <- node.iterator())
+    for (unit <- node.asScala)
       unit match {
         case unit: AssignStmt =>
           val expr = analyzeExpr(unit.getRightOp(), currprop)

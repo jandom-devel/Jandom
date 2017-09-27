@@ -18,6 +18,8 @@
 
 package it.unich.jandom.targets.jvmsoot
 
+import scala.collection.JavaConverters._
+
 import it.unich.jandom.objectmodels.ObjectModel
 import it.unich.jandom.objectmodels.ObjectModelHelper
 
@@ -31,7 +33,6 @@ import soot.jandom.MyFastHierarchy
  */
 class SootObjectModel(scene: soot.Scene) extends ObjectModel with ObjectModelHelper {
 
-  import scala.collection.JavaConversions._
 
   type Type = soot.Type
 
@@ -50,7 +51,7 @@ class SootObjectModel(scene: soot.Scene) extends ObjectModel with ObjectModelHel
   }
 
   def declaredFields(t: Type) = t match {
-    case t: RefType => t.getSootClass().getFields().toSet
+    case t: RefType => t.getSootClass().getFields().asScala.toSet
     case _: PrimType => Set()
     case _: ArrayType => Set()
     case _: NullType => Set()
@@ -91,7 +92,7 @@ class SootObjectModel(scene: soot.Scene) extends ObjectModel with ObjectModelHel
     case t: RefType =>
       val k = t.getSootClass()
       val ifs: Set[Type] = (for {
-        i <- k.getInterfaces()
+        i <- k.getInterfaces().asScala
       } yield i.getType())(collection.breakOut)
       if (k.hasSuperclass())
         ifs + k.getSuperclass().getType()
@@ -106,10 +107,10 @@ class SootObjectModel(scene: soot.Scene) extends ObjectModel with ObjectModelHel
     case t: RefType =>
       val k = t.getSootClass()
       if (k.isInterface()) {
-        (fh.getAllImplementersOfInterface(k) map { _.getType() }).toSet ++
-          (fh.getSubinterfaces(k) map { _.getType() }).toSet
+        (fh.getAllImplementersOfInterface(k).asScala map { _.getType() }).toSet ++
+          (fh.getSubinterfaces(k).asScala map { _.getType() }).toSet
       } else {
-        (fh.getSubclassesOf(k) map { _.getType() }).toSet
+        (fh.getSubclassesOf(k).asScala map { _.getType() }).toSet
       }
     case _: PrimType => Set()
     case t: ArrayType => children(t.baseType) map { (ArrayType.v(_, t.numDimensions)) }

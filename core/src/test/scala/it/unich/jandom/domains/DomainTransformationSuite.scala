@@ -56,7 +56,6 @@ class DomainTransformationSuite extends FunSuite {
   test("General transformation to Box") {
     val transform = new DomainTransformation.TopTransformation[NumericalDomain, BoxDoubleDomain]
     val diamond = pardom(Bounds(-1, -1), DenseMatrix(DenseVector(1.0, 1.0), DenseVector(1.0, -1.0)), Bounds(1, 1))
-    val box = boxdom(Array(-1, -1), Array(1, 1))
     assertResult(boxdom.top(2)) { transform(pardom,boxdom)(diamond) }
   }
 }

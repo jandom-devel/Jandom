@@ -66,12 +66,7 @@ class SootFrameObjectDomain(val dom: ObjectDomain[SootObjectModel]) extends Soot
 
     invariantCheck
 
-    /**
-     * Returns the SootClass of a given frame variable
-     */
-    private def classOfVar(i: Int): SootClass = stack(size - i - 1).asInstanceOf[RefType].getSootClass()
-
-    /**
+     /**
      * Remove the top frame variable.
      */
     private def delUntrackedVariable = Property(prop.delVariable(size - 1), stack.tail, globals)

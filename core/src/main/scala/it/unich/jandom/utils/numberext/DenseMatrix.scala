@@ -161,7 +161,7 @@ final class DenseMatrix(val data: Array[Rational], val rows: Int) {
     */
   def *(that: DenseMatrix): DenseMatrix = {
     require(this.cols == that.rows)
-    var result = DenseMatrix.raw(this.rows, that.cols)
+    val result = DenseMatrix.raw(this.rows, that.cols)
     cfor(0)(_ < rows, _ + 1) { (i) =>
       cfor(0)(_ < that.cols, _ + 1) { (j) =>
         result(i, j) = Rational(0)

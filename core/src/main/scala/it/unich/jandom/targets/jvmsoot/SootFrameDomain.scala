@@ -19,8 +19,6 @@
 package it.unich.jandom.targets.jvmsoot
 
 import it.unich.jandom.targets.NumericCondition
-import it.unich.jandom.domains.AbstractDomain
-import it.unich.jandom.domains.AbstractProperty
 import it.unich.jandom.domains.CartesianFiberedProperty
 import it.unich.jandom.domains.CartesianFiberedDomain
 

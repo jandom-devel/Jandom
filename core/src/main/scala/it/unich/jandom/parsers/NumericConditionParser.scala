@@ -19,7 +19,6 @@
 package it.unich.jandom.parsers
 
 import scala.util.parsing.combinator.JavaTokenParsers
-import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.NumericExpression
 import it.unich.jandom.targets.NumericCondition
 import it.unich.jandom.targets.NumericCondition._

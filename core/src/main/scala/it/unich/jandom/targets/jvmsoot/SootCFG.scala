@@ -20,7 +20,8 @@ package it.unich.jandom.targets.jvmsoot
 
 import java.io._
 
-import it.unich.jandom.domains.AbstractProperty
+import scala.collection.JavaConverters._
+
 import it.unich.jandom.targets.Annotation
 import it.unich.jandom.targets.Environment
 import it.unich.jandom.targets.cfg.ControlFlowGraph
@@ -40,14 +41,12 @@ import soot.toolkits.graph.PseudoTopologicalOrderer
  * @author Francesca Scozzari <fscozzari@unich.it>
  */
 abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: SootMethod) extends ControlFlowGraph[Tgt, Node] {
-  import scala.collection.JavaConversions._
-
   type DomainBase = SootFrameDomain
 
   val body: Body
 
   // local variables of the method.
-  def locals = body.getLocals().toIndexedSeq
+  def locals = body.getLocals().asScala.toIndexedSeq
 
   // These are lazy values since body is not initialized when they are executed
 
@@ -59,7 +58,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
 
   // An ordering on nodes gives by a pseudo-topological orderer
   lazy val ordering = new Ordering[Node] {
-    val order = new PseudoTopologicalOrderer[Node].newList(graph, false).zipWithIndex.toMap
+    val order = new PseudoTopologicalOrderer[Node].newList(graph, false).asScala.zipWithIndex.toMap
     def compare(x: Node, y: Node) = order(x) - order(y)
   }
 
@@ -121,7 +120,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
    * It expands the input property adding new variables until exhausting locals.
    */
   protected def expandPropertyWithLocalVariables(params: Parameters)(input: params.Property): params.Property = {
-    body.getLocals.foldLeft(input) { (current, local) => current.evalUnknown(local.getType()) }
+    body.getLocals.asScala.foldLeft(input) { (current, local) => current.evalUnknown(local.getType()) }
   }
 
   /**
@@ -147,7 +146,7 @@ abstract class SootCFG[Tgt <: SootCFG[Tgt, Node], Node <: Block](val method: Soo
     if (params.io) {
       expandPropertyWithLocalVariables(params)(params.domain.top(inputTypes))
     } else {
-      params.domain.top(method.getActiveBody.getLocals.toSeq map { (l) => l.getType })
+      params.domain.top(method.getActiveBody.getLocals.asScala.toSeq map { (l) => l.getType })
     }
   }
 
@@ -235,7 +234,6 @@ object SootCFG {
    *  - type of return value (only if the return type is not void)
    */
   def outputTypes(method: SootMethod) = {
-    import scala.collection.JavaConversions._
     val returnTypes =
       if (method.getReturnType() == VoidType.v())
         Seq()
@@ -251,13 +249,12 @@ object SootCFG {
    *  - types of parameters @parameter0, @parameter1, ...
    */
   def inputTypes(method: SootMethod) = {
-    import scala.collection.JavaConversions._
     val thisType =
       if (method.isStatic())
         Seq()
       else
         Seq(method.getDeclaringClass().getType())
-    val parameterTypes = method.getParameterTypes().toSeq.asInstanceOf[Seq[Type]]
+    val parameterTypes = method.getParameterTypes().asScala
     thisType ++ parameterTypes
   }
 }

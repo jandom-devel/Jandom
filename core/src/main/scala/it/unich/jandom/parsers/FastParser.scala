@@ -25,9 +25,7 @@ import it.unich.jandom.targets.Environment
 import it.unich.jandom.targets.NumericAssignment
 import it.unich.jandom.targets.NumericCondition
 import it.unich.jandom.targets.NumericCondition._
-import it.unich.jandom.targets.NumericExpression._
 import it.unich.jandom.targets.lts._
-import it.unich.jandom.targets.NumericAssignmentMultiple
 
 /**
  * Parser for transition systems as they appear in the Fast analyzer.

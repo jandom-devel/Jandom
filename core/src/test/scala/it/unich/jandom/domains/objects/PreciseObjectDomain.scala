@@ -18,10 +18,6 @@
 
 package it.unich.jandom.domains.objects
 
-import org.scalatest.FunSpec
-import org.scalatest.prop.TableDrivenPropertyChecks
-import org.scalatest.prop.TableFor1
-
 /**
  * A test trait for object domains with precise operators.
  * @author Gianluca Amato <gamato@unich.it>

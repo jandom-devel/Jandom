@@ -23,13 +23,11 @@ import java.io.IOException
 import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.util.Try
-
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
 import org.objectweb.asm.tree.MethodNode
-
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.objects.ObjectDomainFactory
 import it.unich.jandom.targets.parameters.WideningSpecs._
@@ -43,7 +41,6 @@ import it.unich.jandom.targets.lts._
 import it.unich.jandom.targets.slil._
 import soot.Scene
 import soot.toolkits.graph.Block
-import it.unich.scalafix.Box
 
 /**
  * An output interface is a collection of methods for implementing an external interface.
@@ -183,7 +180,7 @@ object OutputInterface {
   def getMethods(dir: Path, klassIndex: Int) = {
     val scene = getScene(dir)
     val sootKlass = scene.loadClassAndSupport(getClasses(dir)(klassIndex))
-    sootKlass.getMethods().map(x => x.getName())
+    sootKlass.getMethods().asScala.map(x => x.getName())
   }
 
   private def getSootMethods(dir: Path, klassIndex: Int) = {
@@ -235,7 +232,7 @@ object OutputInterface {
   }
 
   def getASMMethods(dir: String, klassName: String) = {
-    getASMMethodsList(dir, klassName) map { _.name }
+    getASMMethodsList(dir, klassName).asScala map { _.name }
   }
 
   def analyzeASM(dir: String, klassName: String, methodIndex: Int, domain: Int, wideningIndex: Int,
@@ -317,7 +314,7 @@ private class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
   private val privateClassNamesList = scala.collection.mutable.SortedSet[String]()
   def classNameList = privateClassNamesList.toSeq
   override def visitFile(aFile: Path, aAttrs: BasicFileAttributes): FileVisitResult = {
-    val relativePath = rootPath.relativize(aFile)
+    val relativePath = rootPath.relativize(aFile).asScala
     val className = (relativePath.head.toString /: relativePath.tail)(_ + "." + _.toString)
     if (className endsWith ".class")
       privateClassNamesList += className stripSuffix ".class"

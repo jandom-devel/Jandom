@@ -19,7 +19,6 @@
 package it.unich.jandom.objectmodels
 
 import org.scalatest.FunSpec
-import org.scalacheck.Gen
 
 /**
  * A test for the TrivialObjectModel.

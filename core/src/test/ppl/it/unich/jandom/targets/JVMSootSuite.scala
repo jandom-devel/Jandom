@@ -18,6 +18,7 @@
 
 package it.unich.jandom.targets
 
+import scala.collection.JavaConverters._
 import org.scalatest.FunSuite
 import it.unich.jandom.domains.numerical.ppl.PPLDomain
 import it.unich.jandom.domains.objects.PairSharingDomain
@@ -25,7 +26,6 @@ import it.unich.jandom.domains.objects.UP
 import it.unich.jandom.parsers.NumericalPropertyParser
 import it.unich.jandom.targets.jvmsoot._
 import parma_polyhedra_library.C_Polyhedron
-import soot._
 import it.unich.jandom.domains.objects.PairSharingDomain
 
 /**
@@ -35,7 +35,6 @@ import it.unich.jandom.domains.objects.PairSharingDomain
  *
  */
 class JVMSootSuite extends FunSuite with SootTests {
-  import scala.collection.JavaConversions._
 
   val scene = initSoot()
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
@@ -95,7 +94,7 @@ class JVMSootSuite extends FunSuite with SootTests {
       val inte = new JimpleRecursiveInterpretation[params.type](scene, params)
       params.interpretation = Some(inte)
       test(s"Jimple inter-procedural sharing analysis: ${methodName}") {
-        val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes().asInstanceOf[java.util.List[Type]])
+        val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes().asScala)
         try {
           inte.compute(method, input)
           assert(inte(method, input).prop === psdom(prop, jmethod.outputTypes))
@@ -116,7 +115,6 @@ class JVMSootSuite extends FunSuite with SootTests {
 
     for ((methodName, propString) <- jimpleNumericalTests) {
       val method = c.getMethodByName(methodName)
-      val jmethod = new JimpleMethod(method)
       val params = new Parameters[JimpleMethod] {
         val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
         io = true

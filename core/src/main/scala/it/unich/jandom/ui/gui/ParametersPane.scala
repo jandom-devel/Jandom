@@ -30,7 +30,6 @@ import it.unich.jandom.targets.parameters.WideningSpecs._
 import it.unich.jandom.targets.parameters.NarrowingSpecs._
 import javax.swing.JSpinner
 import javax.swing.SpinnerNumberModel
-import it.unich.scalafix.Box
 
 class ParametersPane extends GridBagPanel {
   border = Swing.EmptyBorder(5, 5, 5, 5)

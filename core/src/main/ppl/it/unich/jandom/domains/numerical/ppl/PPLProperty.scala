@@ -18,6 +18,8 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
+import scala.collection.JavaConverters._
+
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.utils.numberext.RationalExt
@@ -170,18 +172,15 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
   }
 
   def constraints = {
-    import scala.collection.JavaConversions._
-
     val cs = domain.minimized_constraints(pplobject)
-    cs flatMap PPLUtils.fromPPLConstraint
+    cs.asScala flatMap PPLUtils.fromPPLConstraint
   }
 
   def isPolyhedral = {
-    import scala.collection.JavaConversions._
     val cs = domain.minimized_constraints(pplobject)
     // we explicitly check if the object is empty since, in this case, it has a unsatisfiable
     // congruence.
-    isEmpty || ((cs forall PPLUtils.isRepresentableAsLinearForms) && domain.minimized_congruences(pplobject).isEmpty())
+    isEmpty || ((cs.asScala forall PPLUtils.isRepresentableAsLinearForms) && domain.minimized_congruences(pplobject).isEmpty())
   }
 
   def addVariable = {

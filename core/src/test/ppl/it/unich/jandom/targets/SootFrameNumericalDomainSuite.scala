@@ -46,11 +46,9 @@ class SootFrameNumericalDomainSuite extends FunSuite {
     val env = Environment()
     val parser = new NumericalPropertyParser(env)
     val prop = parser.parseProperty("v0 == v0 && v1 + v2 == 0 && v1 <= 4", dom.numdom).get
-    val absframe = dom(prop, types)
     intercept[AssertionError] { dom(prop, Seq(soot.IntType.v(), classAType, soot.DoubleType.v())) }
     intercept[AssertionError] { dom(prop, Seq(soot.IntType.v(), soot.DoubleType.v(), classAType)) }
     intercept[AssertionError] { dom(prop, Seq(classAType, soot.IntType.v())) }
-    val fullnumframe = dom(prop, soot.IntType.v())
     intercept[AssertionError] { dom(prop, classAType) }
   }
 

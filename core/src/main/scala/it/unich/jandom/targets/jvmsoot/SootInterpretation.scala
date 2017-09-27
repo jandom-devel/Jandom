@@ -18,6 +18,8 @@
 
 package it.unich.jandom.targets.jvmsoot
 
+import scala.collection.JavaConverters._
+
 import it.unich.jandom.targets._
 
 import soot.SootMethod
@@ -86,8 +88,6 @@ class JimpleInterpretation[Params <: Parameters[JimpleMethod]](val params: Param
  * with a work-list based approach. Each method has a single possible input context, which is top.
  */
 class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: Scene, val params: Params) extends Interpretation[JimpleMethod, Params] {
-  import scala.collection.JavaConversions._
-
   val inte = scala.collection.mutable.HashMap[SootMethod, params.Property]()
   val targets = scala.collection.mutable.HashMap[SootMethod, Option[JimpleMethod]]()
 
@@ -110,8 +110,8 @@ class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: S
     val tpo = new TopologicalOrderer(cg)
     tpo.go()
 
-    val order = tpo.order().reverse         // it is enough to get the set of all the elements
-    if (order.isEmpty()) order.add(method)
+    val order = tpo.order().asScala.reverse         // it is enough to get the set of all the elements
+    if (order.isEmpty) order += method
 
     for (m <- order; if !(targets contains m)) {
       targets(m) = if (m.isConcrete()) Some(new JimpleMethod(m)) else None
@@ -133,7 +133,7 @@ class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: S
       if (!(inte(m) >= output)) {
         inte(m) = inte(m) widening output
         val sources = new Sources(cg.edgesInto(m)).asInstanceOf[java.util.Iterator[SootMethod]]
-        worklist.enqueue(sources.toSeq: _*)
+        worklist.enqueue(sources.asScala.toSeq: _*)
       }
     }
   }

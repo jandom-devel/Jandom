@@ -19,13 +19,13 @@
 
 package it.unich.jandom.benchmark
 
+import scala.collection.JavaConverters._
+
 import java.io.File
 import java.util.jar.JarFile
 
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.targets.lts.LTS
-
-import scala.collection.JavaConversions._
 
 /**
   * This trait loads and parser all models in /fast/ resource directory.
@@ -41,7 +41,7 @@ trait FASTLoader {
   private val uris = if (jarFile.isFile) { // Run with JAR file
     val jar = new JarFile(jarFile)
     val entries = jar.entries //gives ALL entries in jar
-    val result = (for (element <- entries; name = element.getName
+    val result = (for (element <- entries.asScala; name = element.getName
                        if (name startsWith path) && (name.length > path.length)) yield "/"+name).toList
     jar.close()
     result

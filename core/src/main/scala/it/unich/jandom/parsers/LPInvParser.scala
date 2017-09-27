@@ -25,7 +25,6 @@ import it.unich.jandom.targets.lts.LTS
 import it.unich.jandom.targets.lts.Location
 import it.unich.jandom.targets.lts.Transition
 import it.unich.jandom.targets.NumericAssignment
-import it.unich.jandom.targets.NumericAssignmentMultiple
 
 /**
   * Parser for transition systems as they appear in the [[http://www.cs.colorado.edu/~srirams/Software/lpinv.html LPInv]]

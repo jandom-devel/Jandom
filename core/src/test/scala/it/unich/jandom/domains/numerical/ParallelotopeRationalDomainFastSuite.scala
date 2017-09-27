@@ -26,7 +26,6 @@ import it.unich.jandom.utils.numberext.RationalExt
 import it.unich.jandom.utils.numberext.Bounds
 import it.unich.jandom.utils.numberext.DenseMatrix
 import it.unich.jandom.utils.numberext.Bounds
-import spire.math.Rational
 import spire.syntax.literals._
 
 /**

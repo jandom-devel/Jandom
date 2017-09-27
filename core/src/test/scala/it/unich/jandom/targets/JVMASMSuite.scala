@@ -18,16 +18,14 @@
 
 package it.unich.jandom.targets
 
-import scala.collection.JavaConversions.asScalaBuffer
+import scala.collection.JavaConverters._
 import org.objectweb.asm.ClassReader
-import org.objectweb.asm.tree.{ClassNode, MethodNode}
+import org.objectweb.asm.tree.ClassNode
 import org.scalatest.FunSuite
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.targets.jvmasm.{AsmMethod, JVMEnvFixedFrame, JVMEnvFixedFrameDomain, UnsupportedASMInsnException}
-import polyglot.util.Base64.InputStream
 
 class JVMASMSuite extends FunSuite {
-  import scala.collection.JavaConversions.asScalaBuffer
   val BoxDouble = BoxDoubleDomain()
 
   test("simple method analysis") {
@@ -35,7 +33,7 @@ class JVMASMSuite extends FunSuite {
     val cr = new ClassReader(is)
     val node = new ClassNode()
     cr.accept(node, ClassReader.SKIP_DEBUG)
-    val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
+    val methodList = node.methods.asScala
     val method = new AsmMethod(methodList.find(_.name == "conditional").get)
     val params = new Parameters[AsmMethod] {
       val domain = new JVMEnvFixedFrameDomain(BoxDouble)

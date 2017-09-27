@@ -1,9 +1,6 @@
 
 package it.unich.jandom.domains.objects
 
-import org.scalatest.FunSpec
-import org.scalatest.prop.TableFor1
-
 /**
  * This suite implements tests for those object domain which precisely track
  * definite nullness.

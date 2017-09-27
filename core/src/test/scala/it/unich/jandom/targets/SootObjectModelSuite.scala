@@ -19,7 +19,6 @@
 package it.unich.jandom.targets
 
 import org.scalatest._
-import org.scalacheck._
 
 import it.unich.jandom.targets.jvmsoot.SootObjectModel
 import it.unich.jandom.objectmodels.ObjectModelSuite

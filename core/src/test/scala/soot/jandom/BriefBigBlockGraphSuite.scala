@@ -18,8 +18,9 @@
 
 package soot.jandom
 
+import scala.collection.JavaConverters._
+
 import org.scalatest.FunSpec
-import soot._
 import it.unich.jandom.targets.SootTests
 
 /**
@@ -32,10 +33,8 @@ class BriefBigBlockGraphSuite extends FunSpec with SootTests {
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
 
   describe("The BriefBigBlockGraph for the nested method") {
-    import scala.collection.JavaConversions._
-
     val body = c.getMethodByName("nested").retrieveActiveBody()
-    val graph = new BriefBigBlockGraph(body)
+    val graph = new BriefBigBlockGraph(body).asScala
     val expectedGraph = Seq(
       (Seq(), Seq(1)),
       (Seq(0,3), Seq(2,4)),
@@ -43,11 +42,11 @@ class BriefBigBlockGraphSuite extends FunSpec with SootTests {
       (Seq(2), Seq(1)),
       (Seq(1), Seq()))
 
-    it("should have five nodes") { assert(graph.size() === expectedGraph.length ) }
+    it("should have five nodes") { assert(graph.size === expectedGraph.length ) }
     it("should be isomorphic to the expected graph") {
       for ( (block, (preds, succs)) <- graph zip expectedGraph) {
-    	  assert ( (block.getPreds() map { _.getIndexInMethod() }) === preds)
-    	  assert ( ( block.getSuccs()  map { _.getIndexInMethod() }) === succs)
+    	  assert ( (block.getPreds().asScala map { _.getIndexInMethod() }) === preds)
+    	  assert ( ( block.getSuccs().asScala  map { _.getIndexInMethod() }) === succs)
       }
     }
   }

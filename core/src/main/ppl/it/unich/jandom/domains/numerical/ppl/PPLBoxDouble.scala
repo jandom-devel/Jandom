@@ -18,6 +18,8 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
+import scala.collection.JavaConverters._
+
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.utils.numberext.RationalExt
@@ -167,16 +169,13 @@ final class PPLBoxDouble(val pplbox: Double_Box) extends NumericalProperty[PPLBo
   }
 
   def constraints = {
-    import scala.collection.JavaConversions._
-
     val cs = pplbox.constraints()
-    cs flatMap PPLUtils.fromPPLConstraint
+    cs.asScala flatMap PPLUtils.fromPPLConstraint
   }
 
   def isPolyhedral = {
-    import scala.collection.JavaConversions._
     val cs = pplbox.constraints()
-    cs forall PPLUtils.isRepresentableAsLinearForms
+    cs.asScala forall PPLUtils.isRepresentableAsLinearForms
   }
 
   def addVariable: PPLBoxDouble = {

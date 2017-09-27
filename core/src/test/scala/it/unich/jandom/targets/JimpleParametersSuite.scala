@@ -21,7 +21,6 @@ package it.unich.jandom.targets
 import org.scalatest.FunSuite
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.objects.PairSharingDomain
-import it.unich.jandom.parsers.NumericalPropertyParser
 import it.unich.jandom.targets.jvmsoot._
 import soot._
 import it.unich.jandom.parsers.PairSharingParser

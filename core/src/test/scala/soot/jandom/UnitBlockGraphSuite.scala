@@ -18,12 +18,10 @@
 
 package soot.jandom
 
+import scala.collection.JavaConverters._
+
 import org.scalatest.FunSpec
-import soot.Scene
-import soot.Unit
 import soot.toolkits.graph.BriefUnitGraph
-import soot.toolkits.graph.Block
-import soot.options.Options
 import it.unich.jandom.targets.SootTests
 
 /**
@@ -33,26 +31,24 @@ import it.unich.jandom.targets.SootTests
  */
 
 class UnitBlockGraphSuite extends FunSpec with SootTests {
-  import scala.collection.JavaConversions._
-
   val scene = initSoot()
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
 
-  for (m <- c.getMethods(); body = m.retrieveActiveBody()) {
+  for (m <- c.getMethods().asScala; body = m.retrieveActiveBody()) {
 
     describe("The UnitBlockGraph for the "+m.getName()+" method") {
       val graph = new UnitBlockGraph(body)
       val unitGraph = new BriefUnitGraph(body)
 
       it("should only have blocks with head equal to tail") {
-        for (b <- graph) assert(b.getHead() === b.getTail())
+        for (b <- graph.asScala) assert(b.getHead() === b.getTail())
       }
 
       it("should be isomorphic to the unit graph") {
         assert(graph.size() === unitGraph.size())
-        for (b <- graph; u = b.getHead()) {
-          assert((graph.getPredsOf(b) map { _.getHead() }) === asScalaBuffer(unitGraph.getPredsOf(u)))
-          assert((graph.getSuccsOf(b) map { _.getHead() }) === asScalaBuffer(unitGraph.getSuccsOf(u)))
+        for (b <- graph.asScala; u = b.getHead()) {
+          assert((graph.getPredsOf(b).asScala map { _.getHead() }) === unitGraph.getPredsOf(u).asScala)
+          assert((graph.getSuccsOf(b).asScala map { _.getHead() }) === unitGraph.getSuccsOf(u).asScala)
         }
       }
     }

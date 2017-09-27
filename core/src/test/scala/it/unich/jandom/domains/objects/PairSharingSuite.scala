@@ -95,7 +95,6 @@ class PairSharingSuite extends FunSuite {
   test("Delete variables in the middle") {
     val ps1 = dom(Set((0, 0), (0, 1), (1, 1), (3, 1), (3, 3)), 4)
     assertResult(dom(Set((0, 0), (1, 1)), 2))(ps1.delVariables(1 to 2))
-    val ps2 = dom(Set((0, 0), (0, 1), (1, 1), (3, 1), (3, 3)), 4)
     assertResult(dom(Set((0, 0), (2, 2)), 3))(ps1.delVariable(1))
   }
 

@@ -28,7 +28,7 @@ import org.scalatest.FunSuite
 class LinearFormSuite extends FunSuite {
 
   test("Variable constructor") {
-    var lf = LinearForm.v(1)
+    val lf = LinearForm.v(1)
     assertResult(LinearForm(0, 0, 1)) { lf }
   }
 
@@ -50,7 +50,6 @@ class LinearFormSuite extends FunSuite {
   test("Arithmetic operations") {
     val lf1 = LinearForm(1, 2, -1)
     val lf2 = LinearForm(1, 0, 3)
-    val lf3 = LinearForm(2, 2, 2)
     assertResult(LinearForm(-1, -2, 1)) { -lf1 }
     assertResult(LinearForm(2, 2, 2)) { lf1 + lf2 }
     assertResult(LinearForm(0, 2, -4)) { lf1 - lf2 }

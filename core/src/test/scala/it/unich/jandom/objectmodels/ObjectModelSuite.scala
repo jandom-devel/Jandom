@@ -53,7 +53,7 @@ trait ObjectModelSuite extends FunSpec with  TableDrivenPropertyChecks  {
       for (t <- someTypes) {
         val fields = declaredFields(t)
         // I want to check absence of exception, I do not know if there is a standard method
-        val types = fields map { typeOf(_) }
+        fields map { typeOf(_) }
       }
     }
   }

@@ -18,8 +18,6 @@
 
 package it.unich.jandom.targets.jvmasm
 
-import scala.collection.mutable.ArrayStack
-
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.numerical.NumericalProperty

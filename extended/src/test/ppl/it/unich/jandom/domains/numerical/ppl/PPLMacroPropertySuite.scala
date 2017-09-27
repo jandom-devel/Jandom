@@ -69,8 +69,6 @@ class PPLMacroPropertySuite extends FunSuite {
   }
 
   test("various operations") {
-    val obj = full.linearAssignment(0, 0.0)
-    val obj2 = full.linearAssignment(1, 0.0)
     val obj3 = full.linearAssignment(2, 0.0)
     val obj4 = full.linearAssignment(2, 1.0)
     val obj5 = obj4 union obj3
@@ -83,8 +81,7 @@ class PPLMacroPropertySuite extends FunSuite {
 
   test("disequality do not crash") {
     val obj = full.linearAssignment(0, 0.0)
-    val dis = obj.linearDisequality(LinearForm(0, 1, 0, 0))
-    assert(true)
+    obj.linearDisequality(LinearForm(0, 1, 0, 0))
   }
 
   test("disequality is precise on boxes") {

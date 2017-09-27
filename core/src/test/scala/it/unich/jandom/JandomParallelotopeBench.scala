@@ -67,7 +67,7 @@ object JandomParallelotopeBench extends App with FASTLoader {
 
     val t1 = System.currentTimeMillis
     val productAnn = program.analyze(params1)
-    val tann1 = System.currentTimeMillis - t1
+    val tann1  = System.currentTimeMillis - t1
 
     val params2 = new targets.Parameters[LTS] {
       val domain = BoxRationalDomain()
@@ -75,7 +75,7 @@ object JandomParallelotopeBench extends App with FASTLoader {
     params2.widening = DelayedWidening(DefaultWidening, 1)
     params2.narrowing = DelayedNarrowing(DefaultNarrowing, 1)
     // params2.debugWriter = new java.io.PrintWriter(System.out)
-    program.analyze(params2) // warmup JVM
+    program.analyze(params2) // warmup JVMunchecked
     //params2.debugWriter.flush()
 
     val t2 = System.currentTimeMillis
@@ -108,6 +108,7 @@ object JandomParallelotopeBench extends App with FASTLoader {
 
     val comp = cprod map { case (loc, v) => loc -> v.tryCompareTo(cbox(loc) intersection cpar(loc)) }
 
+    println(s"TIME REQUIRED: product: $tann1 box: $tann2 ptope: $tann3")
     println("COUNT EQUALS: " + comp.count(_._2 contains 0))
     println("COUNT BETTER REDUCED PRODUCT: " + comp.count(_._2 contains -1))
     println("COUNT BETTER SEPARATE ANALYSIS: " + comp.count(_._2 contains 1))

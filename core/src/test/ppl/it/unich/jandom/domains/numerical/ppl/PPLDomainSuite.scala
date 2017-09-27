@@ -85,8 +85,6 @@ class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double
   }
 
   describe("Test for various operations") {
-    val obj = full.linearAssignment(0, 0)
-    val obj2 = full.linearAssignment(1, 0)
     val obj3 = full.linearAssignment(2, 0)
     val obj4 = full.linearAssignment(2, 1)
     val obj5 = obj4 union obj3
@@ -110,7 +108,7 @@ class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double
 
   describe("Test that disequality do not crash") {
     val obj = full.linearAssignment(0, 0)
-    val dis = obj.linearDisequality(LinearForm(0, 1, 0, 0))
+    obj.linearDisequality(LinearForm(0, 1, 0, 0))
   }
 
   describe("Test string conversion") {

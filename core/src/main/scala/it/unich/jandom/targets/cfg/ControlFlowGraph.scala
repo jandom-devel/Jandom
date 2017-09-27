@@ -19,6 +19,7 @@
 package it.unich.jandom.targets.cfg
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
+import scala.collection.JavaConverters._
 import it.unich.jandom.targets.Annotation
 import it.unich.jandom.targets.Target
 import soot.toolkits.graph.DirectedGraph
@@ -32,8 +33,6 @@ import soot.toolkits.graph.DirectedGraph
  * @author Francesca Scozzari <francesca.scozzari@unich.it>
  */
 abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extends Target[Tgt] {
-  import scala.collection.JavaConversions._
-
   /**
    * The `ProgramPoint` type is defined as an alias for the `Node`. We are wondering whether to make
    * `ProgramPoint` an alias for `Edge`.
@@ -68,7 +67,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    * of the CFG, so be careful to preserve this property.
    */
   def extractOutput(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): params.Property = {
-    graph.getTails map { (node) => analyzeBlock(params)(node, ann(node)).last } reduce { _ union _ }
+    graph.getTails.asScala map { (node) => analyzeBlock(params)(node, ann(node)).last } reduce { _ union _ }
   }
 
   /**
@@ -104,7 +103,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    */
   def analyzeFromInput(params: Parameters)(input: params.Property): Annotation[ProgramPoint, params.Property] = {
     val ann = getAnnotation[params.Property]
-    for (node <- graph.getHeads()) ann(node) = expandPropertyWithLocalVariables(params)(input)
+    for (node <- graph.getHeads().asScala) ann(node) = expandPropertyWithLocalVariables(params)(input)
     analyzeFromAnnotation(params)(ann)
   }
 
@@ -115,7 +114,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    */
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
     val ann = getAnnotation[params.Property]
-    for (node <- graph.getHeads) ann(node) = topProperty(node, params)
+    for (node <- graph.getHeads.asScala) ann(node) = topProperty(node, params)
     analyzeFromAnnotation(params)(ann)
   }
 
@@ -124,7 +123,7 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    */
   def analyzeFromAnnotation(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): Annotation[ProgramPoint, params.Property] = {
     val annEdge = HashMap[Edge, params.Property]()
-    val taskList = Queue[ProgramPoint](graph.getHeads: _*)
+    val taskList = Queue[ProgramPoint](graph.getHeads.asScala: _*)
 
     // ASCENDING phase
     params.log("Ascening Phase\n")
@@ -133,9 +132,9 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
       params.log(s"node ${node}input ${ann(node)}\n")
       val result = analyzeBlock(params)(node, ann(node))
       params.log("result " + result.mkString(",") + "\n")
-      for ((succ, out) <- graph.getSuccsOf(node) zip result) {
+      for ((succ, out) <- graph.getSuccsOf(node).asScala zip result) {
         annEdge((node, succ)) = out
-        if (graph.getPredsOf(succ).length > 1 && (ann contains succ)) {
+        if (graph.getPredsOf(succ).size() > 1 && (ann contains succ)) {
           params.log(s"join $succ : ${ann(succ)} with $out")
           val succval: params.Property = if (ordering.lteq(succ, node)) {
             params.log(s" widening")
@@ -157,16 +156,16 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
     }
 
     // DESCENDING phase
-    taskList.enqueue(graph.toSeq: _*)
+    taskList.enqueue(graph.asScala.toSeq: _*)
     params.log("Descending Phase\n")
     while (!taskList.isEmpty) {
       val node = taskList.dequeue
       params.log(s"node ${node} input ${ann(node)} ")
       val result = analyzeBlock(params)(node, ann(node))
-      params.log("result " + (graph.getSuccsOf(node) zip result).mkString(" ; ") + "\n")
-      for ((succ, out) <- graph.getSuccsOf(node) zip result) {
+      params.log("result " + (graph.getSuccsOf(node).asScala zip result).mkString(" ; ") + "\n")
+      for ((succ, out) <- graph.getSuccsOf(node).asScala zip result) {
         annEdge((node, succ)) = out
-        val newinput = ann(succ) intersection (graph.getPredsOf(succ) map { e => annEdge((e, succ)) } reduce { _ union _ })
+        val newinput = ann(succ) intersection (graph.getPredsOf(succ).asScala map { e => annEdge((e, succ)) } reduce { _ union _ })
         params.log(s"narrow $succ : ${ann(succ)} with $newinput ")
         // this may probably cause an infinite loop
         val succval = if (ordering.lteq(succ, node)) {

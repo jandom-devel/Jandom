@@ -19,7 +19,6 @@
 package it.unich.jandom.utils
 
 import scala.collection.mutable.{ Map => MMap }
-import scala.collection.TraversableProxy
 
 /**
  * This class implements a disjoint-sets algorithm with
@@ -54,8 +53,6 @@ class DisjointSetsImpl[T](initialElements: Seq[T]) extends DisjointSets[T] {
   }
   
   def size = nodes.size
-
-  private def self = nodes.values.toTraversable
 
   /**
    * Add a new single-node forest  to the disjoint-set forests. It will

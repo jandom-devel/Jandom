@@ -36,7 +36,6 @@ import it.unich.jandom.targets.slil.AnalysisPhase._
 case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SLILStmt) extends SLILTarget {
   def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: SLILPrinterSpec = SLILPrinterSpecInline(env)) = {
     val spaces = ppspec.indent(0)
-    val innerspaces = ppspec.indent(1)
     spaces + "function (" + (inputVars map { v: Int => env(v) }).mkString(",") + ") {\n" +
       stmt.mkString(ann, ppspec, 1, 1)  +
       spaces + "}\n"
@@ -45,7 +44,7 @@ case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: 
   override def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
     val input = params.domain.top(env.size)
     val ann = getAnnotation[params.Property]
-    val output = params.narrowingStrategy match {
+    params.narrowingStrategy match {
       case NarrowingStrategy.Separate =>
         stmt.analyzeStmt(params)(input, Ascending, ann)
         stmt.analyzeStmt(params)(input, Descending, ann)
