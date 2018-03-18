@@ -97,3 +97,7 @@ scmInfo in ThisBuild := Some(ScmInfo(
 ))
 
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+
+// Following line is workaround for https://github.com/sbt/sbt-native-packager/issues/1063#issuecomment-343836338
+updateConfiguration in updateSbtClassifiers := (updateConfiguration in updateSbtClassifiers).value.withMissingOk(true)
+
