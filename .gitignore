@@ -15,3 +15,7 @@ target.eclipse/
 
 # intellij idea
 .idea/
+
+# ensime
+.ensime
+.ensime_cache/
