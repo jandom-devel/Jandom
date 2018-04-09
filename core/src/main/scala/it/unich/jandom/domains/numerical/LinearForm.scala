@@ -115,13 +115,25 @@ trait LinearForm {
    * @inheritdoc
    * It is equivalent to `mkString` with variable names `v0`...`vn`
    */
-  override def toString = mkString(Stream.from(0).map { "v" + _ })
+  override final def toString = mkString(Stream.from(0).map { "v" + _ })
 
   /**
    * This is used to store the PPL version of this linear form. It is declared
    * of type `AnyRef` so that it may be compiled even when PPL is not present.
    */
   var toPPL: AnyRef = null
+
+  /**
+   * Equality between linear forms. Two linear forms are equal if their coefficients are the same and
+   * are defined over the same environment.
+    */
+
+  override final def equals(that: Any): Boolean = that match {
+    case that: LinearForm => coeffs == that.coeffs
+    case _ => false
+  }
+
+  override final def hashCode: Int = (coeffs).hashCode()
 }
 
 /**

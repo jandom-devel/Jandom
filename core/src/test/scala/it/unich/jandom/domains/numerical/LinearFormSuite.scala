@@ -97,4 +97,27 @@ class LinearFormSuite extends FunSuite {
     assert(! lf5.isConstant)
     assert(! lf5.isZero)
   }
+
+  test ("Sets of equal lfs are subsets of each other") {
+    // This fails if hashCode is unsound
+    val o1cons = List(LinearForm(-2, 0, -1), LinearForm(2, 0, 1))
+    val o2cons = List(LinearForm(2, 0, 1), LinearForm(-2, 0, -1))
+    assert(!(o1cons sameElements o2cons))
+    val c1 = o1cons.toSet
+    val c2 = o2cons.toSet
+    assert(c1 subsetOf c2)
+    assert(c2 subsetOf c1)
+    assert(c1 == c2)
+  }
+
+  test ("Sets of different lfs are NOT subsets of each other") {
+    val o1cons = List(LinearForm(-2, 0, -1), LinearForm(2, 0, 1))
+    val o2cons = List(LinearForm(8, 0, 4), LinearForm(-4, 0, 2))
+    val c1 = o1cons.toSet
+    val c2 = o2cons.toSet
+    assert(!(o1cons sameElements o2cons))
+    assert(!(c1 subsetOf c2))
+    assert(!(c2 subsetOf c1))
+    assert(c1 != c2)
+  }
 }
