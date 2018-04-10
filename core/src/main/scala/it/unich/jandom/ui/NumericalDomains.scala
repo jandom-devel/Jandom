@@ -41,4 +41,7 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
   // Load objects PPLUIInitializer and PPLMacroUIInitializer if available
   Try ( Class.forName ("it.unich.jandom.ui.PPLUIInitializer$") )
   Try ( Class.forName ("it.unich.jandom.ui.PPLMacroUIInitializer$") )
+
+  // TODO
+  Try ( Class.forName ("it.unich.jandom.ui.ApronUIInitializer$") )
 }
