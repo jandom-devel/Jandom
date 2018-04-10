@@ -49,7 +49,27 @@ pplJar in ThisBuild := {
     val PPLPathName = scala.sys.process.Process("ppl-config -l").lineStream.head+"/ppl/ppl_java.jar"
     if (file(PPLPathName).exists) Some(PPLPathName) else None
   } catch {
-    case _ : Exception => None 
+    case _ : Exception => None
+  }
+}
+
+apronJar in ThisBuild := {
+  try {
+    val ApronPathName = "/usr/share/java/apron.jar"
+    // TODO Parametrize
+    if (file(ApronPathName).exists) Some(ApronPathName) else None
+  } catch {
+    case _ : Exception => None
+  }
+}
+
+gmpJar in ThisBuild := {
+  try {
+    val GMPPathName = "/usr/share/java/gmp.jar"
+    // TODO Parametrize
+    if (file(GMPPathName).exists) Some(GMPPathName) else None
+  } catch {
+    case _ : Exception => None
   }
 }
 
