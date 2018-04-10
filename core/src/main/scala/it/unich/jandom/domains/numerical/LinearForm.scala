@@ -134,6 +134,13 @@ trait LinearForm {
   }
 
   override final def hashCode: Int = (coeffs).hashCode()
+
+  def padded (n : Int) : LinearForm = {
+    assert(coeffs.size <= n) // TODO: handle
+    if (coeffs.size == n)
+      this
+    else LinearForm((coeffs ++ List.fill[Rational](n - coeffs.size)(0)) : _*)
+  }
 }
 
 /**
