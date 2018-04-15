@@ -28,10 +28,10 @@ import it.unich.jandom.utils.numberext.RationalExt
 import scala.language.reflectiveCalls
 
 class ApronSpecification extends PropSpec with PropertyChecks {
-  import it.unich.jandom.domains.numerical.apron.Utils.Ints._
-  import it.unich.jandom.domains.numerical.apron.Utils.Rationals._
-  import it.unich.jandom.domains.numerical.apron.Utils.RationalExts._
-  import it.unich.jandom.domains.numerical.apron.Utils.LinearForms._
+  import it.unich.jandom.domains.numerical.Utils.Ints._
+  import it.unich.jandom.domains.numerical.Utils.Rationals._
+  import it.unich.jandom.domains.numerical.Utils.RationalExts._
+  import it.unich.jandom.domains.numerical.Utils.LinearForms._
 
   val apronDomain = ApronIntOctagonDomain()
   ///////////////////////////////////////////////////////

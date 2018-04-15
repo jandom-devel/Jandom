@@ -23,7 +23,7 @@ import org.scalatest.prop.PropertyChecks
 import spire.math.Rational
 
 class MetaSpecification extends PropSpec with PropertyChecks {
-  import it.unich.jandom.domains.numerical.apron.Utils
+  import it.unich.jandom.domains.numerical.Utils
   import Utils._
   import Rationals._
   import Rationals.arbRational

@@ -1,4 +1,4 @@
-package it.unich.jandom.domains.numerical.apron
+package it.unich.jandom.domains.numerical
 import it.unich.jandom.domains.numerical._
 
 import org.scalacheck.Arbitrary
