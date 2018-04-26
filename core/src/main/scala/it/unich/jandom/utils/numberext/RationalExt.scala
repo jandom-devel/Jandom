@@ -38,7 +38,7 @@ import scala.runtime.RichDouble
  * @param special one of the values in the RationalExt enumeration. They are `NORMAL`, `POSINF`,
  * `NEGINF` and `NAN`, with the obvious meaning.
  */
-class RationalExt(val value: Rational, private val special: RationalExt.SpecialValue.SpecialValue) extends ScalaNumber with ScalaNumericConversions {
+class RationalExt(val value: Rational, private val special: RationalExt.SpecialValue.SpecialValue) extends ScalaNumber with ScalaNumericConversions with IField[RationalExt] {
 
   import RationalExt.SpecialValue._
 
@@ -236,9 +236,19 @@ class RationalExt(val value: Rational, private val special: RationalExt.SpecialV
     case NEGINF => "-Infinity"
     case NAN => "NaN"
   }
+
+  def _div_2 : RationalExt =
+    if (isPosInfinity) this
+    else if (isNegInfinity) this
+    else (this / 2)
+
+  def _x_2 : RationalExt =
+    if (isPosInfinity) this
+    else if (isNegInfinity) this
+    else (this * 2)
 }
 
-object RationalExt {
+object RationalExt extends StaticIField[RationalExt]{
   /**
    * The enumeration of the special values for the `RationalExt` class.
    */
