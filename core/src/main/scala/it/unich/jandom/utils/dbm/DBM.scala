@@ -159,3 +159,75 @@ trait DBMFactory[N <: IField[N]] {
     */
   protected[dbm] def markAsClosed(d : DBM[N]) : ClosedDBM[N]
 }
+
+///////////////////////////////////////////
+// Quick & dirty array-based implementation
+///////////////////////////////////////////
+
+
+class ArrayDBMFactory[N <: IField[N]](implicit ctag : ClassTag[N], override val ifield : StaticIField[N]) extends DBMFactory[N]{
+
+  def fromFun(d : DBMDim, f : DBMIdx => N) : ArrayDBM[N] = {
+    (new ArrayDBM(d,
+      d.allIdxs.foldLeft(
+        Array.fill(d.dbmDimToInt)(Array.fill(d.dbmDimToInt)(ifield.PositiveInfinity))
+      )(
+        (z : Array[Array[N]], idx) => z.updated(idx.i - 1, z(idx.i - 1).updated(idx.j - 1, f(idx)))
+          // Arrays are indexed from 0, Idxs start from 1 to match Mine' 2006
+      )
+    )(ctag, ifield))
+  }
+
+  protected[dbm] def markAsClosed(d : DBM[N]) : ClosedDBM[N] = {
+    d match {
+      case adbm : ArrayDBM[N] => (new ArrayDBM[N](adbm.dimension, adbm.a) with ClosedDBM[N])
+      case dbm : DBM[N] => markAsClosed(fromFun(dbm.dimension, dbm(_)))
+    }
+  }
+}
+
+case class ArrayDBM[N <: IField[N]]
+  (val dimension : DBMDim, val a : Array[Array[N]])
+  (implicit ctag : ClassTag[N], val ifield : StaticIField[N]) extends DBM[N] {
+  require(a.size == 0 | a.size > 0 & a(0).size == dimension.dbmDimToInt)
+
+  def length = a.length
+
+  override def isTop = dimension.allIdxs.forall(idx => idx.diagonal | a.apply(idx.i - 1).apply(idx.j - 1) == ifield.PositiveInfinity)
+
+  /**
+    * O(1)
+    */
+  def updated (idx : DBMIdx)(n : N) : DBM[N] = ArrayDBM(dimension, a.updated(idx.i - 1, a(idx.i - 1).updated(idx.j - 1, n)))
+
+  def seq = a.map(_.seq).seq
+
+  /**
+    * O(n^2)
+    */
+  override def combine(f: (N, N) => N)(that: DBM[N]): DBM[N] = {
+    new ArrayDBM(dimension,
+      dimension.grid.map(_.map(idx =>
+        f(this(idx), that(idx))
+      ).toArray).toArray)
+  }
+
+  /**
+    * O(1)
+    */
+  def apply(idx : DBMIdx) : N = a.apply(idx.i - 1).apply(idx.j - 1)
+
+  def all: Seq[(DBMIdx, N)] = dimension.allIdxs.map(idx => (idx, this(idx)))
+
+  /**
+    * O(n^2)
+    */
+  def map[A](f: N => A) : Seq[A] = dimension.allIdxs.map(idx => f(this(idx)))
+
+  // TODO: This might be not such a good idea
+  override def canEqual(a: Any) = super[DBM].canEqual(a)
+
+  override def equals(that: Any): Boolean = super[DBM].equals(that)
+
+  override def hashCode: Int = ??? // TODO
+}
