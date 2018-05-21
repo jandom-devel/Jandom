@@ -2,6 +2,7 @@ package it.unich.jandom.domains.numerical
 import it.unich.jandom.domains.WideningDescription
 import it.unich.jandom.utils.dbm._
 import it.unich.jandom.domains.numerical.octagon._
+import it.unich.jandom.domains.numerical.octagon.optimized._
 import it.unich.jandom.utils.numberext.RationalExt
 import spire.math.Rational
 import scala.reflect.ClassTag
@@ -14,8 +15,8 @@ class OctagonDomain(val boxDomain : BoxGenericDomain[RationalExt]) extends Numer
   implicit val closure = new IncrementalMineFloydWarshall[RationalExt]()(ifield, factory)
   implicit val octDomain : OctagonDomain = this
   implicit val box = BoxRationalDomain()
-  def top(dim : Int) : Property = ???
-  def bottom(dim : Int): Property = ???
+  def top(dim : Int) : Property = new OctagonProperty(new CachingOctagon(Right(factory.top((OctagonDim(dim).toDBMDim)))))
+  def bottom(dim : Int): Property = new OctagonProperty(new BottomOctagon(OctagonDim(dim)))
 
   val widenings = Seq(WideningDescription.default[Property])
 
