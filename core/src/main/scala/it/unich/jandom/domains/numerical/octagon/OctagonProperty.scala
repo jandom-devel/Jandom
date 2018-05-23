@@ -116,7 +116,63 @@ case class OctagonProperty
     }
   }
 
-  def linearInequality(lf: LinearForm): Property = ???
+  /**
+    * Dispatches a linearInequality call to the handler for the
+    * appropriate octagon exact abstract test operator (as detailed in
+    * Mine' 2006 fig. 20 . 42) or overapproximates using the Box
+    * domain
+    */
+  def linearInequality(lf: LinearForm): Property = {
+    // lf : c + a1 v1 + a2 v2 + ... <= 0
+    if (o.isBottom)
+      this // TODO: Is this useless? If o is bottom its own transfer
+           // functions should be okay already
+    else {
+      val zipped = lf.homcoeffs.zipWithIndex
+      if (zipped.filter(_._1 != 0).size == 0)
+        if (lf.known <= 0)
+          this // The solution to 0x1 + 0x2 + ... + 0xn + c <= 0 is "anything" if c <= 0
+        else // lf.known > 0
+          bottom
+            // The solution to 0x1 + 0x2 + ... + 0xn + c <= 0 is _|_ if c > 0
+      else if (zipped.filter(_._1 != 0).size == 1) {
+        val coeff = zipped.filter(_._1 != 0).head._1
+        val j0 = zipped.filter(_._1 != 0).head._2
+        if (coeff == 1)
+          // Case 1. {{ Vj0 + c <= 0 ? }}
+          o.test_vj0_plus_c_le_0(Var(j0 + 1), lf.known)
+        else if (coeff == -1)
+          // Case 2. {{ -Vj0 + c <= 0 ? }}
+          o.test_minus_vj0_plus_c_le_0(Var(j0 + 1), lf.known)
+        else
+          // Use box fallback: {{ k Vj0 + c <= 0 ? }} for k != 1, -1
+          domain.fromBox(toBox.linearInequality(lf))
+      } else if (zipped.filter(_._1 != 0).size == 2) {
+        val coeffj0 = zipped.filter(_._1 != 0).head._1
+        val j0 = zipped.filter(_._1 != 0).head._2
+        val coeffi0 = zipped.filter(_._1 != 0).tail.head._1
+        val i0 = zipped.filter(_._1 != 0).tail.head._2
+        if (coeffj0 == 1 & coeffi0 == -1)
+          // Case 3.  {{ Vj0 - Vi0 + c <= 0 ? }}
+          o.test_vj0_minus_vi0_plus_c_le_0(Var(j0 + 1), Var(i0 + 1), lf.known)
+        else if (coeffj0 == -1 & coeffi0 == 1)
+          // Case 3 bis.  (with Vj0 <-> Vi0)
+          o.test_vj0_minus_vi0_plus_c_le_0(Var(i0 + 1), Var(j0 + 1), lf.known)
+        else if (coeffj0 == 1 & coeffi0 == 1)
+          // Case 4.  {{ Vj0 + Vi0 + c <= 0 ? }}
+          o.test_vj0_plus_vi0_le_c(Var(i0 + 1), Var(j0 + 1), lf.known)
+        else if (coeffj0 == -1 & coeffi0 == -1)
+          // Case 5. {{ -Vj0 - Vi0 + c <= 0 ? }}
+          o.test_minus_vj0_minus_vi0_plus_c_le_0(Var(j0 + 1), Var(i0 + 1), lf.known)
+        else
+          // Use box fallback:  {{ k Vj0 + k' Vi0 + c <= 0 ? }} for k, k' not in 1, -1
+          domain.fromBox(toBox.linearInequality(lf))
+      } else {
+        // Use fallback: More than 2 non-zero coefficients
+        domain.fromBox(toBox.linearInequality(lf))
+      }
+    }
+  }
 
   def linearDisequality(lf: LinearForm): Property = ???
 
