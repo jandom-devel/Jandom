@@ -573,3 +573,37 @@ class DelayedOctagon[N <: IField[N]]
 
 
 
+/**
+  * This one is like DelayedOctagon but is mutable and caches closure.
+  */
+class CachingOctagon[N <: IField[N]]
+ (dbm : Either[DBM[N], ClosedDBM[N]])
+  (implicit ifield : StaticIField[N],
+    cs : IncrementalMineFloydWarshall[N],
+    fac : DBMFactory[N]) extends DelayedOctagon[N](dbm)(ifield, cs, fac){
+
+  var cached_closed : Option[Option[ClosedDBM[N]]] = None
+
+  override protected def wrapAny(dbm : DBM[N]) : Octagon[N] = new CachingOctagon[N](Left(dbm))
+  override protected def wrapClosed(maybe : Option[ClosedDBM[N]]) : Octagon[N] = maybe match {
+    case None => BottomOctagon(dimension)
+    case Some(closed) => new CachingOctagon[N](Right(closed))
+  }
+
+  protected[octagon] override def anyDbm : DBM[N] = closedDbm match {
+    case Some(closed) => closed
+    case None => super.anyDbm
+  }
+
+  protected[octagon] override def closedDbm : Option[ClosedDBM[N]] = cached_closed match {
+    case None => this.dbm match {
+      case Left(any) => {
+        val res = cs.strongClosure(any)
+        cached_closed = Some(res)
+        res
+      }
+      case Right(closed) => Some(closed)
+    }
+    case Some(maybeclosed) => maybeclosed
+  }
+}
