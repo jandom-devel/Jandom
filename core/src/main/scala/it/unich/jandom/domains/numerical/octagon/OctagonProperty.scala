@@ -176,7 +176,37 @@ case class OctagonProperty
 
   def linearDisequality(lf: LinearForm): Property = ???
 
-  def toBox : BoxRationalDomain#Property = ???
+  def toBox : BoxRationalDomain#Property = {
+    if (this.isEmpty) {
+      val suparr = Array.fill[RationalExt](dimension)(RationalExt.NegativeInfinity)
+      val infarr = Array.fill[RationalExt](dimension)(RationalExt.PositiveInfinity)
+      boxDomain.makeBox(infarr, suparr, true)
+    } else {
+      val cons = constraints.filter(_.homcoeffs.filter(_ != 0).size == 1)
+      val supcons = cons.filter(_.homcoeffs.filter(_ == 1).size == 1)
+      val infcons = cons.filter(_.homcoeffs.filter(_ == -1).size == 1)
+      val suparr = supcons.foldRight(Array.fill[RationalExt](dimension)(RationalExt.PositiveInfinity))(
+        (i : LinearForm, z : Array[RationalExt]) => {
+          val index = i.homcoeffs.indexOf(Rational(1))
+          assert(index != -1)
+          assert(index >= 0)
+          assert(index < dimension)
+          z.updated(index, RationalExt(-i.known))
+        }
+      )
+      val infarr = infcons.foldRight(Array.fill[RationalExt](dimension)(RationalExt.NegativeInfinity))(
+        (i : LinearForm, z : Array[RationalExt]) => {
+          val index = i.homcoeffs.indexOf(Rational(-1))
+          assert(index != -1)
+          assert(index >= 0)
+          assert(index < dimension)
+          z.updated(index, RationalExt(i.known))
+        })
+      boxDomain.makeBox(infarr, suparr, false)
+      // Cause: java.lang.IllegalArgumentException: requirement failed: The parameters low: -Infinity,0,-Infinity, high: Infinity,-1,Infinity and isEmpty: false are not normalized
+
+    }
+  }
 
   def minimize(lf: LinearForm) = ???
 
