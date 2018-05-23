@@ -174,7 +174,12 @@ case class OctagonProperty
     }
   }
 
-  def linearDisequality(lf: LinearForm): Property = ???
+  def linearDisequality(lf: LinearForm): Property = {
+    this
+    // TODO: Not doing anything in reponse to a {{ Vj0 != Lf }} is
+    // sound, but is there a better and general enough way to deal
+    // with this?
+  }
 
   def toBox : BoxRationalDomain#Property = {
     if (this.isEmpty) {
