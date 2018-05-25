@@ -17,6 +17,7 @@
   */
 
 package it.unich.jandom.domains.numerical.octagon
+import it.unich.jandom.utils.dbm._
 import it.unich.jandom.utils.numberext.IField
 import math.PartiallyOrdered
 
@@ -171,6 +172,11 @@ case class VMinusIdx(i : Int) extends SignedVarIdx {
 
 case class OctagonDim(private val n : Int) {
   require(n != 0)
+  def toDBMDim : DBMDim = DBMDim(n * 2)
   def octagonDimToInt : Int = n
   def allVars : Seq[Var] = (1 to n).map(Var(_))
+}
+
+object OctagonDim {
+  def apply(d : DBMDim) : OctagonDim = OctagonDim(d.dbmDimToInt / 2)
 }
