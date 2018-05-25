@@ -37,8 +37,8 @@ class BisimulationOctagonSpecification extends PropSpec with PropertyChecks {
 
   class SimpleOctagonDomain(boxDomain : BoxGenericDomain[RationalExt]) extends OctagonDomain(boxDomain) {
     implicit val okt : OctagonDomain = this
-    override def top(dim : Int) : Property = new OctagonProperty(new SimpleOctagon(afac.top((OctagonDim(dim).toDBMDim))))(rext, okt, box)
-    override def bottom(dim : Int): Property = new OctagonProperty(new BottomOctagon(OctagonDim(dim)))(rext, okt, box)
+    override def top(dim : Int) : Property = new OctagonProperty(new SimpleOctagon(factory.top((OctagonDim(dim).toDBMDim))))(ifield, okt, box)
+    override def bottom(dim : Int): Property = new OctagonProperty(new BottomOctagon(OctagonDim(dim)))(ifield, okt, box)
   }
 
   val simpleOctDomain = new SimpleOctagonDomain(boxDomain)
@@ -78,8 +78,8 @@ package octagon.optimized {
 
     class SimpleOctagonDomain(boxDomain : BoxGenericDomain[RationalExt]) extends OctagonDomain(boxDomain) {
       implicit val okt : OctagonDomain = this
-      override def top(dim : Int) : Property = new OctagonProperty(new SimpleOctagon(afac.top((OctagonDim(dim).toDBMDim))))(rext, okt, box)
-      override def bottom(dim : Int): Property = new OctagonProperty(new BottomOctagon(OctagonDim(dim)))(rext, okt, box)
+      override def top(dim : Int) : Property = new OctagonProperty(new SimpleOctagon(factory.top((OctagonDim(dim).toDBMDim))))(ifield, okt, box)
+      override def bottom(dim : Int): Property = new OctagonProperty(new BottomOctagon(OctagonDim(dim)))(ifield, okt, box)
     }
 
     val simpleOctDomain = new SimpleOctagonDomain(boxDomain)
