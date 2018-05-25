@@ -59,7 +59,10 @@ case class OctagonProperty
 
   override def intersection(that: Property): Property = o.intersection(that.o)
 
-  def nonDeterministicAssignment(n: Int): Property = ???
+  /**
+    * Approximated with forget
+    */
+  def nonDeterministicAssignment(n: Int): Property = o.forget(Var(n + 1))
 
   def linearAssignment(j0 : Int, l: LinearForm): Property = ???
 
