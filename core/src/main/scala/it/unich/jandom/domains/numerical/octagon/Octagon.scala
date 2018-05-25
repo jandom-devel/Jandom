@@ -21,7 +21,6 @@ import it.unich.jandom.utils.dbm._
 import it.unich.jandom.utils.numberext.IField
 import math.PartiallyOrdered
 
-
 /**
   * The definition of an object exposing a subset of the transfer
   * functions and attributes detailed in Mine' 2006, "The Octagon
@@ -34,95 +33,46 @@ import math.PartiallyOrdered
   * Most notably, assignments of the form Vj0 <- ... + [a,b] have been
   * replaced with Vj0 <- ... + [c,c] == c
   */
-trait Octagon[N <: IField[N]] extends PartiallyOrdered[Octagon[N]] {
+trait Octagon[N <: IField[N], O <: Octagon[N, O]]
+    extends PartiallyOrdered[O] {
+
   // Abstract tests (Mine' 2006 fig. 20 p. 42)
-  def test_vj0_plus_c_le_0 (j0 : Var, c : N) : Octagon[N]
-  def test_minus_vj0_plus_c_le_0 (j0 : Var, c : N) : Octagon[N]
-  def test_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : Octagon[N]
-  def test_vj0_plus_vi0_le_c(vj0 : Var, vi0 : Var, c : N) : Octagon[N]
-  def test_minus_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : Octagon[N]
+  def test_vj0_plus_c_le_0 (j0 : Var, c : N) : O
+  def test_minus_vj0_plus_c_le_0 (j0 : Var, c : N) : O
+  def test_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : O
+  def test_vj0_plus_vi0_le_c(vj0 : Var, vi0 : Var, c : N) : O
+  def test_minus_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : O
 
   // Abstract assignment (Mine' 2006 fig. 15 p. 35)
-  def forget(f : Var) : Octagon[N]
-  ///
-  def assign_vj0_gets_c(j0 : Var, c : N) : Octagon[N]
-  def assign_vj0_gets_vj0_plus_c(j0 : Var, c : N) : Octagon[N]
-  def assign_vj0_gets_vi0_plus_c(j0 : Var, i0 : Var, c : N) : Octagon[N]
-  def assign_vj0_gets_minus_vj0(j0 : Var) : Octagon[N]
-  def assign_vj0_gets_minus_vi0(j0: Var, i0 : Var) : Octagon[N] =
+  def forget(f : Var) : O
+  def assign_vj0_gets_c(j0 : Var, c : N) : O
+  def assign_vj0_gets_vj0_plus_c(j0 : Var, c : N) : O
+  def assign_vj0_gets_vi0_plus_c(j0 : Var, i0 : Var, c : N) : O
+  def assign_vj0_gets_minus_vj0(j0 : Var) : O
+  def assign_vj0_gets_minus_vi0(j0: Var, i0 : Var) : O =
     this.assign_vj0_gets_vi0(j0, i0).assign_vj0_gets_minus_vj0(j0)//
-  def assign_vj0_gets_minus_vj0_plus_c (j0 : Var, c : N) : Octagon[N] =
+  def assign_vj0_gets_minus_vj0_plus_c (j0 : Var, c : N) : O =
     this.assign_vj0_gets_minus_vj0(j0).assign_vj0_gets_vj0_plus_c(j0, c) //
-  def assign_vj0_gets_minus_vi0_plus_c (j0 : Var, i0 : Var, c : N) : Octagon[N] =
+  def assign_vj0_gets_minus_vi0_plus_c (j0 : Var, i0 : Var, c : N) : O =
     this.assign_vj0_gets_minus_vi0(j0, i0).assign_vj0_gets_vj0_plus_c(j0, c) //
 
   // This one is a little extra wrt the cases on the paper, it's
   // needed for assign_vj0_gets_minus_vi0 Just implement it as a call
   // to vj0_gets_vi0_plus_c with c = zero, when you have a zero for
   // your N
-  protected def assign_vj0_gets_vi0(j0 : Var, i0 : Var) : Octagon[N]
+  protected def assign_vj0_gets_vi0(j0 : Var, i0 : Var) : O
 
-  //////
   def isEmpty : Boolean
   def isBottom : Boolean
-  def union(that : Octagon[N]) : Octagon[N]
-  def intersection(that : Octagon[N]) : Octagon[N]
+  def union(that : O) : O
+  def intersection(that : O) : O
   def isTop : Boolean
   def dimension : OctagonDim
-  //////
-  def widening(that : Octagon[N]) : Octagon[N]
-  def narrowing(that : Octagon[N]) : Octagon[N]
-
-  //////
-
-  /**
-    * Note: being a PatriallyOrdered means that you can compare
-    * octagons with <=.
-    *
-    * == calls .equals, which unless defined in each implementation
-    * amounts by default to reference comparison; you may want to use
-    * <= & >= instead.
-    */
-  def tryCompareTo[B >: Octagon[N]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int]
+  def widening(that : O) : O
+  def narrowing(that : O) : O
 
   def get_ineq_vi_minus_vj_leq_c(i : SignedVarIdx, j : SignedVarIdx) : Option[N]
 
-}
-
-case class BottomOctagon[N <: IField[N]] (override val dimension : OctagonDim) extends Octagon[N] {
-  def test_vj0_plus_c_le_0 (j0 : Var, c : N) : Octagon[N] = this
-  def test_minus_vj0_plus_c_le_0 (j0 : Var, c : N) : Octagon[N] = this
-  def test_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : Octagon[N] = this
-  def test_vj0_plus_vi0_le_c(vj0 : Var, vi0 : Var, c : N) : Octagon[N] = this
-  def test_minus_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : Octagon[N] = this
-
-
-  def get_ineq_vi_minus_vj_leq_c(i : SignedVarIdx, j : SignedVarIdx) : Option[N] = None
-
-  //////
-  def forget(f : Var) : Octagon[N] = this
-  def assign_vj0_gets_c(j0 : Var, c : N):  Octagon[N] = this
-  def assign_vj0_gets_vj0_plus_c(j0 : Var, c : N) : Octagon[N] = this
-  def assign_vj0_gets_vi0_plus_c(j0 : Var, i0 : Var, c : N) : Octagon[N] = this
-  def assign_vk_gets_e(k : Int) : Octagon[N] = this
-  def assign_vj0_gets_minus_vj0(j0 : Var) : Octagon[N] = this
-  def assign_vj0_gets_vi0 (j0 : Var, i0 : Var) : Octagon[N] = this
-  //////
-  def isEmpty : Boolean = true
-  def isBottom : Boolean = true
-  def isTop : Boolean = false
-  def union(that : Octagon[N]) = that
-  def intersection(that : Octagon[N]) = this
-  def widening(that : Octagon[N]) : Octagon[N] = that
-  def narrowing(that : Octagon[N]) : Octagon[N] = ???
-  //////
-  def tryCompareTo[B >: Octagon[N]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
-    other match {
-      case that : Octagon[N] =>
-        if (that.isBottom) Some(0)
-        else Some(-1)
-      case _ => None
-    }
 }
 
 //////////////////////
@@ -141,10 +91,8 @@ trait SignedVarIdx {
  *  negative form V2i in V. Mine' 2006 p. 8.
  */
 object SignedVarIdx {
-  def apply(i : Int) : SignedVarIdx = if (i % 2 == 0)
-    VMinusIdx(i)
-  else
-    VPlusIdx(i)
+  def apply(i : Int) : SignedVarIdx =
+    if (i % 2 == 0) VMinusIdx(i) else VPlusIdx(i)
 }
 
 case class Var(i : Int) {
@@ -179,4 +127,34 @@ case class OctagonDim(private val n : Int) {
 
 object OctagonDim {
   def apply(d : DBMDim) : OctagonDim = OctagonDim(d.dbmDimToInt / 2)
+}
+
+trait BottomOctagon[N <: IField[N], O <: Octagon[N, O]] {
+
+  def dimension: OctagonDim
+  def bottom : O
+
+  def test_vj0_plus_c_le_0 (j0 : Var, c : N) : O = bottom
+  def test_minus_vj0_plus_c_le_0 (j0 : Var, c : N) : O = bottom
+  def test_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : O = bottom
+  def test_vj0_plus_vi0_le_c(vj0 : Var, vi0 : Var, c : N) : O = bottom
+  def test_minus_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : O = bottom
+
+  def get_ineq_vi_minus_vj_leq_c(i : SignedVarIdx, j : SignedVarIdx) : Option[N] = None
+
+  def forget(f : Var) : O = bottom
+  def assign_vj0_gets_c(j0 : Var, c : N):  O = bottom
+  def assign_vj0_gets_vj0_plus_c(j0 : Var, c : N) : O = bottom
+  def assign_vj0_gets_vi0_plus_c(j0 : Var, i0 : Var, c : N) : O = bottom
+  def assign_vk_gets_e(k : Int) : O = bottom
+  def assign_vj0_gets_minus_vj0(j0 : Var) : O = bottom
+  def assign_vj0_gets_vi0 (j0 : Var, i0 : Var) : O = bottom
+  //////
+  def isEmpty : Boolean = true
+  def isBottom : Boolean = true
+  def isTop : Boolean = false
+  def union(that : O) = that
+  def intersection(that : O) = bottom
+  def widening(that : O) : O = that
+  def narrowing(that : O) : O = ???
 }

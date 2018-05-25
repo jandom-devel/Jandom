@@ -17,7 +17,6 @@
   */
 
 package it.unich.jandom.domains.numerical.octagon
-import  it.unich.jandom.domains.numerical.OctagonDomain
 import  it.unich.jandom.domains.numerical.BoxRationalDomain
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.NumericalProperty
@@ -26,6 +25,7 @@ import spire.math.Rational
 import it.unich.jandom.utils.numberext.StaticIField
 import scala.language.implicitConversions
 import math.PartiallyOrdered
+import it.unich.jandom.domains.numerical._
 
 /**
   * This class adapts a NumericalProperty interface to the Octagon
@@ -36,255 +36,255 @@ import math.PartiallyOrdered
   * There is no actual octagon-related logic besides dispatching, nor
   * any additional state mantained herein.
   */
-case class OctagonProperty
-  (o : Octagon[RationalExt])
-  (implicit ifield : StaticIField[RationalExt], octDomain : OctagonDomain, boxDomain : BoxRationalDomain)
-    extends NumericalProperty[OctagonProperty] {
+class OctagonPropertyModule[O <: Octagon[RationalExt, O], D <: OctagonDomainTrait[O]]
+  (octDomain : D)
+  (implicit ifield : StaticIField[RationalExt]) {
 
-  implicit def octagonToProperty (o : Octagon[RationalExt]) : OctagonProperty = OctagonProperty(o)
-
-  type Domain = OctagonDomain
-  type Property = OctagonProperty
-
-  def domain = octDomain
-
-
-  def dimension = o.dimension.octagonDimToInt
-
-  def widening(that : Property) = o.widening(that.o)
-
-  def narrowing(that : Property) = o.narrowing(that.o)
-
-  override def union(that: Property): Property = o.union(that.o)
-
-  override def intersection(that: Property): Property = o.intersection(that.o)
-
-  /**
-    * Approximated with forget
-    */
-  def nonDeterministicAssignment(n: Int): Property = o.forget(Var(n + 1))
-
-  /**
-    * Dispatches a linearAssignment call to the handler for the
-    * appropriate octagon exact abstract assignment operator (as
-    * detailed in Mine' 2006 fig. 15 p. 35) or overapproximates using
-    * the Box domain
-    */
-  def linearAssignment(j0 : Int, l: LinearForm): Property = {
-    // TODO: Would it be a good idea to specially handle the cases with c = 0?
-    val lf = l.padded(dimension + 1) // TODO: splain
-    assert(lf.homcoeffs.size > j0, ""+lf + lf.homcoeffs + j0 + dimension)
-    val zipped = lf.homcoeffs.zipWithIndex
-    if (zipped.filter(_._1 != 0).size == 0) {
-      // Case 1. {{ Vj0 <- c }}
-      o.assign_vj0_gets_c(Var(j0 + 1), lf.known)
-    } else if (zipped.filter(_._1 != 0).size == 1) {
-      if (lf.homcoeffs(j0) == 1) {
-        // Case 2. {{ Vj0 <- Vj0 + c }}
-        if (lf.known == 0)
-          o // vj <- vj + 0
-        else
-          o.assign_vj0_gets_vj0_plus_c(Var(j0 + 1), lf.known)
-      } else if (lf.homcoeffs(j0) == -1) {
-        // Case 4. {{ Vj0 <- - Vj0 + c }}
-        // TODO OR NoT?
-        if (lf.known == 0)
-          o.assign_vj0_gets_minus_vj0(Var(j0 + 1)) // TODO: totally useless?
-        else
-          o.assign_vj0_gets_minus_vj0_plus_c(Var(j0 + 1), lf.known)
-      } else {
-        // 1 coeff; possibly case 3. 5 or 7
-        val coeff = zipped.filter(_._1 != 0).head._1
-        val i0 = zipped.filter(_._1 != 0).head._2
-        if (coeff == 1) {
-          // Case 3. {{ Vj0 <- Vi0 + c }}
-          o.assign_vj0_gets_vi0_plus_c(Var(j0 + 1), Var(i0 + 1), lf.known)
-        } else if (coeff == -1) {
-          // Case ??? {{ Vj0 <- -Vi0 }}
-          if (lf.known == 0)
-            o.assign_vj0_gets_minus_vi0(Var(j0 + 1), Var(i0 + 1)) // TODO: totally useless?
-          else
-            o.assign_vj0_gets_minus_vi0_plus_c(Var(j0 + 1), Var(i0 + 1), lf.known)
-        } else {
-          // coeff is not -1, +1, use box fallback
-          domain.fromBox(toBox.linearAssignment(j0, l))
-        }
-      }
-    } else {
-      // Use fallback: More than 2 non-zero coefficients
-      domain.fromBox(toBox.linearAssignment(j0, l))
+  val boxDomain = BoxRationalDomain()
+  def fromBox (b : BoxRationalDomain#Property) : OctagonProperty = {
+    if (b.isEmpty)
+      OctagonProperty(octDomain.makeBottom(b.dimension))
+    else {
+      val toppe = OctagonProperty(octDomain.makeTop(b.dimension))
+      val lower = b.low.zip(1 to b.dimension).foldRight(toppe)(
+        (i, z : OctagonProperty) =>
+          if (i._1.isNegInfinity) z
+          else z.linearInequality(LinearForm(Array.fill[Rational](b.dimension + 1)(0).updated(i._2, Rational(-1)).updated(0, i._1.value) : _*)))
+      b.high.zip(1 to b.dimension).foldRight(lower)((i, z : OctagonProperty) =>
+        if (i._1.isPosInfinity) z
+        else z.linearInequality(LinearForm(Array.fill[Rational](b.dimension + 1)(0).updated(i._2, Rational(1)).updated(0, -i._1.value) : _*)))
     }
   }
 
-  /**
-    * Dispatches a linearInequality call to the handler for the
-    * appropriate octagon exact abstract test operator (as detailed in
-    * Mine' 2006 fig. 20 . 42) or overapproximates using the Box
-    * domain
-    */
-  def linearInequality(lf: LinearForm): Property = {
-    // lf : c + a1 v1 + a2 v2 + ... <= 0
-    if (o.isBottom)
-      this // TODO: Is this useless? If o is bottom its own transfer
-           // functions should be okay already
-    else {
+  case class OctagonProperty(o : O) extends NumericalProperty[OctagonProperty] {
+
+    type Domain = D
+    type Property = OctagonProperty
+
+    implicit def octagonToProperty (o : O) : Property = OctagonProperty(o)
+
+    def domain = octDomain
+    def dimension = o.dimension.octagonDimToInt
+    def widening(that : Property) = o.widening(that.o)
+    def narrowing(that : Property) = o.narrowing(that.o)
+    override def union(that: Property): Property = o.union(that.o)
+    override def intersection(that: Property): Property = o.intersection(that.o)
+
+    /**
+      * Approximated with forget
+      */
+    def nonDeterministicAssignment(n: Int): Property = o.forget(Var(n + 1))
+
+    /**
+      * Dispatches a linearAssignment call to the handler for the
+      * appropriate octagon exact abstract assignment operator (as
+      * detailed in Mine' 2006 fig. 15 p. 35) or overapproximates using
+      * the Box domain
+      */
+    def linearAssignment(j0 : Int, l: LinearForm): Property = {
+      // TODO: Would it be a good idea to specially handle the cases with c = 0?
+      val lf = l.padded(dimension + 1) // TODO: splain
+      assert(lf.homcoeffs.size > j0, ""+lf + lf.homcoeffs + j0 + dimension)
       val zipped = lf.homcoeffs.zipWithIndex
       if (zipped.filter(_._1 != 0).size == 0)
-        if (lf.known <= 0)
-          this // The solution to 0x1 + 0x2 + ... + 0xn + c <= 0 is "anything" if c <= 0
-        else // lf.known > 0
-          bottom
-            // The solution to 0x1 + 0x2 + ... + 0xn + c <= 0 is _|_ if c > 0
+        // Case 1. {{ Vj0 <- c }}
+        o.assign_vj0_gets_c(Var(j0 + 1), lf.known)
       else if (zipped.filter(_._1 != 0).size == 1) {
-        val coeff = zipped.filter(_._1 != 0).head._1
-        val j0 = zipped.filter(_._1 != 0).head._2
-        if (coeff == 1)
-          // Case 1. {{ Vj0 + c <= 0 ? }}
-          o.test_vj0_plus_c_le_0(Var(j0 + 1), lf.known)
-        else if (coeff == -1)
-          // Case 2. {{ -Vj0 + c <= 0 ? }}
-          o.test_minus_vj0_plus_c_le_0(Var(j0 + 1), lf.known)
-        else
-          // Use box fallback: {{ k Vj0 + c <= 0 ? }} for k != 1, -1
-          domain.fromBox(toBox.linearInequality(lf))
-      } else if (zipped.filter(_._1 != 0).size == 2) {
-        val coeffj0 = zipped.filter(_._1 != 0).head._1
-        val j0 = zipped.filter(_._1 != 0).head._2
-        val coeffi0 = zipped.filter(_._1 != 0).tail.head._1
-        val i0 = zipped.filter(_._1 != 0).tail.head._2
-        if (coeffj0 == 1 & coeffi0 == -1)
-          // Case 3.  {{ Vj0 - Vi0 + c <= 0 ? }}
-          o.test_vj0_minus_vi0_plus_c_le_0(Var(j0 + 1), Var(i0 + 1), lf.known)
-        else if (coeffj0 == -1 & coeffi0 == 1)
-          // Case 3 bis.  (with Vj0 <-> Vi0)
-          o.test_vj0_minus_vi0_plus_c_le_0(Var(i0 + 1), Var(j0 + 1), lf.known)
-        else if (coeffj0 == 1 & coeffi0 == 1)
-          // Case 4.  {{ Vj0 + Vi0 + c <= 0 ? }}
-          o.test_vj0_plus_vi0_le_c(Var(i0 + 1), Var(j0 + 1), lf.known)
-        else if (coeffj0 == -1 & coeffi0 == -1)
-          // Case 5. {{ -Vj0 - Vi0 + c <= 0 ? }}
-          o.test_minus_vj0_minus_vi0_plus_c_le_0(Var(j0 + 1), Var(i0 + 1), lf.known)
-        else
-          // Use box fallback:  {{ k Vj0 + k' Vi0 + c <= 0 ? }} for k, k' not in 1, -1
-          domain.fromBox(toBox.linearInequality(lf))
-      } else {
+        if (lf.homcoeffs(j0) == 1) {
+          // Case 2. {{ Vj0 <- Vj0 + c }}
+          if (lf.known == 0)
+            o // vj <- vj + 0
+          else
+            o.assign_vj0_gets_vj0_plus_c(Var(j0 + 1), lf.known)
+        } else if (lf.homcoeffs(j0) == -1) {
+          // Case 4. {{ Vj0 <- - Vj0 + c }}
+          // TODO OR NoT?
+          if (lf.known == 0)
+            o.assign_vj0_gets_minus_vj0(Var(j0 + 1)) // TODO: totally useless?
+          else
+            o.assign_vj0_gets_minus_vj0_plus_c(Var(j0 + 1), lf.known)
+        } else {
+          // 1 coeff; possibly case 3. 5 or 7
+          val coeff = zipped.filter(_._1 != 0).head._1
+          val i0 = zipped.filter(_._1 != 0).head._2
+          if (coeff == 1) {
+            // Case 3. {{ Vj0 <- Vi0 + c }}
+            o.assign_vj0_gets_vi0_plus_c(Var(j0 + 1), Var(i0 + 1), lf.known)
+          } else if (coeff == -1) {
+            // Case ??? {{ Vj0 <- -Vi0 }}
+            if (lf.known == 0)
+              o.assign_vj0_gets_minus_vi0(Var(j0 + 1), Var(i0 + 1)) // TODO: totally useless?
+            else
+              o.assign_vj0_gets_minus_vi0_plus_c(Var(j0 + 1), Var(i0 + 1), lf.known)
+          } else {
+            // coeff is not -1, +1, use box fallback
+            fromBox(toBox.linearAssignment(j0, l))
+          }
+        }
+      } else
         // Use fallback: More than 2 non-zero coefficients
-        domain.fromBox(toBox.linearInequality(lf))
+        fromBox(toBox.linearAssignment(j0, l))
+    }
+
+    /**
+      * Dispatches a linearInequality call to the handler for the
+      * appropriate octagon exact abstract test operator (as detailed in
+      * Mine' 2006 fig. 20 . 42) or overapproximates using the Box
+      * domain
+      */
+    def linearInequality(lf: LinearForm): Property = {
+      // lf : c + a1 v1 + a2 v2 + ... <= 0
+      if (o.isBottom)
+        this // TODO: Is this useless? If o is bottom its own transfer
+             // functions should be okay already
+      else {
+        val zipped = lf.homcoeffs.zipWithIndex
+        if (zipped.filter(_._1 != 0).size == 0) {
+          if (lf.known <= 0)
+            this // The solution to 0x1 + 0x2 + ... + 0xn + c <= 0 is "anything" if c <= 0
+          else // lf.known > 0
+            bottom
+          // The solution to 0x1 + 0x2 + ... + 0xn + c <= 0 is _|_ if c > 0
+        } else if (zipped.filter(_._1 != 0).size == 1) {
+          val coeff = zipped.filter(_._1 != 0).head._1
+          val j0 = zipped.filter(_._1 != 0).head._2
+          if (coeff == 1)
+            // Case 1. {{ Vj0 + c <= 0 ? }}
+            o.test_vj0_plus_c_le_0(Var(j0 + 1), lf.known)
+          else if (coeff == -1)
+            // Case 2. {{ -Vj0 + c <= 0 ? }}
+            o.test_minus_vj0_plus_c_le_0(Var(j0 + 1), lf.known)
+          else
+            // Use box fallback: {{ k Vj0 + c <= 0 ? }} for k != 1, -1
+            fromBox(toBox.linearInequality(lf))
+        } else if (zipped.filter(_._1 != 0).size == 2) {
+          val coeffj0 = zipped.filter(_._1 != 0).head._1
+          val j0 = zipped.filter(_._1 != 0).head._2
+          val coeffi0 = zipped.filter(_._1 != 0).tail.head._1
+          val i0 = zipped.filter(_._1 != 0).tail.head._2
+          if (coeffj0 == 1 & coeffi0 == -1)
+            // Case 3.  {{ Vj0 - Vi0 + c <= 0 ? }}
+            o.test_vj0_minus_vi0_plus_c_le_0(Var(j0 + 1), Var(i0 + 1), lf.known)
+          else if (coeffj0 == -1 & coeffi0 == 1)
+            // Case 3 bis.  (with Vj0 <-> Vi0)
+            o.test_vj0_minus_vi0_plus_c_le_0(Var(i0 + 1), Var(j0 + 1), lf.known)
+          else if (coeffj0 == 1 & coeffi0 == 1)
+            // Case 4.  {{ Vj0 + Vi0 + c <= 0 ? }}
+            o.test_vj0_plus_vi0_le_c(Var(i0 + 1), Var(j0 + 1), lf.known)
+          else if (coeffj0 == -1 & coeffi0 == -1)
+            // Case 5. {{ -Vj0 - Vi0 + c <= 0 ? }}
+            o.test_minus_vj0_minus_vi0_plus_c_le_0(Var(j0 + 1), Var(i0 + 1), lf.known)
+          else
+            // Use box fallback:  {{ k Vj0 + k' Vi0 + c <= 0 ? }} for k, k' not in 1, -1
+            fromBox(toBox.linearInequality(lf))
+        } else {
+          // Use fallback: More than 2 non-zero coefficients
+          fromBox(toBox.linearInequality(lf))
+        }
       }
     }
-  }
 
-  def linearDisequality(lf: LinearForm): Property = {
-    this
-    // TODO: Not doing anything in reponse to a {{ Vj0 != Lf }} is
-    // sound, but is there a better and general enough way to deal
-    // with this?
-  }
-
-  def toBox : BoxRationalDomain#Property = {
-    if (this.isEmpty) {
-      val suparr = Array.fill[RationalExt](dimension)(RationalExt.NegativeInfinity)
-      val infarr = Array.fill[RationalExt](dimension)(RationalExt.PositiveInfinity)
-      boxDomain.makeBox(infarr, suparr, true)
-    } else {
-      val cons = constraints.filter(_.homcoeffs.filter(_ != 0).size == 1)
-      val supcons = cons.filter(_.homcoeffs.filter(_ == 1).size == 1)
-      val infcons = cons.filter(_.homcoeffs.filter(_ == -1).size == 1)
-      val suparr = supcons.foldRight(Array.fill[RationalExt](dimension)(RationalExt.PositiveInfinity))(
-        (i : LinearForm, z : Array[RationalExt]) => {
-          val index = i.homcoeffs.indexOf(Rational(1))
-          assert(index != -1)
-          assert(index >= 0)
-          assert(index < dimension)
-          z.updated(index, RationalExt(-i.known))
-        }
-      )
-      val infarr = infcons.foldRight(Array.fill[RationalExt](dimension)(RationalExt.NegativeInfinity))(
-        (i : LinearForm, z : Array[RationalExt]) => {
-          val index = i.homcoeffs.indexOf(Rational(-1))
-          assert(index != -1)
-          assert(index >= 0)
-          assert(index < dimension)
-          z.updated(index, RationalExt(i.known))
-        })
-      boxDomain.makeBox(infarr, suparr, false)
-      // Cause: java.lang.IllegalArgumentException: requirement failed: The parameters low: -Infinity,0,-Infinity, high: Infinity,-1,Infinity and isEmpty: false are not normalized
-
-    }
-  }
-
-  def minimize(lf: LinearForm) = ???
-
-  def maximize(lf: LinearForm) = ???
-
-  def frequency(lf: LinearForm) = ???
-
-  def constraints : Seq[LinearForm] =
-    if (o.isBottom)
-      Seq()
-    else {(for {
-          i <- o.dimension.allVars.flatMap(x => Seq(x.posForm, x.negForm)) : Seq[SignedVarIdx];
-          j <- o.dimension.allVars.flatMap(x => Seq(x.posForm, x.negForm)) : Seq[SignedVarIdx];
-          c : RationalExt = o.get_ineq_vi_minus_vj_leq_c(i,j).get
-          if (!c.isInfinity) // +oo if there is no constraint (Mine 2006 p. 7)
-          if (i != j) // Don't care about x - x = 0
-          arri = Array
-          .fill[Rational](o.dimension.octagonDimToInt + 1)(Rational(0))
-          .updated(i.toVar.i, Rational(i.coeff))
-          arr = arri
-          .updated(j.toVar.i, arri(j.toVar.i) - j.coeff)
-          .updated(0, -c.value) // vi - vj <= c  ===>  vi -vj - c <= 0
-        } yield {
-          if (j.bar == i)
-            // Normalize those 2v <= 2c constraints that happen when
-            // you have ij positive and negative form of a single
-            // var. You can remove this and it's still technically
-            // correct ("the best kind of correct", according to an
-            // internet meme).
-            LinearForm(arr : _*) / 2
-          else
-            LinearForm(arr : _*)
-        }
-        ).distinct  // We remove duplicates, since "some octagonal constraints
-                    // have two different encodings...in the DBM" [Mine 2006 p. 9]
-                    // This normalization step is also technically superfluous.
+    def linearDisequality(lf: LinearForm): Property = {
+      this
+      // TODO: Not doing anything in reponse to a {{ Vj0 != Lf }} is
+      // sound, but is there a better and general enough way to deal
+      // with this?
     }
 
-  def isPolyhedral = true
-
-  def addVariable = ??? // TODO
-
-  def delVariable(n: Int) = ??? // TODO
-
-  def mapVariables(rho: Seq[Int]) = ??? // TODO
-
-  def isEmpty = isBottom
-
-  def isTop = o.isTop
-
-  def isBottom = o.isBottom
-
-  def bottom = domain.bottom(this.dimension)
-
-  def top = domain.top(this.dimension)
-
-  override def hashCode = 123456 + o.hashCode
-
-  def tryCompareTo[B >: OctagonProperty](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
-    other match {
-      case OctagonProperty(othero) =>
-        (this.o.tryCompareTo(othero))
-      case _ => None
-    }
-
-  def mkString(vars: Seq[String]): String = {
-    if (isTop) {
-      "[ T ]"
-    } else if (isBottom) {
-      "[ _|_ ]"
+    def toBox : BoxRationalDomain#Property = {
+      if (this.isEmpty) {
+        val suparr = Array.fill[RationalExt](dimension)(RationalExt.NegativeInfinity)
+        val infarr = Array.fill[RationalExt](dimension)(RationalExt.PositiveInfinity)
+        boxDomain.makeBox(infarr, suparr, true)
       } else {
-    "[ " +// constraints
-      it.unich.jandom.domains.numerical.Inequalities.constraintsToInequalities(constraints).map(_.mkString(vars)).mkString("; ") + " ]"
+        val cons = constraints.filter(_.homcoeffs.filter(_ != 0).size == 1)
+        val supcons = cons.filter(_.homcoeffs.filter(_ == 1).size == 1)
+        val infcons = cons.filter(_.homcoeffs.filter(_ == -1).size == 1)
+        val suparr = supcons.foldRight(Array.fill[RationalExt](dimension)(RationalExt.PositiveInfinity))(
+          (i : LinearForm, z : Array[RationalExt]) => {
+            val index = i.homcoeffs.indexOf(Rational(1))
+            assert(index != -1)
+            assert(index >= 0)
+            assert(index < dimension)
+            z.updated(index, RationalExt(-i.known))
+          }
+        )
+        val infarr = infcons.foldRight(Array.fill[RationalExt](dimension)(RationalExt.NegativeInfinity))(
+          (i : LinearForm, z : Array[RationalExt]) => {
+            val index = i.homcoeffs.indexOf(Rational(-1))
+            assert(index != -1)
+            assert(index >= 0)
+            assert(index < dimension)
+            z.updated(index, RationalExt(i.known))
+          })
+        boxDomain.makeBox(infarr, suparr, false)
+        // Cause: java.lang.IllegalArgumentException: requirement failed: The parameters low: -Infinity,0,-Infinity, high: Infinity,-1,Infinity and isEmpty: false are not normalized
+      }
     }
+
+    def minimize(lf: LinearForm) = ???
+    def maximize(lf: LinearForm) = ???
+    def frequency(lf: LinearForm) = ???
+
+    def constraints : Seq[LinearForm] =
+      if (o.isBottom)
+        Seq()
+      else {(for {
+        i <- o.dimension.allVars.flatMap(x => Seq(x.posForm, x.negForm)) : Seq[SignedVarIdx];
+        j <- o.dimension.allVars.flatMap(x => Seq(x.posForm, x.negForm)) : Seq[SignedVarIdx];
+        c : RationalExt = o.get_ineq_vi_minus_vj_leq_c(i,j).get
+        if (!c.isInfinity) // +oo if there is no constraint (Mine 2006 p. 7)
+        if (i != j) // Don't care about x - x = 0
+        arri = Array
+        .fill[Rational](o.dimension.octagonDimToInt + 1)(Rational(0))
+        .updated(i.toVar.i, Rational(i.coeff))
+        arr = arri
+        .updated(j.toVar.i, arri(j.toVar.i) - j.coeff)
+        .updated(0, -c.value) // vi - vj <= c  ===>  vi -vj - c <= 0
+      } yield {
+        if (j.bar == i)
+          // Normalize those 2v <= 2c constraints that happen when
+          // you have ij positive and negative form of a single
+          // var. You can remove this and it's still technically
+          // correct ("the best kind of correct", according to an
+          // internet meme).
+          LinearForm(arr : _*) / 2
+        else
+          LinearForm(arr : _*)
+      }
+      ).distinct  // We remove duplicates, since "some octagonal constraints
+                  // have two different encodings...in the DBM" [Mine 2006 p. 9]
+                  // This normalization step is also technically superfluous.
+      }
+
+    def isPolyhedral = true
+    def addVariable = ??? // TODO
+    def delVariable(n: Int) = ??? // TODO
+    def mapVariables(rho: Seq[Int]) = ??? // TODO
+    def isEmpty = isBottom
+    def isTop = o.isTop
+    def isBottom = o.isBottom
+    def bottom = octDomain.makeBottom(this.dimension)
+    def top = octDomain.makeTop(this.dimension)
+    override def hashCode = 123456 + o.hashCode
+
+    def tryCompareTo[B >: OctagonProperty](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
+      other match {
+        case OctagonProperty(othero) =>
+          (this.o.tryCompareTo(othero))
+        case _ => None
+      }
+
+    def mkString(vars: Seq[String]): String = {
+      if (isTop) {
+        "[ T ]"
+      } else if (isBottom) {
+        "[ _|_ ]"
+      } else {
+        "[ " +// constraints
+        it.unich.jandom.domains.numerical.Inequalities.constraintsToInequalities(constraints).map(_.mkString(vars)).mkString("; ") + " ]"
+      }
+    }
+
   }
 }

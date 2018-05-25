@@ -7,35 +7,32 @@ import it.unich.jandom.utils.numberext.RationalExt
 import spire.math.Rational
 import scala.reflect.ClassTag
 
-class OctagonDomain(val boxDomain : BoxGenericDomain[RationalExt]) extends NumericalDomain {
-  type Property = OctagonProperty
+trait OctagonDomainTrait[O <: Octagon[RationalExt, O]] extends NumericalDomain {
+  def makeTop(dim : Int): O
+  def makeBottom(dim: Int): O
+}
+
+abstract class OctagonDomain[O <: Octagon[RationalExt, O]] extends OctagonDomainTrait[O] {
   implicit val ifield = RationalExt
+
+  val mod = new OctagonPropertyModule[O, OctagonDomain[O]](this)
+
+  type Property = mod.OctagonProperty
   implicit val tag = implicitly[ClassTag[RationalExt]]
   implicit val factory = new ArrayDBMFactory()(tag, ifield)
   implicit val closure = new IncrementalMineFloydWarshall[RationalExt]()(ifield, factory)
-  implicit val octDomain : OctagonDomain = this
-  implicit val box = BoxRationalDomain()
-  def top(dim : Int) : Property = new OctagonProperty(new CachingOctagon(Right(factory.top((OctagonDim(dim).toDBMDim)))))
-  def bottom(dim : Int): Property = new OctagonProperty(new BottomOctagon(OctagonDim(dim)))
-
+  val box = BoxRationalDomain()
+  def top(dim : Int) : Property = mod.OctagonProperty(this.makeTop(dim))
+  def bottom(dim : Int): Property = mod.OctagonProperty(this.makeBottom(dim))
   val widenings = Seq(WideningDescription.default[Property])
 
-  def fromBox (b : BoxRationalDomain#Property) : OctagonProperty =
-    if (b.isEmpty)
-      bottom(b.dimension)
-    else {
-      val lower = b.low.zip(1 to b.dimension).foldRight(this.top(b.dimension))(
-        (i, z : OctagonProperty) =>
-          if (i._1.isNegInfinity) z
-          else z.linearInequality(LinearForm(Array.fill[Rational](b.dimension + 1)(0).updated(i._2, Rational(-1)).updated(0, i._1.value) : _*)))
+  def fromBox(b : BoxRationalDomain#Property) : mod.OctagonProperty = mod.fromBox(b)
 
-      b.high.zip(1 to b.dimension).foldRight(lower)((i, z : OctagonProperty) =>
-          if (i._1.isPosInfinity) z
-          else z.linearInequality(LinearForm(Array.fill[Rational](b.dimension + 1)(0).updated(i._2, Rational(1)).updated(0, -i._1.value) : _*)))
-    }
 }
 
 object OctagonDomain {
-  val boxDomain = BoxRationalDomain()
-  def apply() = new OctagonDomain(boxDomain)
+  def apply() = new OctagonDomain[OptimizedOctagon[RationalExt]] {
+    def makeTop(dim : Int) = new CachingOctagon(Right(factory.top((OctagonDim(dim).toDBMDim))))
+    def makeBottom(dim: Int) = new BottomOptOcta(OctagonDim(dim))
+  }
 }
