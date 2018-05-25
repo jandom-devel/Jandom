@@ -78,9 +78,9 @@ class OctagonSpecification extends PropSpec with PropertyChecks {
     }
   }
 
-  ///////////////////////////////////////////////////////
-  // Basic ordering properties of Octagon octagons
-  ///////////////////////////////////////////////////////
+  // ///////////////////////////////////////////////////////
+  // // Basic ordering properties of Octagon octagons
+  // ///////////////////////////////////////////////////////
 
 
   property("top.isTop") {
@@ -157,9 +157,9 @@ class OctagonSpecification extends PropSpec with PropertyChecks {
     }
   }
 
-  /////////////////////////////////////////
-  // Ordering/numerical properties
-  ////////////////////////////////////////
+  // /////////////////////////////////////////
+  // // Ordering/numerical properties
+  // ////////////////////////////////////////
 
   property ("Union of [C1,C1], [C2, C2] == [C1, C2] w/C1 <= C2") {
     forAll(Utils.Rationals.GenRationalInterval) {
@@ -249,8 +249,6 @@ class OctagonSpecification extends PropSpec with PropertyChecks {
       }
     }
   }
-
-  // // TODO: do more
 
   ///////////////////////////////////////////////////////
   // Numerical properties of OctagonProperty
@@ -401,11 +399,9 @@ class OctagonSpecification extends PropSpec with PropertyChecks {
           val _00m10 = zero.updated(j0 + 1, -1)
           val assigned  = top
             .linearAssignment(j0, LinearForm(c000 : _*))
-
           val assigned2 = assigned
             .linearAssignment(j0, LinearForm(_00m10 : _*))
             .linearAssignment(j0, LinearForm(_00m10 : _*))
-
           assert(assigned == assigned2)
           assert(assigned.constraints == assigned2.constraints)
         }
@@ -785,6 +781,8 @@ class OctagonSpecification extends PropSpec with PropertyChecks {
     }
   }
 
+  //////////////////////////////////
+
   property("T.{x <= c}.constraints == {x <= c}") {
     forAll (GenTinyPosInt.suchThat(_ > 0)){
       n : Int
@@ -1049,7 +1047,6 @@ class OctagonSpecification extends PropSpec with PropertyChecks {
   // Widening and narrowing
   ///////////////////////////////////////////////////////
 
-
   property ("forall X, Y : AbstractOctagon, (X widening Y) >= X, Y (condition 1 of 2 for soundness of widening)") {
     forAll(GenTinyPosInt.suchThat(_ > 1)) {
       n =>
@@ -1082,6 +1079,5 @@ class OctagonSpecification extends PropSpec with PropertyChecks {
 
 
   // TODO: check somehow that widening stabilizes
-
   // TODO: test narrowing
 }

@@ -35,14 +35,14 @@ class BisimulationOctagonSpecification extends PropSpec with PropertyChecks {
   import it.unich.jandom.domains.numerical.Utils.Ints._
   val boxDomain : BoxRationalDomain = BoxRationalDomain()
 
-  val simpleOctDomain = new OctagonDomain { // (boxDomain) {
-    type O = SimpleOctagon[RationalExt]
+  val simpleOctDomain = new OctagonDomain[SimpleOctagon[RationalExt]] {
     def makeTop(dim : Int) = new SimpleNonBottomOctagon(factory.top((OctagonDim(dim).toDBMDim)))
     def makeBottom(dim: Int) = new SimpleBottomOctagon(OctagonDim(dim))
   }
   val octDomain = OctagonDomain()
 
   property("Weak oct-box bisimilarity: oct-T.{ some ops }.toBox <= oct-T.toBox{ some ops }") {
+
     forAll(GenTinyPosInt.suchThat(_ > 1)) {
       n => {
         forAll(GenTinyPosInt.suchThat(_ > 1)) {
@@ -63,6 +63,7 @@ class BisimulationOctagonSpecification extends PropSpec with PropertyChecks {
         }
       }
     }
+
   }
 }
 
@@ -73,52 +74,27 @@ package octagon.optimized {
     import it.unich.jandom.domains.numerical.Utils.Ints._
     val boxDomain : BoxRationalDomain = BoxRationalDomain()
 
-    val simpleOctDomain = new OctagonDomain { // (boxDomain) {
-      type O = SimpleOctagon[RationalExt]
+    val simpleOctDomain = new OctagonDomain[SimpleOctagon[RationalExt]] {
       def makeTop(dim : Int) = new SimpleNonBottomOctagon(factory.top((OctagonDim(dim).toDBMDim)))
       def makeBottom(dim: Int) = new SimpleBottomOctagon(OctagonDim(dim))
     }
     val octDomain = OctagonDomain()
 
-
-    def compareOcts[N <: IField[N]] (opt : Octagon[N], simp : Octagon[N]) : Option[Int] = {
-      opt match {
-        case bot : BottomOctagon[N] => bot.tryCompareTo(simp)
-        case opt_ : OptimizedOctagon[N] =>
-          opt_.closedDbm match {
-            case Some(us) => simp match {
-              case _ : BottomOctagon[N] => Some(1) // They're bottom, we're greater
-              case o : OptimizedOctagon[N] => o.closedDbm match {
-                case Some(them) => us.tryCompareTo(them)
-                case None => Some(1) // They're bottom, we're greater
-              }
-              //// Additional case for comparing with SimpleOctagons
-              case s : simple.SimpleOctagon[N] => us.tryCompareTo(s.m)
-              ////
-              case _ => ??? // Not impl
-            }
-            case None => simp match {
-              case _ : BottomOctagon[N] => Some(0) // They're bottom,
-                                                   // we're also bottom
-              case o : OptimizedOctagon[N] => o.closedDbm match {
-                case Some(them) => Some(-1) // They're greater, we're
-                                            // bottom
-                case None => Some(0)        // Both bottom
-              }
-              //// Additional case for comparing with SimpleOctagons
-              case s : simple.SimpleOctagon[N] => Some(-1) // They're a
-                                                           // closed
-                                                           // non-bottom
-                                                           // DBM, we
-                                                           // are
-                                                           // bottom
-              case _ => ??? // Not impl
-            }
+    def compareOcts[N <: IField[N]](opt : OptimizedOctagon[N], simp : SimpleOctagon[N]) : Option[Int] = {
+      (opt, simp) match {
+        case (_ : BottomOptOcta[N], _ : SimpleBottomOctagon[N]) => Some(0)
+        case (_ : BottomOptOcta[N], _) => Some(-1)
+        case (_, _ : SimpleBottomOctagon[N]) => Some(1)
+        case (opt : NonBottomOptOcta[N], sim : SimpleNonBottomOctagon[N]) =>
+          opt.closedDbm match {
+            case None => Some(-1)
+            case Some(dbm) => dbm.tryCompareTo(sim.m)
           }
       }
     }
 
     property("oct-simpleoct bisimilarity: oct-T.{ some ops } == simpleoct-T.{ some ops }") {
+
       forAll(GenTinyPosInt.suchThat(_ > 1)) {
         n => {
           forAll(GenTinyPosInt.suchThat(_ > 1)) {
@@ -140,6 +116,9 @@ package octagon.optimized {
           }
         }
       }
+
     }
+
   }
+
 }
