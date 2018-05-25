@@ -113,7 +113,8 @@ case class OctagonProperty
     } else if (isBottom) {
       "[ _|_ ]"
       } else {
-    "[ " + constraints + " ]"
+    "[ " +// constraints
+      it.unich.jandom.domains.numerical.Inequalities.constraintsToInequalities(constraints).map(_.mkString(vars)).mkString("; ") + " ]"
     }
   }
 }
