@@ -333,10 +333,7 @@ trait OptimizedOctagon[N <: IField[N]] extends Octagon[N] {
     case None => true
   }
 
-  def isTop = closedDbm.map(_.isTop) match {
-    case Some(t) => t
-    case None => false
-  }
+  def isTop = anyDbm.isTop
 
   def dimension : OctagonDim
 
