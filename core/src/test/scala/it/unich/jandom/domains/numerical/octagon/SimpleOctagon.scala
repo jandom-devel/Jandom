@@ -298,7 +298,7 @@ class SimpleOctagon[N <: IField[N]]
       case bot : BottomOctagon[N] => this
       case o   : SimpleOctagon[N] => stronglyClosed(
         this.m.combine((us, them) =>
-          if (us > them) us
+          if (us >= them) us
           else ∞
         )(o.m)
       )
