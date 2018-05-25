@@ -132,20 +132,6 @@ object Utils {
         coef <- Gen.containerOfN[Seq, Rational](n, Rationals.GenRational)
       } yield LinearForm(coef :_*)
 
-    def GenExactLf(n: Int): Gen[LinearForm] = for
-    {
-      c <- Gen.choose(kMediumNegInt, kMediumPosInt)
-      vi <- Gen.choose(1, n)
-      ci <- Gen.oneOf(+1, -1)
-      vj <- Gen.choose(1, n)
-      cj <- Gen.oneOf(+1, -1) // TODO This can potentially overwrite vi, which is as intended since this yields the 1-coeff case, TODO: require different
-    } yield new DenseLinearForm(
-      Array.fill[Rational](n+1)(0)
-        .updated(0, Rational(c))
-        .updated(vi, Rational(ci))
-        .updated(vj, Rational(cj))
-        .toSeq
-    )
     implicit def arbLinearForm: Arbitrary[LinearForm] =
       Arbitrary { GenLfAnyDim }
 
@@ -158,5 +144,246 @@ object Utils {
       for {
         coef <- Gen.containerOfN[Seq, Rational](n, Gen.choose[Int](kMediumNegInt, kMediumPosInt).map(Rational(_)))
       } yield LinearForm(coef :_*)
+  }
+
+  object OpSequences {
+    import Rationals.chooseRat
+    import Rationals._
+    def genExactLf(n : Int) : Gen[LinearForm] = {
+      assert(n >= 2)
+      for {
+        i <- Gen.choose(0, n - 1)
+        j <- Gen.choose(0, n - 1)// .suchThat(_ != i)
+        coeffi <- Gen.choose[Int](-1,1)
+        coeffj <- Gen.choose[Int](-1,1)
+        c <- GenRational
+      } yield {
+        val arr = Array.fill(n)(0).updated(i, coeffi).updated(j, coeffj)
+        LinearForm(arr : _*)
+      }
+    }
+
+    def gen1ExactLf(n : Int) : Gen[LinearForm] = {
+      assert(n >= 2)
+      for {
+        i <- Gen.choose(0, n - 1)
+        coeffi <- Gen.choose[Int](-1,1)
+        c <- GenRational
+      } yield {
+        val arr = Array.fill(n)(0).updated(i, coeffi)
+        LinearForm(arr : _*)
+      }
+    }
+
+    def genAnyLf(n : Int) = Gen.frequency((5, genExactLf(n)), (1, LinearForms.GenLf(n)))
+
+    trait Op
+    case class LinearAssignment(i : Int, l : LinearForm) extends Op
+    case class LinearInequality(l : LinearForm) extends Op
+
+    def genAssign[P <: NumericalProperty[P]](n : Int) : Gen[Op] = {
+      for {
+        lf <- genAnyLf(n) // gen1ExactLf(n)// .suchThat(_.homcoeffs.filter(_ != 0).size <= 1)
+        i  <- Gen.choose(0, n - 1)
+      }
+      yield {
+        LinearAssignment(i, lf)
+      }
+    }
+
+    def genIneq[P <: NumericalProperty[P]](n : Int) : Gen[Op] = {
+      for {
+        lf <- genAnyLf(n) //ExactLf(n)
+        i  <- Gen.choose(0, n - 1)
+      }
+      yield {
+        LinearInequality(lf)
+      }
+    }
+
+    def genSeq(n : Int, length : Int) : Gen[Seq[Op]] = {
+      def genAnyOp : Gen[Op] = Gen.frequency((1, genAssign(n)), (1, genIneq(n)))
+      Gen.containerOfN[Seq, Op](length, genAnyOp)
+    }
+
+    def applyOp[P <: NumericalProperty[P]](p : P)(op : Op) : P = {
+      op match {
+        case LinearAssignment(i, lf) =>
+          p.linearAssignment(i, lf)
+        case LinearInequality(lf) =>
+          p.linearInequality(lf)
+        case _ => ???
+      }
+    }
+  }
+
+  object Halfplanes {
+    import org.scalacheck.Gen.sequence
+
+    /////////////////////////////////
+    sealed trait Halfplane
+    // vi >= c
+    case class R(i : Int, c : Rational) extends Halfplane
+    // vi <= c
+    case class R_(i : Int, c : Rational) extends Halfplane
+    // vi + vj >= c
+    case class S1(i : Int, j : Int, c : Rational) extends Halfplane
+    // vi + vj <= c
+    case class S2(i : Int, j : Int, c : Rational) extends Halfplane
+    // vi - vj >= c
+    case class S3(i : Int, j : Int, c : Rational) extends Halfplane
+    // vi - vj <= c
+    case class S4(i : Int, j : Int, c : Rational) extends Halfplane
+
+    def GenOctagonHalfplanes(point : Int => Gen[List[Rational]], smaller : Rational => Gen[Rational], greater : Rational => Gen[Rational])(n : Int) : Gen[List[Halfplane]] = {
+      def GenR (t : (Int, Rational)) = for {
+        r <- smaller(t._2)
+      } yield R(t._1, r)
+
+      def GenR_ (t : (Int, Rational)) = for {
+        r <- greater(t._2)
+      } yield R_(t._1, r)
+
+      def GenS1 (t : (Int, Int, Rational, Rational)) = for {
+        r <- smaller(t._3 + t._4)
+      } yield S1(t._1, t._2, r)
+
+      def GenS2 (t : (Int, Int, Rational, Rational)) = for {
+        r <- greater(t._3 + t._4)
+      } yield S2(t._1, t._2, r)
+
+      def GenS3 (t : (Int, Int, Rational, Rational)) = for {
+        r <- smaller((t._3 - t._4))
+      } yield S3(t._1, t._2, r)
+
+      def GenS4 (t : (Int, Int, Rational, Rational)) = for {
+        r <- greater((t._3 - t._4))
+      } yield S4(t._1, t._2, r)
+
+      for {
+        p <- point(n).map(x => (0 until x.length).zip(x).toList)
+        r <- sequence[List[R], R](p.map(GenR(_)))
+        r_ <- sequence[List[R_], R_](p.map(GenR_(_)))
+        s1 <- sequence[List[S1], S1](p.flatMap(i => p.map(j => GenS1((i._1, j._1, i._2, j._2))))).map(_.filter(x => x.i > x.j))
+        s2 <- sequence[List[S2], S2](p.flatMap(i => p.map(j => GenS2((i._1, j._1, i._2, j._2))))).map(_.filter(x => x.i > x.j))
+        s3 <- sequence[List[S3], S3](p.flatMap(i => p.map(j => GenS3((i._1, j._1, i._2, j._2))))).map(_.filter(x => x.i > x.j))
+        s4 <- sequence[List[S4], S4](p.flatMap(i => p.map(j => GenS4((i._1, j._1, i._2, j._2))))).map(_.filter(x => x.i > x.j))
+      } yield {
+        assert(p.length == n)
+        assert(r.length == n)
+        r ++ r_ ++ s1 ++ s2 ++ s3 ++ s4
+      }
+    }
+
+    def octagonFromHalfPlanes(dom : NumericalDomain)(n : Int, h : Option[List[Halfplane]]) = {
+      import octagon._
+      h match {
+        case None => dom.bottom(n) //BottomOctagon(OctagonDim(n))
+        case Some(l) =>
+      l.foldLeft(dom.top(n))(
+        (z,f) => f match {
+          case R(i,c) => {
+            // lf == hom >= c
+            // hom >= c
+            val coeffs : List[Rational] = (List.fill[Rational](n + 1)(0)).updated(0, c).updated(i+1, Rational(1))
+            val lf = LinearForm(coeffs : _*)
+            z.linearInequality(lf)
+          }
+          case R_(i,c) =>  {
+            // lf == hom >= c
+            // hom <= c => -hom >= -c
+            val coeffs : List[Rational] = (List.fill[Rational](n + 1)(0)).updated(0, -c).updated(i+1, Rational(-1))
+            val lf = LinearForm(coeffs : _*)
+            z.linearInequality(lf)
+          }
+          case S1 (i, j, c) => {
+            // i + j >= c
+            val coeffs : List[Rational] = (List.fill[Rational](n + 1)(0)).updated(0, c).updated(i+1, Rational(1)).updated(j+1, Rational(1))
+            val lf = LinearForm(coeffs : _*)
+            z.linearInequality(lf)
+
+          }
+          case S2 (i, j, c) => {
+            // i + j <= c ==> - i - j >= -c
+            val coeffs : List[Rational] = (List.fill[Rational](n + 1)(0)).updated(0, -c).updated(i+1, Rational(-1)).updated(j+1, Rational(-1))
+            val lf = LinearForm(coeffs : _*)
+            z.linearInequality(lf)
+
+          }
+          case S3 (i, j, c) => {
+            // i - j >= c
+            val coeffs : List[Rational] = (List.fill[Rational](n + 1)(0)).updated(0, c).updated(i+1, Rational(1)).updated(j+1, Rational(-1))
+            val lf = LinearForm(coeffs : _*)
+            z.linearInequality(lf)
+          }
+          case S4 (i, j, c) => {
+            // i - j <= c
+            val coeffs : List[Rational] = (List.fill[Rational](n + 1)(0)).updated(0, -c).updated(i+1, Rational(-1)).updated(j+1, Rational(1))
+            val lf = LinearForm(coeffs : _*)
+            z.linearInequality(lf)
+          }
+        }
+      )}
+    }
+
+    import scala.reflect.ClassTag
+    import it.unich.jandom.utils.numberext.RationalExt
+    implicit val ctag = ClassTag
+    implicit val ifield = RationalExt
+    import it.unich.jandom.domains.numerical.octagon._
+
+    import  it.unich.jandom.utils.dbm._
+    val factory = new ArrayDBMFactory[RationalExt]
+    def dbmFromHalfPlanes(n : Int, l : List[Halfplane]) : DBM[RationalExt] = {
+      val vm : DBM[RationalExt] = factory.fromFun(OctagonDim(n).toDBMDim, idx => RationalExt.PositiveInfinity)
+      l.foldLeft(vm)(
+        (z,f) => f match {
+          case R(i,c) => {
+            // lower bound on vi, ie vi >= c
+            (z).updated(DBMIdx(Var(i).negForm.i, Var(i).posForm.i))(-2*c)
+          }
+          case R_(i,c) =>  {
+            // z
+            (z).updated(DBMIdx(Var(i).posForm.i, Var(i).negForm.i))(2*c)
+          }
+          case S1 (i, j, c) => {
+            // s1 is lower bound on i+j
+            (z).updated(DBMIdx(Var(j).posForm.i, Var(i).negForm.i))(-c)
+              .updated(DBMIdx(Var(i).negForm.i, Var(j).posForm.i))(-c)
+            // i + j >= c
+            // => -i -j <= -c
+          }
+          case S2 (i, j, c) => {
+            // s2 is upper bound on i + 1
+            (z).updated(DBMIdx(Var(i).posForm.i, Var(j).negForm.i))(c)
+              .updated(DBMIdx(Var(j).negForm.i, Var(i).posForm.i))(c)
+            // i + j <= c ==> - i - j >= -c
+          }
+          case S3 (i, j, c) => {
+            // s2 is loew bound on i - j, i.e.
+            // i - j >= c => -i + j <= - c => j - i <= -c
+            (z).updated(DBMIdx(Var(j).posForm.i, Var(i).posForm.i))(-c)
+              .updated(DBMIdx(Var(i).negForm.i, Var(j).negForm.i))(-c)
+          }
+          case S4 (i, j, c) => {
+            // S4 is upper bound on i - j
+            // i - j <= c
+            (z).updated(DBMIdx(Var(i).posForm.i, Var(j).posForm.i))(c)
+              .updated(DBMIdx(Var(j).negForm.i, Var(i).negForm.i))(c)
+            // i - j <= c
+          }
+        }
+      )
+    }
+
+    import Rationals.chooseRat
+    import Rationals._
+
+    def GenOctagonHalfplanesRat = (n : Int) => Gen.option(GenOctagonHalfplanes((n : Int) => Gen.containerOfN[List, Rational](n, GenRational),
+        r => Rationals.GenSmallerRat(r),
+        r => Rationals.GenGreaterRat(r)
+      )((n)))
+
+
   }
 }
