@@ -33,17 +33,14 @@ import it.unich.jandom.utils.numberext.RationalExt
 
 class BisimulationOctagonSpecification extends PropSpec with PropertyChecks {
   import it.unich.jandom.domains.numerical.Utils.Ints._
-  implicit val boxDomain : BoxRationalDomain = BoxRationalDomain()
+  val boxDomain : BoxRationalDomain = BoxRationalDomain()
 
-  class SimpleOctagonDomain(boxDomain : BoxGenericDomain[RationalExt]) extends OctagonDomain(boxDomain) {
-    implicit val okt : OctagonDomain = this
-    override def top(dim : Int) : Property = new OctagonProperty(new SimpleOctagon(factory.top((OctagonDim(dim).toDBMDim))))(ifield, okt, box)
-    override def bottom(dim : Int): Property = new OctagonProperty(new BottomOctagon(OctagonDim(dim)))(ifield, okt, box)
+  val simpleOctDomain = new OctagonDomain { // (boxDomain) {
+    type O = SimpleOctagon[RationalExt]
+    def makeTop(dim : Int) = new SimpleNonBottomOctagon(factory.top((OctagonDim(dim).toDBMDim)))
+    def makeBottom(dim: Int) = new SimpleBottomOctagon(OctagonDim(dim))
   }
-
-  val simpleOctDomain = new SimpleOctagonDomain(boxDomain)
   val octDomain = OctagonDomain()
-
 
   property("Weak oct-box bisimilarity: oct-T.{ some ops }.toBox <= oct-T.toBox{ some ops }") {
     forAll(GenTinyPosInt.suchThat(_ > 1)) {
@@ -74,15 +71,13 @@ package octagon.optimized {
 
   class BisimulationOptimizedOctagonSpecification extends PropSpec with PropertyChecks {
     import it.unich.jandom.domains.numerical.Utils.Ints._
-    implicit val boxDomain : BoxRationalDomain = BoxRationalDomain()
+    val boxDomain : BoxRationalDomain = BoxRationalDomain()
 
-    class SimpleOctagonDomain(boxDomain : BoxGenericDomain[RationalExt]) extends OctagonDomain(boxDomain) {
-      implicit val okt : OctagonDomain = this
-      override def top(dim : Int) : Property = new OctagonProperty(new SimpleOctagon(factory.top((OctagonDim(dim).toDBMDim))))(ifield, okt, box)
-      override def bottom(dim : Int): Property = new OctagonProperty(new BottomOctagon(OctagonDim(dim)))(ifield, okt, box)
+    val simpleOctDomain = new OctagonDomain { // (boxDomain) {
+      type O = SimpleOctagon[RationalExt]
+      def makeTop(dim : Int) = new SimpleNonBottomOctagon(factory.top((OctagonDim(dim).toDBMDim)))
+      def makeBottom(dim: Int) = new SimpleBottomOctagon(OctagonDim(dim))
     }
-
-    val simpleOctDomain = new SimpleOctagonDomain(boxDomain)
     val octDomain = OctagonDomain()
 
 

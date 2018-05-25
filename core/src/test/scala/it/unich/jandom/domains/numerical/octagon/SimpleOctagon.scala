@@ -52,10 +52,13 @@ import scala.language.implicitConversions
   * the point of defying its purpose as the simplest possible
   * implementation.
   */
-class SimpleOctagon[N <: IField[N]]
+
+sealed trait SimpleOctagon[N <: IField[N]] extends Octagon[N, SimpleOctagon[N]]
+
+case class SimpleNonBottomOctagon[N <: IField[N]]
   (val m : ClosedDBM[N])
   (implicit ifield : StaticIField[N], cs : MineFloydWarshall[N])
-    extends Octagon[N] {
+    extends SimpleOctagon[N] {
 
   //////////////////////////////////////////////////////////////////
   // Some sugar to make the following stuff read more like Mine 2006
@@ -86,9 +89,9 @@ class SimpleOctagon[N <: IField[N]]
   //////////////////////////////////////////////////////////////////
 
 
-  protected def wrap(dbm : Option[ClosedDBM[N]]) : Octagon[N]  = dbm match {
-    case Some(dbm) => new SimpleOctagon[N](dbm)
-    case None => BottomOctagon[N](this.dimension)
+  protected def wrap(dbm : Option[ClosedDBM[N]]) : SimpleOctagon[N]  = dbm match {
+    case Some(dbm) => new SimpleNonBottomOctagon[N](dbm)
+    case None => SimpleBottomOctagon[N](this.dimension)
   }
 
   def stronglyClosed (d : DBM[N]) = wrap(cs.strongClosure(d))
@@ -117,7 +120,7 @@ class SimpleOctagon[N <: IField[N]]
   // Begin abstract tests
   /////////////////////////////
 
-  def test_vj0_plus_c_le_0 (j0 : Var, c : N) : Octagon[N] =
+  def test_vj0_plus_c_le_0 (j0 : Var, c : N) : SimpleOctagon[N] =
     // Case 1. Mine' 2006 fig. 20 p. 42
     // {{ Vj0 + c <= 0 ? }}
     stronglyClosed(m.dimension)(
@@ -127,7 +130,7 @@ class SimpleOctagon[N <: IField[N]]
       else
         m(idx))
 
-  def test_minus_vj0_plus_c_le_0 (j0 : Var, c : N) : Octagon[N] =
+  def test_minus_vj0_plus_c_le_0 (j0 : Var, c : N) : SimpleOctagon[N] =
     // Case 2. Mine' 2006 fig. 20 p. 42
     // {{ -Vj0 + c <= 0 ? }}
     // Note: this can be improved upon as
@@ -141,7 +144,7 @@ class SimpleOctagon[N <: IField[N]]
       else
         m(idx))
 
-  def test_vj0_minus_vi0_plus_c_le_0(j0 : Var, i0 : Var, c : N) : Octagon[N] = {
+  def test_vj0_minus_vi0_plus_c_le_0(j0 : Var, i0 : Var, c : N) : SimpleOctagon[N] = {
     // Case 3. Mine' 2006 fig. 20 p. 42
     // {{ Vj0 - Vi0 + c <= 0 ? }}
     require(j0 != i0) // see fig. 20
@@ -154,7 +157,7 @@ class SimpleOctagon[N <: IField[N]]
         else
           m(idx))}
 
-  def test_vj0_plus_vi0_le_c(j0 : Var, i0 : Var, c : N) : Octagon[N] = {
+  def test_vj0_plus_vi0_le_c(j0 : Var, i0 : Var, c : N) : SimpleOctagon[N] = {
     // Case 4. Mine' 2006 fig. 20 p. 42
     // {{ Vj0 + Vi0- + c <= 0 ? }}
     require(j0 != i0) // see fig. 20
@@ -167,7 +170,7 @@ class SimpleOctagon[N <: IField[N]]
         else
           m(idx))}
 
-  def test_minus_vj0_minus_vi0_plus_c_le_0(j0 : Var, i0 : Var, c : N) : Octagon[N] = {
+  def test_minus_vj0_minus_vi0_plus_c_le_0(j0 : Var, i0 : Var, c : N) : SimpleOctagon[N] = {
     // Case 5. Mine' 2006 fig. 20 p. 42
     // {{ -Vj0 + Vi0- + c <= 0 ? }}
     require(j0 != i0)
@@ -189,9 +192,9 @@ class SimpleOctagon[N <: IField[N]]
   // Begin abstract assignments
   /////////////////////////////
 
-  def assign_vj0_gets_vi0(j0 : Var, i0 : Var) : Octagon[N] = assign_vj0_gets_vi0_plus_c(j0, i0, _0)
+  def assign_vj0_gets_vi0(j0 : Var, i0 : Var) : SimpleOctagon[N] = assign_vj0_gets_vi0_plus_c(j0, i0, _0)
 
-  def assign_vj0_gets_c(j0 : Var, c : N) : Octagon[N] = {
+  def assign_vj0_gets_c(j0 : Var, c : N) : SimpleOctagon[N] = {
     // Case 1. Mine' 2006 fig. 15 p. 35
     // {{ Vj0 <- c }}
     stronglyClosed(m.dimension)(
@@ -204,7 +207,7 @@ class SimpleOctagon[N <: IField[N]]
           forget_f(m)(j0)(idx)
       })}
 
-  def assign_vj0_gets_vj0_plus_c(j0 : Var, c : N) : Octagon[N] =
+  def assign_vj0_gets_vj0_plus_c(j0 : Var, c : N) : SimpleOctagon[N] =
     // Case 2. Mine' 2006 fig. 15 p. 35
     // {{ Vj0 <- Vj0 + c }}
     stronglyClosed(m.dimension)(
@@ -227,7 +230,7 @@ class SimpleOctagon[N <: IField[N]]
         m(idx))
 
 
-  def assign_vj0_gets_vi0_plus_c(j0 : Var, i0 : Var, c : N) : Octagon[N] = {
+  def assign_vj0_gets_vi0_plus_c(j0 : Var, i0 : Var, c : N) : SimpleOctagon[N] = {
     // Case 3. Mine' 2006 fig. 15 p. 35
     // {{ Vj0 <- Vi0 + c }}
     require (j0 != i0)
@@ -243,7 +246,7 @@ class SimpleOctagon[N <: IField[N]]
       else
         forget_f(m)(j0)(idx))}
 
-  def assign_vj0_gets_minus_vj0(j0 : Var) : Octagon[N] = {
+  def assign_vj0_gets_minus_vj0(j0 : Var) : SimpleOctagon[N] = {
     // Case 4. Mine' 2006 fig. 15 p. 35: {{ Vj0 <- -Vj0 }
     stronglyClosed(m.dimension)(
       // Assignments Vj0 ← Vj0 + [a, b] and Vj0 ← −Vj0 + [a,
@@ -267,36 +270,36 @@ class SimpleOctagon[N <: IField[N]]
             !(Seq(j0.posForm, j0.negForm) contains idx.j))
         m(idx)})}
 
-  // Cases 5, 6, 7 are implemented in the Octagon trait
+  // Cases 5, 6, 7 are implemented in the SimpleOctagon trait
 
   /////////////////////////////
   // End abstract assignments
   /////////////////////////////
 
-  def union(that : Octagon[N]) : Octagon[N] = {
+  def union(that : SimpleOctagon[N]) : SimpleOctagon[N] = {
     that match {
-      case bot : BottomOctagon[N] => { assert (bot.dimension == this.dimension); this }
-      case o   : SimpleOctagon[N] => { assert (o.dimension == this.dimension);
+      case bot : SimpleBottomOctagon[N] => { assert (bot.dimension == this.dimension); this }
+      case o   : SimpleNonBottomOctagon[N] => { assert (o.dimension == this.dimension);
         stronglyClosed(this.m union o.m)
       }
       case _ => ??? // Not implemented
     }
   }
 
-  def intersection(that : Octagon[N]) : Octagon[N] = {
+  def intersection(that : SimpleOctagon[N]) : SimpleOctagon[N] = {
     that match {
-      case bot : BottomOctagon[N] => { assert (bot.dimension == this.dimension); that }
-      case o   : SimpleOctagon[N] => { assert (o.dimension == this.dimension);
+      case bot : SimpleBottomOctagon[N] => { assert (bot.dimension == this.dimension); that }
+      case o   : SimpleNonBottomOctagon[N] => { assert (o.dimension == this.dimension);
         stronglyClosed(this.m intersection o.m)
       }
       case _ => ??? // Not implemented
     }
   }
 
-  def widening(that : Octagon[N]) : Octagon[N] =
+  def widening(that : SimpleOctagon[N]) : SimpleOctagon[N] =
     that match {
-      case bot : BottomOctagon[N] => this
-      case o   : SimpleOctagon[N] => stronglyClosed(
+      case bot : SimpleBottomOctagon[N] => this
+      case o   : SimpleNonBottomOctagon[N] => stronglyClosed(
         this.m.combine((us, them) =>
           if (us >= them) us
           else ∞
@@ -304,10 +307,10 @@ class SimpleOctagon[N <: IField[N]]
       )
     }
 
-  def narrowing(that : Octagon[N]) : Octagon[N] =
+  def narrowing(that : SimpleOctagon[N]) : SimpleOctagon[N] =
     that match {
-      case bot : BottomOctagon[N] => this
-      case o   : SimpleOctagon[N] => stronglyClosed(
+      case bot : SimpleBottomOctagon[N] => this
+      case o   : SimpleNonBottomOctagon[N] => stronglyClosed(
         this.m.combine((us, them) =>
           if (us == ∞)
             them
@@ -332,20 +335,24 @@ class SimpleOctagon[N <: IField[N]]
   def isTop = m.isTop
   def dimension : OctagonDim = m.dimension
 
-  def tryCompareTo[B >: Octagon[N]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
+  def tryCompareTo[B >: SimpleOctagon[N]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
     other match {
-      case them : Octagon[N] =>
+      case them : SimpleOctagon[N] =>
         them match {
-          case _ : BottomOctagon[N] => Some(1)
-          case o : SimpleOctagon[N] =>
-            this.m.tryCompareTo(o.m)
-            // The following is only useful for making this comparable to "optimized" octagons
-            // for debugging purposes
-          case o : optimized.OptimizedOctagon[N] =>
-            o.closedDbm.fold(Some(1) : Option[Int])( // It's bottom
-              (m : ClosedDBM[N]) => this.m.tryCompareTo(m))
-          case _ => ??? // Not impl
+          case _ : SimpleBottomOctagon[N] => Some(1)
+          case o : SimpleNonBottomOctagon[N] => this.m.tryCompareTo(o.m)
         }
+      case _ => None
+    }
+}
+
+case class SimpleBottomOctagon[N <: IField[N]] (dimension : OctagonDim)
+    extends SimpleOctagon[N] with BottomOctagon[N, SimpleOctagon[N]] {
+
+  def bottom = this
+  def tryCompareTo[B >: SimpleOctagon[N]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
+    other match {
+      case that : SimpleOctagon[N] => if (that.isBottom) Some(0) else Some(-1)
       case _ => None
     }
 }
