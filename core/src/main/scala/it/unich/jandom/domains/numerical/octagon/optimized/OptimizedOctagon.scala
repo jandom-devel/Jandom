@@ -383,7 +383,7 @@ trait OptimizedOctagon[N <: IField[N]] extends Octagon[N] {
                 if (us >= them) us
                 else ifield.PositiveInfinity)(them))) match {
             case None => BottomOctagon(dimension)
-            case Some(dbm) => yieldNonClosed(dbm) // TODO: Is this guaranteed closed already?
+            case Some(dbm) => yieldNonClosed(dbm)
           }
       }
 
@@ -401,7 +401,7 @@ trait OptimizedOctagon[N <: IField[N]] extends Octagon[N] {
                 if (us == ifield.PositiveInfinity) them
                 else us)(them))) match {
             case None => BottomOctagon(dimension)
-            case Some(dbm) => yieldNonClosed(dbm) // TODO: Is this guaranteed closed already?
+            case Some(dbm) => yieldNonClosed(dbm)
           }
      }
 
