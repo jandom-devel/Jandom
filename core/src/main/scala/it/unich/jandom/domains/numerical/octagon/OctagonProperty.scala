@@ -78,7 +78,36 @@ case class OctagonProperty
 
   def frequency(lf: LinearForm) = ???
 
-  def constraints : Seq[LinearForm] = ???
+  def constraints : Seq[LinearForm] =
+    if (o.isBottom)
+      Seq()
+    else {(for {
+          i <- o.dimension.allVars.flatMap(x => Seq(x.posForm, x.negForm)) : Seq[SignedVarIdx];
+          j <- o.dimension.allVars.flatMap(x => Seq(x.posForm, x.negForm)) : Seq[SignedVarIdx];
+          c : RationalExt = o.get_ineq_vi_minus_vj_leq_c(i,j).get
+          if (!c.isInfinity) // +oo if there is no constraint (Mine 2006 p. 7)
+          if (i != j) // Don't care about x - x = 0
+          arri = Array
+          .fill[Rational](o.dimension.octagonDimToInt + 1)(Rational(0))
+          .updated(i.toVar.i, Rational(i.coeff))
+          arr = arri
+          .updated(j.toVar.i, arri(j.toVar.i) - j.coeff)
+          .updated(0, -c.value) // vi - vj <= c  ===>  vi -vj - c <= 0
+        } yield {
+          if (j.bar == i)
+            // Normalize those 2v <= 2c constraints that happen when
+            // you have ij positive and negative form of a single
+            // var. You can remove this and it's still technically
+            // correct ("the best kind of correct", according to an
+            // internet meme).
+            LinearForm(arr : _*) / 2
+          else
+            LinearForm(arr : _*)
+        }
+        ).distinct  // We remove duplicates, since "some octagonal constraints
+                    // have two different encodings...in the DBM" [Mine 2006 p. 9]
+                    // This normalization step is also technically superfluous.
+    }
 
   def isPolyhedral = true
 
