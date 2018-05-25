@@ -380,7 +380,7 @@ trait OptimizedOctagon[N <: IField[N]] extends Octagon[N] {
             o.closedDbm.map(
               them =>
               us.combine((us, them) =>
-                if (us > them) us
+                if (us >= them) us
                 else ifield.PositiveInfinity)(them))) match {
             case None => BottomOctagon(dimension)
             case Some(dbm) => yieldNonClosed(dbm) // TODO: Is this guaranteed closed already?
