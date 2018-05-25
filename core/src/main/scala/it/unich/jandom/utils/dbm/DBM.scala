@@ -82,7 +82,6 @@ trait DBM[N <: IField[N]] {
   def all : Seq[(DBMIdx, N)]
 
   def map[A](f : N => A) : Seq[A]
-  import scala.collection.immutable.StringOps
   override def toString : String =
     (if (this.isClosed) "Closed" else "") +
       "DBM(dim = " + dimension + ", mat = \n "+
