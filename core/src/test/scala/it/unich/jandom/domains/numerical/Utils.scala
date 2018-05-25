@@ -1,5 +1,4 @@
 package it.unich.jandom.domains.numerical
-import it.unich.jandom.domains.numerical._
 
 import org.scalacheck.Arbitrary
 import org.scalacheck.Gen.Choose
@@ -147,7 +146,6 @@ object Utils {
   }
 
   object OpSequences {
-    import Rationals.chooseRat
     import Rationals._
     def genExactLf(n : Int) : Gen[LinearForm] = {
       assert(n >= 2)
@@ -276,7 +274,6 @@ object Utils {
     }
 
     def octagonFromHalfPlanes(dom : NumericalDomain)(n : Int, h : Option[List[Halfplane]]) = {
-      import octagon._
       h match {
         case None => dom.bottom(n) //BottomOctagon(OctagonDim(n))
         case Some(l) =>
@@ -376,7 +373,6 @@ object Utils {
       )
     }
 
-    import Rationals.chooseRat
     import Rationals._
 
     def GenOctagonHalfplanesRat = (n : Int) => Gen.option(GenOctagonHalfplanes((n : Int) => Gen.containerOfN[List, Rational](n, GenRational),
