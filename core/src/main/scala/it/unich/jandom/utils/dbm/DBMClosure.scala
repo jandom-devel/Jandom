@@ -126,3 +126,65 @@ class MineFloydWarshall[N <: IField[N]](implicit ifield: StaticIField[N], val d 
   def makeClosed(n : DBMDim)(f : DBMIdx => N) : ClosedDBM[N] = d.markAsClosed(d.fromFun(n, f))
   def markAsClosed(dbm : DBM[N]) : ClosedDBM[N] = d.markAsClosed(dbm)
 }
+
+
+// TODO: Deduplicate
+
+// TODO: Add comments!
+
+class IncrementalMineFloydWarshall[N <: IField[N]] (implicit ifield: StaticIField[N], d : DBMFactory[N]) extends MineFloydWarshall[N]()(ifield, d) {
+  import it.unich.jandom.domains.numerical.octagon.Var
+  import it.unich.jandom.domains.numerical.octagon.SignedVarIdx
+
+  def incrementallyClosed (j0 : Var)(n : DBMDim)(f : DBMIdx => N): Option[ClosedDBM[N]] =
+    incrementalClosure(j0)(
+      d.fromFun(n,f)
+    )
+
+  def incrementalClosure (j0 : Var)(m: DBM[N]): Option[ClosedDBM[N]] = {
+    val n2 = m.dimension.dbmDimToInt
+    val n = n2 / 2
+
+    def step1(k : Int, n2 : Int, m : DBM[N]) = {
+      (1 to n2).flatMap(
+        i =>
+        (1 to n2).map(
+          j => (Var(k), SignedVarIdx(i), SignedVarIdx(j))
+        )
+      ).filter(ijk =>
+        ijk._1 == j0 |
+        ijk._2 == j0.posForm | ijk._2 == j0.negForm |
+          ijk._3 == j0.posForm | ijk._3 == j0.negForm).foldRight(m)(closeIter)
+    }
+
+    def strengtheningStep(k : Int, n2 : Int, m : DBM[N]) = {
+      (1 to n2).flatMap(
+        i =>
+        (1 to n2).map(
+          j => (SignedVarIdx(i), SignedVarIdx(j))
+        )
+      ).filter(ijk =>
+        k == j0.i |
+        ijk._1 == j0.posForm | ijk._1 == j0.negForm |
+          ijk._2 == j0.posForm | ijk._1 == j0.negForm).foldRight(m)(strengthenIter)
+    }
+
+    val allbutk = (1 to n).filter(_ != j0.i).foldRight(m)(
+      (k, m) => strengtheningStep(k, n2, step1(k, n2, m)))
+
+
+    /* As a LAST step we update the WHOLE matrix for all (i, j0), (j0, j).
+     * See Mine''s PhD thesis p.75:
+     * "In the first c iterations, the algorithm only updates the last n −
+     *  c lines and columns of n.  The last n − c iterations update
+     *  the whole matrix, as the regular Floyd–Warshall algorithm
+     *  does."
+     */
+    val kthstep = strengtheningStep(j0.i, n2, step1(j0.i, n2, allbutk))
+
+      emptinessCheck(
+        kthstep
+      ).map(markAsClosed(_))
+
+  }
+}
