@@ -505,3 +505,71 @@ class PedanticOctagon[N <: IField[N]]
   def dimension = OctagonDim(dbm.dimension)
 }
 
+/**
+  * An implementation of OptimizedOctagon that tries to delay closure
+  * until it's a prerequisite
+  */
+class DelayedOctagon[N <: IField[N]]
+  (val dbm : Either[DBM[N], ClosedDBM[N]])
+  (implicit val ifield : StaticIField[N], cs : IncrementalMineFloydWarshall[N], fac : DBMFactory[N]) extends OptimizedOctagon[N] {
+
+  protected def assign_vj0_gets_vi0(j0 : Var, i0 : Var) : Octagon[N] =
+    assign_vj0_gets_vi0_plus_c(j0, i0, ifield.zero)
+
+  protected[octagon] def anyDbm : DBM[N] = dbm match {
+    case Left(any) => any
+    case Right(closed) => closed
+  }
+
+  // Possible optimization: let dbm be mutable and cache the closed dbm
+  protected[octagon] def closedDbm : Option[ClosedDBM[N]] = this.dbm match {
+    case Left(any) => cs.strongClosure(any)
+    case Right(closed) => Some(closed)
+  }
+
+
+  protected def wrapAny(dbm : DBM[N]) : Octagon[N] = new DelayedOctagon[N](Left(dbm))
+  protected def wrapClosed(maybe : Option[ClosedDBM[N]]) : Octagon[N] = maybe match {
+    case None => BottomOctagon(dimension)
+    case Some(closed) => new DelayedOctagon[N](Right(closed))
+  }
+
+  protected[octagon] def onClosedDBM (f : ClosedDBM[N] => Octagon[N]) : Octagon[N] = closedDbm match {
+    case Some(closed) => f(closed)
+    case None => BottomOctagon(dimension)
+  }
+
+  protected[octagon] def onAnyDBM (f : DBM[N] => Octagon[N]) : Octagon[N] = {
+    f(anyDbm)
+  }
+
+  protected[octagon] def onEither (ifNonClosed : DBM[N] => Octagon[N], ifClosed : ClosedDBM[N] => Octagon[N]) : Octagon[N] =
+    dbm match {
+      case Left(anyDbm) => ifNonClosed(anyDbm)
+      case Right(closed) => ifClosed(closed)
+    }
+
+  private def dbmDimension = anyDbm.dimension
+
+  protected[octagon] def closeIncrementally (j0 : Var)(f : ClosedDBM[N] => DBMIdx => N) : ClosedDBM[N] => Octagon[N] = {
+    (closed : ClosedDBM[N]) => wrapClosed(cs.incrementallyClosed(j0)(dbmDimension)(f(closed)))
+  }
+  protected[octagon] def yieldClosed (f : DBM[N] => DBMIdx => N) : DBM[N] => Octagon[N] = {
+    (dbm : DBM[N]) => wrapClosed(Some(cs.makeClosed(dbmDimension)(f(dbm))))
+  }
+  protected[octagon] def yieldClosed (dbm : DBM[N]) : Octagon[N] = {
+    wrapClosed(Some(cs.markAsClosed(dbm)))
+  }
+
+  protected[octagon] def yieldNonClosed (f : DBM[N] => DBMIdx => N) : DBM[N] => Octagon[N] = {
+    (dbm : DBM[N]) => wrapAny(fac.fromFun(dbmDimension, f(dbm)))
+  }
+  protected[octagon] def yieldNonClosed (dbm : DBM[N]) : Octagon[N] = {
+    wrapAny(dbm)
+  }
+
+  def dimension = OctagonDim(anyDbm.dimension)
+}
+
+
+
