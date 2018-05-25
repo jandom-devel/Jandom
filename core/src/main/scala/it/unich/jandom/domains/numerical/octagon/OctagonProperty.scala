@@ -64,7 +64,57 @@ case class OctagonProperty
     */
   def nonDeterministicAssignment(n: Int): Property = o.forget(Var(n + 1))
 
-  def linearAssignment(j0 : Int, l: LinearForm): Property = ???
+  /**
+    * Dispatches a linearAssignment call to the handler for the
+    * appropriate octagon exact abstract assignment operator (as
+    * detailed in Mine' 2006 fig. 15 p. 35) or overapproximates using
+    * the Box domain
+    */
+  def linearAssignment(j0 : Int, l: LinearForm): Property = {
+    // TODO: Would it be a good idea to specially handle the cases with c = 0?
+    val lf = l.padded(dimension + 1) // TODO: splain
+    assert(lf.homcoeffs.size > j0, ""+lf + lf.homcoeffs + j0 + dimension)
+    val zipped = lf.homcoeffs.zipWithIndex
+    if (zipped.filter(_._1 != 0).size == 0) {
+      // Case 1. {{ Vj0 <- c }}
+      o.assign_vj0_gets_c(Var(j0 + 1), lf.known)
+    } else if (zipped.filter(_._1 != 0).size == 1) {
+      if (lf.homcoeffs(j0) == 1) {
+        // Case 2. {{ Vj0 <- Vj0 + c }}
+        if (lf.known == 0)
+          o // vj <- vj + 0
+        else
+          o.assign_vj0_gets_vj0_plus_c(Var(j0 + 1), lf.known)
+      } else if (lf.homcoeffs(j0) == -1) {
+        // Case 4. {{ Vj0 <- - Vj0 + c }}
+        // TODO OR NoT?
+        if (lf.known == 0)
+          o.assign_vj0_gets_minus_vj0(Var(j0 + 1)) // TODO: totally useless?
+        else
+          o.assign_vj0_gets_minus_vj0_plus_c(Var(j0 + 1), lf.known)
+      } else {
+        // 1 coeff; possibly case 3. 5 or 7
+        val coeff = zipped.filter(_._1 != 0).head._1
+        val i0 = zipped.filter(_._1 != 0).head._2
+        if (coeff == 1) {
+          // Case 3. {{ Vj0 <- Vi0 + c }}
+          o.assign_vj0_gets_vi0_plus_c(Var(j0 + 1), Var(i0 + 1), lf.known)
+        } else if (coeff == -1) {
+          // Case ??? {{ Vj0 <- -Vi0 }}
+          if (lf.known == 0)
+            o.assign_vj0_gets_minus_vi0(Var(j0 + 1), Var(i0 + 1)) // TODO: totally useless?
+          else
+            o.assign_vj0_gets_minus_vi0_plus_c(Var(j0 + 1), Var(i0 + 1), lf.known)
+        } else {
+          // coeff is not -1, +1, use box fallback
+          domain.fromBox(toBox.linearAssignment(j0, l))
+        }
+      }
+    } else {
+      // Use fallback: More than 2 non-zero coefficients
+      domain.fromBox(toBox.linearAssignment(j0, l))
+    }
+  }
 
   def linearInequality(lf: LinearForm): Property = ???
 
