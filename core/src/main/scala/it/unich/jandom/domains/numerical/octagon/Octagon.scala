@@ -75,6 +75,37 @@ trait Octagon[N <: IField[N], O <: Octagon[N, O]]
 
 }
 
+
+trait BottomOctagon[N <: IField[N], O <: Octagon[N, O]] {
+
+  def dimension: OctagonDim
+  def bottom : O
+
+  def test_vj0_plus_c_le_0 (j0 : Var, c : N) : O = bottom
+  def test_minus_vj0_plus_c_le_0 (j0 : Var, c : N) : O = bottom
+  def test_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : O = bottom
+  def test_vj0_plus_vi0_le_c(vj0 : Var, vi0 : Var, c : N) : O = bottom
+  def test_minus_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : O = bottom
+
+  def get_ineq_vi_minus_vj_leq_c(i : SignedVarIdx, j : SignedVarIdx) : Option[N] = None
+
+  def forget(f : Var) : O = bottom
+  def assign_vj0_gets_c(j0 : Var, c : N):  O = bottom
+  def assign_vj0_gets_vj0_plus_c(j0 : Var, c : N) : O = bottom
+  def assign_vj0_gets_vi0_plus_c(j0 : Var, i0 : Var, c : N) : O = bottom
+  def assign_vk_gets_e(k : Int) : O = bottom
+  def assign_vj0_gets_minus_vj0(j0 : Var) : O = bottom
+  def assign_vj0_gets_vi0 (j0 : Var, i0 : Var) : O = bottom
+  //////
+  def isEmpty : Boolean = true
+  def isBottom : Boolean = true
+  def isTop : Boolean = false
+  def union(that : O) = that
+  def intersection(that : O) = bottom
+  def widening(that : O) : O = that
+  def narrowing(that : O) : O = ???
+}
+
 //////////////////////
 // UTILS
 //////////////////////
@@ -127,34 +158,4 @@ case class OctagonDim(private val n : Int) {
 
 object OctagonDim {
   def apply(d : DBMDim) : OctagonDim = OctagonDim(d.dbmDimToInt / 2)
-}
-
-trait BottomOctagon[N <: IField[N], O <: Octagon[N, O]] {
-
-  def dimension: OctagonDim
-  def bottom : O
-
-  def test_vj0_plus_c_le_0 (j0 : Var, c : N) : O = bottom
-  def test_minus_vj0_plus_c_le_0 (j0 : Var, c : N) : O = bottom
-  def test_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : O = bottom
-  def test_vj0_plus_vi0_le_c(vj0 : Var, vi0 : Var, c : N) : O = bottom
-  def test_minus_vj0_minus_vi0_plus_c_le_0(vj0 : Var, vi0 : Var, c : N) : O = bottom
-
-  def get_ineq_vi_minus_vj_leq_c(i : SignedVarIdx, j : SignedVarIdx) : Option[N] = None
-
-  def forget(f : Var) : O = bottom
-  def assign_vj0_gets_c(j0 : Var, c : N):  O = bottom
-  def assign_vj0_gets_vj0_plus_c(j0 : Var, c : N) : O = bottom
-  def assign_vj0_gets_vi0_plus_c(j0 : Var, i0 : Var, c : N) : O = bottom
-  def assign_vk_gets_e(k : Int) : O = bottom
-  def assign_vj0_gets_minus_vj0(j0 : Var) : O = bottom
-  def assign_vj0_gets_vi0 (j0 : Var, i0 : Var) : O = bottom
-  //////
-  def isEmpty : Boolean = true
-  def isBottom : Boolean = true
-  def isTop : Boolean = false
-  def union(that : O) = that
-  def intersection(that : O) = bottom
-  def widening(that : O) : O = that
-  def narrowing(that : O) : O = ???
 }
