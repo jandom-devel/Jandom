@@ -37,7 +37,10 @@ import spire.math.Rational
  * @param overReals is true if the domain is correct w.r.t. real arithmetic, otherwise it is correct w.r.t.
  * double arithmetics.
  */
-class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
+class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
+
+  def makeBox(low: Array[Double], high: Array[Double], isEmpty: Boolean) = new Property(low, high, isEmpty)
+
   /**
    * This is the class representing a single box.
    *
