@@ -82,8 +82,7 @@ class OctagonPropertyModule[O <: Octagon[RationalExt, O], D <: OctagonDomainTrai
       * the Box domain
       */
     def linearAssignment(j0 : Int, l: LinearForm): Property = {
-      // TODO: Would it be a good idea to specially handle the cases with c = 0?
-      val lf = l.padded(dimension + 1) // TODO: splain
+      val lf = l.padded(dimension + 1)
       assert(lf.homcoeffs.size > j0, ""+lf + lf.homcoeffs + j0 + dimension)
       val zipped = lf.homcoeffs.zipWithIndex
       if (zipped.filter(_._1 != 0).size == 0)
@@ -98,7 +97,6 @@ class OctagonPropertyModule[O <: Octagon[RationalExt, O], D <: OctagonDomainTrai
             o.assign_vj0_gets_vj0_plus_c(Var(j0 + 1), lf.known)
         } else if (lf.homcoeffs(j0) == -1) {
           // Case 4. {{ Vj0 <- - Vj0 + c }}
-          // TODO OR NoT?
           if (lf.known == 0)
             o.assign_vj0_gets_minus_vj0(Var(j0 + 1)) // TODO: totally useless?
           else
@@ -218,7 +216,6 @@ class OctagonPropertyModule[O <: Octagon[RationalExt, O], D <: OctagonDomainTrai
             z.updated(index, RationalExt(i.known))
           })
         boxDomain.makeBox(infarr, suparr, false)
-        // Cause: java.lang.IllegalArgumentException: requirement failed: The parameters low: -Infinity,0,-Infinity, high: Infinity,-1,Infinity and isEmpty: false are not normalized
       }
     }
 
