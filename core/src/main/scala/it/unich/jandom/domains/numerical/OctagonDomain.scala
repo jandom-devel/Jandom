@@ -4,7 +4,6 @@ import it.unich.jandom.utils.dbm._
 import it.unich.jandom.domains.numerical.octagon._
 import it.unich.jandom.domains.numerical.octagon.optimized._
 import it.unich.jandom.utils.numberext.RationalExt
-import spire.math.Rational
 import scala.reflect.ClassTag
 
 trait OctagonDomainTrait[O <: Octagon[RationalExt, O]] extends NumericalDomain {
