@@ -17,13 +17,23 @@ libraryDependencies ++= Seq(
   "ca.mcgill.sable" % "soot" %"3.0.0-SNAPSHOT"
 )
 
+//*** Add PPL, Apron, GMP jars
+
+unmanagedJars in Compile ++= (pplJar.value map file).toSeq
+unmanagedJars in Compile ++= (apronJar.value map file).toSeq
+unmanagedJars in Compile ++= (gmpJar.value map file).toSeq
+
 //*** Additional source directories for PPL
 
 unmanagedSourceDirectories in Compile ++= (pplJar.value map { _ => (sourceDirectory in Compile).value / "ppl" }).toSeq
 
 unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory in Test).value / "ppl" }).toSeq
 
-unmanagedJars in Compile ++= (pplJar.value map file).toSeq
+//*** Additional source directories for Apron
+
+unmanagedSourceDirectories in Compile ++= (apronJar.value map { _ => (sourceDirectory in Compile).value / "apron" }).toSeq
+
+unmanagedSourceDirectories in Test ++= (apronJar.value map { _ => (sourceDirectory in Test).value / "apron" }).toSeq
 
 //*** BuildInfo plugin
 

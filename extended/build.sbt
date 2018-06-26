@@ -6,6 +6,12 @@ unmanagedSourceDirectories in Compile ++= (pplJar.value map { _ => (sourceDirect
 
 unmanagedSourceDirectories in Test ++= (pplJar.value map { _ => (sourceDirectory in Test).value / "ppl" }).toSeq
 
+//*** Additional source directories for Apron
+
+unmanagedSourceDirectories in Compile ++= (apronJar.value map { _ => (sourceDirectory in Compile).value / "apron" }).toSeq
+
+unmanagedSourceDirectories in Test ++= (apronJar.value map { _ => (sourceDirectory in Test).value / "apron" }).toSeq
+
 //*** Assembly plugin
 
 test in assembly := { }

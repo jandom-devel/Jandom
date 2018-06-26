@@ -34,7 +34,10 @@ import spire.math.Rational
  * @constructor Builds a box domain uses rational as bounds
  */
 
-class BoxRationalDomain private extends NumericalDomain {
+class BoxRationalDomain private extends BoxGenericDomain[RationalExt] {
+
+  def makeBox(low: Array[RationalExt], high: Array[RationalExt], isEmpty: Boolean) = new Property(low, high, isEmpty)
+
   /**
    * This is the class representing a single box.
    *
@@ -143,7 +146,7 @@ class BoxRationalDomain private extends NumericalDomain {
      * @return a tuple with two components: the first component is the least value, the second component is the greatest value
      * of the linear form over the box.
      */
-    private def linearEvaluation(lf: LinearForm): (RationalExt, RationalExt) = {
+    def linearEvaluation(lf: LinearForm): (RationalExt, RationalExt) = {
       require(lf.dimension <= dimension)
       var newlow = RationalExt(lf.known)
       var newhigh = RationalExt(lf.known)

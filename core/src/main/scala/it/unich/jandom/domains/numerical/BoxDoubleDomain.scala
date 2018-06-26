@@ -37,7 +37,10 @@ import spire.math.Rational
  * @param overReals is true if the domain is correct w.r.t. real arithmetic, otherwise it is correct w.r.t.
  * double arithmetics.
  */
-class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
+class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
+
+  def makeBox(low: Array[Double], high: Array[Double], isEmpty: Boolean) = new Property(low, high, isEmpty)
+
   /**
    * This is the class representing a single box.
    *
@@ -206,7 +209,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends NumericalDomain {
      * @return a tuple with two components: the first component is the least value, the second component is the greatest value
      * of the linear form over the box.
      */
-    private def linearEvaluation(lf: LinearForm): (Double, Double) = {
+    def linearEvaluation(lf: LinearForm): (Double, Double) = {
       val known = lf.known.toDouble
       val homcoeffs = lf.homcoeffs.map (_.toDouble).toArray
       linearEvaluation(known, homcoeffs)

@@ -49,7 +49,27 @@ pplJar in ThisBuild := {
     val PPLPathName = scala.sys.process.Process("ppl-config -l").lineStream.head+"/ppl/ppl_java.jar"
     if (file(PPLPathName).exists) Some(PPLPathName) else None
   } catch {
-    case _ : Exception => None 
+    case _ : Exception => None
+  }
+}
+
+apronJar in ThisBuild := {
+  try {
+    val ApronPathName = "/usr/share/java/apron.jar"
+    // TODO Parametrize
+    if (file(ApronPathName).exists) Some(ApronPathName) else None
+  } catch {
+    case _ : Exception => None
+  }
+}
+
+gmpJar in ThisBuild := {
+  try {
+    val GMPPathName = "/usr/share/java/gmp.jar"
+    // TODO Parametrize
+    if (file(GMPPathName).exists) Some(GMPPathName) else None
+  } catch {
+    case _ : Exception => None
   }
 }
 
@@ -95,3 +115,9 @@ scmInfo in ThisBuild := Some(ScmInfo(
   "scm:git:https://github.com/jandom-devel/Jandom.git",
   Some("scm:git:https://github.com/jandom-devel/Jandom.git")
 ))
+
+libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+
+// Following line is workaround for https://github.com/sbt/sbt-native-packager/issues/1063#issuecomment-343836338
+updateConfiguration in updateSbtClassifiers := (updateConfiguration in updateSbtClassifiers).value.withMissingOk(true)
+

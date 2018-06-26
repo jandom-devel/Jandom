@@ -43,16 +43,6 @@ class DenseLinearForm[T](val coeffs: Seq[Rational]) extends LinearForm {
 
   def pairs = for { (ci, i) <- homcoeffs.zipWithIndex ; if ! ci.isZero } yield (i,ci)
 
-  /**
-   * Equality between linear forms. Two linear forms are equal if their coefficients are the same and
-   * are defined over the same environment.
-   */
-  override def equals(that: Any): Boolean = that match {
-    case that: LinearForm =>
-      (coeffs zip that.coeffs) forall (tuple => tuple._1 == tuple._2)
-    case _ => false
-  }
-
   def unary_-(): LinearForm = new DenseLinearForm(coeffs map (x => -x))
 
   def +(that: LinearForm): LinearForm = {

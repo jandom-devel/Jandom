@@ -115,13 +115,32 @@ trait LinearForm {
    * @inheritdoc
    * It is equivalent to `mkString` with variable names `v0`...`vn`
    */
-  override def toString = mkString(Stream.from(0).map { "v" + _ })
+  override final def toString = mkString(Stream.from(0).map { "v" + _ })
 
   /**
    * This is used to store the PPL version of this linear form. It is declared
    * of type `AnyRef` so that it may be compiled even when PPL is not present.
    */
   var toPPL: AnyRef = null
+
+  /**
+   * Equality between linear forms. Two linear forms are equal if their coefficients are the same and
+   * are defined over the same environment.
+    */
+
+  override final def equals(that: Any): Boolean = that match {
+    case that: LinearForm => coeffs == that.coeffs
+    case _ => false
+  }
+
+  override final def hashCode: Int = (coeffs).hashCode()
+
+  def padded (n : Int) : LinearForm = {
+    assert(coeffs.size <= n) // TODO: handle
+    if (coeffs.size == n)
+      this
+    else LinearForm((coeffs ++ List.fill[Rational](n - coeffs.size)(0)) : _*)
+  }
 }
 
 /**
@@ -169,4 +188,260 @@ object LinearForm {
    * Builds the constant linear form `c` from a non-rational constant
    */
   implicit def c[T <% Rational](known: T): LinearForm = DenseLinearForm(List(known))
+}
+
+/**
+  * Inequalities are for human-readable pretty-printing of constraints
+  */
+object Inequalities {
+
+  trait Inequality {
+    def mkString(vars: Seq[String]) : String
+    def contains(x: Rational) : Boolean
+  }
+
+  def homCoeffToString (homcoeffs : Seq[Rational], vars : Seq[String]) : String = {
+    homcoeffs.zip(0 to homcoeffs.length-1).map((k : (Rational, Int)) =>
+      k match { case (x,y) =>
+        if (x != 0) {
+          ((
+            if (x != 1)
+            {
+              if (x != -1)
+              { (x)+"*" }
+              else { "-" }
+            }
+            else
+            {""}
+          )+vars(y)).replace("+","")
+        }
+        else { "" }
+      }
+    ).
+      filter(_ != "").
+      mkString("+").
+      replace("+-", "-")
+  }
+
+  case class Eq(c: Rational, homcoeffs: Seq[Rational]) extends Inequality {
+    def contains(x: Rational) = x == c
+    def mkString(vars: Seq[String]) = {
+      // Rewrite eq for optimal polarity, i.e. with minimum number of -
+      val negs = (homcoeffs :+ c).filter(_ < 0).length
+      val poss = (homcoeffs :+ c).filter(_ > 0).length
+      if (negs > poss) {
+        // Too many - signs, flip
+        homCoeffToString(homcoeffs.map(_ * -1), vars)+" = "+(-c)
+      } else {
+        homCoeffToString(homcoeffs, vars)+" = "+(c)
+      }
+    }
+  }
+
+  case class Ineq(c: Rational, homcoeffs: Seq[Rational]) extends Inequality {
+    def contains(x: Rational) = x >= c
+    def mkString(vars: Seq[String]) = {
+      // Rewrite eq for optimal polarity, i.e. with minimum number of -
+      val negs = (homcoeffs :+ c).filter(_ < 0).length
+      val poss = (homcoeffs :+ c).filter(_ > 0).length
+      if (negs > poss) {
+        // Too many - signs, flip
+        homCoeffToString(homcoeffs.map(_ * -1),vars)+" <= "+(-c)
+      } else {
+        homCoeffToString(homcoeffs,vars)+" >= "+c
+      }
+    }
+  }
+
+  case class Between(bottom: Rational, top: Rational, homcoeffs: Seq[Rational]) extends Inequality {
+    assert(bottom <= top)
+    def contains(x: Rational) = bottom >= x & x >= top
+    def mkString(vars: Seq[String]) = {
+      // Rewrite eq for optimal polarity, i.e. with minimum number of -
+      val negs = (homcoeffs :+ top :+ bottom).filter(_ < 0).length
+      val poss = (homcoeffs :+ top :+ bottom).filter(_ > 0).length
+      if (negs > poss) {
+        // Too many - signs, flip
+        -top + " <= " + homCoeffToString(homcoeffs.map(_ * -1), vars)+" <= "+ -bottom
+      } else {
+        bottom + " <= " + homCoeffToString(homcoeffs, vars)+" <= " + top
+      }
+    }
+  }
+
+  def mergeIneq(i1 : Inequality, i2 : Inequality) :  Either[Inequality, (Inequality, Inequality)] = {
+    i1 match {
+      case Ineq(c1, hom1) =>
+        i2 match {
+          case Eq(c2, hom2) => {
+            if (hom1 == hom2) {
+              assert(i1.contains(c2))
+              Left(i2)
+            } else {
+              if (hom1.map(_ * -1) == hom2) {
+                assert(i2.contains(-c2))
+                Left(i2)
+              } else {
+                // Incompatible coeffs
+                Right((i1, i2))
+              }
+            }
+          }
+          case Ineq(c2, hom2) => {
+            if (hom1 == hom2) {
+              // hom1 >= c1, hom1 >= c2 => tighter bound is max(c1,c2)
+              Left(Ineq(c1.max(c2), hom1))
+            } else {
+              if (hom1.map(_ * -1) == hom2) {
+                // hom1 >= c1 => -hom1 <= -c1
+                if (c2 == -c1) {
+                  // hom2 <= c2 & hom2 >= c2 => hom2 == c2
+                  Left((Eq(c1, hom1)))
+                } else {
+                  // hom2 <= -c1 & hom2 >= c2 => c2 <= hom2 <= -c1
+                  Left(Between(c2, -c1, hom2))
+                }
+              } else {
+                // nothing to do, incompatible
+                Right((i1, i2))
+              }
+            }
+          }
+          case Between(bottom2, top2, hom2) => {
+            if (hom1 == hom2) {
+              // Compatible coeffs
+              // bottom2 <= hom1 <= top2 & hom1 >= c1 =>  max(bottom2, c1) <= hom1 <= top2
+              Left(Between(c1.max(bottom2), c1.min(top2), hom1))
+            } else {
+              if (hom1.map(_ * -1) == hom2) {
+                // hom2 <= -c1
+                // bottom2 <= hom2 <= top2 & -hom2 >= c1 =>  bottom2 <= hom2 <= min(-c1, top2)
+                Left(Between(bottom2, -c1.min(top2), hom2))
+              } else {
+                // nothing to do, incompatible
+                Right((i1, i2))
+              }
+            }
+          }
+        }
+      case Eq(c1, hom1) => {
+        i2 match {
+          case Eq(c2, hom2) => {
+            if (hom1 == hom2) {
+              assert(c1 == c2)
+              Left(i2)
+            } else {
+              if (hom1.map(_ * -1) == hom2) {
+                assert(-c1 == c2)
+                Left(i2)
+              } else {
+                // Incompatible
+                Right((i1, i2))
+              }
+            }
+          }
+          case Ineq(c2, hom2) => {
+            if (hom1 == hom2) {
+              assert(i2.contains(c1))
+              Left(i1)
+            } else {
+              if (hom1.map(_ * -1) == hom2) {
+                // hom2 >= c2 & c1 = -hom2 => hom2 - -c1
+                assert(i2.contains(-c1))
+                Left(i1)
+              } else {
+                // Incompatible, nothing to do
+                Right((i1, i2))
+              }
+            }
+          }
+          case Between(bottom2, top2, hom2) => {
+            if (hom1 == hom2) {
+              assert(i2.contains(c1))
+              Left(i1)
+            } else {
+              if (hom1.map(_ * -1) == hom2) {
+                assert(i2.contains(-c1))
+                Left(i1)
+              } else {
+                // nothing to do, incompatible
+                Right((i1, i2))
+              }
+            }
+          }
+        }
+      }
+      case Between(bottom1, top1, hom1) =>
+        i2 match {
+          case Eq(c2, hom2) => {
+            if (hom1 == hom2) {
+              assert(i1.contains(c2))
+              Left(i1)
+            } else {
+              if (hom1.map(_ * -1) == hom2) {
+                assert(i1.contains(-c2))
+                Left(i1)
+              } else {
+                // nothing to do, incompatible
+                Right((i1, i2))
+              }
+            }
+          }
+          case Ineq(c2, hom2) => {
+            if (hom1 == hom2) {
+              // bottom1 <= hom1 <= top1 & hom1 >= c2 => max(bottom1, c2) <= hom1 <= top1
+              Left(Between(bottom1.max(c2), top1, hom2))
+            } else {
+              if (hom1.map(_ * -1) == hom2) {
+                // bottom1 <= hom1 <= top1 & -hom1 >= c2 => hom1 <= - c2 => bottom1 <= hom1 <= min(-c2, top1)
+                Left(Between(bottom1, top1.min(-c2), hom1))
+              } else {
+                // nothing to do, incompatible
+                Right((i1, i2))
+              }
+            }
+          }
+          case Between(bottom2, top2, hom2) => {
+            if (hom1 == hom2) {
+              Left(Between(bottom1.max(bottom2), top1.min(top2), hom1)) // use tightest bound
+            } else {
+              if (hom1.map(_ * -1) == hom2) {
+                //   bottom1 <= hom1 <= top1
+                // & bottom2 <= -hom1 <= top2 => -top2 <= hom1 <= -bottom2
+                // => max(bottom1, -top2) <= hom1 <= min(top1, -bottom2)
+                Left(Between(bottom1.min(-top2), top1.max(-bottom2), hom1))
+              } else {
+                // nothing to do, incompatible
+                Right((i1, i2))
+              }
+            }
+          }
+        }
+    }
+  }
+
+  /**
+    * Turns a set constraints into a set of inequalities, of the form
+    *
+    *  vi + ... + vj <= c
+    *  vi + ... + vj = c
+    *  c' <= vi + ... + <= c
+    *
+    *  for human readability; inequalities have support for pretty-printing
+    */
+  def constraintsToInequalities(constraints : Seq[LinearForm]) : Seq[Inequality] = {
+    val cons : Seq[Inequality] = constraints.map((l) => Ineq(l.known, l.homcoeffs.map(_ * -1)))
+
+    cons.foldRight(Seq[Inequality]())((i : Inequality,z : Seq[Inequality]) => {
+      val foo = z.map((q : Inequality) => mergeIneq(q,i) match {
+        case Left(a:Inequality) => Left(a)
+        case Right((a,b)) => Right(q)
+      })
+
+      if(foo.map((x) => x match { case Left(_) => true case Right(_) => false }).filter((x) => x == true).length > 0)
+        foo.map((x) => x match { case Left(y) => y case Right(y) => y })
+      else
+        i +: foo.map((x) => x match { case Left(y) => y case Right(y) => y })
+    })
+  }
 }
