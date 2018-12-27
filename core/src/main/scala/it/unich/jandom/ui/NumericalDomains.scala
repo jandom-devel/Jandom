@@ -37,7 +37,7 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
     ParameterValue(SumBoxDoubleParallelotopeRationDomain(), "BoxDouble + ParallelotopeRational", "Sum of boxes and parallelotopes."),
     ParameterValue(OctagonDomain(), "Octagon Domain", "This is a native Scala implementation of octagons. Currentyl, it does not support the Soot analysis.")
   )
-  val default = values.last
+  val default = values.head
 
   // Load objects PPLUIInitializer and PPLMacroUIInitializer if available
   Try ( Class.forName ("it.unich.jandom.ui.PPLUIInitializer$") )
