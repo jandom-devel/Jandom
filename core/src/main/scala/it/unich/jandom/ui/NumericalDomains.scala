@@ -35,7 +35,7 @@ object NumericalDomains extends ParameterEnumeration[NumericalDomain] {
       "w.r.t. reals."),
     ParameterValue(ParallelotopeRationalDomain(), "Parallelotope over Rationals", "This is a native Scala implementation of parallelotopes using rational numbers."),
     ParameterValue(SumBoxDoubleParallelotopeRationDomain(), "BoxDouble + ParallelotopeRational", "Sum of boxes and parallelotopes."),
-    ParameterValue(OctagonDomain(), "Octagon Domain", "foo")
+    ParameterValue(OctagonDomain(), "Octagon Domain", "This is a native Scala implementation of octagons. Currentyl, it does not support the Soot analysis.")
   )
   val default = values.last
 
