@@ -48,7 +48,7 @@ trait SootTests {
     scene.loadBasicClasses()
     val resourceURL = getClass().getResource("/" + dir)
     val sootTestDir = new File(resourceURL.toURI())
-    scene.setSootClassPath(sootTestDir.toString())
+    scene.setSootClassPath(scene.defaultClassPath + java.io.File.pathSeparator + sootTestDir.toString())
     scene
   }
 }
