@@ -1,47 +1,47 @@
 /**
- * Copyright 2013, 2015 Gianluca Amato, Francesca Scozzari
- *
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
- */
+  * Copyright 2013, 2015, 2018 Gianluca Amato, Francesca Scozzari
+  *
+  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+  * JANDOM is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * JANDOM is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty ofa
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+  */
 
 package it.unich.jandom.targets
 
-import scala.collection.JavaConverters._
-import org.scalatest.FunSuite
 import it.unich.jandom.domains.numerical.ppl.PPLDomain
-import it.unich.jandom.domains.objects.PairSharingDomain
-import it.unich.jandom.domains.objects.UP
+import it.unich.jandom.domains.objects.{PairSharingDomain, UP}
 import it.unich.jandom.parsers.NumericalPropertyParser
 import it.unich.jandom.targets.jvmsoot._
+import org.scalatest.FunSuite
 import parma_polyhedra_library.C_Polyhedron
-import it.unich.jandom.domains.objects.PairSharingDomain
+
+import scala.collection.JavaConverters._
 
 /**
- * Simple test suite for the JVMSoot target.
- * @author Gianluca Amato
- * @author Francesca Scozzari
- *
- */
+  * Simple test suite for the JVMSoot target.
+  *
+  * @author Gianluca Amato <gianluca.amato@unich.it>
+  * @author Francesca Scozzari <fscozzari@unich.it>
+  *
+  */
 class JVMSootSuite extends FunSuite with SootTests {
 
-  val scene = initSoot()
-  val c = scene.loadClassAndSupport("javatest.SimpleTest")
-  val om = new SootObjectModel(scene)
-  val psdom = new PairSharingDomain(om)
+  private val scene = initSoot()
+  private val c = scene.loadClassAndSupport("javatest.SimpleTest")
+  private val om = new SootObjectModel(scene)
+  private val psdom = new PairSharingDomain(om)
 
-  val numdomain = PPLDomain[C_Polyhedron]()
+  private val numdomain = PPLDomain[C_Polyhedron]()
 
   bafTests()
   jimpleInterProceduralNumTests()
@@ -56,14 +56,15 @@ class JVMSootSuite extends FunSuite with SootTests {
       "longassignment" -> "i0 >= 0 && i1 >= 10 && i2==i2 && i3==i3 && i4==i4",
       "topologicalorder" -> "b0 >= 3 && b0<=4 && b1 == b1 && b2==b2")
 
-    val params = new Parameters[BafMethod] {
-      val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
+    val params: Parameters[BafMethod] {val domain: SootFrameNumericalDomain} = new Parameters[BafMethod] {
+      val domain = new SootFrameNumericalDomain(numdomain)
       //debugWriter = new java.io.PrintWriter(System.err)
     }
-    for ((methodName, propString) <- bafTests) {
-      val method = new BafMethod(c.getMethodByName(methodName))
 
-      test(s"Baf numerical analysis: ${methodName}") {
+    for ((methodName, propString) <- bafTests) {
+      val method = new BafMethod(c.getMethodByName(methodName), params.io)
+
+      test(s"Baf numerical analysis: $methodName") {
         try {
           val ann = method.analyze(params)
           val env = Environment()
@@ -86,15 +87,15 @@ class JVMSootSuite extends FunSuite with SootTests {
 
     for ((methodName, prop) <- jimplePairSharingTests) {
       val method = c.getMethodByName(methodName)
-      val jmethod = new JimpleMethod(method)
-      val params = new Parameters[JimpleMethod] {
+      val params: Parameters[JimpleMethod] {val domain: SootFrameObjectDomain} = new Parameters[JimpleMethod] {
         val domain = new SootFrameObjectDomain(psdom)
         io = true
       }
+      val jmethod = new JimpleMethod(method, params.io)
       val inte = new JimpleRecursiveInterpretation[params.type](scene, params)
       params.interpretation = Some(inte)
-      test(s"Jimple inter-procedural sharing analysis: ${methodName}") {
-        val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes().asScala)
+      test(s"Jimple inter-procedural sharing analysis: $methodName") {
+        val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes.asScala)
         try {
           inte.compute(method, input)
           assert(inte(method, input).prop === psdom(prop, jmethod.outputTypes))
@@ -115,13 +116,13 @@ class JVMSootSuite extends FunSuite with SootTests {
 
     for ((methodName, propString) <- jimpleNumericalTests) {
       val method = c.getMethodByName(methodName)
-      val params = new Parameters[JimpleMethod] {
+      val params: Parameters[JimpleMethod] {val domain: SootFrameNumericalDomain} = new Parameters[JimpleMethod] {
         val domain = new SootFrameNumericalDomain(JVMSootSuite.this.numdomain)
         io = true
       }
       val inte = new JimpleRecursiveInterpretation[params.type](scene, params)
       params.interpretation = Some(inte)
-      test(s"Jimple inter-procedural numerical analysis: ${methodName}") {
+      test(s"Jimple inter-procedural numerical analysis: $methodName") {
         val env = Environment()
         val parser = new NumericalPropertyParser(env)
         val input = params.domain.top(SootCFG.inputTypes(c.getMethodByName(methodName)))

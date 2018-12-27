@@ -1,20 +1,20 @@
 /**
- * Copyright 2015 Francesca Scozzari <fscozzari@unich.it>, Gianluca Amato <gamato@unich.it>
- *
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of a
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
- */
+  * Copyright 2015, 2018 Francesca Scozzari <fscozzari@unich.it>, Gianluca Amato <gianluca.amato@unich.it>
+  *
+  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+  * JANDOM is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * JANDOM is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of a
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+  */
 
 package it.unich.jandom.targets
 
@@ -27,23 +27,24 @@ import soot._
 import it.unich.jandom.parsers.PairSharingParser
 
 /**
- * Simple test suite for the Soot Jimple target. Differently from JVMSootSuite, we
- * directly analyze Jimple code.
- * @author Francesca Scozzari <fscozzari@unich.it>
- * @author Gianluca Amato <gamato@unich.it>
- */
+  * Simple test suite for the Soot Jimple target. Differently from JVMSootSuite, we
+  * directly analyze Jimple code.
+  *
+  * @author Francesca Scozzari <fscozzari@unich.it>
+  * @author Gianluca Amato <gamato@unich.it>
+  */
 
 class JimpleSuite extends FunSuite with SootTests {
 
-  val scene = initSoot("jimpletest")
+  private val scene = initSoot("jimpletest")
 
   // disable all Jimple optimizations
   PhaseOptions.v().setPhaseOption("jb", "enabled:false")
 
-  val c = scene.loadClassAndSupport("jimpletest.SimpleTest")
-  val om = new SootObjectModel(scene)
-  val psdom = PairSharingDomain(om)
-  val numdom = BoxDoubleDomain(overReals = false)
+  private val c = scene.loadClassAndSupport("jimpletest.SimpleTest")
+  private val om = new SootObjectModel(scene)
+  private val psdom = PairSharingDomain(om)
+  private val numdom = BoxDoubleDomain()
 
   jimpleNumTests()
   jimplePairSharingTests()
@@ -72,18 +73,18 @@ class JimpleSuite extends FunSuite with SootTests {
       "parametric_caller" ->
         Seq(None -> true -> "b3 ==3 && b4 ==4 && i2 ==7 && @parameter0 == i0 && @parameter1 == i1"))
 
-    for ((methodName, instances) <- jimpleNumericalTests; (((input, ifIo), propString), i) <- instances.zipWithIndex) {
-      val method = new JimpleMethod(c.getMethodByName(methodName))
-      val params = new Parameters[JimpleMethod] {
+    for ((methodName, instances) <- jimpleNumericalTests; (((optInput, ifIo), propString), i) <- instances.zipWithIndex) {
+      val params: Parameters[JimpleMethod] {val domain: SootFrameNumericalDomain} = new Parameters[JimpleMethod] {
         val domain = new SootFrameNumericalDomain(numdom)
         io = true
         interpretation = Some(new JimpleInterpretation(this))
       }
-      test(s"Jimple numerical analysis: ${methodName} ${if (i > 0) i + 1 else ""}") {
+      val method = new JimpleMethod(c.getMethodByName(methodName), params.io)
+      test(s"Jimple numerical analysis: $methodName ${if (i > 0) i + 1 else ""}") {
         val parser = new NumericalPropertyParser(method.environment) with SootIdentParser
         val inputParser = new NumericalPropertyParser(method.inputEnvironment) with SootIdentParser
         try {
-          val ann = input match {
+          val ann = optInput match {
             case None =>
               method.analyze(params)
             case Some(input) =>
@@ -109,7 +110,8 @@ class JimpleSuite extends FunSuite with SootTests {
       "longassignment" -> "{}",
       "topologicalorder" -> "{}",
       "complexif" -> "{}",
-      "objcreation" -> """{(r2, r0), (r2, $r6), (r2, $r5), ($r6, r0), ($r6, r8), ($r6 , $r7), (r8, r8), ($r3, r8), (r2, r2), ($r5, $r5),
+      "objcreation" ->
+        """{(r2, r0), (r2, $r6), (r2, $r5), ($r6, r0), ($r6, r8), ($r6 , $r7), (r8, r8), ($r3, r8), (r2, r2), ($r5, $r5),
         ($r5, $r3), (r0, $r3), ( $r4, $r4), ($r7, $r7), ($r5, r8), ($r5, $r6), ($r6, $r3), (r0, r8), (r1, r1), (r2, $r3), ($r5, $r7), ($r3, $r3),(r2, $r7), ($r6, $r6),
         (r2, r8), ($r5, r0), ($r7, r0), (r0, r0), (r1, $r4), ($r7, r8), ($r7, $r3)}""",
       "classrefinement" ->
@@ -123,19 +125,19 @@ class JimpleSuite extends FunSuite with SootTests {
         ($r3, r4)}""")
 
     for ((methodName, ps) <- jimplePairSharingTests) {
-      val jmethod = new JimpleMethod(c.getMethodByName(methodName))
-      val params = new Parameters[JimpleMethod] {
+      val params: Parameters[JimpleMethod] {val domain: SootFrameObjectDomain} = new Parameters[JimpleMethod] {
         val domain = new SootFrameObjectDomain(psdom)
         io = true
       }
+      val jmethod = new JimpleMethod(c.getMethodByName(methodName), params.io)
       val inte = new TopSootInterpretation[JimpleMethod, params.type](params)
       params.interpretation = Some(inte)
-      test(s"Jimple object analysis: ${methodName}") {
+      test(s"Jimple object analysis: $methodName") {
         try {
           val parser = new PairSharingParser(jmethod.environment) with SootIdentParser
           val prop = parser.parseProperty(ps).get
           val ann = jmethod.analyze(params)
-          assert(ann(jmethod.lastPP.get).prop === psdom(prop, jmethod.localTypes(params)))
+          assert(ann(jmethod.lastPP.get).prop === psdom(prop, jmethod.localTypes))
         } finally {
           params.debugWriter.flush()
         }

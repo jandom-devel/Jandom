@@ -1,20 +1,20 @@
 /**
- * Copyright 2013, 2016 Jandom Team
- *
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of a
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
- */
+  * Copyright 2013, 2016, 2018 Jandom Team
+  *
+  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+  * JANDOM is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * JANDOM is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of a
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+  */
 
 package it.unich.jandom.ui
 
@@ -27,7 +27,6 @@ import scala.collection.JavaConverters._
 import scala.util.Try
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
-import org.objectweb.asm.tree.MethodNode
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.objects.ObjectDomainFactory
 import it.unich.jandom.targets.parameters.WideningSpecs._
@@ -42,57 +41,71 @@ import it.unich.jandom.targets.slil._
 import soot.Scene
 import soot.toolkits.graph.Block
 
+import scala.collection.mutable
+
 /**
- * An output interface is a collection of methods for implementing an external interface.
- * @author Gianluca Amato <gianluca.amato@unich.it>
- * @author Francesca Scozzari <francesca.scozzari@unich.it>
- */
+  * An output interface is a collection of methods for implementing an external interface.
+  *
+  * @author Gianluca Amato <gianluca.amato@unich.it>
+  * @author Francesca Scozzari <francesca.scozzari@unich.it>
+  */
 object OutputInterface {
 
-  def getWideningStrategies = {
+  def getWideningStrategies: Seq[String] = {
     WideningScopes.values.map(x => x.name)
   }
 
-  def getWideningStrategiesTips = {
+  def getWideningStrategiesTips: Seq[String] = {
     WideningScopes.values.map(x => x.description)
   }
 
-  def getNarrowingStrategies = {
+  def getNarrowingStrategies: Seq[String] = {
     NarrowingStrategies.values.map(x => x.name)
   }
 
-  def getNarrowingStrategiesTips = {
+  def getNarrowingStrategiesTips: Seq[String] = {
     NarrowingStrategies.values.map(x => x.description)
   }
 
-  def getNumericalDomains = {
+  def getNumericalDomains: mutable.Buffer[String] = {
     NumericalDomains.values.map(x => x.name)
   }
 
-  def getNumericalDomainsTips = {
+  def getNumericalDomainsTips: mutable.Buffer[String] = {
     NumericalDomains.values.map(x => x.description)
   }
 
-  def getObjectDomains = {
+  def getObjectDomains: Seq[String] = {
     ObjectDomains.values.map(x => x.name)
   }
-  def getObjectDomainsTips = {
+
+  def getObjectDomainsTips: Seq[String] = {
     ObjectDomains.values.map(x => x.description)
   }
 
   def getDebugTip = "Generate debug information - for developers only"
+
   def getWideningDelayTip = "Apply the widening with delay"
+
   def getRadioBafTip = "Analysis of Java bytecode thorugh the Baf representation of the Soot library"
+
   def getRadioJimpleTip = "Analysis of Java bytecode thorugh the Jimple representation of the Soot library"
+
   def getRadioNumericalTip = "Analysis of numerical properties"
+
   def getRadioObjectTip = "Analysis of object properties"
+
   def getClassPathTip = "Choose the classpath of the program to analyze"
+
   def getClassTip = "Choose the class to analyze"
+
   def getMethodTip = "Choose the method to analyze"
+
   def getIRTypeTip = "Type of intermediate representation to use"
+
   def getAnalysisTypeTip = "Choose between an analysis of numerical properties or object-related properties"
 
-  def setParameters[T <: Target[T]](params: Parameters[T], wideningIndex:Int, narrowingIindex:Int, delay:Int, debug:Boolean) {
+  def setParameters[T <: Target[T]](params: Parameters[T], wideningIndex: Int, narrowingIindex: Int, delay: Int, debug: Boolean) {
     params.wideningScope = WideningScopes.values(wideningIndex).value
     params.narrowingStrategy = NarrowingStrategies.values(narrowingIindex).value
     params.widening = DelayedWidening(DefaultWidening, delay)
@@ -101,17 +114,18 @@ object OutputInterface {
   }
 
   /**
-   * Analyze a class using Soot.
-   * @param method the method to be analyzed
-   * @param domain the abstract domain to be used (either numerical or object)
-   * @param wideningIndex the widening strategy
-   * @param narrowingIndex the narrowing strategy
-   * @param delay the widening delay
-   * @param debug is true when the debug is active
-   * @return a string with the program annotated with the analysis result
-   */
+    * Analyze a class using Soot.
+    *
+    * @param method         the method to be analyzed
+    * @param domain         the abstract domain to be used (either numerical or object)
+    * @param wideningIndex  the widening strategy
+    * @param narrowingIndex the narrowing strategy
+    * @param delay          the widening delay
+    * @param debug          is true when the debug is active
+    * @return a string with the program annotated with the analysis result
+    */
   private def analyze[T <: SootCFG[T, Block]](method: SootCFG[T, Block], domain: Any, wideningIndex: Int,
-    narrowingIndex: Int, delay: Int, debug: Boolean): String = {
+                                              narrowingIndex: Int, delay: Int, debug: Boolean): String = {
     try {
       val sootScene = Scene.v()
       sootScene.loadBasicClasses()
@@ -121,7 +135,9 @@ object OutputInterface {
         case domain: ObjectDomainFactory => new SootFrameObjectDomain(domain(om))
       }
       val tMethod = method.asInstanceOf[T]
-      val params = new Parameters[T] { val domain = sootDomain }
+      val params = new Parameters[T] {
+        val domain: T#DomainBase = sootDomain
+      }
       setParameters(params, wideningIndex, narrowingIndex, delay, debug)
       val inte = new TopSootInterpretation[T, params.type](params)
       params.interpretation = Some(inte)
@@ -136,7 +152,7 @@ object OutputInterface {
   }
 
   def analyze(dir: Path, klass: Int, method: Int, isNumerical: Boolean, isBaf: Boolean, domain: Int, wideningIndex: Int,
-    narrowingIndex: Int, delay: Int, debug: Boolean): String = {
+              narrowingIndex: Int, delay: Int, debug: Boolean): String = {
     val methods = getSootMethods(dir, klass)
     val selectedMethod = methods.get(method)
 
@@ -144,10 +160,11 @@ object OutputInterface {
       NumericalDomains.values(domain).value
     else
       ObjectDomains.values(domain).value
+    ObjectDomains.values(domain).value
     if (isBaf)
-      analyze(new BafMethod(selectedMethod), aDomain, wideningIndex, narrowingIndex, delay, debug)
+      analyze(new BafMethod(selectedMethod, false), aDomain, wideningIndex, narrowingIndex, delay, debug)
     else
-      analyze(new JimpleMethod(selectedMethod), aDomain, wideningIndex, narrowingIndex, delay, debug)
+      analyze(new JimpleMethod(selectedMethod, false), aDomain, wideningIndex, narrowingIndex, delay, debug)
   }
 
   private def getScene(dir: Path) = {
@@ -157,17 +174,17 @@ object OutputInterface {
     scene
   }
 
-  def unzipJar(dir: String, jarFile: String, destDir: String) = {
+  def unzipJar(dir: String, jarFile: String, destDir: String) {
     val jar = new java.util.jar.JarFile(dir + java.io.File.separator + jarFile)
     val enum = jar.entries()
-    while (enum.hasMoreElements()) {
+    while (enum.hasMoreElements) {
       val file = enum.nextElement(); //(java.util.jar.JarEntry)
-      val f = new java.io.File(destDir + java.io.File.separator + file.getName())
-      if (file.isDirectory()) { // if its a directory, create it
+      val f = new java.io.File(destDir + java.io.File.separator + file.getName)
+      if (file.isDirectory) { // if its a directory, create it
         f.mkdir()
       } else {
         val is = jar.getInputStream(file); // get the input stream
-        val fos = new java.io.FileOutputStream(f);
+        val fos = new java.io.FileOutputStream(f)
         while (is.available() > 0) { // write contents of 'is' to 'fos'
           fos.write(is.read())
         }
@@ -177,17 +194,17 @@ object OutputInterface {
     }
   }
 
-  def getMethods(dir: Path, klassIndex: Int) = {
+  def getMethods(dir: Path, klassIndex: Int): mutable.Buffer[String] = {
     val scene = getScene(dir)
     val sootKlass = scene.loadClassAndSupport(getClasses(dir)(klassIndex))
-    sootKlass.getMethods().asScala.map(x => x.getName())
+    sootKlass.getMethods.asScala.map(x => x.getName)
   }
 
   private def getSootMethods(dir: Path, klassIndex: Int) = {
     val scene = getScene(dir)
     val sootKlass = scene.loadClassAndSupport(getClasses(dir)(klassIndex))
     sootKlass.setApplicationClass()
-    sootKlass.getMethods()
+    sootKlass.getMethods
   }
 
   def getClasses(dir: Path): Seq[String] = {
@@ -201,7 +218,7 @@ object OutputInterface {
       val classNames = scala.collection.mutable.SortedSet[String]()
       val jar = new java.util.jar.JarFile(dir.toFile)
       val enum = jar.entries()
-      while (enum.hasMoreElements()) {
+      while (enum.hasMoreElements) {
         val file = enum.nextElement().getName
         if (file.endsWith(".class")) classNames += file stripSuffix ".class"
       }
@@ -209,15 +226,15 @@ object OutputInterface {
     }
   }
 
-  def getSootAbstraction(dir: Path, klassIndex: Int, methodIndex: Int, isBaf: Boolean) = {
+  def getSootAbstraction(dir: Path, klassIndex: Int, methodIndex: Int, isBaf: Boolean): String = {
     val myMethod = getSootMethods(dir, klassIndex).get(methodIndex)
     if (isBaf)
-      new BafMethod(myMethod).toString
+      new BafMethod(myMethod, false).toString
     else
-      new JimpleMethod(myMethod).toString
+      new JimpleMethod(myMethod, false).toString
   }
 
-  def getASMAbstraction(dir: String, klassName: String, methodIndex: Int) = {
+  def getASMAbstraction(dir: String, klassName: String, methodIndex: Int): String = {
     new AsmMethod(getASMMethodsList(dir, klassName).get(methodIndex)).toString
   }
 
@@ -227,21 +244,24 @@ object OutputInterface {
     val cr = new ClassReader(is)
     val node = new ClassNode()
     cr.accept(node, ClassReader.SKIP_DEBUG)
-    val methodList = node.methods.asInstanceOf[java.util.List[MethodNode]]
-    methodList
+    node.methods
   }
 
-  def getASMMethods(dir: String, klassName: String) = {
-    getASMMethodsList(dir, klassName).asScala map { _.name }
+  def getASMMethods(dir: String, klassName: String): mutable.Buffer[String] = {
+    getASMMethodsList(dir, klassName).asScala map {
+      _.name
+    }
   }
 
   def analyzeASM(dir: String, klassName: String, methodIndex: Int, domain: Int, wideningIndex: Int,
-    narrowingIndex: Int, delay: Int, debug: Boolean) = {
+                 narrowingIndex: Int, delay: Int, debug: Boolean): String = {
     try {
       val numericalDomain = NumericalDomains.values(domain).value
       val jvmDomain = new JVMEnvFixedFrameDomain(numericalDomain)
       val method = new AsmMethod(getASMMethodsList(dir, klassName).get(methodIndex))
-      val params = new Parameters[AsmMethod] { val domain = jvmDomain }
+      val params: Parameters[AsmMethod] = new Parameters[AsmMethod] {
+        val domain: AsmMethod#DomainBase = jvmDomain
+      }
       setParameters(params, wideningIndex, narrowingIndex, delay, debug)
       val ann = method.analyze(params)
       method.mkString(ann)
@@ -253,24 +273,26 @@ object OutputInterface {
     }
   }
 
-  def getRandomText(dir: String, file: String) = {
-    val filename = new java.io.File(dir + java.io.File.separator + file);
+  def getRandomText(dir: String, file: String): String = {
+    val filename = new java.io.File(dir + java.io.File.separator + file)
     try {
       scala.io.Source.fromFile(filename).mkString
     } catch {
-      case e: IOException => "File not found"
+      case _: IOException => "File not found"
     }
   }
 
-  def analyzeRandomStr(program: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean) = {
+  def analyzeRandomStr(program: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean): String = {
     val parser = RandomParser()
     val numericalDomain = NumericalDomains.values(domain).value
     val result = parser.parseProgram(program) match {
-      case parser.Success(program, _) =>
-        val params = new Parameters[SLILTarget] { val domain = numericalDomain }
+      case parser.Success(parsedProgram, _) =>
+        val params = new Parameters[SLILTarget] {
+          val domain: SLILTarget#DomainBase = numericalDomain
+        }
         setParameters(params, widening, narrowing, delay, debug)
-        val ann = program.analyze(params)
-        params.debugWriter.toString + program.mkString(ann)
+        val ann = parsedProgram.analyze(params)
+        params.debugWriter.toString + parsedProgram.mkString(ann)
       case parser.NoSuccess(msg, next) =>
         msg + " in line " + next.pos.line + " column " + next.pos.column + " Error in parsing source code"
       case _ => "Error in parsing"
@@ -278,48 +300,52 @@ object OutputInterface {
     result
   }
 
-  def analyzeRandom(dir: String, file: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean) = {
+  def analyzeRandom(dir: String, file: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean): String = {
     try {
       val program = getRandomText(dir, file)
       analyzeRandomStr(program, domain, widening, narrowing, delay, debug)
     } catch {
-      case e: IOException => "I/O error"
+      case _: IOException => "I/O error"
     }
   }
 
-  def analyzeFastModelStr(program: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean) = {
+  def analyzeFastModelStr(program: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean): Any = {
     try {
       val parser = FastParser()
       val numericalDomain = NumericalDomains.values(domain).value
 
       val result = parser.parse(program) match {
-        case parser.Success(program, _) =>
-          val params = new Parameters[LTS] { val domain = numericalDomain }
+        case parser.Success(parsedProgram, _) =>
+          val params = new Parameters[LTS] {
+            val domain: LTS#DomainBase = numericalDomain
+          }
           setParameters(params, widening, narrowing, delay, debug)
-          val ann = program.analyze(params)
-          val grafo = program.toDot
-          (grafo, params.debugWriter.toString + program.mkString(ann) )
+          val ann = parsedProgram.analyze(params)
+          val graph = parsedProgram.toDot
+          (graph, params.debugWriter.toString + parsedProgram.mkString(ann))
         case parser.NoSuccess(msg, next) =>
           msg + " in line " + next.pos.line + " column " + next.pos.column + " Error in parsing source code"
         case _ => "Error in parsing"
       }
       result
     } catch {
-      case e: IOException => "I/O error"
+      case _: IOException => "I/O error"
     }
   }
 }
 
 private class ClassFileVisitor(rootPath: Path) extends SimpleFileVisitor[Path] {
   private val privateClassNamesList = scala.collection.mutable.SortedSet[String]()
-  def classNameList = privateClassNamesList.toSeq
+
+  def classNameList: Seq[String] = privateClassNamesList.toSeq
+
   override def visitFile(aFile: Path, aAttrs: BasicFileAttributes): FileVisitResult = {
     val relativePath = rootPath.relativize(aFile).asScala
-    val className = (relativePath.head.toString /: relativePath.tail)(_ + "." + _.toString)
+    val className = (relativePath.head.toString /: relativePath.tail) (_ + "." + _.toString)
     if (className endsWith ".class")
       privateClassNamesList += className stripSuffix ".class"
     else if (className endsWith ".java")
       privateClassNamesList += className stripSuffix ".java"
-    FileVisitResult.CONTINUE;
+    FileVisitResult.CONTINUE
   }
 }
