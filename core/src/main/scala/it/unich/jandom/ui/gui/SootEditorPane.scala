@@ -73,7 +73,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   var optMethod: Option[SootCFG[_, _]] = None
 
   val controls: GridBagPanel = new GridBagPanel {
-    var c = new Constraints
+    val c = new Constraints
 
     c.weightx = 0
     c.gridx = 0

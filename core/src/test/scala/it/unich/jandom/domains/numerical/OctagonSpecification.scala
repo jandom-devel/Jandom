@@ -27,7 +27,7 @@ import spire.math.Rational
 import it.unich.jandom.domains.numerical.Utils.Ints._
 
 
-class OctagonSpecification extends PropSpec with PropertyChecks {
+abstract class OctagonSpecification extends PropSpec with PropertyChecks {
   implicit val boxDomain : BoxRationalDomain = BoxRationalDomain()
   val octDomain = OctagonDomain()
 

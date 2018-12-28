@@ -3,18 +3,20 @@ import CustomKeys._
 //*** Libraries
 
 libraryDependencies ++= Seq(
-  "org.apache.commons" % "commons-lang3" % "3.6",
-  "org.scalatest" %% "scalatest" % "3.0.4" % Test,
-  "org.scalacheck" %% "scalacheck" % "1.13.5" % Test,
-  "org.mockito" % "mockito-core" % "2.10.0" % Test,
-  "org.typelevel" %% "spire" % "0.14.1",
   "it.unich.scalafix" %% "scalafix" % "0.7.0-SNAPSHOT",
-  "org.rogach" %% "scallop" % "3.1.0",
-  "org.scala-lang.modules" %% "scala-swing" % "2.0.0",
-  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.6",
+  "org.apache.commons" % "commons-lang3" % "3.8.1",
+  "org.typelevel" %% "spire" % "0.16.0",
+  "org.rogach" %% "scallop" % "3.1.5",
+  "org.scala-lang.modules" %% "scala-swing" % "2.0.3",
+  "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
   "org.scala-lang" % "scala-reflect" % scalaVersion.value,
   // ASM is included in the Soot Jar
-  "ca.mcgill.sable" % "soot" %"3.0.0-SNAPSHOT"
+  "ca.mcgill.sable" % "soot" % "3.2.0",
+  // SLF4J 1.7.5 is used in Soot
+  "org.slf4j" % "slf4j-nop" % "1.7.5",
+  "org.scalatest" %% "scalatest" % "3.0.5" % Test,
+  "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
+  "org.mockito" % "mockito-core" % "2.23.4" % Test
 )
 
 //*** Add PPL, Apron, GMP jars
