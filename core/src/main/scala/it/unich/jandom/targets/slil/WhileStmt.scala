@@ -1,58 +1,59 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
- *
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of a
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
- */
+  * Copyright 2013, 2016, 2018 Gianluca Amato <gianluca.amato@unich.it>
+  *
+  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+  * JANDOM is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * JANDOM is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of a
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+  */
 
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.Annotation
-import it.unich.jandom.targets.NumericCondition
+import it.unich.jandom.targets.{Annotation, NumericCondition}
 import it.unich.jandom.targets.parameters._
 
 /**
- * The class for a while statement. Each while statement has a corresponding program
- * point which corresponds to head of the loop, before the condition is tested.
- * @param condition the guard of the statement
- * @param body the body of the statement
- */
+  * The class for a while statement. Each while statement has a corresponding program
+  * point which corresponds to head of the loop, before the condition is tested.
+  *
+  * @param condition the guard of the statement
+  * @param body      the body of the statement
+  */
 case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILStmt {
+
   import AnalysisPhase._
 
   /**
-   * This variable keeps the last value for the invariant computed during the analysis.
-   */
-  var lastInvariant: NumericalProperty[_] = null
+    * This variable keeps the last value for the invariant computed during the analysis.
+    */
+  private var lastInvariant: NumericalProperty[_] = _
 
   /**
-   * This variable keeps the last result for the analysis of the body of the While statement.
-   */
-  var lastBodyResult: NumericalProperty[_] = null
+    * This variable keeps the last result for the analysis of the body of the While statement.
+    */
+  private var lastBodyResult: NumericalProperty[_] = _
 
-  override def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property = {
+  def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property = {
 
-    import WideningScope._
     import NarrowingStrategy._
+    import WideningScope._
 
     // Increase nesting level since we are entering a loop
     params.nestingLevel += 1
 
     // Determines widening/narrowing operators to use
-    val widening = params.widening((this,1))
-    val narrowing = params.narrowing((this,1))
+    val widening = params.widening((this, 1))
+    val narrowing = params.narrowing((this, 1))
 
     // Determines initial values for the analysis, depending on the calling phase
     var (bodyResult, invariant) =
@@ -155,17 +156,17 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
     // Exit from this loop, hence decrement nesting level
     params.nestingLevel -= 1
 
-    return condition.opposite.analyze(invariant)
+    condition.opposite.analyze(invariant)
   }
 
-  override def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec, row: Int, level: Int): String = {
+  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec, row: Int, level: Int): String = {
     val spaces = ppspec.indent(level)
     val firstLine = spaces + "while (" + condition.mkString(ppspec.env.names) + ")"
-    val annotation = for (p <- ann.get((this, 1)); deco <- ppspec.decorator(p, row, firstLine.size + 1)) yield " " + deco
+    val annotation = for (p <- ann.get((this, 1)); deco <- ppspec.decorator(p, row, firstLine.length + 1)) yield " " + deco
     firstLine + annotation.getOrElse("") + " {\n" +
       body.mkString(ann, ppspec, row + 1, level + 1) +
       spaces + "}\n"
   }
 
-  val numvars = condition.dimension max body.numvars
+  val numvars: Int = condition.dimension max body.numvars
 }

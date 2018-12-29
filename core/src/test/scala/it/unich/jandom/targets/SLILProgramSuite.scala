@@ -1,20 +1,20 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
- *
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of a
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
- */
+  * Copyright 2013, 2016, 2018 Gianluca Amato <gianluca.amato@unich.it>
+  *
+  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+  * JANDOM is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * JANDOM is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of a
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+  */
 
 package it.unich.jandom.targets
 
@@ -29,10 +29,11 @@ import it.unich.jandom.targets.parameters.WideningScope
 import it.unich.jandom.targets.slil._
 
 /**
- * Test suite for SLIL programs.
- * @author Gianluca Amato <gianluca.amato@unich.it>
- *
- */
+  * Test suite for SLIL programs.
+  *
+  * @author Gianluca Amato <gianluca.amato@unich.it>
+  *
+  */
 class SLILProgramSuite extends FunSuite {
   val BoxDouble = BoxDoubleDomain()
 
@@ -43,13 +44,18 @@ class SLILProgramSuite extends FunSuite {
         AssignStmt(0, 0),
         WhileStmt(AtomicCond(LinearForm(-10, 1), ComparisonOperators.LT),
           AssignStmt(0, LinearForm(1, 1)))))
-    val params = new Parameters[SLILTarget] { val domain = BoxDouble }
+    val params = new Parameters[SLILTarget] {
+      val domain: SLILTarget#DomainBase = BoxDouble
+    }
     val ann = program.analyze(params)
-    assertResult(BoxDouble(Array(10), Array(11))) { ann((program.stmt, 2)) }
+    assertResult(BoxDouble(Array(10), Array(11))) {
+      ann((program.stmt, 2))
+    }
   }
 
   test("input vs output widening") {
-    val source = """
+    val source =
+      """
       localwidening = function() {
         i = 0
         while (TRUE) {
@@ -61,34 +67,46 @@ class SLILProgramSuite extends FunSuite {
             }
       }
     """
-    val parsed = RandomParser().parseProgram(source)
+    val parsed = RandomParser().parse(source)
     val program = parsed.get
 
-    val params = new Parameters[SLILTarget] { val domain = BoxDouble }
+    val params = new Parameters[SLILTarget] {
+      val domain: SLILTarget#DomainBase = BoxDouble
+    }
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Output
     program.analyze(params)
-    assertResult(BoxDouble.top(1)) { params.tag(0) }
+    assertResult(BoxDouble.top(1)) {
+      params.tag(0)
+    }
 
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.Random
     program.analyze(params)
-    assertResult(BoxDouble.top(1)) { params.tag(0) }
+    assertResult(BoxDouble.top(1)) {
+      params.tag(0)
+    }
 
     params.narrowingStrategy = NarrowingStrategy.None
     params.wideningScope = WideningScope.BackEdges
     program.analyze(params)
-    assertResult(BoxDouble(Array(-1), Array(1))) { params.tag(0) }
+    assertResult(BoxDouble(Array(-1), Array(1))) {
+      params.tag(0)
+    }
   }
 
   test("statement without program") {
-     val stmt: SLILTarget =
+    val stmt: SLILTarget =
       CompoundStmt(
         AssignStmt(0, 0),
         WhileStmt(AtomicCond(LinearForm(-10, 1), ComparisonOperators.LT),
           AssignStmt(0, LinearForm(1, 1))))
-     val params = new Parameters[SLILTarget] { val domain = BoxDouble }
-     val ann = stmt.analyze(params)
-     assertResult(BoxDouble(Array(10), Array(11))) { ann((stmt, 2)) }
+    val params = new Parameters[SLILTarget] {
+      val domain: SLILTarget#DomainBase = BoxDouble
+    }
+    val ann = stmt.analyze(params)
+    assertResult(BoxDouble(Array(10), Array(11))) {
+      ann((stmt, 2))
+    }
   }
 }

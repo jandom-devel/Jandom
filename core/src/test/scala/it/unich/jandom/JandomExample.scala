@@ -33,7 +33,7 @@ object JandomExample extends App {
 
   {
     val source = scala.io.Source.fromFile("examples/WideningPaper/nested.R").getLines.mkString("\n")
-    val parsed = parsers.RandomParser().parseProgram(source)
+    val parsed = parsers.RandomParser().parse(source)
     if (parsed.successful) {
       val program = parsed.get
       val params = new targets.Parameters[SLILTarget] { val domain = domains.numerical.BoxDoubleDomain() }

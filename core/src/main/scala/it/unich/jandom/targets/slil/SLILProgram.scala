@@ -1,5 +1,5 @@
 /**
- * Copyright 2013, 2016 Gianluca Amato <gianluca.amato@unich.it>
+ * Copyright 2013, 2016, 2018 Gianluca Amato <gianluca.amato@unich.it>
  *
  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
  * JANDOM is free software: you can redistribute it and/or modify
@@ -19,10 +19,8 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.Annotation
-import it.unich.jandom.targets.Environment
 import it.unich.jandom.targets.parameters.NarrowingStrategy
-import it.unich.jandom.targets.slil.AnalysisPhase._
+import it.unich.jandom.targets.{Annotation, Environment}
 
 /**
  * The target for a simple imperative language, similar to the one analyzed
@@ -33,15 +31,19 @@ import it.unich.jandom.targets.slil.AnalysisPhase._
  * @param stmt the body of the program
  * @author Gianluca Amato <gamato@unich.it>
  */
-case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SLILStmt) extends SLILTarget {
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U], ppspec: SLILPrinterSpec = SLILPrinterSpecInline(env)) = {
+case class SLILProgram(env: Environment, inputVars: Seq[Int], stmt: SLILStmt) extends SLILTarget {
+
+  import AnalysisPhase._
+
+  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint,U],
+                                          ppspec: SLILPrinterSpec = SLILPrinterSpecInline(env)): String = {
     val spaces = ppspec.indent(0)
     spaces + "function (" + (inputVars map { v: Int => env(v) }).mkString(",") + ") {\n" +
       stmt.mkString(ann, ppspec, 1, 1)  +
       spaces + "}\n"
   }
 
-  override def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
+  def analyze(params: Parameters): Annotation[ProgramPoint,params.Property] = {
     val input = params.domain.top(env.size)
     val ann = getAnnotation[params.Property]
     params.narrowingStrategy match {
@@ -51,8 +53,8 @@ case class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: 
       case _ =>
         stmt.analyzeStmt(params)(input, Ascending, ann)
     }
-    return ann.asInstanceOf[Annotation[ProgramPoint,params.Property]]
+    ann.asInstanceOf[Annotation[ProgramPoint,params.Property]]
   }
 
-  override val lastPP = stmt.lastPP
+  val lastPP: stmt.lastPP.type = stmt.lastPP
 }

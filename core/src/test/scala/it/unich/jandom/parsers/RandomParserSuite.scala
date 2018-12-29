@@ -45,7 +45,7 @@ class RandomParserSuite extends FunSuite with Checkers {
     """
     val env = Environment("x", "y")
     val program = SLILProgram(env, Seq(0, 1), CompoundStmt(AssignStmt(0, LinearForm(1))))
-    val parsed = RandomParser().parseProgram(prog).get
+    val parsed = RandomParser().parse(prog).get
     assertResult(program)(parsed)
   }
 
@@ -64,7 +64,7 @@ class RandomParserSuite extends FunSuite with Checkers {
         AssignStmt(1, LinearForm(0)),
         WhileStmt(AtomicCond(LinearForm(0, -1, 1), ComparisonOperators.LT),
           CompoundStmt(AssignStmt(1, LinearForm.sparse(1, 1 -> 1))))))
-    assertResult(program)(RandomParser().parseProgram(prog).get)
+    assertResult(program)(RandomParser().parse(prog).get)
   }
 
   private val resourceURL = getClass.getResource("/random")
@@ -79,7 +79,7 @@ class RandomParserSuite extends FunSuite with Checkers {
     test("SLIL Target analyze " + f.getName) {
       val source = scala.io.Source.fromFile(f).getLines.mkString("\n")
       val parser = RandomParser()
-      parser.parseProgram(source) match {
+      parser.parse(source) match {
         case parser.Success(_, _) =>
         case parser.NoSuccess(msg, next) => fail(msg + " in line " + next.pos.line + " column " + next.pos.column)
       }

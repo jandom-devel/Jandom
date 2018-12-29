@@ -285,7 +285,7 @@ object OutputInterface {
   def analyzeRandomStr(program: String, domain: Int, widening: Int, narrowing: Int, delay: Int, debug: Boolean): String = {
     val parser = RandomParser()
     val numericalDomain = NumericalDomains.values(domain).value
-    val result = parser.parseProgram(program) match {
+    val result = parser.parse(program) match {
       case parser.Success(parsedProgram, _) =>
         val params = new Parameters[SLILTarget] {
           val domain: SLILTarget#DomainBase = numericalDomain

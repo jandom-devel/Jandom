@@ -30,7 +30,7 @@ import it.unich.jandom.targets.slil.SLILTarget
 object JandomCLI extends App {
   val conf = new Conf(args)
   val source = scala.io.Source.fromFile(conf.file()).getLines.mkString("\n")
-  val parsed = RandomParser().parseProgram(source)
+  val parsed = RandomParser().parse(source)
   if (parsed.successful) {
     val program = parsed.get
     val params = new Parameters[SLILTarget] { val domain = BoxDoubleDomain() }
