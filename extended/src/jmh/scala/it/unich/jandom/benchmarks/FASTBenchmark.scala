@@ -1,5 +1,5 @@
 /**
-  * Copyright 2015, 2016 Gianluca Amato <gianluca.amato@unich.it>
+  * Copyright 2015, 2016, 2018 Gianluca Amato <gianluca.amato@unich.it>
   *
   * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
   * JANDOM is free software: you can redistribute it and/or modify

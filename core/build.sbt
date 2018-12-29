@@ -4,7 +4,7 @@ import CustomKeys._
 
 libraryDependencies ++= Seq(
   "it.unich.scalafix" %% "scalafix" % "0.7.0-SNAPSHOT",
-  "org.apache.commons" % "commons-lang3" % "3.8.1",
+  "org.apache.commons" % "commons-text" % "1.6",
   "org.typelevel" %% "spire" % "0.16.0",
   "org.rogach" %% "scallop" % "3.1.5",
   "org.scala-lang.modules" %% "scala-swing" % "2.0.3",

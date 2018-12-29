@@ -1,20 +1,20 @@
 /**
- * Copyright 2013, 2015, 2016 Gianluca Amato
- *
- * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
- * JANDOM is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * JANDOM is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of a
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
- */
+  * Copyright 2013, 2015, 2016, 2018 Gianluca Amato
+  *
+  * This file is part of JANDOM: JVM-based Analyzer for Numerical DOMains
+  * JANDOM is free software: you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation, either version 3 of the License, or
+  * (at your option) any later version.
+  *
+  * JANDOM is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of a
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+  *
+  * You should have received a copy of the GNU General Public License
+  * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
+  */
 
 package it.unich.jandom.targets
 
@@ -22,7 +22,6 @@ import java.io.File
 import java.io.FileReader
 
 import org.scalatest.FunSuite
-
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.parsers.FastParser
@@ -30,14 +29,15 @@ import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.lts._
 import it.unich.scalafix.finite.FiniteFixpointSolver
 import it.unich.scalafix.FixpointSolver._
+import it.unich.scalafix.lattice.Domain
 
 class LTSSuite extends FunSuite {
   val dom = BoxDoubleDomain()
 
-  implicit val scalafixDomain = dom.ScalaFixDomain
-  val wideningBox = { (x: dom.Property, y: dom.Property) => x widening y }
-  val narrowingBox = { (x: dom.Property, y: dom.Property) => x narrowing y }
-  val CC77 = FiniteFixpointSolver.CC77[Location, dom.Property](Solver.PriorityWorkListSolver, wideningBox, narrowingBox)
+  implicit val scalafixDomain: Domain[dom.Property] = dom.ScalaFixDomain
+  private val wideningBox = { (x: dom.Property, y: dom.Property) => x widening y }
+  private val narrowingBox = { (x: dom.Property, y: dom.Property) => x narrowing y }
+  private val CC77 = FiniteFixpointSolver.CC77[Location, dom.Property](Solver.PriorityWorkListSolver, wideningBox, narrowingBox)
 
   object LTS1 {
     val env = Environment("x")
@@ -53,41 +53,48 @@ class LTSSuite extends FunSuite {
   }
 
   test("dot translation") {
-    val output = """digraph {
-                   |  "0" [label="start"]
-                   |  "1" [label="ciclo"]
-                   |  "0" -> "1" [label="init"]
-                   |  "1" -> "1" [label="loop"]
-                   |}
-                   |""".stripMargin('|')
+    val output =
+      """digraph {
+        |  "0" [label="start"]
+        |  "1" [label="ciclo"]
+        |  "0" -> "1" [label="init"]
+        |  "1" -> "1" [label="loop"]
+        |}
+        |""".stripMargin('|')
     assertResult(output)(LTS1.lts.toDot)
   }
 
   test("simple LTS analysis") {
-    val params = new Parameters[LTS] { val domain = dom }
+    val params = new Parameters[LTS] {
+      val domain: LTS#DomainBase = dom
+    }
     val ann = LTS1.lts.analyze(params)
-    assertResult(dom(Array(0), Array(11))) { ann(LTS1.l2) }
+    assertResult(dom(Array(0), Array(11))) {
+      ann(LTS1.l2)
+    }
   }
 
   test("simple LTS analysis with equations") {
     val eqs = LTS1.lts.toEQS(dom)
-
-    val ann = FiniteFixpointSolver(eqs,CC77)
-    assertResult(dom(Array(0), Array(11))) { ann(LTS1.l2) }
+    val ann = FiniteFixpointSolver(eqs, CC77)
+    assertResult(dom(Array(0), Array(11))) {
+      ann(LTS1.l2)
+    }
   }
 
-  val dir = new File(getClass.getResource("/fast/").toURI);
+  val dir = new File(getClass.getResource("/fast/").toURI)
   for (model <- dir.listFiles()) {
-
     val source = new FileReader(model)
     val result = FastParser().parse(source)
     source.close()
     val lts = result.getOrElse(fail(result.toString))
 
-    test(s"compare LTS analsysis for ${lts.name} in file ${model}") {
-      val params = new Parameters[LTS] { val domain = dom }
+    test(s"compare LTS analsysis for ${lts.name} in file $model") {
+      val params = new Parameters[LTS] {
+        val domain: LTS#DomainBase = dom
+      }
       val ann1 = lts.analyze(params)
-      val ann2 = FiniteFixpointSolver(lts.toEQS(dom),CC77)
+      val ann2 = FiniteFixpointSolver(lts.toEQS(dom), CC77)
       for (l <- lts.locations) assert(ann1(l) === ann2(l))
     }
   }
