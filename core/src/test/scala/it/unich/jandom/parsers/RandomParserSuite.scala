@@ -44,7 +44,7 @@ class RandomParserSuite extends FunSuite with Checkers {
       xyz <- function(x,y) x = 1
     """
     val env = Environment("x", "y")
-    val program = SLILProgram(env, Seq(0, 1), CompoundStmt(AssignStmt(0, LinearForm(1, 0, 0))))
+    val program = SLILProgram(env, Seq(0, 1), CompoundStmt(AssignStmt(0, LinearForm(1))))
     val parsed = RandomParser().parseProgram(prog).get
     assertResult(program)(parsed)
   }
