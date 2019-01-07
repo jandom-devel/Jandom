@@ -20,10 +20,10 @@ package it.unich.jandom.benchmarks
 
 import it.unich.jandom.benchmark.FASTLoader
 import it.unich.jandom.domains.numerical.ParallelotopeRationalDomain
+import it.unich.jandom.targets.Parameters
 import it.unich.jandom.targets.lts._
 import it.unich.jandom.targets.parameters._
-import it.unich.jandom.targets.{EQSSolver, Parameters}
-import it.unich.scalafix.{Assignment, FixpointSolverListener}
+import it.unich.scalafix.Assignment
 
 /**
   * This program compares standard (legacy) analyzer with the new one based on Scalafix for
@@ -82,7 +82,15 @@ object EQSLegacyFASTComparison extends App with FASTLoader {
     var globaleq, globallt, globalgt, globalun = 0
     for (lts <- ltss) {
       timeTemp = java.lang.System.currentTimeMillis()
-      val res1 = EQSSolver(lts)(dom)(params)(FixpointSolverListener.EmptyListener)
+      val eqsAdapter = lts.toEQS(dom)
+      val eqs = eqsAdapter.transformed
+      val paramsEqs: eqs.Parameters = new eqs.Parameters {
+        val domain = dom
+        wideningLocation = params.wideningLocation
+        narrowingLocation = params.narrowingLocation
+        iterationStrategy = params.iterationStrategy
+      }
+      val res1 = eqsAdapter.pullbackAnnotation(eqs.analyze(paramsEqs))
       timeEQS += (java.lang.System.currentTimeMillis() - timeTemp)
       timeTemp = java.lang.System.currentTimeMillis()
       val res2 = lts.analyze(params)

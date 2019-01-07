@@ -21,6 +21,7 @@ package it.unich.jandom.targets.lts
 import it.unich.jandom.domains.DimensionFiberedProperty
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.targets._
+import it.unich.jandom.targets.eqs.EQS
 import it.unich.jandom.targets.parameters._
 import it.unich.scalafix.finite.GraphEquationSystem
 import it.unich.scalafix.lattice.Domain
@@ -160,7 +161,7 @@ case class LTS(name: String, locations: IndexedSeq[Location], transitions: Seq[T
   /**
     * Converts the LTS into an equation system, given a numerical domain.
     */
-  override def toEQS(dom: NumericalDomain): GraphEquationSystem[Location, dom.Property, Edge] = {
+  def toEquationSystem(dom: NumericalDomain): GraphEquationSystem[Location, dom.Property, Edge] = {
 
     implicit val scalafixDomain: Domain[dom.Property] = dom.ScalaFixDomain
 
@@ -331,6 +332,15 @@ case class LTS(name: String, locations: IndexedSeq[Location], transitions: Seq[T
       }
     }
     ann
+  }
+
+  /**
+    * Returns an EQS adapter given a numerical domain
+    */
+  def toEQS(dom: NumericalDomain): TargetAdapter[EQS[Location, dom.Property]] = new TargetAdapter[EQS[Location, dom.Property]] {
+    val transformed = EQS(toEquationSystem(dom))
+
+    def pullbackAnnotation[V](ann: Annotation[Location, V]): Annotation[Location, V] = ann
   }
 
   /**

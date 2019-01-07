@@ -47,7 +47,7 @@ object FASTComparison extends App with FASTLoader {
     ("mixed localized", SCP.copy(boxscope = BoxScope.Localized)),
     ("mixed localized restart", SCP.copy(boxscope = BoxScope.Localized, restartstrategy = RestartStrategy.Restart)))
 
-  val results = (for (lts <- ltss; eqs = lts.toEQS(dom); (name, p) <- parameters) yield {
+  val results = (for (lts <- ltss; eqs = lts.toEquationSystem(dom); (name, p) <- parameters) yield {
     val l = new PerformanceListener
     val param = p.copy(listener = l)
     ((lts, name), (FiniteFixpointSolver(eqs, param), l.evaluations))

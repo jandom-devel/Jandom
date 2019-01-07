@@ -75,7 +75,7 @@ class LTSSuite extends FunSuite {
   }
 
   test("simple LTS analysis with equations") {
-    val eqs = LTS1.lts.toEQS(dom)
+    val eqs = LTS1.lts.toEquationSystem(dom)
     val ann = FiniteFixpointSolver(eqs, CC77)
     assertResult(dom(Array(0), Array(11))) {
       ann(LTS1.l2)
@@ -94,7 +94,7 @@ class LTSSuite extends FunSuite {
         val domain: LTS#DomainBase = dom
       }
       val ann1 = lts.analyze(params)
-      val ann2 = FiniteFixpointSolver(lts.toEQS(dom), CC77)
+      val ann2 = FiniteFixpointSolver(lts.toEquationSystem(dom), CC77)
       for (l <- lts.locations) assert(ann1(l) === ann2(l))
     }
   }
