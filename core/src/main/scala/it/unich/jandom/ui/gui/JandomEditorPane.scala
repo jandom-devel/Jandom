@@ -166,17 +166,17 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
   }
 
   val newAction = new Action("New") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK))
     def apply() { clear() }
   }
 
   val openAction = new Action("Open...") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK))
     def apply() { open() }
   }
 
   val saveAction = new Action("Save") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK))
     def apply() { save() }
   }
 
@@ -185,17 +185,17 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
   }
 
   val cutAction = new Action("Cut") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK))
     def apply() { actionMap("cut-to-clipboard").actionPerformed(null) }
   }
 
   val pasteAction = new Action("Paste") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK))
     def apply() { actionMap("paste-from-clipboard").actionPerformed(null) }
   }
 
   val copyAction = new Action("Copy") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK))
     def apply() { actionMap("copy-to-clipboard").actionPerformed(null) }
   }
 
@@ -204,7 +204,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
   }
 
   object undoAction extends Action("Undo") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK))
 
     def apply() {
       undo.undo()
@@ -224,7 +224,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
   }
 
   object redoAction extends Action("Redo") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_MASK | InputEvent.SHIFT_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK))
 
     def apply() {
       undo.redo()

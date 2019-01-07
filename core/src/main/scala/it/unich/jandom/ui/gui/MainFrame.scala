@@ -70,7 +70,7 @@ class MainFrame extends Frame {
    * This is the Action to invoke when user wants to quit the application
    */
   val quitAction = new Action("Quit") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK))
     def apply() {
       if (currentEditorPane.ensureSaved) sys.exit(0)
     }

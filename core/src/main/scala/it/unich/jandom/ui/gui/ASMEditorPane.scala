@@ -71,12 +71,12 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
     }
   }
   val newAction = new Action("New") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK))
     def apply() { editorPane.text = "" }
   }
 
   val openAction = new Action("Open...") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK))
     def apply() {
       val returnVal = fileChooser.showOpenDialog(ASMEditorPane.this)
       if (returnVal != FileChooser.Result.Approve) return ;

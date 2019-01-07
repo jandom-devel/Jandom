@@ -182,7 +182,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   }
 
   val openAction: Action = new Action("Change classpath...") {
-    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
+    accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK))
 
     def apply() {
       val fileChooser = new FileChooser(new File(classPathField.text))
