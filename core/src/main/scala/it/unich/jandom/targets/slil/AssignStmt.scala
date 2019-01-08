@@ -19,7 +19,7 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.{Annotation, NumericExpression}
+import it.unich.jandom.targets.{Annotation, NumericAssignment, NumericExpression, lts}
 
 /**
   * The class for the assignment statement "variable := linearForm".
@@ -28,14 +28,21 @@ import it.unich.jandom.targets.{Annotation, NumericExpression}
   * @param expr     the numeric expression of the assignment
   */
 case class AssignStmt(variable: Int, expr: NumericExpression) extends SLILStmt {
+
   import AnalysisPhase._
 
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property =
     expr.assignTo(variable)(input)
 
   def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
-                                                   row: Int, level: Int): String =
+                                          row: Int, level: Int): String =
     ppspec.indent(level) + ppspec.env(variable) + " = " + expr.mkString(ppspec.env.names) + '\n'
 
   val numvars: Int = expr.dimension
+
+  def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
+    (Map.empty, Seq(lts.Transition(this.toString, prev, next, Seq.empty, NumericAssignment(variable, expr))))
+  }
+
+  override def toString = s"v$variable = ${expr.toString}"
 }

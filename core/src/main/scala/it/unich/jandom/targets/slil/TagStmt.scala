@@ -19,7 +19,7 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.Annotation
+import it.unich.jandom.targets.{Annotation, lts}
 
 /**
   * The class for tags, i.e. fake statements only used to mark program points. The
@@ -33,14 +33,20 @@ case class TagStmt(tag: Int) extends SLILStmt {
   import AnalysisPhase._
 
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase,
-                                               ann: Annotation[ProgramPoint, params.Property]): params.Property = {
+                                      ann: Annotation[ProgramPoint, params.Property]): params.Property = {
     params.tag(tag) = input
     input
   }
 
   def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
-                                                   row: Int, level: Int): String =
+                                          row: Int, level: Int): String =
     ppspec.indent(level) + "tag(" + tag + ")\n"
 
   val numvars = 0
+
+  def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
+    (Map.empty, Seq(lts.Transition(this.toString, prev, next, Seq.empty, Seq.empty)))
+  }
+
+  override def toString = s"tag($tag)"
 }

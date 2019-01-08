@@ -19,12 +19,12 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.{Annotation, NumericCondition}
 import it.unich.jandom.targets.parameters._
+import it.unich.jandom.targets.{Annotation, NumericCondition, lts}
 
 /**
   * The class for a while statement. Each while statement has a corresponding program
-  * point which corresponds to head of the loop, before the condition is tested.
+  * point which corresponds to the head of the loop, before the condition is tested.
   *
   * @param condition the guard of the statement
   * @param body      the body of the statement
@@ -169,4 +169,30 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
   }
 
   val numvars: Int = condition.dimension max body.numvars
+
+  def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
+    val headpp = lts.Location((this, 1).toString, Seq())
+    val truepp = lts.Location((this, 2).toString, Seq())
+    val tailpp = lts.Location((this, 3).toString, Seq())
+    val tenter = lts.Transition((this, 'enter).toString, prev, headpp, Seq(), Seq.empty)
+    val texit = lts.Transition((this, 'exit).toString, tailpp, headpp, Seq(), Seq.empty)
+    val ttrue = lts.Transition((this, 'true).toString, headpp, truepp, Seq(condition), Seq.empty)
+    val tfalse = lts.Transition((this, 'false).toString, headpp, next, Seq(condition.opposite), Seq.empty)
+    val tt1 = body.toLTS(truepp, tailpp)
+    (tt1._1 updated((this, 1), headpp), tt1._2 :+ tenter :+ ttrue :+ tfalse :+ texit)
+  }
+
+  /*
+  // Optimized alternative definition of wire.
+
+  private[slil] def wire2(prev: lts.Location, next: lts.Location) = {
+    val pp = lts.Location((this, 1).toString, Seq())
+    val t1 = lts.Transition((this, 'enter).toString, prev, pp, Seq(condition), Seq.empty)
+    val t2 = lts.Transition((this, 'exit).toString, prev, next, Seq(condition.opposite), Seq.empty)
+    val tt1 = body.toLTS(pp, prev)
+    (tt1._1 updated((this, 1), pp), tt1._2 :+ t1 :+ t2)
+  }
+  */
+
+  override def toString: String = s"while@$hashCode ($condition)"
 }

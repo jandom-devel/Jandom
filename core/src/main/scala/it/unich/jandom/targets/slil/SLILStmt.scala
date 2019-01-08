@@ -19,7 +19,7 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.Annotation
+import it.unich.jandom.targets.{Annotation, lts}
 
 /**
   * The abstract class for program statements. Each object in SLILStmt represents a statement
@@ -74,4 +74,16 @@ abstract class SLILStmt extends SLILTarget {
   val numvars: Int
 
   val lastPP: Option[ProgramPoint] = None
+
+  /**
+    * This method builds a set of transitions and locations corresponding to the program statement. The initial and
+    * final locations are passed as parameters.
+    *
+    * @param prev the incoming program point
+    * @param next the outgoing program point
+    * @return a pair `(m,s)` where `m` is map from program points in this statement to locations and `s` is a sequence
+    *         of transitions from `prev` to `next`
+    */
+  def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition])
+
 }

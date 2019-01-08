@@ -19,12 +19,14 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.Annotation
+import it.unich.jandom.targets.{Annotation, lts}
+
+import scala.collection.mutable
 
 /**
   * A class for the compound statement (sequential composition). Each compound statements has
-  * several program points, one at the beggining, another at the end, another one between each
-  * couple of statements.
+  * several program points, one at the beggining, another at the end, and one between each
+  * pair of statements.
   *
   * @param stmts the sequence of statements that form the compound statement
   */
@@ -33,7 +35,7 @@ case class CompoundStmt(stmts: SLILStmt*) extends SLILStmt {
   import AnalysisPhase._
 
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase,
-                                               ann: Annotation[ProgramPoint, params.Property]): params.Property = {
+                                      ann: Annotation[ProgramPoint, params.Property]): params.Property = {
     var current = input
     var index = 0
     for (stmt <- stmts) {
@@ -46,7 +48,7 @@ case class CompoundStmt(stmts: SLILStmt*) extends SLILStmt {
   }
 
   def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
-                                                   row: Int, level: Int): String = {
+                                          row: Int, level: Int): String = {
     val spaces = ppspec.indent(level)
     val result = new StringBuilder()
     var index = 0
@@ -66,4 +68,25 @@ case class CompoundStmt(stmts: SLILStmt*) extends SLILStmt {
   }
 
   val numvars: Int = (stmts map (_.numvars)).max
+
+  def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
+    val transitions = mutable.ListBuffer.empty[lts.Transition]
+    val locations = mutable.HashMap.empty[ProgramPoint, lts.Location]
+    locations((this, 0)) = prev
+    var src = prev
+    var tgt = prev
+    var index = 1
+    for (stmt <- stmts) {
+      tgt = if (index == stmts.size) next else lts.Location((this, index).toString, Seq.empty)
+      locations((this, index)) = tgt
+      val innerLTS = stmt.toLTS(src, tgt)
+      locations ++= innerLTS._1
+      transitions ++= innerLTS._2
+      index += 1
+      src = tgt
+    }
+    (locations.toMap, transitions.toList)
+  }
+
+  override def toString = s"sequence@$hashCode (${stmts.head} ...) len ${stmts.size}"
 }

@@ -19,7 +19,7 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.Annotation
+import it.unich.jandom.targets.{Annotation, lts}
 
 /**
   * The class for the empty statement.
@@ -38,4 +38,10 @@ case object NopStmt extends SLILStmt {
     ppspec.indent(level) + "<no-op>\n"
 
   val numvars = 0
+
+  def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
+    (Map.empty, Seq(lts.Transition(this.toString, prev, next, Seq.empty, Seq.empty)))
+  }
+
+  override def toString: String = "<nop>"
 }

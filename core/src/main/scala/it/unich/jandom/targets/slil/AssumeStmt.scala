@@ -19,7 +19,7 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.{Annotation, NumericCondition}
+import it.unich.jandom.targets.{Annotation, NumericCondition, lts}
 
 /**
   * The class for the statement assume. It takes a numeric condition as a parameter, and forces this
@@ -39,4 +39,10 @@ case class AssumeStmt(cond: NumericCondition) extends SLILStmt {
     ppspec.indent(level) + "assume(" + cond + ")\n"
 
   val numvars: Int = cond.dimension
+
+  def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
+    (Map.empty, Seq(lts.Transition(this.toString, prev, next, Seq(cond), Seq.empty)))
+  }
+
+  override def toString = s"assume ($cond)"
 }
