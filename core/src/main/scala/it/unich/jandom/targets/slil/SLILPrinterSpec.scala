@@ -47,5 +47,5 @@ abstract class SLILPrinterSpec {
    * @param row the row of the program which p refers to.
    * @param col the column of the program which p refers to
    */
-  def decorator (p: NumericalProperty[_], row: Int, col: Int): Option[String]
+  def decorator (p: NumericalProperty[_], row: Int, col: Int): String
 }

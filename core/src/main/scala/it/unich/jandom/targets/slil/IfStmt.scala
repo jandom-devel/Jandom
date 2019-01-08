@@ -38,24 +38,45 @@ class IfStmt(val condition: NumericCondition, val then_branch: SLILStmt, val els
     val elseStart = condition.opposite.analyze(input)
     val thenEnd = then_branch.analyzeStmt(params)(thenStart, phase, ann)
     val elseEnd = else_branch.analyzeStmt(params)(elseStart, phase, ann)
+    if (params.allPPResult) {
+      ann((this, 'thenStart)) = thenStart
+      ann((this, 'elseStart)) = elseStart
+      ann((this, 'thenEnd)) = thenEnd
+      ann((this, 'elseEnd)) = elseEnd
+    }
     thenEnd union elseEnd
   }
 
   def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
                                           row: Int, level: Int): String = {
     val spaces = ppspec.indent(level)
-    val then_string = then_branch.mkString(ann, ppspec, row + 1, level + 1)
-    val else_string = else_branch.mkString(ann, ppspec, row + 2 + then_string.count(_ == '\n'), level + 1)
-    spaces + "if (" + condition.mkString(ppspec.env.names) + ") {\n" +
-      then_string +
-      spaces + "} else {\n" +
-      else_string +
-      spaces + "}\n"
+    val annspaces = ppspec.indent(level+1)
+    val result = new StringBuilder()
+    var currrow = row
+    val firstLine = result ++= spaces + "if (" + condition.mkString(ppspec.env.names) + ") {\n"
+    currrow += 1
+    val ann1 = ann.get((this, 'thenStart)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
+    if (! ann1.isEmpty) currrow += 1
+    val then_string = then_branch.mkString(ann, ppspec, currrow, level + 1)
+    currrow += then_string.count(_ == '\n')
+    val ann2 = ann.get((this, 'elseStart)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
+    if (! ann2.isEmpty) currrow += 1
+    val midLine = spaces + "} else {\n"
+    currrow += 1
+    val ann3 = ann.get((this, 'elseStart)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
+    if (! ann3.isEmpty) currrow += 1
+    val else_string = else_branch.mkString(ann, ppspec, currrow, level + 1)
+    currrow += else_string.count(_ == '\n')
+    val ann4 = ann.get((this, 'elseEnd)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
+    if (! ann4.isEmpty) currrow += 1
+    val endLine = spaces + "}\n"
+    firstLine + ann1 + then_string + ann2 + midLine + ann3 + else_string + ann4 + endLine
   }
 
   def syntacticallyEquals(that: SLILStmt): Boolean = that match {
     case that: IfStmt =>
-      condition == that.condition && then_branch.syntacticallyEquals(that.then_branch) &&
+      condition == that.condition &&
+        then_branch.syntacticallyEquals(that.then_branch) &&
         else_branch.syntacticallyEquals(that.else_branch)
     case _ => false
   }
@@ -63,21 +84,22 @@ class IfStmt(val condition: NumericCondition, val then_branch: SLILStmt, val els
   val numvars: Int = condition.dimension max then_branch.numvars max else_branch.numvars
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
-    val pp1 = lts.Location((this, 1).toString, Seq.empty)
-    val pp2 = lts.Location((this, 2).toString, Seq.empty)
-    val pp1end = lts.Location((this, 3).toString, Seq.empty)
-    val pp2end = lts.Location((this, 4).toString, Seq.empty)
+    val pp1 = lts.Location((this, 'thenStart).toString, Seq.empty)
+    val pp2 = lts.Location((this, 'elseStart).toString, Seq.empty)
+    val pp1end = lts.Location((this, 'thenEnd).toString, Seq.empty)
+    val pp2end = lts.Location((this, 'elseEnd).toString, Seq.empty)
     val t1 = lts.Transition((this, 'thenBranch).toString, prev, pp1, Seq(condition), Seq.empty)
     val t2 = lts.Transition((this, 'elseBranch).toString, prev, pp2, Seq(condition.opposite), Seq.empty)
     val t3 = lts.Transition((this, 'thenExit).toString, pp1end, next, Seq.empty, Seq.empty)
     val t4 = lts.Transition((this, 'elseExit).toString, pp2end, next, Seq.empty, Seq.empty)
     val tt1 = then_branch.toLTS(pp1, pp1end)
     val tt2 = else_branch.toLTS(pp2, pp2end)
-    (tt1._1 ++ tt2._1, tt1._2 ++ tt2._2 :+ t1 :+ t2 :+ t3 :+ t4)
+    (tt1._1 ++ tt2._1 ++ Seq( (this, 'thenStart) -> pp1, (this, 'elseStart) -> pp2, (this, 'thenEnd) -> pp1end,
+      (this, 'elseEnd) -> pp2end), tt1._2 ++ tt2._2 :+ t1 :+ t2 :+ t3 :+ t4)
   }
 
   /*
-  // Optimized alternative definition of wire.
+  // Optimized alternative definition of toLTS.
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
     val pp1 = lts.Location((this, 1).toString, Seq.empty)

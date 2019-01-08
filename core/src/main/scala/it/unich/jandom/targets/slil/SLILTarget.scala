@@ -31,11 +31,11 @@ import it.unich.jandom.targets.Target
 abstract class SLILTarget extends Target[SLILTarget] {
   /**
     * @inheritdoc
-    * A program point for SLIL is a pair composed of a statement and an index. For
-    * example, if `stmt` is a while statement, then `(stmt,1)` is the invariant of
+    * A program point for SLIL is a pair composed of a statement and a label. For
+    * example, if `stmt` is a while statement, then `(stmt,head)` is the invariant of
     * the while.
     */
-  type ProgramPoint = (SLILTarget, Int)
+  type ProgramPoint = (SLILTarget, Any)
   type Tgt = SLILTarget
   type DomainBase = NumericalDomain
 }

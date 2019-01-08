@@ -37,13 +37,10 @@ class CompoundStmt(val stmts: SLILStmt*) extends SLILStmt {
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase,
                                       ann: Annotation[ProgramPoint, params.Property]): params.Property = {
     var current = input
-    var index = 0
-    for (stmt <- stmts) {
-      if (params.allPPResult) ann((this, index)) = current
-      index += 1
+    for ((stmt, index) <- stmts.zipWithIndex) {
+      if (index > 0 && params.allPPResult) ann((this, index)) = current
       current = stmt.analyzeStmt(params)(current, phase, ann)
     }
-    if (params.allPPResult) ann((this, index)) = current
     current
   }
 
@@ -51,18 +48,14 @@ class CompoundStmt(val stmts: SLILStmt*) extends SLILStmt {
                                           row: Int, level: Int): String = {
     val spaces = ppspec.indent(level)
     val result = new StringBuilder()
-    var index = 0
-    var decorations = 0
-    for (stmt <- stmts) {
-      for (p <- ann.get((this, index)); deco <- ppspec.decorator(p, row + result.count(_ == '\n'), spaces.length)) {
-        result ++= spaces + deco + '\n'
-        decorations += 1
+    for ((stmt, index) <- stmts.zipWithIndex) {
+      for (p <- ann.get((this, index))) {
+        result ++= spaces + ppspec.decorator(p, row + result.count(_ == '\n'), spaces.length) + '\n'
       }
       result ++= stmt.mkString(ann, ppspec, row + result.count(_ == '\n'), level)
-      index += 1
     }
-    for (p <- ann.get((this, index)); deco <- ppspec.decorator(p, row + result.count(_ == '\n'), spaces.length)) {
-      result ++= spaces + deco + '\n'
+    for (p <- ann.get((this, stmts.size))) {
+      result ++= spaces + ppspec.decorator(p, row + result.count(_ == '\n'), spaces.length) + '\n'
     }
     result.toString
   }
@@ -79,17 +72,14 @@ class CompoundStmt(val stmts: SLILStmt*) extends SLILStmt {
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
     val transitions = mutable.ListBuffer.empty[lts.Transition]
     val locations = mutable.HashMap.empty[ProgramPoint, lts.Location]
-    locations((this, 0)) = prev
     var src = prev
     var tgt = prev
-    var index = 1
-    for (stmt <- stmts) {
+    for ((stmt, index) <- stmts.zip(Stream from 1)) {
       tgt = if (index == stmts.size) next else lts.Location((this, index).toString, Seq.empty)
-      locations((this, index)) = tgt
+      if (index != stmts.size) locations((this, index)) = tgt
       val innerLTS = stmt.toLTS(src, tgt)
       locations ++= innerLTS._1
       transitions ++= innerLTS._2
-      index += 1
       src = tgt
     }
     (locations.toMap, transitions.toList)

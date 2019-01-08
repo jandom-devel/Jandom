@@ -28,7 +28,7 @@ import it.unich.jandom.targets.Environment
   */
 class SLILPrinterSpecInline(val env: Environment, val indentWidth: Int) extends SLILPrinterSpec {
 
-  def decorator(p: NumericalProperty[_], row: Int, col: Int): Option[String] = Some(p.mkString(env.variables))
+  def decorator(p: NumericalProperty[_], row: Int, col: Int): String = p.mkString(env.variables)
 }
 
 /**

@@ -32,9 +32,9 @@ import scala.collection.mutable
 class SLILPrinterSpecOffline(val env: Environment, val indentWidth: Int) extends SLILPrinterSpec {
   val annotations: mutable.Buffer[(Int, Int, String)] = mutable.Buffer[(Int, Int, String)]()
 
-  def decorator(p: NumericalProperty[_], row: Int, col: Int): Option[String] = {
+  def decorator(p: NumericalProperty[_], row: Int, col: Int): String = {
     annotations += ((row, col, p.mkString(env.variables)))
-    Some("")
+    ""
   }
 }
 
