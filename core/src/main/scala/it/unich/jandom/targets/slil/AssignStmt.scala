@@ -27,7 +27,7 @@ import it.unich.jandom.targets.{Annotation, NumericAssignment, NumericExpression
   * @param variable the variable we are assign a value to
   * @param expr     the numeric expression of the assignment
   */
-case class AssignStmt(variable: Int, expr: NumericExpression) extends SLILStmt {
+class AssignStmt(val variable: Int, val expr: NumericExpression) extends SLILStmt {
 
   import AnalysisPhase._
 
@@ -38,11 +38,20 @@ case class AssignStmt(variable: Int, expr: NumericExpression) extends SLILStmt {
                                           row: Int, level: Int): String =
     ppspec.indent(level) + ppspec.env(variable) + " = " + expr.mkString(ppspec.env.names) + '\n'
 
-  val numvars: Int = expr.dimension max (variable+1)
+  def syntacticallyEquals(that: SLILStmt): Boolean = that match {
+    case that: AssignStmt => variable == that.variable && expr == that.expr
+    case _: SLILStmt => false
+  }
+
+  val numvars: Int = expr.dimension max (variable + 1)
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
     (Map.empty, Seq(lts.Transition(this.toString, prev, next, Seq.empty, NumericAssignment(variable, expr))))
   }
 
   override def toString = s"v$variable = ${expr.toString}"
+}
+
+object AssignStmt {
+  def apply(variable: Int, expr: NumericExpression): AssignStmt = new AssignStmt(variable, expr)
 }

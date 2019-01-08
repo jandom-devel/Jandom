@@ -88,21 +88,21 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with NumericEx
 
   private val stmt: Parser[SLILStmt] =
     "tag" ~> "(" ~> wholeNumber <~ ")" <~ opt(";") ^^ { s => TagStmt(s.toInt) } |
-      ".tracetag" ~ "(" ~ wholeNumber ~ ")" <~ opt(";") ^^ { _ => NopStmt } |
-      "assume" ~> "(" ~> numcondition <~ ")" <~ opt(";") ^^ AssumeStmt |
+      ".tracetag" ~ "(" ~ wholeNumber ~ ")" <~ opt(";") ^^ { _ => NopStmt() } |
+      "assume" ~> "(" ~> numcondition <~ ")" <~ opt(";") ^^ AssumeStmt.apply |
       ("if" ~> "(" ~> general_condition <~ ")") ~ compoundStmt ~ opt("else" ~> compoundStmt) ^^ {
         case c ~ s1 ~ Some(s2) => IfStmt(c, s1, s2)
-        case c ~ s1 ~ None => IfStmt(c, s1, NopStmt)
+        case c ~ s1 ~ None => IfStmt(c, s1, NopStmt())
       } |
       ("while" ~> "(" ~> general_condition <~ ")") ~ compoundStmt ^^ {
         case c ~ s => WhileStmt(c, s)
       } |
-      ("return" ~ "(" ~ expr ~ ")") ^^ { _ => NopStmt } |
+      ("return" ~ "(" ~ expr ~ ")") ^^ { _ => NopStmt() } |
       "{" ~> rep(stmt) <~ "}" ^^ {
         CompoundStmt(_: _*)
       } |
       ident ~ ("=" | "<-") ~ numexpr <~ opt(";") ^^ { case v ~ _ ~ e => AssignStmt(env.getBindingOrAdd(v), e) } |
-      expr <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { _ => NopStmt }
+      expr <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { _ => NopStmt() }
 
   /**
     * This is used to parse a statement but force it to be returned as a

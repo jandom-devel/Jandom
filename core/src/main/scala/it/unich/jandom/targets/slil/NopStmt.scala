@@ -24,7 +24,7 @@ import it.unich.jandom.targets.{Annotation, lts}
 /**
   * The class for the empty statement.
   */
-case object NopStmt extends SLILStmt {
+class NopStmt extends SLILStmt {
 
   import AnalysisPhase._
 
@@ -37,6 +37,11 @@ case object NopStmt extends SLILStmt {
                                           row: Int, level: Int): String =
     ppspec.indent(level) + "<no-op>\n"
 
+  def syntacticallyEquals(that: SLILStmt): Boolean = that match {
+    case that: NopStmt => true
+    case _ => false
+  }
+
   val numvars = 0
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
@@ -45,3 +50,8 @@ case object NopStmt extends SLILStmt {
 
   override def toString: String = "<nop>"
 }
+
+object NopStmt {
+  def apply(): NopStmt = new NopStmt()
+}
+

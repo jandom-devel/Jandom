@@ -111,7 +111,20 @@ class SLILProgramSuite extends FunSuite {
   }
 
   test("check numvars for statements") {
-    val stmt: SLILStmt = CompoundStmt ( NopStmt, AssignStmt(0, 0))
+    val stmt: SLILStmt = CompoundStmt ( NopStmt(), AssignStmt(0, 0))
     assertResult(1)(stmt.numvars)
+  }
+
+  test("statement with two syntactically equal compound sub-statements") {
+    val nopStmt1: SLILStmt = CompoundStmt( NopStmt() )
+    val nopStmt2: SLILStmt = CompoundStmt( NopStmt() )
+    val stmt: SLILStmt = CompoundStmt ( nopStmt1, AssignStmt(0, 0), nopStmt2 )
+    val params = new Parameters[SLILTarget] {
+      val domain: SLILTarget#DomainBase = BoxDouble
+    }
+    val ann = stmt.analyze(params)
+    assert(nopStmt1 syntacticallyEquals nopStmt2)
+    assert(! (stmt syntacticallyEquals nopStmt2 ))
+    assertResult(BoxDouble.top(1))(ann((nopStmt1,0)))
   }
 }

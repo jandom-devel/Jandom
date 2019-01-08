@@ -28,7 +28,7 @@ import it.unich.jandom.targets.{Annotation, NumericCondition, lts}
   * @param then_branch the statement to execute when the guard is true
   * @param else_branch the statement to execute when the guard is false
   */
-case class IfStmt(condition: NumericCondition, then_branch: SLILStmt, else_branch: SLILStmt) extends SLILStmt {
+class IfStmt(val condition: NumericCondition, val then_branch: SLILStmt, val else_branch: SLILStmt) extends SLILStmt {
 
   import AnalysisPhase._
 
@@ -51,6 +51,13 @@ case class IfStmt(condition: NumericCondition, then_branch: SLILStmt, else_branc
       spaces + "} else {\n" +
       else_string +
       spaces + "}\n"
+  }
+
+  def syntacticallyEquals(that: SLILStmt): Boolean = that match {
+    case that: IfStmt =>
+      condition == that.condition && then_branch.syntacticallyEquals(that.then_branch) &&
+        else_branch.syntacticallyEquals(that.else_branch)
+    case _ => false
   }
 
   val numvars: Int = condition.dimension max then_branch.numvars max else_branch.numvars
@@ -84,4 +91,9 @@ case class IfStmt(condition: NumericCondition, then_branch: SLILStmt, else_branc
   */
 
   override def toString = s"if@$hashCode (${condition.toString})"
+}
+
+object IfStmt {
+  def apply(condition: NumericCondition, then_branch: SLILStmt, else_branch: SLILStmt): IfStmt =
+    new IfStmt(condition, then_branch, else_branch)
 }

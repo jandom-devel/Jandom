@@ -29,7 +29,7 @@ import it.unich.jandom.targets.{Annotation, NumericCondition, lts}
   * @param condition the guard of the statement
   * @param body      the body of the statement
   */
-case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILStmt {
+class WhileStmt(val condition: NumericCondition, val body: SLILStmt) extends SLILStmt {
 
   import AnalysisPhase._
 
@@ -168,6 +168,12 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
       spaces + "}\n"
   }
 
+  def syntacticallyEquals(that: SLILStmt): Boolean = that match {
+    case that: WhileStmt =>
+      condition == that.condition && body.syntacticallyEquals(that.body)
+    case _ => false
+  }
+
   val numvars: Int = condition.dimension max body.numvars
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
@@ -195,4 +201,8 @@ case class WhileStmt(condition: NumericCondition, body: SLILStmt) extends SLILSt
   */
 
   override def toString: String = s"while@$hashCode ($condition)"
+}
+
+object WhileStmt {
+  def apply(condition: NumericCondition, body: SLILStmt): WhileStmt = new WhileStmt(condition, body)
 }

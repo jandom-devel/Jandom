@@ -25,24 +25,33 @@ import it.unich.jandom.targets.{Annotation, NumericCondition, lts}
   * The class for the statement assume. It takes a numeric condition as a parameter, and forces this
   * condition to hold. It is somewhat equivalent to "if (not cond) loop-forever".
   *
-  * @param cond the linear condition
+  * @param condition the linear condition
   */
-case class AssumeStmt(cond: NumericCondition) extends SLILStmt {
+class AssumeStmt(val condition: NumericCondition) extends SLILStmt {
 
   import AnalysisPhase._
 
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property =
-    cond.analyze(input)
+    condition.analyze(input)
 
   def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
                                                    row: Int, level: Int): String =
-    ppspec.indent(level) + "assume(" + cond + ")\n"
+    ppspec.indent(level) + "assume(" + condition + ")\n"
 
-  val numvars: Int = cond.dimension
-
-  def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
-    (Map.empty, Seq(lts.Transition(this.toString, prev, next, Seq(cond), Seq.empty)))
+  def syntacticallyEquals(that: SLILStmt): Boolean = that match {
+    case that: AssumeStmt => condition == that.condition
+    case _: SLILStmt => false
   }
 
-  override def toString = s"assume ($cond)"
+  val numvars: Int = condition.dimension
+
+  def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
+    (Map.empty, Seq(lts.Transition(this.toString, prev, next, Seq(condition), Seq.empty)))
+  }
+
+  override def toString = s"assume ($condition)"
+}
+
+object AssumeStmt {
+  def apply(condition: NumericCondition): AssumeStmt = new AssumeStmt(condition)
 }

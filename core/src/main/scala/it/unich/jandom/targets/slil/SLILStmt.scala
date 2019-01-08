@@ -68,12 +68,15 @@ abstract class SLILStmt extends SLILTarget {
   }
 
   /**
+    * Returns true if `that` is syntactically equal to `this`.
+    */
+  def syntacticallyEquals(that: SLILStmt): Boolean
+
+  /**
     * Returns the number of variables in the statement. The standard implementation
     * return zero.
     */
   val numvars: Int
-
-  val lastPP: Option[ProgramPoint] = None
 
   /**
     * This method builds a set of transitions and locations corresponding to the program statement. The initial and
@@ -85,5 +88,7 @@ abstract class SLILStmt extends SLILTarget {
     *         of transitions from `prev` to `next`
     */
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition])
+
+  val lastPP: Option[ProgramPoint] = None
 
 }

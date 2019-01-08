@@ -28,7 +28,7 @@ import it.unich.jandom.targets.{Annotation, lts}
   *
   * @param tag an integer which is the index of this tag in the `tag` array
   */
-case class TagStmt(tag: Int) extends SLILStmt {
+class TagStmt(val tag: Int) extends SLILStmt {
 
   import AnalysisPhase._
 
@@ -42,6 +42,11 @@ case class TagStmt(tag: Int) extends SLILStmt {
                                           row: Int, level: Int): String =
     ppspec.indent(level) + "tag(" + tag + ")\n"
 
+  def syntacticallyEquals(that: SLILStmt): Boolean = that match {
+    case that: TagStmt => tag == that.tag
+    case _ => false
+  }
+
   val numvars = 0
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
@@ -49,4 +54,8 @@ case class TagStmt(tag: Int) extends SLILStmt {
   }
 
   override def toString = s"tag($tag)"
+}
+
+object TagStmt {
+  def apply(tag: Int): TagStmt = new TagStmt(tag)
 }

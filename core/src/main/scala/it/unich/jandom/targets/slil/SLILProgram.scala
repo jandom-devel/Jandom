@@ -34,7 +34,8 @@ import it.unich.jandom.targets.{Annotation, Environment, NumericCondition, lts}
   * @param stmt      the body of the program
   * @author Gianluca Amato <gamato@unich.it>
   */
-case class SLILProgram(env: Environment, inputVars: Seq[Int], stmt: SLILStmt) extends SLILTarget {
+class SLILProgram(val env: Environment, val inputVars: Seq[Int],
+                       val stmt: SLILStmt) extends SLILTarget {
 
   import AnalysisPhase._
 
@@ -81,6 +82,12 @@ case class SLILProgram(env: Environment, inputVars: Seq[Int], stmt: SLILStmt) ex
   }
 
   /**
+    * Returns true if `that` is syntactically equal to `this`.
+    */
+  def syntacticallyEquals(that: SLILProgram): Boolean =
+    env == that.env && inputVars == that.inputVars && stmt.syntacticallyEquals(that.stmt)
+
+  /**
     * Returns an EQS adapter for this program (given a numerical domain).
     */
   def toEQS(dom: NumericalDomain) = new TargetAdapter[EQS[lts.Location, dom.Property]] {
@@ -89,4 +96,9 @@ case class SLILProgram(env: Environment, inputVars: Seq[Int], stmt: SLILStmt) ex
     def pullbackAnnotation[V](ann: Annotation[lts.Location, V]): Annotation[ProgramPoint, V] =
       toLTS.pullbackAnnotation(ann)
   }
+}
+
+object SLILProgram {
+  def apply(env: Environment, inputVars: Seq[Int], stmt: SLILStmt): SLILProgram =
+    new SLILProgram(env, inputVars, stmt)
 }

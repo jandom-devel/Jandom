@@ -30,7 +30,7 @@ import scala.collection.mutable
   *
   * @param stmts the sequence of statements that form the compound statement
   */
-case class CompoundStmt(stmts: SLILStmt*) extends SLILStmt {
+class CompoundStmt(val stmts: SLILStmt*) extends SLILStmt {
 
   import AnalysisPhase._
 
@@ -67,6 +67,13 @@ case class CompoundStmt(stmts: SLILStmt*) extends SLILStmt {
     result.toString
   }
 
+  def syntacticallyEquals(that: SLILStmt): Boolean = that match {
+    case that: CompoundStmt =>
+      stmts.size == that.stmts.size &&
+        (stmts zip that.stmts).forall(p => p._1 syntacticallyEquals p._2)
+    case _: SLILStmt => false
+  }
+
   val numvars: Int = (stmts map (_.numvars)).max
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
@@ -89,4 +96,8 @@ case class CompoundStmt(stmts: SLILStmt*) extends SLILStmt {
   }
 
   override def toString = s"sequence@$hashCode (${stmts.head} ...) len ${stmts.size}"
+}
+
+object CompoundStmt {
+  def apply(stmts: SLILStmt*): CompoundStmt = new CompoundStmt(stmts: _*)
 }
