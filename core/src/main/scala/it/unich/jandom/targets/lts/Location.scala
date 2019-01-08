@@ -28,7 +28,7 @@ import it.unich.jandom.targets.NumericCondition
   * @author Gianluca Amato <gianluca.amato@unich.it>
   *
   */
-case class Location(name: String, conditions: Seq[NumericCondition]) {
+class Location(val name: String, val conditions: Seq[NumericCondition]) {
   /**
     * The set of incoming transitions. Used internally by the analyzer.
     */
@@ -57,6 +57,12 @@ case class Location(name: String, conditions: Seq[NumericCondition]) {
   private[lts] var visited: Boolean = false
 
   /**
+    * Returns true if `that` is syntactically equal to `this`.
+    */
+  def syntacticallyEquals(that: Location): Boolean =
+    name == that.name && conditions == that.conditions
+
+  /**
     * Returns a string representation of an annotation with given variable names.
     */
   def mkString(vars: Seq[String]): String =
@@ -66,7 +72,11 @@ case class Location(name: String, conditions: Seq[NumericCondition]) {
   /**
     * Returns a string representation of an annotation with synthetic variable names.
     */
-  def mkString: String = mkString(Stream.from(0).map ("v" + _))
+  def mkString: String = mkString(Stream.from(0).map("v" + _))
 
   override def toString: String = name
+}
+
+object Location {
+  def apply(name: String, conditions: Seq[NumericCondition]): Location = new Location(name, conditions)
 }

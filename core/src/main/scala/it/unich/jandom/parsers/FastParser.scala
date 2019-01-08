@@ -30,10 +30,13 @@ import scala.util.parsing.input.Reader
 /**
   * Parser for transition systems as they appear in the Fast analyzer.
   *
-  * @param env the initial environment.
+  * @param env     initial environment.
+  * @param postfix string to add at the end of the name field.
   * @author Gianluca Amato <gianluca.amato@unich.it>
   */
-class FastParser(val env: Environment) extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
+class FastParser(env: Environment, postfix: String = "")
+  extends JavaTokenParsers with NumericExpressionParser with NumericConditionParser {
+
   private val location_env = new mutable.HashMap[String, Location]
 
   // handle // as the start of a comment
@@ -103,7 +106,8 @@ class FastParser(val env: Environment) extends JavaTokenParsers with NumericExpr
 
   val program: Parser[LTS] =
     model ~ strategy ^^ { case (name, states, transitions) ~ regions =>
-      LTS(name, states.toIndexedSeq, transitions, env, regions)
+      LTS(if (postfix.isEmpty) name else s"$name -- $postfix",
+        states.toIndexedSeq, transitions, env, regions)
     }
 
   /**
@@ -138,9 +142,10 @@ class FastParser(val env: Environment) extends JavaTokenParsers with NumericExpr
   */
 object FastParser {
   /**
-    * Create a parser for Fast transition systems with a given environment.
+    * Create a parser for Fast transition systems with a given environment and postfix string.
     *
-    * @param env the environment. It is optional and defaults to the empty environment.
+    * @param env     an initial environment. It is optional and defaults to the empty environment.
+    * @param postfix an optional string to add at the end of the name field.
     */
-  def apply(env: Environment = new Environment()) = new FastParser(env)
+  def apply(env: Environment = new Environment(), postfix: String = "") = new FastParser(env, postfix)
 }

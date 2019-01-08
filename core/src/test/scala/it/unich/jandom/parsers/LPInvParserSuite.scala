@@ -18,19 +18,16 @@
 
 package it.unich.jandom.parsers
 
-import org.scalatest.FunSuite
 import it.unich.jandom.domains.numerical.LinearForm
-import it.unich.jandom.targets.Environment
+import it.unich.jandom.targets.{Environment, NumericAssignment}
 import it.unich.jandom.targets.NumericCondition._
-import it.unich.jandom.targets.lts.LTS
-import it.unich.jandom.targets.lts.Location
-import it.unich.jandom.targets.lts.Transition
-import it.unich.jandom.targets.NumericAssignment
+import it.unich.jandom.targets.lts.{LTS, Location, Transition}
+import org.scalatest.FunSuite
 
 /**
   * Test suite for LPInv Parser.
   *
-  * @author Gianluca Amato <gamato@unich.it>
+  * @author Gianluca Amato <gianluca.amato@unich.it>
   *
   */
 class LPInvParserSuite extends FunSuite {
@@ -57,8 +54,6 @@ class LPInvParserSuite extends FunSuite {
 	    x := x+1;
 	  end
 	  """
-    assertResult(lts) {
-      LPInvParser().parse("example", ltsString).get
-    }
+    assert(lts syntacticallyEquals LPInvParser().parse("example", ltsString).get)
   }
 }

@@ -19,8 +19,7 @@
 package it.unich.jandom.targets.lts
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.NumericCondition
-import it.unich.jandom.targets.NumericAssignmentMultiple
+import it.unich.jandom.targets.{NumericAssignmentMultiple, NumericCondition}
 
 /**
   * The class for transitions.
@@ -32,12 +31,22 @@ import it.unich.jandom.targets.NumericAssignmentMultiple
   * @param assignments the assignments to apply when the transition is selected
   * @author Gianluca Amato <gianluca.amato@unich.it>
   */
-case class Transition(name: String, start: Location, end: Location, guard: Seq[NumericCondition],
-                      assignments: NumericAssignmentMultiple) {
+class Transition(val name: String, val start: Location, val end: Location, val guard: Seq[NumericCondition],
+                 val assignments: NumericAssignmentMultiple) {
 
   // wires the location's incoming and outgoing pointer to this transition
   end.incoming +:= this
   start.outgoing +:= this
+
+  /**
+    * Returns true if `that` is syntactically equal to `this`.
+    */
+  def syntacticallyEquals(that: Transition): Boolean =
+    name == that.name &&
+      start.syntacticallyEquals(that.start) &&
+      end.syntacticallyEquals(that.end) &&
+      guard == that.guard &&
+      assignments == that.assignments
 
   /**
     * Returns a string representation of a transition with given variable names.
@@ -55,6 +64,7 @@ case class Transition(name: String, start: Location, end: Location, guard: Seq[N
 
   /**
     * Returns the result of executing the transition.
+    *
     * @param input the input abstract property
     * @tparam Property the type of the abstract property
     * @return the resulting property
@@ -66,4 +76,9 @@ case class Transition(name: String, start: Location, end: Location, guard: Seq[N
 
   override def toString: String = name
 
+}
+
+object Transition {
+  def apply(name: String, start: Location, end: Location, guard: Seq[NumericCondition],
+            assignments: NumericAssignmentMultiple): Transition = new Transition(name, start, end, guard, assignments)
 }

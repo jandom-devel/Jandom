@@ -36,8 +36,8 @@ import it.unich.scalafix.lattice.Domain
   * @author Gianluca Amato <gianluca.amato@unich.it>
   */
 
-case class LTS(name: String, locations: IndexedSeq[Location], transitions: Seq[Transition],
-               env: Environment, regions: Seq[Region] = Seq()) extends Target[LTS] {
+class LTS(val name: String, val locations: IndexedSeq[Location], val transitions: Seq[Transition],
+          val env: Environment, val regions: Seq[Region] = Seq()) extends Target[LTS] {
 
   type ProgramPoint = Location
   type DomainBase = NumericalDomain
@@ -58,12 +58,23 @@ case class LTS(name: String, locations: IndexedSeq[Location], transitions: Seq[T
   val lastPP: Option[Location] = None
 
   /**
+    * Returns true if `that` is syntactically equal to `this`.
+    */
+  def syntacticallyEquals(that: LTS): Boolean =
+    name == that.name &&
+      env == that.env &&
+      locations.size == that.locations.size &&
+      transitions.size == that.transitions.size &&
+      regions.size == that.regions.size &&
+      (locations zip that.locations).forall({ l => l._1.syntacticallyEquals(l._2) }) &&
+      (transitions zip that.transitions).forall({ t => t._1.syntacticallyEquals(t._2) }) &&
+      (regions zip that.regions).forall({ r => r._1.syntacticallyEquals(r._2) })
+
+  /**
     * List of entry program points. If a region called "init" is present, it is the location
     * referred in such a region, otherwise all locations are considered to be entry program points.
     */
-  private val entryPP: Seq[Location] = regions.find {
-    _.name == "init"
-  } match {
+  private val entryPP: Seq[Location] = regions.find(_.name == "init") match {
     case Some(Region(_, Some(loc), _)) => Seq(loc)
     case Some(Region(_, None, _)) => throw new IllegalArgumentException("An init region should provide a starting state")
     case None => locations
@@ -358,4 +369,10 @@ case class LTS(name: String, locations: IndexedSeq[Location], transitions: Seq[T
     "\n" + (regions map (_.mkString(env.variables))).mkString("\n")
 
   override def toString: String = name
+}
+
+object LTS {
+  def apply(name: String, locations: IndexedSeq[Location], transitions: Seq[Transition],
+            env: Environment, regions: Seq[Region] = Seq()): LTS =
+    new LTS(name, locations, transitions, env, regions)
 }

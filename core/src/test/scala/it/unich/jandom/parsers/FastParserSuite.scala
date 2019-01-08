@@ -18,17 +18,14 @@
 
 package it.unich.jandom.parsers
 
-import java.io.File
-import java.io.FileReader
-
-import org.scalatest.FunSuite
+import java.io.{File, FileReader}
 
 import it.unich.jandom.domains.numerical.LinearForm
-import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.NumericAssignment
 import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.NumericExpression._
 import it.unich.jandom.targets.lts._
+import it.unich.jandom.targets.{Environment, NumericAssignment}
+import org.scalatest.FunSuite
 
 /**
   * Test suite for `it.unich.jandom.parsers.Fastparser`.
@@ -102,8 +99,6 @@ class FastParserSuite extends FunSuite {
          Region bad := { y = 3 };
       }
     """
-    assertResult(lts) {
-      FastParser().parse(fastString).get
-    }
+    assert(lts syntacticallyEquals FastParser().parse(fastString).get)
   }
 }

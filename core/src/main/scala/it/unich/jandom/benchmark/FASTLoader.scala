@@ -58,7 +58,6 @@ trait FASTLoader {
   val ltss: Seq[LTS] = for (uri <- uris) yield {
     val stream = getClass.getResourceAsStream(uri)
     val content = scala.io.Source.fromInputStream(stream).getLines.mkString("\n")
-    val result = FastParser().parse(content).get
-    result.copy(name = s"${result.name} -- $uri")
+    FastParser(postfix = uri).parse(content).get
   }
 }
