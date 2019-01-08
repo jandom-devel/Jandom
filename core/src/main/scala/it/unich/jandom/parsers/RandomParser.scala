@@ -90,11 +90,11 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with NumericEx
     "tag" ~> "(" ~> wholeNumber <~ ")" <~ opt(";") ^^ { s => TagStmt(s.toInt) } |
       ".tracetag" ~ "(" ~ wholeNumber ~ ")" <~ opt(";") ^^ { _ => NopStmt() } |
       "assume" ~> "(" ~> numcondition <~ ")" <~ opt(";") ^^ AssumeStmt.apply |
-      ("if" ~> "(" ~> general_condition <~ ")") ~ compoundStmt ~ opt("else" ~> compoundStmt) ^^ {
+      ("if" ~> "(" ~> general_condition <~ ")") ~ stmt ~ opt("else" ~> stmt) ^^ {
         case c ~ s1 ~ Some(s2) => IfStmt(c, s1, s2)
         case c ~ s1 ~ None => IfStmt(c, s1, NopStmt())
       } |
-      ("while" ~> "(" ~> general_condition <~ ")") ~ compoundStmt ^^ {
+      ("while" ~> "(" ~> general_condition <~ ")") ~ stmt ^^ {
         case c ~ s => WhileStmt(c, s)
       } |
       ("return" ~ "(" ~ expr ~ ")") ^^ { _ => NopStmt() } |
@@ -104,18 +104,8 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with NumericEx
       ident ~ ("=" | "<-") ~ numexpr <~ opt(";") ^^ { case v ~ _ ~ e => AssignStmt(env.getBindingOrAdd(v), e) } |
       expr <~ ("=" | "<-") <~ expr <~ opt(";") ^^ { _ => NopStmt() }
 
-  /**
-    * This is used to parse a statement but force it to be returned as a
-    * compound statement.
-    */
-  private val compoundStmt: Parser[CompoundStmt] =
-    stmt ^^ {
-      case s: CompoundStmt => s
-      case s => CompoundStmt(s)
-    }
-
   private val prog: Parser[SLILProgram] =
-    (opt(ident ~> ("=" | "<-")) ~> "function" ~> "(" ~> repsep(variable, ",") <~ ")") ~ compoundStmt ^^ {
+    (opt(ident ~> ("=" | "<-")) ~> "function" ~> "(" ~> repsep(variable, ",") <~ ")") ~ stmt ^^ {
       case vars ~ statement => SLILProgram(env, vars, statement)
     }
 
