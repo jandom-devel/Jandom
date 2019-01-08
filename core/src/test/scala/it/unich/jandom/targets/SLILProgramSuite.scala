@@ -109,4 +109,9 @@ class SLILProgramSuite extends FunSuite {
       ann((stmt, 2))
     }
   }
+
+  test("check numvars for statements") {
+    val stmt: SLILStmt = CompoundStmt ( NopStmt, AssignStmt(0, 0))
+    assertResult(1)(stmt.numvars)
+  }
 }

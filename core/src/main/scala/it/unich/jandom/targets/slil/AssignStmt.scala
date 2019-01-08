@@ -38,7 +38,7 @@ case class AssignStmt(variable: Int, expr: NumericExpression) extends SLILStmt {
                                           row: Int, level: Int): String =
     ppspec.indent(level) + ppspec.env(variable) + " = " + expr.mkString(ppspec.env.names) + '\n'
 
-  val numvars: Int = expr.dimension
+  val numvars: Int = expr.dimension max (variable+1)
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
     (Map.empty, Seq(lts.Transition(this.toString, prev, next, Seq.empty, NumericAssignment(variable, expr))))
