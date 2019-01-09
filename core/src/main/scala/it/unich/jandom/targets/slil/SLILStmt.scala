@@ -19,7 +19,8 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.{Annotation, lts}
+import it.unich.jandom.targets.{Annotation, Environment, lts}
+import it.unich.jandom.ui.output.{OutputBuilder, TextOutputBuilder}
 
 /**
   * The abstract class for program statements. Each object in SLILStmt represents a statement
@@ -30,16 +31,27 @@ abstract class SLILStmt extends SLILTarget {
   import AnalysisPhase._
 
   /**
-    * A method to pretty print a SLILStmt with corresponding annotations.
+    * A method for sending the statement with related annotations to an output builder.
     *
-    * @param ann    the annotation to print together with the program
-    * @param ppspec the specification object for pretty printing
-    * @param row    the current row
-    * @param level  the current indentation level
+    * @param ann the annotation to print together with the program
+    * @param ob  the output builder to use for printing the result
+    * @param env an optional environment used to produce correct variable names
+    */
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ob: OutputBuilder,
+                                                  env: Environment = Environment()): Unit
+
+  /**
+    * A method for printing the statement the with related annotations.
+    *
+    * @param ann the annotation to print together with the program
+    * @param env an optional environment used to produce correct variable names
     * @return the string representation of the program
     */
-  def mkString[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ppspec: SLILPrinterSpec,
-                                          row: Int, level: Int): String
+  def mkString[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], env: Environment = Environment()): String = {
+    val ob = TextOutputBuilder()
+    outputAnnotation(ann, ob)
+    ob.toString
+  }
 
   /**
     * The analyzer for a SLIL statement. This methods is different from the one declared in Target since it takes
@@ -90,5 +102,4 @@ abstract class SLILStmt extends SLILTarget {
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition])
 
   val lastPP: Option[ProgramPoint] = None
-
 }

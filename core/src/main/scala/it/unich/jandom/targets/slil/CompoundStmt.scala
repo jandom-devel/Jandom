@@ -19,7 +19,8 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.{Annotation, lts}
+import it.unich.jandom.targets.{Annotation, Environment, lts}
+import it.unich.jandom.ui.output.OutputBuilder
 
 import scala.collection.mutable
 
@@ -44,20 +45,13 @@ class CompoundStmt(val stmts: SLILStmt*) extends SLILStmt {
     current
   }
 
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
-                                          row: Int, level: Int): String = {
-    val spaces = ppspec.indent(level)
-    val result = new StringBuilder()
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
     for ((stmt, index) <- stmts.zipWithIndex) {
-      for (p <- ann.get((this, index))) {
-        result ++= spaces + ppspec.decorator(p, row + result.count(_ == '\n'), spaces.length) + '\n'
-      }
-      result ++= stmt.mkString(ann, ppspec, row + result.count(_ == '\n'), level)
+      if (index > 0)
+        for (p <- ann.get((this, index))) ob.annotate(p.mkString(env.variables)).newline()
+      stmt.outputAnnotation(ann, ob, env)
+      if (index < stmts.size - 1) ob.newline()
     }
-    for (p <- ann.get((this, stmts.size))) {
-      result ++= spaces + ppspec.decorator(p, row + result.count(_ == '\n'), spaces.length) + '\n'
-    }
-    result.toString
   }
 
   def syntacticallyEquals(that: SLILStmt): Boolean = that match {

@@ -19,7 +19,8 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.{Annotation, lts}
+import it.unich.jandom.targets.{Annotation, Environment, lts}
+import it.unich.jandom.ui.output.OutputBuilder
 
 /**
   * The class for the empty statement.
@@ -33,9 +34,9 @@ class NopStmt extends SLILStmt {
     input
   }
 
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
-                                          row: Int, level: Int): String =
-    ppspec.indent(level) + "<no-op>\n"
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+    ob ++= "<nop>"
+  }
 
   def syntacticallyEquals(that: SLILStmt): Boolean = that match {
     case that: NopStmt => true

@@ -19,7 +19,8 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.{Annotation, lts}
+import it.unich.jandom.targets.{Annotation, Environment, lts}
+import it.unich.jandom.ui.output.OutputBuilder
 
 /**
   * The class for tags, i.e. fake statements only used to mark program points. The
@@ -38,9 +39,9 @@ class TagStmt(val tag: Int) extends SLILStmt {
     input
   }
 
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
-                                          row: Int, level: Int): String =
-    ppspec.indent(level) + "tag(" + tag + ")\n"
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+    ob ++= s"tag($tag)"
+  }
 
   def syntacticallyEquals(that: SLILStmt): Boolean = that match {
     case that: TagStmt => tag == that.tag

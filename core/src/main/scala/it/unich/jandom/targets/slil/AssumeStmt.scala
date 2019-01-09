@@ -19,7 +19,8 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.{Annotation, NumericCondition, lts}
+import it.unich.jandom.targets.{Annotation, Environment, NumericCondition, lts}
+import it.unich.jandom.ui.output.OutputBuilder
 
 /**
   * The class for the statement assume. It takes a numeric condition as a parameter, and forces this
@@ -34,9 +35,9 @@ class AssumeStmt(val condition: NumericCondition) extends SLILStmt {
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property =
     condition.analyze(input)
 
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
-                                                   row: Int, level: Int): String =
-    ppspec.indent(level) + "assume(" + condition + ")\n"
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+    ob ++= s"assume(${condition.mkString(env.variables)})"
+  }
 
   def syntacticallyEquals(that: SLILStmt): Boolean = that match {
     case that: AssumeStmt => condition == that.condition

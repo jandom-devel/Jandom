@@ -19,7 +19,8 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.{Annotation, NumericAssignment, NumericExpression, lts}
+import it.unich.jandom.targets._
+import it.unich.jandom.ui.output.OutputBuilder
 
 /**
   * The class for the assignment statement "variable := linearForm".
@@ -34,9 +35,9 @@ class AssignStmt(val variable: Int, val expr: NumericExpression) extends SLILStm
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property =
     expr.assignTo(variable)(input)
 
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
-                                          row: Int, level: Int): String =
-    ppspec.indent(level) + ppspec.env(variable) + " = " + expr.mkString(ppspec.env.names) + '\n'
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+    ob ++= s"${env(variable)} = ${expr.mkString(env.variables)}"
+  }
 
   def syntacticallyEquals(that: SLILStmt): Boolean = that match {
     case that: AssignStmt => variable == that.variable && expr == that.expr

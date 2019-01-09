@@ -18,22 +18,22 @@
 
 package it.unich.jandom.ui.gui
 
-import java.awt.event.{ InputEvent, KeyEvent }
-import java.io.{ File, FileWriter, IOException }
-import scala.Array.canBuildFrom
-import scala.swing.{ Action, Dialog, EditorPane, FileChooser, MenuItem, Separator }
+import java.awt.event.{InputEvent, KeyEvent}
+import java.io.{File, FileWriter, IOException}
+
+import scala.swing.{Action, Dialog, EditorPane, FileChooser, MenuItem, Separator}
 import scala.swing.ScrollPane
 import it.unich.jandom._
 import it.unich.jandom.targets.Parameters
 import it.unich.jandom.targets.slil.SLILTarget
 import javax.swing.KeyStroke
-import javax.swing.event.{ DocumentEvent, DocumentListener, UndoableEditEvent, UndoableEditListener }
+import javax.swing.event.{DocumentEvent, DocumentListener, UndoableEditEvent, UndoableEditListener}
 import javax.swing.undo.UndoManager
-import it.unich.jandom.targets.slil.SLILPrinterSpecOffline
 import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 import java.nio.file.Files
-import it.unich.jandom.ui.HTMLOutput
+
+import it.unich.jandom.ui.output.HTMLOutputBuilder
 
 class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane {
   import scala.language.existentials
@@ -48,7 +48,7 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
   var _currentFile: Option[File] = None
   var _modified = false
 
-  def modified = _modified
+  def modified   = _modified
   def modified_=(v: Boolean) {
     _modified = v
     updateFrameTitle()
@@ -273,10 +273,9 @@ class JandomEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane 
       chooser.selectedFile = new File("output.html")
       if (chooser.showDialog(this, "Select output file") == FileChooser.Result.Approve) {
         val file = chooser.selectedFile.getPath()
-        val pp = SLILPrinterSpecOffline(program.env)
-        val out = program.mkString(ann, pp)
-        val HTMLout = HTMLOutput(out, pp.annotations)
-        Files.write(Paths.get(file), HTMLout.getBytes(StandardCharsets.UTF_8))
+        val ob = HTMLOutputBuilder()
+        program.outputAnnotation(ann, ob)
+        Files.write(Paths.get(file), ob.toString.getBytes(StandardCharsets.UTF_8))
       }
     }
   }

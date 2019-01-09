@@ -19,7 +19,8 @@
 package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
-import it.unich.jandom.targets.{Annotation, NumericCondition, lts}
+import it.unich.jandom.targets.{Annotation, Environment, NumericCondition, lts}
+import it.unich.jandom.ui.output.OutputBuilder
 
 /**
   * The class for an if/then/else statement.
@@ -47,30 +48,22 @@ class IfStmt(val condition: NumericCondition, val then_branch: SLILStmt, val els
     thenEnd union elseEnd
   }
 
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec,
-                                          row: Int, level: Int): String = {
-    val spaces = ppspec.indent(level)
-    val annspaces = ppspec.indent(level+1)
-    val result = new StringBuilder()
-    var currrow = row
-    val firstLine = result ++= spaces + "if (" + condition.mkString(ppspec.env.names) + ") {\n"
-    currrow += 1
-    val ann1 = ann.get((this, 'thenStart)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
-    if (! ann1.isEmpty) currrow += 1
-    val then_string = then_branch.mkString(ann, ppspec, currrow, level + 1)
-    currrow += then_string.count(_ == '\n')
-    val ann2 = ann.get((this, 'elseStart)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
-    if (! ann2.isEmpty) currrow += 1
-    val midLine = spaces + "} else {\n"
-    currrow += 1
-    val ann3 = ann.get((this, 'elseStart)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
-    if (! ann3.isEmpty) currrow += 1
-    val else_string = else_branch.mkString(ann, ppspec, currrow, level + 1)
-    currrow += else_string.count(_ == '\n')
-    val ann4 = ann.get((this, 'elseEnd)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
-    if (! ann4.isEmpty) currrow += 1
-    val endLine = spaces + "}\n"
-    firstLine + ann1 + then_string + ann2 + midLine + ann3 + else_string + ann4 + endLine
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+    ob ++= s"if (${condition.mkString(env.variables)}) {"
+    ob.newline(ob.IndentBehaviour.Increase)
+    for (p <- ann.get((this, 'thenStart))) ob.annotate(p.mkString(env.variables)).newline()
+    then_branch.outputAnnotation(ann, ob, env)
+    for (p <- ann.get((this, 'thenEnd)))
+      ob.newline().annotate(p.mkString(env.variables))
+    ob.newline(ob.IndentBehaviour.Decrease)
+    ob ++= "} else {"
+    ob.newline(ob.IndentBehaviour.Increase)
+    for (p <- ann.get((this, 'elseStart))) ob.annotate(p.mkString(env.variables)).newline()
+    else_branch.outputAnnotation(ann, ob, env)
+    for (p <- ann.get((this, 'elseEnd)))
+      ob.newline().annotate(p.mkString(env.variables))
+    ob.newline(ob.IndentBehaviour.Decrease)
+    ob ++= "}"
   }
 
   def syntacticallyEquals(that: SLILStmt): Boolean = that match {
@@ -94,7 +87,7 @@ class IfStmt(val condition: NumericCondition, val then_branch: SLILStmt, val els
     val t4 = lts.Transition((this, 'elseExit).toString, pp2end, next, Seq.empty, Seq.empty)
     val tt1 = then_branch.toLTS(pp1, pp1end)
     val tt2 = else_branch.toLTS(pp2, pp2end)
-    (tt1._1 ++ tt2._1 ++ Seq( (this, 'thenStart) -> pp1, (this, 'elseStart) -> pp2, (this, 'thenEnd) -> pp1end,
+    (tt1._1 ++ tt2._1 ++ Seq((this, 'thenStart) -> pp1, (this, 'elseStart) -> pp2, (this, 'thenEnd) -> pp1end,
       (this, 'elseEnd) -> pp2end), tt1._2 ++ tt2._2 :+ t1 :+ t2 :+ t3 :+ t4)
   }
 

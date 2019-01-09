@@ -20,7 +20,8 @@ package it.unich.jandom.targets.slil
 
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.targets.parameters._
-import it.unich.jandom.targets.{Annotation, NumericCondition, lts}
+import it.unich.jandom.targets.{Annotation, Environment, NumericCondition, lts}
+import it.unich.jandom.ui.output.OutputBuilder
 
 /**
   * The class for a while statement. Each while statement has a corresponding program
@@ -163,21 +164,16 @@ class WhileStmt(val condition: NumericCondition, val body: SLILStmt) extends SLI
     condition.opposite.analyze(invariant)
   }
 
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U], ppspec: SLILPrinterSpec, row: Int, level: Int): String = {
-    val spaces = ppspec.indent(level)
-    val annspaces = ppspec.indent(level + 1)
-    var currrow = row
-    val firstLine = spaces + "while (" + condition.mkString(ppspec.env.names) + ")"
-    val ann1 = ann.get((this, 'head)) map ( " " + ppspec.decorator(_, currrow, firstLine.length + 1)) getOrElse ""
-    currrow += 1
-    val ann2 = ann.get((this, 'bodyStart)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
-    if (!ann2.isEmpty) currrow += 1
-    val bodyLines = body.mkString(ann, ppspec, currrow, level + 1)
-    currrow += bodyLines.count(_ == '\n')
-    val ann3 = ann.get((this, 'bodyEnd)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
-    if (!ann3.isEmpty) currrow += 1
-    val endLine = spaces + "}\n"
-    firstLine + ann1 + " {\n" + ann2 + bodyLines + ann3 + endLine
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+    ob ++= s"while (${condition.mkString(env.names)})"
+    for (p <- ann.get((this, 'head))) (ob ++= " ").annotate(p.mkString(env.variables))
+    ob ++= " {"
+    ob.newline(ob.IndentBehaviour.Increase)
+    for (p <- ann.get((this, 'bodyStart))) ob.annotate(p.mkString(env.variables)).newline()
+    body.outputAnnotation(ann, ob, env)
+    for (p <- ann.get((this, 'bodyEnd))) ob.newline().annotate(p.mkString(env.variables))
+    ob.newline(ob.IndentBehaviour.Decrease)
+    ob ++= "}"
   }
 
   def syntacticallyEquals(that: SLILStmt): Boolean = that match {

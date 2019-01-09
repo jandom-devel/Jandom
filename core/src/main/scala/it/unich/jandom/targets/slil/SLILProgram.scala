@@ -23,6 +23,7 @@ import it.unich.jandom.targets.eqs.EQS
 import it.unich.jandom.targets.lts._
 import it.unich.jandom.targets.parameters.NarrowingStrategy
 import it.unich.jandom.targets.{Annotation, Environment, NumericCondition, lts}
+import it.unich.jandom.ui.output.{OutputBuilder, TextOutputBuilder}
 
 /**
   * The target for a simple imperative language, similar to the one analyzed
@@ -38,21 +39,36 @@ class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SLILS
 
   import AnalysisPhase._
 
-  def mkString[U <: NumericalProperty[_]](ann: Annotation[ProgramPoint, U],
-                                          ppspec: SLILPrinterSpec = SLILPrinterSpecInline(env)): String = {
-    val spaces = ppspec.indent(0)
-    val annspaces = ppspec.indent(1)
-    var currrow = 1
-    val firstLine = "function (" + (inputVars map { v: Int => env(v) }).mkString(",") + ") {\n"
-    currrow += 1
-    val ann1 = ann.get((this, 'start)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
-    if (!ann1.isEmpty) currrow += 1
-    val bodyLine = stmt.mkString(ann, ppspec, currrow, 1)
-    currrow += bodyLine.count(_ == '\n')
-    val ann2 = ann.get((this, 'start)) map (annspaces + ppspec.decorator(_, currrow, annspaces.length) + "\n") getOrElse ""
-    if (!ann2.isEmpty) currrow += 1
-    val endLine = spaces + "}\n"
-    firstLine + ann1 + bodyLine + ann2 + endLine
+  /**
+    * A method for sending the program with related annotations to an output builder.
+    *
+    * @param ann the annotation to print together with the program
+    * @param ob  the output builder to use for printing the result
+    */
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ob: OutputBuilder): Unit = {
+    ob ++= "function ("
+    ob ++= (inputVars map { v: Int => env(v) }).mkString(",")
+    ob ++= ") {"
+    ob.newline(ob.IndentBehaviour.Increase)
+    for (p <- ann.get((this, 'start)))
+      ob.annotate(p.mkString(env.variables)).newline()
+    stmt.outputAnnotation(ann, ob, env)
+    for (p <- ann.get((this, 'end)))
+      ob.newline().annotate(p.mkString(env.variables))
+    ob.newline(ob.IndentBehaviour.Decrease)
+    ob ++= "}"
+  }
+
+  /**
+    * A method for printing the program the with related annotations.
+    *
+    * @param ann the annotation to print together with the program
+    * @return the string representation of the program
+    */
+  def mkString[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T]): String = {
+    val ob = TextOutputBuilder()
+    outputAnnotation(ann, ob)
+    ob.toString
   }
 
   def analyze(params: Parameters): Annotation[ProgramPoint, params.Property] = {
