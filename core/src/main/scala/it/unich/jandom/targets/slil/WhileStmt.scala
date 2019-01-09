@@ -164,7 +164,7 @@ class WhileStmt(val condition: NumericCondition, val body: SLILStmt) extends SLI
     condition.opposite.analyze(invariant)
   }
 
-  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ob: OutputBuilder, env: Environment): Unit = {
     ob ++= s"while (${condition.mkString(env.names)})"
     for (p <- ann.get((this, 'head))) (ob ++= " ").annotate(p.mkString(env.variables))
     ob ++= " {"

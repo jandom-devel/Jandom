@@ -34,7 +34,7 @@ class NopStmt extends SLILStmt {
     input
   }
 
-  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ob: OutputBuilder, env: Environment): Unit = {
     ob ++= "<nop>"
   }
 

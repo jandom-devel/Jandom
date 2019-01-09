@@ -48,7 +48,7 @@ class IfStmt(val condition: NumericCondition, val then_branch: SLILStmt, val els
     thenEnd union elseEnd
   }
 
-  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ob: OutputBuilder, env: Environment): Unit = {
     ob ++= s"if (${condition.mkString(env.variables)}) {"
     ob.newline(ob.IndentBehaviour.Increase)
     for (p <- ann.get((this, 'thenStart))) ob.annotate(p.mkString(env.variables)).newline()

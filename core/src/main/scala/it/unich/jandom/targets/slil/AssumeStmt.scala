@@ -35,7 +35,7 @@ class AssumeStmt(val condition: NumericCondition) extends SLILStmt {
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property =
     condition.analyze(input)
 
-  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ob: OutputBuilder, env: Environment): Unit = {
     ob ++= s"assume(${condition.mkString(env.variables)})"
   }
 

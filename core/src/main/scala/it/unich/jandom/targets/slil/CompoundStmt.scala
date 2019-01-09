@@ -45,7 +45,7 @@ class CompoundStmt(val stmts: SLILStmt*) extends SLILStmt {
     current
   }
 
-  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[(Tgt, Any), T], ob: OutputBuilder, env: Environment): Unit = {
+  def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ob: OutputBuilder, env: Environment): Unit = {
     for ((stmt, index) <- stmts.zipWithIndex) {
       if (index > 0)
         for (p <- ann.get((this, index))) ob.annotate(p.mkString(env.variables)).newline()
