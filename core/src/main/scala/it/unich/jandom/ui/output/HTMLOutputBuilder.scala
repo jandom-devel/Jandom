@@ -18,8 +18,6 @@
 
 package it.unich.jandom.ui.output
 
-import java.io.File
-
 import org.apache.commons.text.StringEscapeUtils
 
 import scala.collection.mutable
@@ -60,8 +58,8 @@ class HTMLOutputBuilder(val indentSize: Int = 2) extends OutputBuilder {
   }
 
   override def toString: String = {
-    val htmlFile = new File(getClass.getResource("/htmlout/index.html").toURI)
-    val html = Source.fromFile(htmlFile).getLines.mkString("\n")
+    val htmlStream = getClass.getResourceAsStream("/htmlout/index.html")
+    val html = Source.fromInputStream(htmlStream).getLines.mkString("\n")
     val jsonAnn = for ((row, col, s) <- ann) yield s"""{ row: $row, col: $col, note: "${StringEscapeUtils.escapeEcmaScript(s)}" }"""
     html.replace("%%PROG%%", lines.mkString(",")).replace("%%ANN%%", jsonAnn.mkString(",\n"))
   }
