@@ -23,36 +23,37 @@ import it.unich.jandom.targets._
 import it.unich.jandom.ui.output.OutputBuilder
 
 /**
-  * The class for the assignment statement "variable := linearForm".
+  * The class for the assignment statement "variable := linearForm". It is essentialy a wrapper for
+  * the NumericAssignment class.
   *
-  * @param variable the variable we are assign a value to
-  * @param expr     the numeric expression of the assignment
+  * @param assn numeric assignment
   */
-class AssignStmt(val variable: Int, val expr: NumericExpression) extends SLILStmt {
+class AssignStmt(val assn: NumericAssignment) extends SLILStmt {
 
   import AnalysisPhase._
 
   def analyzeStmt(params: Parameters)(input: params.Property, phase: AnalysisPhase, ann: Annotation[ProgramPoint, params.Property]): params.Property =
-    expr.assignTo(variable)(input)
+    assn.analyze(input)
 
   def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ob: OutputBuilder, env: Environment): Unit = {
-    ob ++= s"${env(variable)} = ${expr.mkString(env.variables)}"
+    ob ++= assn.mkString(env.variables)
   }
 
   def syntacticallyEquals(that: SLILStmt): Boolean = that match {
-    case that: AssignStmt => variable == that.variable && expr == that.expr
+    case that: AssignStmt => assn == that.assn
     case _: SLILStmt => false
   }
 
-  val numvars: Int = expr.dimension max (variable + 1)
+  val numvars: Int = assn.dimension
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
-    (Map.empty, Seq(lts.Transition(this.toString, prev, next, Seq.empty, NumericAssignment(variable, expr))))
+    (Map.empty, Seq(lts.Transition(this.toString, prev, next, Seq.empty, assn)))
   }
 
-  override def toString = s"v$variable = ${expr.toString}"
+  override def toString: String = assn.toString
 }
 
 object AssignStmt {
-  def apply(variable: Int, expr: NumericExpression): AssignStmt = new AssignStmt(variable, expr)
+  def apply(v: Int, exp: NumericExpression) : AssignStmt = new AssignStmt(NumericAssignment(v, exp))
+  def apply(assn: NumericAssignment): AssignStmt = new AssignStmt(assn)
 }
