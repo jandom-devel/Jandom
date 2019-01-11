@@ -18,11 +18,8 @@
 
 package it.unich.jandom.benchmarks
 
-
-import java.io.{File, FilenameFilter}
-
+import it.unich.jandom.benchmark.SLILLoader
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
-import it.unich.jandom.parsers.RandomParser
 import it.unich.jandom.targets.parameters.NarrowingStrategy
 import it.unich.jandom.targets.slil.SLILTarget
 
@@ -30,7 +27,7 @@ import it.unich.jandom.targets.slil.SLILTarget
   * This program compares standard (legacy) analyzer with the new one based on Scalafix for
   * the SLIL target. The aim is to compare both precision of results and speed.
   */
-object EQSLegacySLILComparison extends App {
+object EQSLegacySLILComparison extends App with SLILLoader {
 
   private def compareResults(programPoints: Iterable[SLILTarget#ProgramPoint], ann1: SLILTarget#ProgramPoint => dom.Property,
                              ann2: SLILTarget#ProgramPoint => dom.Property) = {
@@ -50,20 +47,6 @@ object EQSLegacySLILComparison extends App {
     (eq, lt, gt, un)
   }
 
-  val resourceURL = getClass.getResource("/random")
-  val dir = new File(resourceURL.toURI)
-
-  val nameFilter = new FilenameFilter() {
-    def accept(dir: File, name: String): Boolean = name.endsWith(".R")
-  }
-  val files = dir.listFiles(nameFilter)
-  val programs = for (f <- files) yield {
-    val source = scala.io.Source.fromFile(f).getLines.mkString("\n")
-    val parser = RandomParser()
-    val program = parser.parse(source).get
-    (f.getName, program)
-  }
-
   val dom = BoxDoubleDomain()
 
   var timeEQS = 0.0
@@ -72,7 +55,7 @@ object EQSLegacySLILComparison extends App {
   var globaleq, globallt, globalgt, globalun = 0
 
 
-  for ((f, p) <- programs) {
+  for ((f, p) <- slils) {
     println(f)
     val params = new p.Parameters {
       val domain: dom.type = dom
