@@ -19,45 +19,29 @@
 
 package it.unich.jandom.benchmark
 
-import scala.collection.JavaConverters._
-
-import java.io.File
-import java.util.jar.JarFile
+import java.nio.file._
 
 import it.unich.jandom.parsers.FastParser
 import it.unich.jandom.targets.lts.LTS
+
+import it.unich.jandom.utils.ResourceWalker
 
 /**
   * This trait loads and parser all models in /fast/ resource directory.
   *
   * @author Gianluca Amato <gamato@unich.it>
   */
-
 trait FASTLoader {
-  private val path = "fast/"
-  private val jarFile = new File(getClass.getProtectionDomain.getCodeSource.getLocation.getPath)
 
-  // determine resource names when the program is packaged as a jar and when not
-  private val uris = if (jarFile.isFile) { // Run with JAR file
-    val jar = new JarFile(jarFile)
-    val entries = jar.entries //gives ALL entries in jar
-    val result = (for (element <- entries.asScala; name = element.getName
-                       if (name startsWith path) && (name.length > path.length)) yield "/"+name).toList
-    jar.close()
-    result
-  }
-  else { // Run with IDE
-    val resources = getClass.getResource(path).toURI
-    val dir = new File(resources)
-    dir.list().toList
-  }
+  private val resources = ResourceWalker.list("/fast")
 
   /**
     * A sequence of Alice models.
     */
-  val ltss: Seq[LTS] = for (uri <- uris) yield {
-    val stream = getClass.getResourceAsStream(uri)
+  val ltss: Seq[LTS] = for (r <- resources) yield {
+    val stream = Files.newInputStream(r)
     val content = scala.io.Source.fromInputStream(stream).getLines.mkString("\n")
-    FastParser(postfix = uri).parse(content).get
+    FastParser(postfix = r.getFileName.toString).parse(content).get
   }
+
 }
