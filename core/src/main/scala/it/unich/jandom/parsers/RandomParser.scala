@@ -18,13 +18,13 @@
 
 package it.unich.jandom.parsers
 
-import scala.util.parsing.combinator.JavaTokenParsers
-import it.unich.jandom.targets.Environment
-import it.unich.jandom.targets.NumericCondition
+import it.unich.jandom.targets.{Environment, NumericCondition}
 import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.slil._
 
 import scala.util.matching.Regex
+import scala.util.parsing.combinator.JavaTokenParsers
+import scala.util.parsing.input.Reader
 
 
 /**
@@ -126,7 +126,23 @@ class RandomParser(val env: Environment) extends JavaTokenParsers with NumericEx
     * @param s the string containing the Random Program
     * @return a ParseResult with the program parsed in the target SLILProgram
     */
-  def parse(s: String): ParseResult[SLILProgram] = parseAll(progWithCases, s)
+  def parse(s: CharSequence): ParseResult[SLILProgram] = parseAll(progWithCases, s)
+
+  /**
+    * The parse function.
+    *
+    * @param s the string containing the Random Program
+    * @return a ParseResult with the program parsed in the target SLILProgram
+    */
+  def parse(s: java.io.Reader): ParseResult[SLILProgram] = parseAll(progWithCases, s)
+
+  /**
+    * The parse function.
+    *
+    * @param s the string containing the Random Program
+    * @return a ParseResult with the program parsed in the target SLILProgram
+    */
+  def parse(s: Reader[Char]): ParseResult[SLILProgram] = parseAll(progWithCases, s)
 }
 
 /**

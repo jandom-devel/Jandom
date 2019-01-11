@@ -37,9 +37,8 @@ trait SLILLoader {
     * A sequence of SLIL program with corresponding file name.
     */
   val slils: Seq[(String, SLILProgram)] = for (r <- resources) yield {
-    val stream = Files.newInputStream(r)
-    val content = scala.io.Source.fromInputStream(stream).getLines.mkString("\n")
-    (r.getFileName.toString, RandomParser().parse(content).get)
+    val stream = Files.newBufferedReader(r)
+    (r.getFileName.toString, RandomParser().parse(stream).get)
   }
 
 }

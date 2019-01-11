@@ -16,7 +16,6 @@
   * along with JANDOM.  If not, see <http://www.gnu.org/licenses/>.
   */
 
-
 package it.unich.jandom.benchmark
 
 import java.nio.file._
@@ -39,9 +38,8 @@ trait FASTLoader {
     * A sequence of Alice models.
     */
   val ltss: Seq[LTS] = for (r <- resources) yield {
-    val stream = Files.newInputStream(r)
-    val content = scala.io.Source.fromInputStream(stream).getLines.mkString("\n")
-    FastParser(postfix = r.getFileName.toString).parse(content).get
+    val stream = Files.newBufferedReader(r)
+    FastParser(postfix = r.getFileName.toString).parse(stream).get
   }
 
 }
