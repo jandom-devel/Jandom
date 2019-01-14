@@ -3,7 +3,7 @@ import CustomKeys._
 //*** Libraries
 
 libraryDependencies ++= Seq(
-  "it.unich.scalafix" %% "scalafix" % "0.7.0-SNAPSHOT",
+  "it.unich.scalafix" %% "scalafix" % "0.7.0",
   "org.apache.commons" % "commons-text" % "1.6",
   "org.typelevel" %% "spire" % "0.16.0",
   "org.rogach" %% "scallop" % "3.1.5",

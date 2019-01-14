@@ -22,7 +22,7 @@ import it.unich.jandom.benchmark.FASTLoader
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.targets.lts.Location
 import it.unich.scalafix.FixpointSolver._
-import it.unich.scalafix.FixpointSolverListener.PerformanceListener
+import it.unich.scalafix.FixpointSolverTracer
 import it.unich.scalafix.finite.FiniteFixpointSolver
 import it.unich.scalafix.lattice.Domain
 
@@ -48,9 +48,9 @@ object FASTComparison extends App with FASTLoader {
     ("mixed localized restart", SCP.copy(boxscope = BoxScope.Localized, restartstrategy = RestartStrategy.Restart)))
 
   val results = (for (lts <- ltss; eqs = lts.toEquationSystem(dom); (name, p) <- parameters) yield {
-    val l = new PerformanceListener
-    val param = p.copy(listener = l)
-    ((lts, name), (FiniteFixpointSolver(eqs, param), l.evaluations))
+    val t = FixpointSolverTracer.performance[lts.ProgramPoint, dom.Property]
+    val param = p.copy(tracer = t)
+    ((lts, name), (FiniteFixpointSolver(eqs, param), t.evaluations))
   }).toMap
 
   for ((name, _) <- parameters) {
