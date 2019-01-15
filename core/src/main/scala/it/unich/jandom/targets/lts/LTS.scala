@@ -23,6 +23,7 @@ import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.targets._
 import it.unich.jandom.targets.eqs.EQS
 import it.unich.jandom.targets.parameters._
+import it.unich.scalafix.assignments.InputAssignment
 import it.unich.scalafix.finite.GraphEquationSystem
 import it.unich.scalafix.lattice.Domain
 
@@ -183,13 +184,9 @@ class LTS(val name: String, val locations: IndexedSeq[Location], val transitions
     // this are the initial non empty states of the LTS
     val (startrho, inputlocs) = initRegion match {
       case Some(Region(_, Some(initloc), initcond)) =>
-        ( { loc: Location => if (loc == initloc) initcond.analyze(dom.top(env.size)) else empty }, Set(initloc))
+        (InputAssignment.conditional[Location, dom.Property](initloc, initcond.analyze(dom.top(env.size)), empty), Seq(initloc))
       case _ =>
-        ( { loc: Location =>
-          (dom.top(env.size) /: loc.conditions) {
-            (prop, cond) => cond.analyze(prop)
-          }
-        }, locations)
+        ( { loc: Location => (dom.top(env.size) /: loc.conditions) ((prop, cond) => cond.analyze(prop)) }, locations)
     }
     GraphEquationSystem[Location, dom.Property, Edge](
       unknowns = locations,
