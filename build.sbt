@@ -22,7 +22,7 @@ run in Jmh := (run in JandomExtended in Jmh).evaluated
 
 //*** Do not update snapshots every time
 
-updateOptions in ThisBuild := updateOptions.value.withLatestSnapshots(false)
+updateOptions in ThisBuild := (updateOptions in ThisBuild).value.withLatestSnapshots(false)
 
 //*** Scala configuration
 
