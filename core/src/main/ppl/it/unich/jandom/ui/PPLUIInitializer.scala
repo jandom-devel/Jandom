@@ -32,5 +32,6 @@ private[ui] object PPLUIInitializer {
   if (PPLInitializer.isSuccessful) NumericalDomains.values ++= Seq(
     ParameterValue(PPLDomain[Double_Box](), "PPL Double_Box", "PPL based implementation of boxes over double (using reflection)."),
     ParameterValue(PPLDomain[Octagonal_Shape_double](), "PPL Octagon_Shape_double", "PPL based implementation of Octagon over double (using reflection)."),
-    ParameterValue(PPLDomain[C_Polyhedron](), "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using reflection)."))
+    ParameterValue(PPLDomain[C_Polyhedron](), "PPL C_Polyhedron", "PPL based implementation of closed polyhedra (using reflection)."),
+    ParameterValue(PPLDomain[Parallelotope](), "PPL Parallelotope", "PPL based implementation of parallelotopes (using reflection)."))
 }
