@@ -137,9 +137,6 @@ lazy val extended = project
   .settings(
     additionalSources,
 
-    //*** Eclipse plugin
-    EclipseKeys.configurations += Jmh,
-
     //*** IDEA plugin
     Compile / ideOutputDirectory := Some(file("extended/target/idea/classes")),
     Test / ideOutputDirectory := Some(file("extended/target/idea/test-classes")),
@@ -167,8 +164,3 @@ ThisBuild / assembly / assemblyMergeStrategy := {
 run := (core / Compile / run).evaluated
 Test / run := (core / Test / run).evaluated
 Jmh / run := (extended / Jmh / run).evaluated
-
-//*** Eclipse plugin
-// unfortunately, it is not possible to choose the compiler version with the eclipse plugin.
-
-EclipseKeys.eclipseOutput := Some("target.eclipse")
