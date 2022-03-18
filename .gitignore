@@ -19,3 +19,10 @@ target.eclipse/
 # ensime
 .ensime
 .ensime_cache/
+
+# VSCode
+.metals/
+.bloop/
+.vscode/
+.bsp/
+metals.sbt
