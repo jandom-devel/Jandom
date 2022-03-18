@@ -1,5 +1,4 @@
 import sbt._
-import Keys._
 
 object CustomKeys {
   val apronJar = settingKey[Option[String]]("Location of the Apron library")

@@ -1,103 +1,14 @@
 import CustomKeys._
 
-//*** Declare projects
-
-lazy val JandomCore = project in file("core") enablePlugins(BuildInfoPlugin)
-
-lazy val JandomExtended = project in file("extended") dependsOn JandomCore % "compile->compile;test->test"
-
-lazy val Jandom = project in file(".") aggregate (JandomCore, JandomExtended) 
-
-//*** This delegates the Jandom run task to execute the run task in the Jandom sub-projects
-
-aggregate in assembly := false
-
-assembly := (assembly in JandomExtended).value
-
-run := (run in JandomCore in Compile).evaluated
-
-run in Test := (run in JandomCore in Test).evaluated
-
-run in Jmh := (run in JandomExtended in Jmh).evaluated
-
-//*** Do not update snapshots every time
-
-updateOptions in ThisBuild := (updateOptions in ThisBuild).value.withLatestSnapshots(false)
-
-//*** Scala configuration
-
-scalaVersion in ThisBuild := "2.12.8"
-
-scalacOptions in ThisBuild ++= Seq("-deprecation", "-feature", "-unchecked", "-Xlint:_,-missing-interpolator", "-Ywarn-unused:-implicits")
-
-fork in ThisBuild := true
-
-//*** Resolvers
-
-resolvers in ThisBuild ++= Seq (
-  Resolver.sonatypeRepo("releases"),
-  Resolver.sonatypeRepo("snapshots"),
-  "Soot snapshot" at "https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-snapshot/",
-  "Soot release" at
-   "https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-release/"
-)
-
-//*** Custom keys
-
-pplJar in ThisBuild := {
-  try {
-    val PPLPathName = scala.sys.process.Process("ppl-config -l").lineStream.head+"/ppl/ppl_java.jar"
-    if (file(PPLPathName).exists) Some(PPLPathName) else None
-  } catch {
-    case _ : Exception => None
-  }
-}
-
-apronJar in ThisBuild := {
-  try {
-    val ApronPathName = "/usr/share/java/apron.jar"
-    // TODO Parametrize
-    if (file(ApronPathName).exists) Some(ApronPathName) else None
-  } catch {
-    case _ : Exception => None
-  }
-}
-
-gmpJar in ThisBuild := {
-  try {
-    val GMPPathName = "/usr/share/java/gmp.jar"
-    // TODO Parametrize
-    if (file(GMPPathName).exists) Some(GMPPathName) else None
-  } catch {
-    case _ : Exception => None
-  }
-}
-
-gitHeadCommitSHA in ThisBuild := scala.sys.process.Process("git rev-parse HEAD").lineStream.head
-
-//*** Eclipse plugin
-
-// unfortunately, it is not possible to choose the compiler version with the eclipse plugin.
-
-EclipseKeys.eclipseOutput := Some("target.eclipse")
-
 //*** Metadata for the build
 
-name in ThisBuild := "Jandom"
-
-version in ThisBuild := "0.1.3-SNAPSHOT"
-
-description in ThisBuild := "A static analyzer based on abstract interpretation"
-
-organization in ThisBuild := "it.unich.jandom"
-
-licenses in ThisBuild := Seq("LGPL-3.0" -> url("https://opensource.org/licenses/LGPL-3.0"))
-
-homepage in ThisBuild := Some(url("https://github.com/jandom-devel/Jandom"))
-
-startYear in ThisBuild := Some(2011)
-
-developers in ThisBuild := List(
+ThisBuild / version:= "0.1.3-SNAPSHOT"
+ThisBuild / description := "A static analyzer based on abstract interpretation"
+ThisBuild / organization := "it.unich.jandom"
+ThisBuild / licenses := Seq("LGPL-3.0" -> url("https://opensource.org/licenses/LGPL-3.0"))
+ThisBuild / homepage:= Some(url("https://github.com/jandom-devel/Jandom"))
+ThisBuild / startYear := Some(2011)
+ThisBuild / developers := List(
   Developer(
     "amato",
     "Gianluca Amato", "gianluca.amato@unich.it",
@@ -109,15 +20,151 @@ developers in ThisBuild := List(
     url("http://www.sci.unich.it/~scozzari/")
   )
 )
-
-scmInfo in ThisBuild := Some(ScmInfo(
+ThisBuild / scmInfo := Some(ScmInfo(
   url("https://github.com/jandom-devel/Jandom"),
   "scm:git:https://github.com/jandom-devel/Jandom.git",
   Some("scm:git:https://github.com/jandom-devel/Jandom.git")
 ))
 
-libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "test"
+//*** Scala configuration
 
-// Following line is workaround for https://github.com/sbt/sbt-native-packager/issues/1063#issuecomment-343836338
-updateConfiguration in updateSbtClassifiers := (updateConfiguration in updateSbtClassifiers).value.withMissingOk(true)
+ThisBuild / scalaVersion := "2.12.8"
+ThisBuild / scalacOptions ++= Seq(
+  "-deprecation",
+  "-feature",
+  "-unchecked",
+  "-Xlint:_,-missing-interpolator",
+  "-Ywarn-unused:-implicits"
+)
 
+//*** Build system configuration
+
+ThisBuild / fork := true
+ThisBuild / resolvers ++= Seq (
+  Resolver.sonatypeRepo("releases"),
+  Resolver.sonatypeRepo("snapshots"),
+  "Soot snapshot" at "https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-snapshot/",
+  "Soot release" at "https://soot-build.cs.uni-paderborn.de/nexus/repository/soot-release/"
+)
+
+//*** Custom keys
+
+ThisBuild / pplJar := {
+  try {
+    val PPLPathName = scala.sys.process.Process("ppl-config -l").lineStream.head+"/ppl/ppl_java.jar"
+    if (file(PPLPathName).exists) Some(PPLPathName) else None
+  } catch {
+    case _ : Exception => None
+  }
+}
+ThisBuild / apronJar := {
+  try {
+    val ApronPathName = "/usr/share/java/apron.jar"
+    // TODO Parameterize
+    if (file(ApronPathName).exists) Some(ApronPathName) else None
+  } catch {
+    case _ : Exception => None
+  }
+}
+ThisBuild / gmpJar := {
+  try {
+    val GMPPathName = "/usr/share/java/gmp.jar"
+    // TODO Parameterize
+    if (file(GMPPathName).exists) Some(GMPPathName) else None
+  } catch {
+    case _ : Exception => None
+  }
+}
+ThisBuild / gitHeadCommitSHA := {
+  scala.sys.process.Process("git rev-parse HEAD").lineStream.head
+}
+
+lazy val additionalSources = Seq(
+     //*** Additional source directories for PPL
+    Compile / unmanagedSourceDirectories ++= pplJar.value.toSeq map { _ => (Compile / sourceDirectory).value / "ppl" },
+    Test / unmanagedSourceDirectories ++= pplJar.value.toSeq map { _ => (Test / sourceDirectory).value / "ppl" },
+
+    //*** Additional source directories for Apron
+    Compile / unmanagedSourceDirectories ++= apronJar.value.toSeq map { _ => (Compile / sourceDirectory).value / "apron" },
+    Test / unmanagedSourceDirectories ++= apronJar.value.toSeq map { _ => (Test / sourceDirectory).value / "apron" }
+)
+
+//*** Declare projects
+
+lazy val jandom = (project in file("."))
+  .aggregate(core, extended) 
+
+lazy val core = project
+  .enablePlugins(BuildInfoPlugin)
+  .settings(
+    additionalSources,
+
+    //*** Library dependencies
+    libraryDependencies ++= Seq(
+      "it.unich.scalafix" %% "scalafix" % "0.7.0",
+      "org.apache.commons" % "commons-text" % "1.6",
+      "org.typelevel" %% "spire" % "0.16.0",
+      "org.rogach" %% "scallop" % "3.1.5",
+      "org.scala-lang.modules" %% "scala-swing" % "2.0.3",
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
+      "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+      // ASM is included in the Soot Jar
+      "ca.mcgill.sable" % "soot" % "3.2.0",
+      // SLF4J 1.7.5 is used in Soot
+      "org.slf4j" % "slf4j-nop" % "1.7.5",
+      "org.scalatest" %% "scalatest" % "3.0.5" % Test,
+      "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
+      "org.mockito" % "mockito-core" % "2.23.4" % Test
+    ),
+
+    //*** Add PPL, Apron, GMP jars
+    Compile / unmanagedJars ++= pplJar.value.toSeq map file,
+    Compile / unmanagedJars ++= apronJar.value.toSeq map file,
+    Compile / unmanagedJars ++= gmpJar.value.toSeq map file,
+
+    //*** BuildInfo plugin
+    buildInfoKeys ++= Seq[BuildInfoKey](name, version, scalaVersion, sbtVersion, gitHeadCommitSHA),
+    buildInfoPackage := "it.unich.jandom",
+
+    //*** IDEA plugin
+    Compile / ideOutputDirectory := Some(file("core/target/idea/classes")),
+    Test / ideOutputDirectory := Some(file("core/target/idea/test-classes")),
+  )
+
+lazy val extended = project
+  .dependsOn(core % "compile->compile;test->test")
+  .enablePlugins(JmhPlugin)
+  .settings(
+    additionalSources,
+
+    //*** Assembly plugin
+    assembly / test := { },
+    assembly / assemblyMergeStrategy ~= { (oldStrategy) =>  {
+        case PathList(ps @ _*) if ps.last.endsWith(".class")  => MergeStrategy.last
+        case x => oldStrategy(x)
+      }
+    },
+
+    //*** Eclipse plugin
+    EclipseKeys.configurations += Jmh,
+
+    //*** IDEA plugin
+    Compile / ideOutputDirectory := Some(file("extended/target/idea/classes")),
+    Test / ideOutputDirectory := Some(file("extended/target/idea/test-classes")),
+
+    //*** JMH Plugin
+    Jmh / dependencyClasspath ++= (Test / exportedProducts).value
+  )
+
+//*** This delegates the Jandom run task to execute the run task in the Jandom sub-projects
+
+assembly / aggregate := false
+assembly := (extended / assembly).value
+run := (core / Compile / run).evaluated
+Test / run := (core / Test / run).evaluated
+Jmh / run := (extended / Jmh / run).evaluated
+
+//*** Eclipse plugin
+// unfortunately, it is not possible to choose the compiler version with the eclipse plugin.
+
+EclipseKeys.eclipseOutput := Some("target.eclipse")
