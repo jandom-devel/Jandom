@@ -137,14 +137,6 @@ lazy val extended = project
   .settings(
     additionalSources,
 
-    //*** Assembly plugin
-    assembly / test := { },
-    assembly / assemblyMergeStrategy ~= { (oldStrategy) =>  {
-        case PathList(ps @ _*) if ps.last.endsWith(".class")  => MergeStrategy.last
-        case x => oldStrategy(x)
-      }
-    },
-
     //*** Eclipse plugin
     EclipseKeys.configurations += Jmh,
 
@@ -153,13 +145,25 @@ lazy val extended = project
     Test / ideOutputDirectory := Some(file("extended/target/idea/test-classes")),
 
     //*** JMH Plugin
-    Jmh / dependencyClasspath ++= (Test / exportedProducts).value
+    Jmh / dependencyClasspath ++= (Test / exportedProducts).value,
+
+    assembly / assemblyJarName := "jandom-" + version.value + ".jar",
+    assembly / assemblyOutputPath := (ThisBuild / baseDirectory).value / (assembly / assemblyJarName).value
   )
 
-//*** This delegates the Jandom run task to execute the run task in the Jandom sub-projects
+//** Configure the assembly plugin
 
 assembly / aggregate := false
 assembly := (extended / assembly).value
+ThisBuild / assembly / assemblyMergeStrategy := {
+    case PathList(ps @ _*) if ps.last endsWith ".class"  => MergeStrategy.last
+    case x => 
+      val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
+      oldStrategy(x)
+}
+
+//*** This delegates the Jandom run task to execute the run task in the Jandom sub-projects
+
 run := (core / Compile / run).evaluated
 Test / run := (core / Test / run).evaluated
 Jmh / run := (extended / Jmh / run).evaluated
