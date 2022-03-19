@@ -2,7 +2,7 @@ import CustomKeys._
 
 //*** Metadata for the build
 
-ThisBuild / version:= "0.1.3-SNAPSHOT"
+ThisBuild / version := "0.1.3-SNAPSHOT"
 ThisBuild / description := "A static analyzer based on abstract interpretation"
 ThisBuild / organization := "it.unich.jandom"
 ThisBuild / licenses := Seq("LGPL-3.0" -> url("https://opensource.org/licenses/LGPL-3.0"))
@@ -147,6 +147,11 @@ lazy val extended = project
     assembly / assemblyJarName := "jandom-" + version.value + ".jar",
     assembly / assemblyOutputPath := (ThisBuild / baseDirectory).value / (assembly / assemblyJarName).value
   )
+
+
+//** Do not warn for unused keys
+
+Global / excludeLintKeys += ideOutputDirectory
 
 //** Configure the assembly plugin
 
