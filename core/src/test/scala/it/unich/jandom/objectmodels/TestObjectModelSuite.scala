@@ -18,13 +18,13 @@
 
 package it.unich.jandom.objectmodels
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
 /**
  * A test for the TestObjectModel.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class TestObjectModelSuite extends FunSpec with ObjectModelSuite {
+class TestObjectModelSuite extends AnyFunSpec with ObjectModelSuite {
   val om = TestObjectModel
   val someTypes = Table[om.Type]("type", om.tsuper, om.tmiddle, om.tsub, om.tother, om.tprim)
 }

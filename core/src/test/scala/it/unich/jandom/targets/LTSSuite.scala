@@ -21,7 +21,7 @@ package it.unich.jandom.targets
 import java.io.File
 import java.io.FileReader
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.parsers.FastParser
@@ -31,7 +31,7 @@ import it.unich.scalafix.finite.FiniteFixpointSolver
 import it.unich.scalafix.FixpointSolver._
 import it.unich.scalafix.lattice.Domain
 
-class LTSSuite extends FunSuite {
+class LTSSuite extends AnyFunSuite {
   val dom = BoxDoubleDomain()
 
   implicit val scalafixDomain: Domain[dom.Property] = dom.ScalaFixDomain

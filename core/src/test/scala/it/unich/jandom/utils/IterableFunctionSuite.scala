@@ -18,10 +18,10 @@
 
 package it.unich.jandom.utils
 
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.FunSpec
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import org.scalatest.funspec.AnyFunSpec
 
-class IterableFunctionSuite extends FunSpec with PropertyChecks {
+class IterableFunctionSuite extends AnyFunSpec with ScalaCheckPropertyChecks {
   describe("An empty iterable function") {
     val f = IterableFunction.empty[Int,Int]
     it("has empty domain") {

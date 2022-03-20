@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.LinearForm
@@ -30,7 +30,7 @@ import NumericCondition._
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class NumericConditionSuite extends FunSuite {
+class NumericConditionSuite extends AnyFunSuite {
   val BoxDouble = BoxDoubleDomain()
   val env = Environment("x","y")
   val lf1 = LinearForm(-3,1,0)

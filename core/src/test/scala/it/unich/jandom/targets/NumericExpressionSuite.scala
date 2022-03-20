@@ -21,8 +21,8 @@ package it.unich.jandom.targets
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito
 import org.mockito.Mockito.when
-import org.scalatest.FunSuite
-import org.scalatest.mockito.MockitoSugar
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatest.prop.TableDrivenPropertyChecks
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
@@ -33,7 +33,7 @@ import it.unich.jandom.targets.NumericExpression._
  * The test suite for NumericExpression.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class NumericExpressionSuite extends FunSuite with MockitoSugar with TableDrivenPropertyChecks {
+class NumericExpressionSuite extends AnyFunSuite with MockitoSugar with TableDrivenPropertyChecks {
 
   test("toString with mocks") {
     assertResult("?") { NonDeterministicExpression.toString }

@@ -18,7 +18,7 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.NumericalDomain
@@ -29,7 +29,7 @@ import parma_polyhedra_library.Octagonal_Shape_double
  * Test suite for the PPLProperty numerical domain.
  * @author Gianluca Amato <g.amato@unich.it>
  */
-class PPLMacroPropertySuite extends FunSuite {
+class PPLMacroPropertySuite extends AnyFunSuite {
   val octDomain = PPLDomainMacro[Octagonal_Shape_double]
   val boxDomain = PPLDomainMacro[Double_Box]
 

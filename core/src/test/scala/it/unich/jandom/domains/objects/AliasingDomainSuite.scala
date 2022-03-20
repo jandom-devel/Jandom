@@ -18,7 +18,7 @@
 
 package it.unich.jandom.domains.objects
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.PrivateMethodTester
 import org.scalatest.prop.Tables._
 
@@ -75,7 +75,7 @@ trait AliasingDomainSuiteParameters {
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class AliasingDomainSuite extends FunSpec with AliasingDomainSuiteParameters with PrivateMethodTester
+class AliasingDomainSuite extends AnyFunSpec with AliasingDomainSuiteParameters with PrivateMethodTester
   with ObjectDomainSuite with PreciseFiberChange with PreciseDefiniteNullness
   with PreciseObjectDomain with PreciseDefiniteWeakAliasing {
 

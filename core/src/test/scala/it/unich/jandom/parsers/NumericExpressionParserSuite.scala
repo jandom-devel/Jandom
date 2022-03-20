@@ -18,7 +18,7 @@
 
 package it.unich.jandom.parsers
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import it.unich.jandom.targets.Environment
 import it.unich.jandom.targets.NumericExpression._
@@ -26,7 +26,7 @@ import it.unich.jandom.targets.NumericExpression._
 /**
  * Test suite for NumericExpressionParser
  */
-class NumericExpressionParserSuite extends FunSuite {
+class NumericExpressionParserSuite extends AnyFunSuite {
 
   val parser = new TempParser
 

@@ -93,7 +93,7 @@ class RationalExt(val value: Rational, private val special: RationalExt.SpecialV
   def unary_+ = this
 
   def unary_- = special match {
-    case NORMAL => { var z = Rational(0); z = value.unary_-(); new RationalExt(z, NORMAL) }
+    case NORMAL => new RationalExt(- value, NORMAL)
     case POSINF => RationalExt.NegativeInfinity
     case NEGINF => RationalExt.PositiveInfinity
     case _ => RationalExt.NaN

@@ -25,7 +25,7 @@ import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.NumericExpression._
 import it.unich.jandom.targets.lts._
 import it.unich.jandom.targets.{Environment, NumericAssignment}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
   * Test suite for `it.unich.jandom.parsers.Fastparser`.
@@ -33,7 +33,7 @@ import org.scalatest.FunSuite
   * @author Gianluca Amato <gianluca.amato@unich.it>
   *
   */
-class FastParserSuite extends FunSuite {
+class FastParserSuite extends AnyFunSuite {
 
   val dir = new File(getClass.getResource("/fast/").toURI)
   for (model <- dir.listFiles()) {

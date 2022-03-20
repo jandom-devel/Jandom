@@ -21,8 +21,8 @@ package it.unich.jandom.parsers
 import java.io.File
 import java.io.FilenameFilter
 
-import org.scalatest.FunSuite
-import org.scalatest.prop.Checkers
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.scalacheck.Checkers
 
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.Environment
@@ -37,7 +37,7 @@ import it.unich.jandom.targets.slil.WhileStmt
   *
   * @author Gianluca Amato <gianluca.amato@unich.it>
   */
-class RandomParserSuite extends FunSuite with Checkers {
+class RandomParserSuite extends AnyFunSuite with Checkers {
   test("very simple random program") {
     val prog =
       """

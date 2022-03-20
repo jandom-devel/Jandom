@@ -22,7 +22,7 @@ import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.{Environment, NumericAssignment}
 import it.unich.jandom.targets.NumericCondition._
 import it.unich.jandom.targets.lts.{LTS, Location, Transition}
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
   * Test suite for LPInv Parser.
@@ -30,7 +30,7 @@ import org.scalatest.FunSuite
   * @author Gianluca Amato <gianluca.amato@unich.it>
   *
   */
-class LPInvParserSuite extends FunSuite {
+class LPInvParserSuite extends AnyFunSuite {
   test("simple LTS") {
     val env = Environment("x")
     val l1 = Location("start", Nil)

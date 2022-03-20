@@ -18,14 +18,14 @@
 
 package it.unich.jandom.domains
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.prop.{TableDrivenPropertyChecks, TableFor1, TableFor2}
 
 /**
  * This is a common trait for test suites of abstract domains.
  * @author Gianluca Amato <gamato@unich.it>
  */
-trait AbstractDomainSuite extends FunSpec with TableDrivenPropertyChecks {
+trait AbstractDomainSuite extends AnyFunSpec with TableDrivenPropertyChecks {
 
   /**
    * The abstract domain to test

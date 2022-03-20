@@ -18,11 +18,11 @@
 
 package it.unich.jandom.domains.numerical.apron
 import org.scalacheck.Arbitrary.arbitrary
-import org.scalatest.PropSpec
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.propspec.AnyPropSpec
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import spire.math.Rational
 
-class MetaSpecification extends PropSpec with PropertyChecks {
+class MetaSpecification extends AnyPropSpec with ScalaCheckPropertyChecks {
   import it.unich.jandom.domains.numerical.Utils
   import Utils._
   import Rationals._

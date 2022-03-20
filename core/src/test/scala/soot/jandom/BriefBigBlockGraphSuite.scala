@@ -20,7 +20,7 @@ package soot.jandom
 
 import scala.collection.JavaConverters._
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import it.unich.jandom.targets.SootTests
 
 /**
@@ -28,7 +28,7 @@ import it.unich.jandom.targets.SootTests
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class BriefBigBlockGraphSuite extends FunSpec with SootTests {
+class BriefBigBlockGraphSuite extends AnyFunSpec with SootTests {
   val scene = initSoot()
   val c = scene.loadClassAndSupport("javatest.SimpleTest")
 

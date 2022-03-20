@@ -19,9 +19,9 @@
 
 package it.unich.jandom.domains.numerical.apron
 import it.unich.jandom.domains.numerical._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
-class ApronSuite extends FunSuite {
+class ApronSuite extends AnyFunSuite {
   val dom = ApronIntOctagonDomain()
 
   test ("linearAssignment sanity check") {

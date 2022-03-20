@@ -19,7 +19,7 @@
 package it.unich.jandom.domains.objects
 
 import it.unich.jandom.domains.CartesianFiberedDomainSuite
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
 /**
  * This is a trait for test for cartesian domains with precise operations
@@ -27,7 +27,7 @@ import org.scalatest.FunSpec
  *
  */
 trait PreciseFiberChange  {
-  this: FunSpec with CartesianFiberedDomainSuite =>
+  this: AnyFunSpec with CartesianFiberedDomainSuite =>
 
   describe("The delVariable method") {
     it("transforms bottom top bottom") {

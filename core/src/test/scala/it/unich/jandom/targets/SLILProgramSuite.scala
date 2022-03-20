@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import NumericCondition._
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
@@ -34,7 +34,7 @@ import it.unich.jandom.targets.slil._
   * @author Gianluca Amato <gianluca.amato@unich.it>
   *
   */
-class SLILProgramSuite extends FunSuite {
+class SLILProgramSuite extends AnyFunSuite {
   val BoxDouble = BoxDoubleDomain()
 
   test("simple program 1") {

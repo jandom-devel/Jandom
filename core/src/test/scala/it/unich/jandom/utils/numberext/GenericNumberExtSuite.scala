@@ -18,13 +18,13 @@
 
 package it.unich.jandom.utils.numberext
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * Test suite for generic extended numbers
  * @author Gianluca Amato <gamato@unich.it>
  */
-class GenericNumberExtSuite extends FunSuite { 
+class GenericNumberExtSuite extends AnyFunSuite { 
    
   import GenericNumberExt._
 

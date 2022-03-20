@@ -18,13 +18,13 @@
 
 package it.unich.jandom.domains.objects
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * Test suite for unordered pairs.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class UPSuite extends FunSuite {
+class UPSuite extends AnyFunSuite {
   test ("UP's are unrodered"){ assert( UP(2,3) == UP(3,2) )}
   test ("UP's may be trasnformed into ordered pairs") { assert( UP.unapply(UP(3,2)) === Some((2,3)) ) }
   test ("replacement of elements") {

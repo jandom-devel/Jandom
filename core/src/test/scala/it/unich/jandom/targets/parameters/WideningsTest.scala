@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets.parameters
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.targets.parameters.WideningSpecs._
@@ -28,7 +28,7 @@ import it.unich.jandom.targets.parameters.WideningSpecs._
  * @author Gianluca Amato <gianluca.amato@unich.it>
  *
  */
-class WideningsTest extends FunSuite {
+class WideningsTest extends AnyFunSuite {
   val BoxDouble = BoxDoubleDomain()
 
   test("default widening for boxes") {

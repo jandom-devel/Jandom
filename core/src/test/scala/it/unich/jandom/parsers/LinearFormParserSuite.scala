@@ -18,7 +18,7 @@
 
 package it.unich.jandom.parsers
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import it.unich.jandom.targets.Environment
 import it.unich.jandom.domains.numerical.LinearForm
@@ -27,7 +27,7 @@ import it.unich.jandom.domains.numerical.LinearForm
  * Test suite for LinearFormParser.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class LinearFormParserSuite extends FunSuite {
+class LinearFormParserSuite extends AnyFunSuite {
 
   val parser = new TempParser
 

@@ -18,7 +18,7 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
 import it.unich.jandom.domains.DomainTransformation
 import it.unich.jandom.domains.EmptyExistsSuite
@@ -43,7 +43,7 @@ private[ppl] trait PPLDomainSuiteParameters[Shape <: AnyRef] {
  * Test suite for the PPLProperty numerical domain, instantiated with the Double_Box shape
  * @author Gianluca Amato <gamato@unich.it>
  */
-class PPLDomainSuiteBox extends { val dom = PPLDomain[Double_Box]() } with FunSpec
+class PPLDomainSuiteBox extends { val dom = PPLDomain[Double_Box]() } with AnyFunSpec
   with PPLDomainSuiteParameters[Double_Box] with NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite
   with PreciseIntersectionSuite {
 
@@ -67,7 +67,7 @@ class PPLDomainSuiteBox extends { val dom = PPLDomain[Double_Box]() } with FunSp
  * Test suite for the PPLProperty numerical domain, instantiated with the Double_Box shape
  * @author Gianluca Amato <gamato@unich.it>
  */
-class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double]() } with FunSpec
+class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double]() } with AnyFunSpec
   with PPLDomainSuiteParameters[Octagonal_Shape_double] with NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite {
 
   val full = dom.top(3)

@@ -18,10 +18,10 @@
 
 package it.unich.jandom.utils
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import it.unich.jandom.utils.PMaps._
 
-class PMapSuite extends FunSpec {
+class PMapSuite extends AnyFunSpec {
   val pa = Parameter[Int]
   val valuepa = 2
 

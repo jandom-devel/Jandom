@@ -17,10 +17,13 @@
   */
 
 package it.unich.jandom.domains.numerical
+
 import it.unich.jandom.domains.numerical.octagon._
 import it.unich.jandom.domains.numerical.octagon.simple._
-import org.scalatest.PropSpec
-import org.scalatest.prop.PropertyChecks
+
+import org.scalatest.propspec.AnyPropSpec
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+
 import it.unich.jandom.utils.numberext.RationalExt
 
 /**
@@ -31,7 +34,7 @@ import it.unich.jandom.utils.numberext.RationalExt
 
 // TODO: Extend to union, widening and intersection operations
 
-class BisimulationOctagonSpecification extends PropSpec with PropertyChecks {
+class BisimulationOctagonSpecification extends AnyPropSpec with ScalaCheckPropertyChecks {
   import it.unich.jandom.domains.numerical.Utils.Ints._
   val boxDomain : BoxRationalDomain = BoxRationalDomain()
 
@@ -70,7 +73,7 @@ class BisimulationOctagonSpecification extends PropSpec with PropertyChecks {
 package octagon.optimized {
   import it.unich.jandom.utils.numberext.IField
 
-  class BisimulationOptimizedOctagonSpecification extends PropSpec with PropertyChecks {
+  class BisimulationOptimizedOctagonSpecification extends AnyPropSpec with ScalaCheckPropertyChecks {
     import it.unich.jandom.domains.numerical.Utils.Ints._
     val boxDomain : BoxRationalDomain = BoxRationalDomain()
 

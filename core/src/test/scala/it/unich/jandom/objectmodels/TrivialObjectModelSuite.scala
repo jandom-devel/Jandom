@@ -18,13 +18,13 @@
 
 package it.unich.jandom.objectmodels
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
 /**
  * A test for the TrivialObjectModel.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class TrivialObjectModelSuite extends FunSpec with ObjectModelSuite {
+class TrivialObjectModelSuite extends AnyFunSpec with ObjectModelSuite {
   val om = TrivialObjectModel
   val someTypes = Table("type", ())
 }

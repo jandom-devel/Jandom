@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets.parameters
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.targets.parameters.NarrowingSpecs._
@@ -28,7 +28,7 @@ import it.unich.jandom.targets.parameters.NarrowingSpecs._
  * @author Gianluca Amato <gianluca.amato@unich.it>
  *
  */
-class NarrowingsTest extends FunSpec {
+class NarrowingsTest extends AnyFunSpec {
   val BoxDouble = BoxDoubleDomain()
 
   describe("DelayedNarrowing") {

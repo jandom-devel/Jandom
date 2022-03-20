@@ -18,7 +18,7 @@
 
 package it.unich.jandom.domains.objects
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.prop.TableDrivenPropertyChecks
 
 import it.unich.jandom.domains.CartesianFiberedDomainSuite
@@ -30,7 +30,7 @@ import it.unich.jandom.objectmodels.ObjectModel
  * @author Gianluca Amato <gamato@unich.it>
  */
 trait ObjectDomainSuite extends CartesianFiberedDomainSuite with TableDrivenPropertyChecks {
-  this: FunSpec =>
+  this: AnyFunSpec =>
 
   val om: ObjectModel
   val dom: ObjectDomain[om.type]

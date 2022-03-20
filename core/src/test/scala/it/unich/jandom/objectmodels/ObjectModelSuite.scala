@@ -18,7 +18,7 @@
 
 package it.unich.jandom.objectmodels
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 import org.scalatest.prop.TableDrivenPropertyChecks
 import org.scalatest.prop.TableFor1
 
@@ -27,7 +27,7 @@ import org.scalatest.prop.TableFor1
  * @author Gianluca Amato <gamato@unich.it>
  * @todo Add a generator for paths
  */
-trait ObjectModelSuite extends FunSpec with  TableDrivenPropertyChecks  {
+trait ObjectModelSuite extends AnyFunSpec with TableDrivenPropertyChecks  {
 
   /**
    * The object model we want to test

@@ -18,7 +18,7 @@
 
 package it.unich.jandom.domains.numerical
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 import it.unich.jandom.domains.{EmptyExistsSuite, SeparatedTopAndBottomSuite}
 import it.unich.jandom.utils.numberext.{Bounds, DenseMatrix, DenseVector}
 
@@ -26,7 +26,7 @@ import it.unich.jandom.utils.numberext.{Bounds, DenseMatrix, DenseVector}
  * Test suite for the sum of interval and parallelotope domains.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class SumIntParallelotopeDomainSuite extends FunSpec  with NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite {
+class SumIntParallelotopeDomainSuite extends AnyFunSpec  with NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite {
   lazy val dom = SumBoxDoubleParallelotopeRationDomain()
 
   val box1 = dom.dom1(Array(-1, -1),Array(1,1))

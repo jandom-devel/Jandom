@@ -102,19 +102,21 @@ lazy val core = project
     //*** Library dependencies
     libraryDependencies ++= Seq(
       "it.unich.scalafix" %% "scalafix" % "0.7.0",
-      "org.apache.commons" % "commons-text" % "1.6",
-      "org.typelevel" %% "spire" % "0.16.0",
-      "org.rogach" %% "scallop" % "3.1.5",
-      "org.scala-lang.modules" %% "scala-swing" % "2.0.3",
-      "org.scala-lang.modules" %% "scala-parser-combinators" % "1.1.1",
+      "org.apache.commons" % "commons-text" % "1.9",
+      "org.typelevel" %% "spire" % "0.17.0",
+      "org.rogach" %% "scallop" % "4.1.0",
+      "org.scala-lang.modules" %% "scala-swing" % "3.0.0",
+      "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1",
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       // ASM is included in the Soot Jar
-      "ca.mcgill.sable" % "soot" % "3.2.0",
-      // SLF4J 1.7.5 is used in Soot
-      "org.slf4j" % "slf4j-nop" % "1.7.5",
-      "org.scalatest" %% "scalatest" % "3.0.5" % Test,
-      "org.scalacheck" %% "scalacheck" % "1.14.0" % Test,
-      "org.mockito" % "mockito-core" % "2.23.4" % Test
+      "ca.mcgill.sable" % "soot" % "4.1.0",
+      "org.scalatest" %% "scalatest-funsuite" % "3.2.11" % Test,
+      "org.scalatest" %% "scalatest-funspec" % "3.2.11" % Test,
+      "org.scalatest" %% "scalatest-propspec" % "3.2.11" % Test,
+      "org.scalatestplus" %% "scalacheck-1-15" % "3.2.11.0" % Test,
+      "org.scalatestplus" %% "mockito-4-2" % "3.2.11.0" % Test,
+      "org.scalacheck" %% "scalacheck" % "1.15.4" % Test,
+      "org.mockito" % "mockito-core" % "4.4.0" % Test
     ),
 
     //*** Add PPL, Apron, GMP jars

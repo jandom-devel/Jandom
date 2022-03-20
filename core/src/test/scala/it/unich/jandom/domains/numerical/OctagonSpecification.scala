@@ -19,15 +19,15 @@
 package it.unich.jandom.domains.numerical
 import it.unich.jandom.domains.numerical.octagon._
 import it.unich.jandom.utils.dbm._
-import org.scalatest.PropSpec
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.propspec.AnyPropSpec
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalacheck.Gen
 import it.unich.jandom.utils.numberext.RationalExt
 import spire.math.Rational
 import it.unich.jandom.domains.numerical.Utils.Ints._
 
 
-abstract class OctagonSpecification extends PropSpec with PropertyChecks {
+abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyChecks {
   implicit val boxDomain : BoxRationalDomain = BoxRationalDomain()
   val octDomain = OctagonDomain()
 

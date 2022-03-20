@@ -21,8 +21,8 @@ package it.unich.jandom.targets
 import org.mockito.Mockito
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.when
-import org.scalatest.FunSuite
-import org.scalatest.mockito.MockitoSugar
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.mockito.MockitoSugar
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.numerical.NumericalProperty
@@ -31,7 +31,7 @@ import it.unich.jandom.domains.numerical.NumericalProperty
  * The test suite for NumericAssignment
  * @author Gianluca Amato <gamato@unich.it>
  */
-class NumericAssignmentSuite extends FunSuite with MockitoSugar {
+class NumericAssignmentSuite extends AnyFunSuite with MockitoSugar {
 
   trait MockNumericProperty extends NumericalProperty[MockNumericProperty]
   val TESTVAR = 4

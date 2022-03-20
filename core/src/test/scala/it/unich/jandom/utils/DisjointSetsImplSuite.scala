@@ -18,9 +18,9 @@
 
 package it.unich.jandom.utils
 
-import org.scalatest.FunSpec
+import org.scalatest.funspec.AnyFunSpec
 
-class DisjointSetsImplSuite extends FunSpec {
+class DisjointSetsImplSuite extends AnyFunSpec {
   describe("A DisjointSetImpl") {
     it("should put initial elements in disjoint sets") {
       val ds = DisjointSetsImpl(1 until 10: _*)

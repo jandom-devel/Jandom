@@ -21,11 +21,11 @@ package it.unich.jandom.targets
 import scala.collection.JavaConverters._
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.targets.jvmasm.{AsmMethod, JVMEnvFixedFrame, JVMEnvFixedFrameDomain, UnsupportedASMInsnException}
 
-class JVMASMSuite extends FunSuite {
+class JVMASMSuite extends AnyFunSuite {
   val BoxDouble = BoxDoubleDomain()
 
   test("simple method analysis") {

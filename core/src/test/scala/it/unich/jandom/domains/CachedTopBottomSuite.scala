@@ -19,13 +19,13 @@
 package it.unich.jandom.domains
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * The test suite for the `CachedTopBottom` trait.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class CachedTopBottomSuite extends FunSuite  {
+class CachedTopBottomSuite extends AnyFunSuite  {
    val cached = new BoxDoubleDomain(false) with CachedTopBottom
 
    test("cached bottoms always returns the same objects") {

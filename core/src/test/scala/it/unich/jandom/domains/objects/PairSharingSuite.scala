@@ -18,7 +18,7 @@
 
 package it.unich.jandom.domains.objects
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import it.unich.jandom.objectmodels.ObjectModel
 import it.unich.jandom.objectmodels.NoArrays
 import it.unich.jandom.objectmodels.TrivialObjectModel
@@ -29,7 +29,7 @@ import it.unich.jandom.objectmodels.ObjectModelHelper
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class PairSharingSuite extends FunSuite {
+class PairSharingSuite extends AnyFunSuite {
   import scala.language.implicitConversions
 
   val dom = PairSharingDomain(TrivialObjectModel)

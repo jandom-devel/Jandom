@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets
 
-import org.scalatest._
+import org.scalatest.funspec.AnyFunSpec
 
 import it.unich.jandom.targets.jvmsoot.SootObjectModel
 import it.unich.jandom.objectmodels.ObjectModelSuite
@@ -29,7 +29,7 @@ import soot._
  * Test class for SootObjectModel
  * @author Gianluca Amato
  */
-class SootObjectModelSuite extends FunSpec with ObjectModelSuite with SootTests {
+class SootObjectModelSuite extends AnyFunSpec with ObjectModelSuite with SootTests {
 
   val scene = initSoot()
   val klassA = RefType.v(scene.loadClassAndSupport("javatest.A"))

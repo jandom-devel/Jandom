@@ -18,7 +18,7 @@
 
 package it.unich.jandom.parsers
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.targets.Environment
@@ -27,7 +27,7 @@ import it.unich.jandom.targets.Environment
  * Test suite for NumericalProperty
  * @author Gianluca Amato <gamato@unich.it>
  */
-class NumericalPropertyParserSuite extends FunSuite {
+class NumericalPropertyParserSuite extends AnyFunSuite {
   val env = Environment()
   val parser = new NumericalPropertyParser(env)
   val BoxDouble = BoxDoubleDomain()

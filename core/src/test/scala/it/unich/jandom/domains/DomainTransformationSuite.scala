@@ -18,7 +18,7 @@
 
 package it.unich.jandom.domains
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import it.unich.jandom.utils.numberext._
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
@@ -29,7 +29,7 @@ import it.unich.jandom.domains.numerical.ParallelotopeRationalDomain
  * The test suite for domain transformations.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class DomainTransformationSuite extends FunSuite {
+class DomainTransformationSuite extends AnyFunSuite {
   val boxdom = BoxDoubleDomain()
   val pardom = ParallelotopeRationalDomain()
 

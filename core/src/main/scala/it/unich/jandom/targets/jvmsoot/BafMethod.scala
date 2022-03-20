@@ -35,7 +35,7 @@ import soot.toolkits.graph._
   * @author Luca Mangifesta
   */
 class BafMethod(method: SootMethod, io: Boolean) extends SootCFG[BafMethod, Block](method, io) {
-  val body: Body = Baf.v().newBody(method.retrieveActiveBody())
+  val body: Body = Baf.v().newBody(method.retrieveActiveBody().asInstanceOf[JimpleBody])
   val graph = new soot.jandom.UnitBlockGraph(body)
 
   /**

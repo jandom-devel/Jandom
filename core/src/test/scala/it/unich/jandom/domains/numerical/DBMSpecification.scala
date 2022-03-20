@@ -18,11 +18,11 @@
 
 package it.unich.jandom.utils.dbm
 import scala.reflect.ClassTag
-import org.scalatest.PropSpec
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.propspec.AnyPropSpec
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import it.unich.jandom.utils.numberext.RationalExt
 
-class DBMSpecification extends PropSpec with PropertyChecks {
+class DBMSpecification extends AnyPropSpec with ScalaCheckPropertyChecks {
   // TODO: write real tests!
   implicit val ifield = RationalExt
   implicit val tag = implicitly[ClassTag[RationalExt]]

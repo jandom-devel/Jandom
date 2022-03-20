@@ -18,7 +18,7 @@
 
 package it.unich.jandom.parsers
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets.Environment
@@ -29,7 +29,7 @@ import it.unich.jandom.targets.NumericExpression._
  * Test suite for LinearExpressionParser.
  * @author Gianluca Amato <gamato@unich.it>
  */
-class NumericConditionParserSuite extends FunSuite {
+class NumericConditionParserSuite extends AnyFunSuite {
   object LocalParser extends NumericConditionParser with NumericExpressionParser {
     val env = Environment()
     val variable = ident ^^ { env.getBindingOrAdd(_) }

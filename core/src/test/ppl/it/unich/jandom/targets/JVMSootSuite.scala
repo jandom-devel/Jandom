@@ -22,7 +22,7 @@ import it.unich.jandom.domains.numerical.ppl.PPLDomain
 import it.unich.jandom.domains.objects.{PairSharingDomain, UP}
 import it.unich.jandom.parsers.NumericalPropertyParser
 import it.unich.jandom.targets.jvmsoot._
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import parma_polyhedra_library.C_Polyhedron
 
 import scala.collection.JavaConverters._
@@ -34,7 +34,7 @@ import scala.collection.JavaConverters._
   * @author Francesca Scozzari <fscozzari@unich.it>
   *
   */
-class JVMSootSuite extends FunSuite with SootTests {
+class JVMSootSuite extends AnyFunSuite with SootTests {
 
   private val scene = initSoot()
   private val c = scene.loadClassAndSupport("javatest.SimpleTest")

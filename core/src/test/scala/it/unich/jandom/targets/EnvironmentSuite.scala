@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * The test suite for the Environment class
@@ -26,7 +26,7 @@ import org.scalatest.FunSuite
  *
  */
 
-class EnvironmentSuite  extends FunSuite {
+class EnvironmentSuite  extends AnyFunSuite {
   test ("Environment standard operations") {
     val env: Environment = new Environment()
     val v1 = env.addBinding("prova")

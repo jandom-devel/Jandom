@@ -19,7 +19,7 @@
 
 package it.unich.jandom.targets
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 import it.unich.jandom.domains.numerical.BoxDoubleDomain
 import it.unich.jandom.domains.objects.PairSharingDomain
 import it.unich.jandom.targets.jvmsoot._
@@ -35,7 +35,7 @@ import it.unich.jandom.parsers.PairSharingParser
   * @author Gianluca Amato <gamato@unich.it>
   */
 
-class JimpleParametersSuite extends FunSuite with SootTests {
+class JimpleParametersSuite extends AnyFunSuite with SootTests {
 
   private val scene = initSoot("jimpletest")
 

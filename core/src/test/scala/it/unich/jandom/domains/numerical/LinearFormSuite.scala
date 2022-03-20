@@ -18,14 +18,14 @@
 
 package it.unich.jandom.domains.numerical
 
-import org.scalatest.FunSuite
+import org.scalatest.funsuite.AnyFunSuite
 
 /**
  * The test suite for the LinearForm class
  * @author Gianluca Amato <gamato@unich.it>
  */
 
-class LinearFormSuite extends FunSuite {
+class LinearFormSuite extends AnyFunSuite {
 
   test("Variable constructor") {
     val lf = LinearForm.v(1)

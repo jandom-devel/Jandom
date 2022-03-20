@@ -18,8 +18,8 @@
 
 package it.unich.jandom.domains.numerical.apron
 import it.unich.jandom.domains.numerical._
-import org.scalatest.PropSpec
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.propspec.AnyPropSpec
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalacheck.Gen
 import spire.math.Rational
 import it.unich.jandom.domains.numerical._
@@ -27,7 +27,7 @@ import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.utils.numberext.RationalExt
 import scala.language.reflectiveCalls
 
-class ApronSpecification extends PropSpec with PropertyChecks {
+class ApronSpecification extends AnyPropSpec with ScalaCheckPropertyChecks {
   import it.unich.jandom.domains.numerical.Utils.Ints._
   import it.unich.jandom.domains.numerical.Utils.Rationals._
   import it.unich.jandom.domains.numerical.Utils.RationalExts._

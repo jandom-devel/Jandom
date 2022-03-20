@@ -18,10 +18,10 @@
 
 package it.unich.jandom.utils
 
-import org.scalatest.prop.PropertyChecks
-import org.scalatest.FunSuite
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
+import org.scalatest.funsuite.AnyFunSuite
 
-class RelationSuite extends FunSuite with PropertyChecks {
+class RelationSuite extends AnyFunSuite with ScalaCheckPropertyChecks {
 
   def testEmpty(r: Relation[Int, Int]) {
     assert(r.isEmpty)

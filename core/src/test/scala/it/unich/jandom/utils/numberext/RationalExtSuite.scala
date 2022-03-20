@@ -18,8 +18,8 @@
 
 package it.unich.jandom.utils.numberext
 
-import org.scalatest.FunSuite
-import org.scalatest.prop.PropertyChecks
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 import org.scalacheck.Gen
 
 /**
@@ -27,7 +27,7 @@ import org.scalacheck.Gen
  * @author Gianluca Amato <gamato@unich.it>
  *
  */
-class RationalExtSuite extends FunSuite with PropertyChecks {
+class RationalExtSuite extends AnyFunSuite with ScalaCheckPropertyChecks {
   import RationalExt._
 
   test("equality on infinities") {
