@@ -70,7 +70,7 @@ class Transition(val name: String, val start: Location, val end: Location, val g
     * @return the resulting property
     */
   def analyze[Property <: NumericalProperty[Property]](input: Property): Property = {
-    val filtered = (input /: guard) { (current, cond) => cond.analyze(current) }
+    val filtered = (guard foldLeft input) { (current, cond) => cond.analyze(current) }
     assignments.analyze(filtered)
   }
 

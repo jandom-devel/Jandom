@@ -186,7 +186,7 @@ class LTS(val name: String, val locations: IndexedSeq[Location], val transitions
       case Some(Region(_, Some(initloc), initcond)) =>
         (InputAssignment.conditional[Location, dom.Property](initloc, initcond.analyze(dom.top(env.size)), empty), Seq(initloc))
       case _ =>
-        ( { loc: Location => (dom.top(env.size) /: loc.conditions) ((prop, cond) => cond.analyze(prop)) }, locations)
+        ( { loc: Location => (loc.conditions foldLeft dom.top(env.size)) ((prop, cond) => cond.analyze(prop)) }, locations)
     }
     GraphEquationSystem[Location, dom.Property, Edge](
       unknowns = locations,
@@ -249,7 +249,7 @@ class LTS(val name: String, val locations: IndexedSeq[Location], val transitions
       case _ =>
         locations map {
           loc =>
-            (params.domain.top(env.size) /: loc.conditions) {
+            (loc.conditions foldLeft params.domain.top(env.size)) {
               (prop, cond) => cond.analyze(prop)
             }
         }

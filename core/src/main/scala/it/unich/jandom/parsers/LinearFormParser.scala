@@ -60,6 +60,6 @@ trait LinearFormParser extends JavaTokenParsers {
    */
   protected val linform: Parser[LinearForm] =
     (term_with_operator | term) ~ rep(term_with_operator) ^^ {
-      case lf1 ~ lfarr => (lf1 /: lfarr) { (lfa, lfb) => lfa + lfb }
+      case lf1 ~ lfarr => (lfarr foldLeft lf1) { (lfa, lfb) => lfa + lfb }
     }
 }

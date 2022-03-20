@@ -172,7 +172,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
 
     override def visitFile(aFile: Path, aAttrs: BasicFileAttributes): FileVisitResult = {
       val relativePath = rootPath.relativize(aFile).asScala
-      val className = (relativePath.head.toString /: relativePath.tail) (_ + "." + _.toString)
+      val className = (relativePath.tail foldLeft relativePath.head.toString) (_ + "." + _.toString)
       if (className endsWith ".class")
         privateClassNamesList += className stripSuffix ".class"
       else if (className endsWith ".java")

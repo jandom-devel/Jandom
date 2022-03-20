@@ -28,7 +28,7 @@ ThisBuild / scmInfo := Some(ScmInfo(
 
 //*** Scala configuration
 
-ThisBuild / scalaVersion := "2.12.8"
+ThisBuild / scalaVersion := "2.12.15"
 ThisBuild / scalacOptions ++= Seq(
   "-deprecation",
   "-feature",
