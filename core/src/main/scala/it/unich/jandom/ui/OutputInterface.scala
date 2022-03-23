@@ -23,10 +23,12 @@ import java.io.IOException
 import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
+
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
+
 import it.unich.jandom.domains.numerical.NumericalDomain
 import it.unich.jandom.domains.objects.ObjectDomainFactory
 import it.unich.jandom.targets.parameters.WideningSpecs._
@@ -105,7 +107,7 @@ object OutputInterface {
 
   def getAnalysisTypeTip = "Choose between an analysis of numerical properties or object-related properties"
 
-  def setParameters[T <: Target[T]](params: Parameters[T], wideningIndex: Int, narrowingIindex: Int, delay: Int, debug: Boolean) {
+  def setParameters[T <: Target[T]](params: Parameters[T], wideningIndex: Int, narrowingIindex: Int, delay: Int, debug: Boolean): Unit = {
     params.wideningScope = WideningScopes.values(wideningIndex).value
     params.narrowingStrategy = NarrowingStrategies.values(narrowingIindex).value
     params.widening = DelayedWidening(DefaultWidening, delay)
@@ -174,11 +176,11 @@ object OutputInterface {
     scene
   }
 
-  def unzipJar(dir: String, jarFile: String, destDir: String) {
+  def unzipJar(dir: String, jarFile: String, destDir: String): Unit =  {
     val jar = new java.util.jar.JarFile(dir + java.io.File.separator + jarFile)
-    val enum = jar.entries()
-    while (enum.hasMoreElements) {
-      val file = enum.nextElement(); //(java.util.jar.JarEntry)
+    val jarEntries = jar.entries()
+    while (jarEntries.hasMoreElements) {
+      val file = jarEntries.nextElement(); //(java.util.jar.JarEntry)
       val f = new java.io.File(destDir + java.io.File.separator + file.getName)
       if (file.isDirectory) { // if its a directory, create it
         f.mkdir()
@@ -217,9 +219,9 @@ object OutputInterface {
     } else {
       val classNames = scala.collection.mutable.SortedSet[String]()
       val jar = new java.util.jar.JarFile(dir.toFile)
-      val enum = jar.entries()
-      while (enum.hasMoreElements) {
-        val file = enum.nextElement().getName
+      val jarEntries = jar.entries()
+      while (jarEntries.hasMoreElements) {
+        val file = jarEntries.nextElement().getName
         if (file.endsWith(".class")) classNames += file stripSuffix ".class"
       }
       classNames.toSeq

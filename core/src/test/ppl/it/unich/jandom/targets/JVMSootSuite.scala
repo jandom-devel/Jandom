@@ -25,7 +25,7 @@ import it.unich.jandom.targets.jvmsoot._
 import org.scalatest.funsuite.AnyFunSuite
 import parma_polyhedra_library.C_Polyhedron
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * Simple test suite for the JVMSoot target.
@@ -47,7 +47,7 @@ class JVMSootSuite extends AnyFunSuite with SootTests {
   jimpleInterProceduralNumTests()
   jimpleInterProceduralPSTests()
 
-  def bafTests() {
+  def bafTests(): Unit = {
     val bafTests = Seq(
       "sequential" -> "i2 == 10 && i0==i0 && i1==i1",
       "conditional" -> "z0 == 1 && z1==z1 && z2==z2 && z3==z3",
@@ -78,7 +78,7 @@ class JVMSootSuite extends AnyFunSuite with SootTests {
     }
   }
 
-  def jimpleInterProceduralPSTests() {
+  def jimpleInterProceduralPSTests(): Unit = {
     val jimplePairSharingTests: Seq[(String, Set[UP[Int]])] = Seq(
       "sequential" -> Set(),
       "objcreation" -> Set(),
@@ -95,7 +95,8 @@ class JVMSootSuite extends AnyFunSuite with SootTests {
       val inte = new JimpleRecursiveInterpretation[params.type](scene, params)
       params.interpretation = Some(inte)
       test(s"Jimple inter-procedural sharing analysis: $methodName") {
-        val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes.asScala)
+        // TOOD: rewrite the top method to also accept mutable sequences as input
+        val input = params.domain.top(c.getMethodByName(methodName).getParameterTypes.asScala.toSeq)
         try {
           inte.compute(method, input)
           assert(inte(method, input).prop === psdom(prop, jmethod.outputTypes))
@@ -106,7 +107,7 @@ class JVMSootSuite extends AnyFunSuite with SootTests {
     }
   }
 
-  def jimpleInterProceduralNumTests() {
+  def jimpleInterProceduralNumTests(): Unit = {
     val jimpleNumericalTests = Seq(
       "sequential" -> "0 == 0",
       "parametric_dynamic" -> "this==this && i0 == i0 && i1 == i1 && i2 == i2",

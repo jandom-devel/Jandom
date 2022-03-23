@@ -22,6 +22,6 @@ import scala.swing._
 
 class OutputPane extends EditorPane {
     val clear = new Action("Clear Output") {
-		def apply { OutputPane.this.text = "" }
+		def apply() = { OutputPane.this.text = "" }
     }
 }

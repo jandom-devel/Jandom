@@ -56,7 +56,7 @@ abstract class Target[Tgt <: Target[Tgt]] {
     * default implementation just returns a mutable HashMap.
     */
   def getAnnotation[Property]: Annotation[ProgramPoint, Property] =
-    new mutable.HashMap[ProgramPoint, Property] with Annotation[ProgramPoint, Property]
+    new mutable.HashMap[ProgramPoint, Property]
 
   /**
     * Perform a static analysis over the target.

@@ -337,7 +337,7 @@ case class SimpleNonBottomOctagon[N <: IField[N]]
 
   def tryCompareTo[B >: SimpleOctagon[N]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
     other match {
-      case them : SimpleOctagon[N] =>
+      case them : SimpleOctagon[N @unchecked] =>
         them match {
           case _ : SimpleBottomOctagon[N] => Some(1)
           case o : SimpleNonBottomOctagon[N] => this.m.tryCompareTo(o.m)
@@ -352,7 +352,7 @@ case class SimpleBottomOctagon[N <: IField[N]] (dimension : OctagonDim)
   def bottom = this
   def tryCompareTo[B >: SimpleOctagon[N]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
     other match {
-      case that : SimpleOctagon[N] => if (that.isBottom) Some(0) else Some(-1)
+      case that : SimpleOctagon[N @unchecked] => if (that.isBottom) Some(0) else Some(-1)
       case _ => None
     }
 }

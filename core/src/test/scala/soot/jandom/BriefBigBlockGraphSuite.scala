@@ -18,7 +18,7 @@
 
 package soot.jandom
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import org.scalatest.funspec.AnyFunSpec
 import it.unich.jandom.targets.SootTests

@@ -78,7 +78,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
     override def toString = {
       val next = if (nextBlock.isEmpty) " --- " else nextBlock.get.hashCode.toString
       val jump = if (jumpBlock.isEmpty) " --- " else jumpBlock.get.hashCode.toString
-      hashCode + ": from " + startIndex + " to " + endIndex + " next " + next + " jump " + jump + (if (widening) "(widening)" else "")
+      s"$hashCode: from $startIndex to $endIndex  next $next jump $jump ${if (widening) "(widening)" else ""}"
     }
 
     def analyze[Property <: JVMEnv[Property]](state: Property): Seq[(BasicBlock, Property)] = {
@@ -93,7 +93,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
           case node: InsnNode =>
             op match {
               case ICONST_0 | ICONST_1 | ICONST_2 | ICONST_3 | ICONST_4 | ICONST_5 => s.ipush(op - ICONST_0)
-              case IADD => s.iadd
+              case IADD => s.iadd()
               case RETURN =>
               case _ => throw UnsupportedASMInsnException(node)
             }
@@ -136,7 +136,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
   /**
    * This method visit the control-flow graph, starting from the given `BasicBlock`
    */
-  def visit(start: BasicBlock)(f: BasicBlock => Unit) {
+  def visit(start: BasicBlock)(f: BasicBlock => Unit): Unit = {
     f(start)
     start.visited = true
     start.jumpBlock match {
@@ -149,7 +149,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
     }
   }
 
-  def determineWidening(block: BasicBlock = startBlock, visited: BitSet = BitSet()) {
+  def determineWidening(block: BasicBlock = startBlock, visited: BitSet = BitSet()): Unit = {
     visited.add(block.startIndex)
     block.nextBlock match {
       case Some(b) => if (!visited.contains(b.startIndex)) determineWidening(b, visited)
@@ -190,7 +190,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
       i match {
         case i: JumpInsnNode =>
           currentBlock.endNode = i
-          currentBlock.jumpBlock = Some(labelBlocks getOrElseUpdate (i.label, new BasicBlock()))
+          currentBlock.jumpBlock = Some(labelBlocks.getOrElseUpdate(i.label, new BasicBlock()))
           if (i.getNext != null) {
             val nextBlock = i.getNext match {
               case ln: LabelNode => labelBlocks.getOrElseUpdate(ln, new BasicBlock())
@@ -206,7 +206,7 @@ class AsmMethod(val methodNode: MethodNode) extends Target[AsmMethod] {
           if (!beginningOfBlock) {
             // since real instructions have been produced, we need to create a new block
             currentBlock.endNode = i.getPrevious
-            val nextBlock = labelBlocks getOrElseUpdate (i, new BasicBlock())
+            val nextBlock = labelBlocks.getOrElseUpdate(i, new BasicBlock())
             currentBlock.nextBlock = Some(nextBlock)
             currentBlock.jumpBlock = None
             currentBlock = nextBlock

@@ -87,7 +87,7 @@ class NumericalTopDomainSuite extends  NumericalDomainSuite {
           assertResult(NumericalTopDomain.top(dim - 1))(x.delVariable())
         }
         they("increase size of an element") {
-          assertResult(NumericalTopDomain.top(dim + 1))(x.addVariable)
+          assertResult(NumericalTopDomain.top(dim + 1))(x.addVariable())
           assertResult(NumericalTopDomain.top(dim + 2))(x.addVariables(2))
         }
       }

@@ -18,7 +18,7 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import it.unich.jandom.domains.numerical.LinearForm
 import parma_polyhedra_library._

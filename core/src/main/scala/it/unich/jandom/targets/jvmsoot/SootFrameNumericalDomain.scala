@@ -73,13 +73,13 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
    */
   case class Property(val prop: numdom.Property, val stack: List[Type]) extends SootFrameProperty[Property] {
 
-    invariantCheck
+    invariantCheck()
 
     /**
      * This method check invariants on a numerical abstract frame.
      */
     @elidable(ASSERTION)
-    private def invariantCheck() {
+    private def invariantCheck(): scala.Unit = {
       assert(prop.dimension == stack.size, "Numerical property and stack have different dimensions")
       if (!prop.isEmpty)
         for (i <- 0 until prop.dimension) stack(dimension - 1 - i) match {
@@ -271,7 +271,7 @@ class SootFrameNumericalDomain(val numdom: NumericalDomain) extends SootFrameDom
 
     def evalSwap(i: Int, j: Int): Property = {
       val seq = ((0 until i - 1) :+ j) ++ ((i + 1 until j - 1) :+ i) ++ (j + 1 until dimension - 1)
-      val newstack = stack updated (i, stack.apply(j)) updated (j, stack.apply(i))
+      val newstack = stack.updated(i, stack.apply(j)).updated(j, stack.apply(i))
       Property(prop.mapVariables(seq), newstack)
     }
 

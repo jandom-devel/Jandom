@@ -47,10 +47,10 @@ final class UP[@specialized(Int) A](x: A, y: A)(implicit ordering: Ordering[A]) 
    * @inheritdoc
    * An unordered pair may be compared onyl with other unordered pairs.
    */
-  def canEqual(that: Any) = that.isInstanceOf[UP[A]]
+  def canEqual(that: Any) = that.isInstanceOf[UP[A @unchecked]]
 
   override def equals(that: Any) = that match {
-    case that: UP[A] => _1 == that._1 && _2 == that._2
+    case that: UP[A @unchecked] => _1 == that._1 && _2 == that._2
     case _ => false
   }
   override def hashCode = _1.hashCode * 41 + _2.hashCode

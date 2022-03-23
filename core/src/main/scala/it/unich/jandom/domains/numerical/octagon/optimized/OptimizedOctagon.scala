@@ -67,7 +67,7 @@ case class BottomOptOcta[N <: IField[N]] (dimension : OctagonDim)
   def tryCompareTo[B >: OptimizedOctagon[N]](other: B)
     (implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] =
     other match {
-      case that : OptimizedOctagon[N] => if (that.isBottom) Some(0) else Some(-1)
+      case that : OptimizedOctagon[N @unchecked] => if (that.isBottom) Some(0) else Some(-1)
       case _ => None
     }
 
@@ -382,16 +382,16 @@ trait NonBottomOptOcta[N <: IField[N]] extends OptimizedOctagon[N] {
 
     this.closedDbm match {
       case Some(us) => other match {
-        case _ : BottomOptOcta[N] => Some(1) // They're bottom, we're greater
-        case o : NonBottomOptOcta[N] => o.closedDbm match {
+        case _ : BottomOptOcta[N @unchecked] => Some(1) // They're bottom, we're greater
+        case o : NonBottomOptOcta[N @unchecked] => o.closedDbm match {
           case Some(them) => us.tryCompareTo(them)
           case None => Some(1) // They're bottom, we're greater
         }
         case _ => ??? // Not impl
       }
       case None => other match {
-        case _ : BottomOptOcta[N] => Some(0) // They're bottom, we're also bottom
-        case o : NonBottomOptOcta[N] => o.closedDbm match {
+        case _ : BottomOptOcta[N @unchecked] => Some(0) // They're bottom, we're also bottom
+        case o : NonBottomOptOcta[N @unchecked] => o.closedDbm match {
           case None => Some(0)        // Both bottom
           case Some(them) => Some(-1) // They're greater, we're bottom
         }

@@ -40,7 +40,7 @@ private[jandom] object PPLInitializer {
   } catch {
     case _: UnsatisfiedLinkError =>
       try {
-        val path = Process("ppl-config -l").lineStream.head
+        val path = Process("ppl-config -l").lazyLines.head
         System.load(path + "/ppl/libppl_java.so")
         true
       } catch {
@@ -51,7 +51,7 @@ private[jandom] object PPLInitializer {
 
   if (isSuccessful) Parma_Polyhedra_Library.initialize_library()
 
-  override def finalize {
+  override def finalize() = {
     if (isSuccessful) Parma_Polyhedra_Library.finalize_library()
   }
 }

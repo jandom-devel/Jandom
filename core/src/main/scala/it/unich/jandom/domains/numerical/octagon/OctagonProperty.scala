@@ -18,6 +18,7 @@
 
 package it.unich.jandom.domains.numerical.octagon
 import  it.unich.jandom.domains.numerical.BoxRationalDomain
+
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.NumericalProperty
 import it.unich.jandom.utils.numberext.RationalExt
@@ -49,10 +50,10 @@ class OctagonPropertyModule[O <: Octagon[RationalExt, O], D <: OctagonDomainTrai
       val lower = b.low.zip(1 to b.dimension).foldRight(toppe)(
         (i, z : OctagonProperty) =>
           if (i._1.isNegInfinity) z
-          else z.linearInequality(LinearForm(Array.fill[Rational](b.dimension + 1)(0).updated(i._2, Rational(-1)).updated(0, i._1.value) : _*)))
+          else z.linearInequality(LinearForm(Array.fill[Rational](b.dimension + 1)(0).updated(i._2, Rational(-1)).updated(0, i._1.value))))
       b.high.zip(1 to b.dimension).foldRight(lower)((i, z : OctagonProperty) =>
         if (i._1.isPosInfinity) z
-        else z.linearInequality(LinearForm(Array.fill[Rational](b.dimension + 1)(0).updated(i._2, Rational(1)).updated(0, -i._1.value) : _*)))
+        else z.linearInequality(LinearForm(Array.fill[Rational](b.dimension + 1)(0).updated(i._2, Rational(1)).updated(0, -i._1.value))))
     }
   }
 
@@ -245,9 +246,9 @@ class OctagonPropertyModule[O <: Octagon[RationalExt, O], D <: OctagonDomainTrai
           // var. You can remove this and it's still technically
           // correct ("the best kind of correct", according to an
           // internet meme).
-          LinearForm(arr : _*) / 2
+          LinearForm(arr) / 2
         else
-          LinearForm(arr : _*)
+          LinearForm(arr)
       }
       ).distinct  // We remove duplicates, since "some octagonal constraints
                   // have two different encodings...in the DBM" [Mine 2006 p. 9]
@@ -255,7 +256,7 @@ class OctagonPropertyModule[O <: Octagon[RationalExt, O], D <: OctagonDomainTrai
       }
 
     def isPolyhedral = true
-    def addVariable = ??? // TODO
+    def addVariable() = ??? // TODO
     def delVariable(n: Int) = ??? // TODO
     def mapVariables(rho: Seq[Int]) = ??? // TODO
     def isEmpty = isBottom

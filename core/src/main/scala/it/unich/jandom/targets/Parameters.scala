@@ -147,13 +147,13 @@ abstract class Parameters[Tgt <: Target[Tgt]] {
    * This is a java writer where the analyzer write debug informations
    */
   var debugWriter = new java.io.Writer {
-    override def write(cbuf: Array[Char], off: Int, len: Int) {}
-    override def flush() {}
-    override def close() {}
+    override def write(cbuf: Array[Char], off: Int, len: Int) = {}
+    override def flush() = {}
+    override def close() = {}
     override def toString = ""
   }
 
-  def log(msg: String) {
+  def log(msg: String): Unit = {
     debugWriter.write(" " * nestingLevel * 3)
     debugWriter.write(msg)
   }

@@ -42,7 +42,7 @@ class FASTBenchmark extends FASTLoader {
   private val CC77 = FiniteFixpointSolver.CC77[Location, dom.Property](Solver.WorkListSolver, wideningBox, narrowingBox)
 
   @Benchmark
-  def timeLTS() {
+  def timeLTS(): Unit = {
     val params = new Parameters[LTS] {
       val domain: NumericalDomain = dom
     }
@@ -50,7 +50,7 @@ class FASTBenchmark extends FASTLoader {
   }
 
   @Benchmark
-  def timeEQSKleene() {
+  def timeEQSKleene(): Unit = {
     for (lts <- ltss) {
       val eqs = lts.toEquationSystem(dom)
       FiniteFixpointSolver(eqs, CC77.copy(solver = Solver.KleeneSolver))
@@ -58,7 +58,7 @@ class FASTBenchmark extends FASTLoader {
   }
 
   @Benchmark
-  def timeEQSRoundRobin() {
+  def timeEQSRoundRobin(): Unit = {
     for (lts <- ltss) {
       val eqs = lts.toEquationSystem(dom)
       FiniteFixpointSolver(eqs, CC77.copy(solver = Solver.RoundRobinSolver))
@@ -66,7 +66,7 @@ class FASTBenchmark extends FASTLoader {
   }
 
   @Benchmark
-  def timeEQSDefault() {
+  def timeEQSDefault(): Unit = {
     for (lts <- ltss) {
       val eqs = lts.toEquationSystem(dom)
       FiniteFixpointSolver(eqs, CC77)
@@ -74,7 +74,7 @@ class FASTBenchmark extends FASTLoader {
   }
 
   @Benchmark
-  def timeEQSLocalized() {
+  def timeEQSLocalized(): Unit = {
     for (lts <- ltss) {
       val eqs = lts.toEquationSystem(dom)
       FiniteFixpointSolver(eqs, CC77.copy(boxscope = BoxScope.Localized))
@@ -82,7 +82,7 @@ class FASTBenchmark extends FASTLoader {
   }
 
   @Benchmark
-  def timeEQSMixedLocalized() {
+  def timeEQSMixedLocalized(): Unit = {
     for (lts <- ltss) {
       val eqs = lts.toEquationSystem(dom)
       FiniteFixpointSolver(eqs, CC77.copy(boxscope = BoxScope.Localized, boxstrategy = BoxStrategy.Warrowing))

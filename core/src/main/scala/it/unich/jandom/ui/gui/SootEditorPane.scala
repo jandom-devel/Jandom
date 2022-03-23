@@ -24,7 +24,7 @@ import java.io.File
 import java.nio.file._
 import java.nio.file.attribute.BasicFileAttributes
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.swing._
 import scala.swing.event.ActionEvent
 import scala.swing.event.EditDone
@@ -35,6 +35,7 @@ import it.unich.jandom._
 import it.unich.jandom.targets.Parameters
 import it.unich.jandom.targets.jvmsoot._
 import it.unich.jandom.ui.OutputInterface
+import it.unich.jandom.ui.gui.MainFrame
 import javax.swing.KeyStroke
 import soot.Scene
 import soot.SootMethod
@@ -184,15 +185,16 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   val openAction: Action = new Action("Change classpath...") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK))
 
-    def apply() {
+    def apply() = {
       val fileChooser = new FileChooser(new File(classPathField.text))
       fileChooser.title = "Select classpath"
       fileChooser.fileSelectionMode = FileChooser.SelectionMode.DirectoriesOnly
       val returnVal = fileChooser.showOpenDialog(SootEditorPane.this)
-      if (returnVal != FileChooser.Result.Approve) return
-      val file = fileChooser.selectedFile
-      classPathField.text = file.getPath
-      publish(EditDone(classPathField))
+      if (returnVal == FileChooser.Result.Approve) {
+        val file = fileChooser.selectedFile
+        classPathField.text = file.getPath
+        publish(EditDone(classPathField))
+      }
     }
   }
 
@@ -250,7 +252,7 @@ class SootEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
 
   val editMenuItems: Seq[Nothing] = Seq()
 
-  def select() {
+  def select() = {
     val newTitle = softwareName + " - Soot"
     frame.title = newTitle
   }

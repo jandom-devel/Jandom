@@ -134,7 +134,7 @@ object PPLDomainMacro {
       """
 
     val outputTree = q"""
-      import collection.JavaConverters._
+      import scala.jdk.CollectionConverters._
       import it.unich.jandom.domains.WideningDescription
       import it.unich.jandom.domains.numerical.LinearForm
       import it.unich.jandom.domains.numerical.ppl._
@@ -246,8 +246,8 @@ object PPLDomainMacro {
         }
 
         def constraints = {
-          val cs = pplobject.minimized_constraints().asScala
-          cs flatMap PPLUtils.fromPPLConstraint
+          val cs = pplobject.minimized_constraints()
+          (cs.asScala.view flatMap PPLUtils.fromPPLConstraint).toSeq
         }
 
         def isPolyhedral = {
@@ -255,7 +255,7 @@ object PPLDomainMacro {
           (cs forall PPLUtils.isRepresentableAsLinearForms) && pplobject.minimized_congruences().isEmpty()
         }
 
-        def addVariable: ThisProperty = {
+        def addVariable(): ThisProperty = {
           val newpplobject = new $PPLTypeTag(pplobject)
           newpplobject.add_space_dimensions_and_embed(1)
           new ThisProperty(newpplobject)

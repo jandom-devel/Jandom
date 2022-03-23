@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets.jvmasm
 
-import scala.collection.mutable.ArrayStack
+import scala.collection.mutable.Stack
 
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.NumericalDomain
@@ -39,7 +39,7 @@ import spire.math.Rational
  */
 
 class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
-  val domain: JVMEnvDynFrameDomain, val frame: Array[Int], val stack: ArrayStack[Int], var property: NumProperty) extends JVMEnv[JVMEnvDynFrame[NumProperty]] {
+  val domain: JVMEnvDynFrameDomain, val frame: Array[Int], val stack: Stack[Int], var property: NumProperty) extends JVMEnv[JVMEnvDynFrame[NumProperty]] {
 
   type Domain = JVMEnvDynFrameDomain
 
@@ -50,9 +50,9 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
    * Remove a dimension in the numerical property and auxiliary structures. The hypothesis
    * is that `n` does not occur in `frame` and `stack`.
    */
-  private def delDimension(n: Int) {
-    frame transform { j => if (j > n) j - 1 else j }
-    stack transform { j => if (j > n) j - 1 else j }
+  private def delDimension(n: Int) = {
+    frame mapInPlace { j => if (j > n) j - 1 else j }
+    stack mapInPlace { j => if (j > n) j - 1 else j }
     property = property.delVariable(n)
   }
 
@@ -71,48 +71,49 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
         dimMap = dimMap :+ n
       }
     for ((o, n) <- (stack zip that.stack)) dimMap(o) = n
-    extractedProperty.mapVariables(dimMap)
+    // TODO: change parameters of mapVariables in order to allow for mutable sequences
+    extractedProperty.mapVariables(dimMap.toSeq)
   }
 
-  def empty {
+  def empty() = {
     property = property.bottom
   }
 
-  def ipush(c: Int) {
+  def ipush(c: Int) = {
     val newdim = property.dimension
     property = property.addVariable().constantAssignment(newdim, c)
     stack.push(newdim)
   }
 
-  def istore(v: Int) {
+  def istore(v: Int) = {
     val oldn = frame(v)
-    frame(v) = stack.pop
+    frame(v) = stack.pop()
     if (oldn != -1) delDimension(oldn)
   }
 
-  def iload(v: Int) {
+  def iload(v: Int) = {
     val vn = frame(v)
     val newdim = property.dimension
     property = property.addVariable().variableAssignment(newdim, vn)
     stack.push(newdim)
   }
 
-  def iadd() {
-    val vm = stack.pop
+  def iadd() = {
+    val vm = stack.pop()
     val vn = stack.top
     property = property.variableAdd(vn, vm)
     delDimension(vm)
   }
 
-  def iinc(v: Int, c: Int) {
+  def iinc(v: Int, c: Int) = {
     val vn = frame(v)
     property = property.constantAdd(vn, 1)
   }
 
-  def if_icmp(op: ComparisonOperators.Value) {
+  def if_icmp(op: ComparisonOperators.Value) = {
     import ComparisonOperators._
-    val vm = stack.pop
-    val vn = stack.pop
+    val vm = stack.pop()
+    val vn = stack.pop()
     val lfm = LinearForm.v(vm)
     val lfn = LinearForm.v(vn)
     val condition = op match {
@@ -139,7 +140,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
     new JVMEnvDynFrame(domain, frame.clone, stack.clone, property widening that.propertyConformantWith(this))
 
   def tryCompareTo[B >: JVMEnvDynFrame[NumProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
-    case other: JVMEnvDynFrame[NumProperty] =>
+    case other: JVMEnvDynFrame[NumProperty @unchecked] =>
       property.tryCompareTo(other.propertyConformantWith(this))
     case _ => None
   }
@@ -161,7 +162,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
   }
 
   override def equals(that: Any) = that match {
-    case that: JVMEnvDynFrame[NumProperty] => property == that.property && frame == frame && stack == stack
+    case that: JVMEnvDynFrame[NumProperty @unchecked] => property == that.property && frame == frame && stack == stack
     case _ => false
   }
 
@@ -191,7 +192,7 @@ class JVMEnvDynFrame[NumProperty <: NumericalProperty[NumProperty]](
 class JVMEnvDynFrameDomain(val dom: NumericalDomain) extends JVMEnvDomain {
   type Property = JVMEnvDynFrame[dom.Property]
 
-  def full(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](this, Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.top(0))
+  def full(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](this, Array.fill(maxLocals)(-1), Stack[Int](), dom.top(0))
 
-  def empty(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](this, Array.fill(maxLocals)(-1), ArrayStack[Int](), dom.bottom(0))
+  def empty(maxLocals: Int) = new JVMEnvDynFrame[dom.Property](this, Array.fill(maxLocals)(-1), Stack[Int](), dom.bottom(0))
 }

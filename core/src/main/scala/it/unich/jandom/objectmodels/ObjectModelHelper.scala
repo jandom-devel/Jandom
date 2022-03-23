@@ -169,7 +169,7 @@ trait ObjectModelHelper {
       val set = collection.mutable.Set[Type]()
       val queue = collection.mutable.Queue[Type](t)
       while (queue.nonEmpty) {
-        val t1 = queue.dequeue
+        val t1 = queue.dequeue()
         if (isConcretizable(t1) && !isPrimitive(t1)) set += t1
         for { f <- possibleFields(t1); t2 = typeOf(f); if !set.contains(t2) } queue.enqueue(t2)
         for { elt <- elementType(t1) } queue.enqueue(elt)

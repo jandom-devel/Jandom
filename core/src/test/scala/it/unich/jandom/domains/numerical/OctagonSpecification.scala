@@ -267,8 +267,8 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val top = octDomain.top(n)
           assert (top.constraints.size == 0)
           val c001 = Array.fill(n + 1)(0).updated(j0 + 1, 1).updated(0, c)
-          val assigned  = top.linearAssignment(j0, LinearForm(c001 : _*))
-          val boxassigned  = boxDomain.top(n).linearAssignment(j0, LinearForm(c001 : _*))
+          val assigned  = top.linearAssignment(j0, LinearForm(c001))
+          val boxassigned  = boxDomain.top(n).linearAssignment(j0, LinearForm(c001))
           assert(!assigned.isBottom)
           assert (assigned <= top)
           assert (assigned == top)
@@ -289,7 +289,7 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
         val top = octDomain.top(n)
         assert (top.constraints.size == 0)
         val _0m10 = Array.fill(n + 1)(0).updated(j0 + 1, -1)
-        val assigned  = top.linearAssignment(j0, LinearForm(_0m10 : _*))
+        val assigned  = top.linearAssignment(j0, LinearForm(_0m10))
         assert(!assigned.isBottom)
         assert (assigned <= top)
         assert (assigned == top)
@@ -314,7 +314,7 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val zero = Array.fill(n + 1)(0)
           assert(zero.size == n + 1)
           val c000 = zero.updated(0, c)
-          val assigned  = top.linearAssignment(j0, LinearForm(c000 : _*))
+          val assigned  = top.linearAssignment(j0, LinearForm(c000))
           assert(!assigned.isBottom)
           assert (!assigned.isTop)
           assert (assigned != top)
@@ -339,13 +339,13 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val zero = Array.fill(n + 1)(0)
           assert(zero.size == n + 1)
           val c000 = zero.updated(0, c)
-          val assigned  = top.linearAssignment(j0, LinearForm(c000 : _*))
+          val assigned  = top.linearAssignment(j0, LinearForm(c000))
           val constraints = assigned.constraints
           assert(constraints.size == 2)
           val c010 = zero.updated(j0 + 1, 1).updated(0, -c)   // v - c <= 0
           val c0m10 = zero.updated(j0 + 1, -1).updated(0, c)  // -v + c <= 0
-          assert (constraints.contains(LinearForm(c010 : _*)))
-          assert (constraints.contains(LinearForm(c0m10 : _*)))
+          assert (constraints.contains(LinearForm(c010)))
+          assert (constraints.contains(LinearForm(c0m10)))
         }
       }
     }
@@ -368,14 +368,14 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val c000 = zero.updated(0, c)
           val _00m10 = zero.updated(j0 + 1, -1)
           val assigned  = top
-            .linearAssignment(j0, LinearForm(c000 : _*))
-            .linearAssignment(j0, LinearForm(_00m10 : _*))
+            .linearAssignment(j0, LinearForm(c000))
+            .linearAssignment(j0, LinearForm(_00m10))
           val constraints = assigned.constraints
           assert(constraints.size == 2)
           val mc010 = zero.updated(j0 + 1, 1).updated(0, -(-c))
           val mc0m10 = zero.updated(j0 + 1, -1).updated(0, (-c))
-          assert (constraints.contains(LinearForm(mc010 : _*)))
-          assert (constraints.contains(LinearForm(mc0m10 : _*)))
+          assert (constraints.contains(LinearForm(mc010)))
+          assert (constraints.contains(LinearForm(mc0m10)))
         }
       }
     }
@@ -398,10 +398,10 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val c000 = zero.updated(0, c)
           val _00m10 = zero.updated(j0 + 1, -1)
           val assigned  = top
-            .linearAssignment(j0, LinearForm(c000 : _*))
+            .linearAssignment(j0, LinearForm(c000))
           val assigned2 = assigned
-            .linearAssignment(j0, LinearForm(_00m10 : _*))
-            .linearAssignment(j0, LinearForm(_00m10 : _*))
+            .linearAssignment(j0, LinearForm(_00m10))
+            .linearAssignment(j0, LinearForm(_00m10))
           assert(assigned == assigned2)
           assert(assigned.constraints == assigned2.constraints)
         }
@@ -429,14 +429,14 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
             val c000 = zero.updated(0, c)
             val d000 = zero.updated(j0 + 1, 1).updated(0, d)
             val assigned  = top
-              .linearAssignment(j0, LinearForm(c000 : _*))
-              .linearAssignment(j0, LinearForm(d000 : _*))
+              .linearAssignment(j0, LinearForm(c000))
+              .linearAssignment(j0, LinearForm(d000))
             val constraints = assigned.constraints
             assert(constraints.size == 2)
             val c010 = zero.updated(j0 + 1, 1).updated(0, -(c + d))  // v - (c + d) <= 0
             val c0m10 = zero.updated(j0 + 1, -1).updated(0, (c + d)) // -v + (c + d) <= 0
-            assert (constraints.contains(LinearForm(c010 : _*)))
-            assert (constraints.contains(LinearForm(c0m10 : _*)))
+            assert (constraints.contains(LinearForm(c010)))
+            assert (constraints.contains(LinearForm(c0m10)))
           }
         }
       }
@@ -459,15 +459,15 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val zero = Array.fill(n + 1)(0)
           assert(zero.size == n + 1)
           val c000 = zero.updated(0, c)
-          val assigned  = top.linearAssignment(j0, LinearForm(c000 : _*))
+          val assigned  = top.linearAssignment(j0, LinearForm(c000))
           assert(!assigned.isBottom)
           assert (assigned != top)
           assert (assigned <= top)
           assert (assigned.constraints.size == 2)
           val c010 = zero.updated(j0 + 1, 1).updated(0, -c)  // v - c <= 0
           val c0m10 = zero.updated(j0 + 1, -1).updated(0, c) // -v + c <= 0
-          assert (assigned.constraints.contains(LinearForm(c010 : _*)))
-          assert (assigned.constraints.contains(LinearForm(c0m10 : _*)))
+          assert (assigned.constraints.contains(LinearForm(c010)))
+          assert (assigned.constraints.contains(LinearForm(c0m10)))
         }
       }
     }
@@ -488,7 +488,7 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val zero = Array.fill(n + 1)(0)
           assert(zero.size == n + 1)
           val c001 = zero.updated(0, c).updated(j0 + 1, 1)
-          val assigned  = top.linearInequality(LinearForm(c001 : _*))
+          val assigned  = top.linearInequality(LinearForm(c001))
           assert (assigned != top)
           assert (assigned <= top)
           assert (assigned.constraints.size == 1)
@@ -520,8 +520,8 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
            */
           val d001 = zero.updated(0, d).updated(j0 + 1, 1)
           val c000 = zero.updated(0, c).updated(j0 + 1, 0)
-          val assigned  = top.linearAssignment(j0, LinearForm(c000 : _*))
-          val inequal  = assigned.linearInequality(LinearForm(d001 : _*))
+          val assigned  = top.linearAssignment(j0, LinearForm(c000))
+          val inequal  = assigned.linearInequality(LinearForm(d001))
           assert (inequal != top)
           assert (assigned <= top)
           assert (inequal.isBottom)
@@ -547,14 +547,14 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           assert(zero.size == n + 1)
           val assigned  = top.linearAssignment(j0, LinearForm.c(c))
           val mc001 = zero.updated(0, -c).updated(j0 + 1, 1) // x -c <= 0
-          val inequal  = assigned.linearInequality(LinearForm(mc001 : _*))
+          val inequal  = assigned.linearInequality(LinearForm(mc001))
           assert (inequal != top)
           assert (inequal <= top)
           assert (!inequal.isBottom)
           assert (inequal != octDomain.bottom(n))
           assert (inequal.constraints.size == 2)
-          assert (inequal.constraints.contains(LinearForm(zero.updated(j0 + 1, 1).updated(0, -c) : _*)))
-          assert (inequal.constraints.contains(LinearForm(zero.updated(j0 + 1, -1).updated(0, +c) : _*)))
+          assert (inequal.constraints.contains(LinearForm(zero.updated(j0 + 1, 1).updated(0, -c))))
+          assert (inequal.constraints.contains(LinearForm(zero.updated(j0 + 1, -1).updated(0, +c))))
         }
       }
     }
@@ -576,14 +576,14 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           assert(zero.size == n + 1)
           val mc001 = zero.updated(0, -c).updated(j0 + 1, 1)  // x -c <= 0
           val c00m1 = zero.updated(0,  c).updated(j0 + 1, -1) // -x + c <= 0
-          val inequal = top.linearInequality(LinearForm(mc001 : _*)).linearInequality(LinearForm(c00m1 : _*))
+          val inequal = top.linearInequality(LinearForm(mc001)).linearInequality(LinearForm(c00m1))
           assert (inequal != top)
           assert (inequal <= top)
           assert (!inequal.isBottom)
           assert (inequal != octDomain.bottom(n))
           assert (inequal.constraints.size == 2)
-          assert (inequal.constraints.contains(LinearForm(mc001 : _*)))
-          assert (inequal.constraints.contains(LinearForm(c00m1 : _*)))
+          assert (inequal.constraints.contains(LinearForm(mc001)))
+          assert (inequal.constraints.contains(LinearForm(c00m1)))
         }
       }
     }
@@ -608,13 +608,13 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
             val zero = Array.fill(n + 1)(0)
             assert(zero.size == n + 1)
             val c011 = zero.updated(0, -c).updated(j0 + 1, 1).updated(i0 + 1, 1)
-            val inequal = top.linearInequality(LinearForm(c011 : _*))
+            val inequal = top.linearInequality(LinearForm(c011))
             assert (inequal != top)
             assert (inequal <= top)
             assert (!inequal.isBottom)
             assert (inequal != octDomain.bottom(n))
             assert (inequal.constraints.size == 1)
-            assert (inequal.constraints.contains(LinearForm(c011 : _*)))
+            assert (inequal.constraints.contains(LinearForm(c011)))
           }
         }
       }
@@ -640,13 +640,13 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
             val zero = Array.fill(n + 1)(0)
             assert(zero.size == n + 1)
             val c011 = zero.updated(0, -c).updated(j0 + 1, 1).updated(i0 + 1, -1)
-            val inequal = top.linearInequality(LinearForm(c011 : _*))
+            val inequal = top.linearInequality(LinearForm(c011))
             assert (inequal != top)
             assert (inequal <= top)
             assert (!inequal.isBottom)
             assert (inequal != octDomain.bottom(n))
             assert (inequal.constraints.size == 1)
-            assert (inequal.constraints.contains(LinearForm(c011 : _*)))
+            assert (inequal.constraints.contains(LinearForm(c011)))
           }
         }
       }
@@ -671,13 +671,13 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
             val zero = Array.fill(n + 1)(0)
             assert(zero.size == n + 1)
             val c011 = zero.updated(0, +c).updated(j0 + 1, -1).updated(i0 + 1, -1)
-            val inequal = top.linearInequality(LinearForm(c011 : _*))
+            val inequal = top.linearInequality(LinearForm(c011))
             assert (inequal != top)
             assert (inequal <= top)
             assert (!inequal.isBottom)
             assert (inequal != octDomain.bottom(n))
             assert (inequal.constraints.size == 1)
-            assert (inequal.constraints.contains(LinearForm(c011 : _*)))
+            assert (inequal.constraints.contains(LinearForm(c011)))
           }
         }
       }
@@ -703,10 +703,10 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
             assert(zero.size == n + 1)
             val c000 = zero.updated(0, c)
             val _001m1 = zero.updated(0, 0).updated(j0 + 1, 1).updated(i0 + 1, -1)
-            val inequal_1 = top.linearAssignment(j0, LinearForm(c000 : _*))
-            val inequal_3 = inequal_1.linearInequality(LinearForm(_001m1 : _*))
+            val inequal_1 = top.linearAssignment(j0, LinearForm(c000))
+            val inequal_3 = inequal_1.linearInequality(LinearForm(_001m1))
             val c00m1 = zero.updated(0, c).updated(i0 + 1, -1)
-            assert (inequal_3.constraints.contains(LinearForm(c00m1 : _*)))
+            assert (inequal_3.constraints.contains(LinearForm(c00m1)))
           }
         }
       }
@@ -734,16 +734,16 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
             val c000 = zero.updated(0, c)
             val _0001 = zero.updated(0, 0).updated(j0 + 1, 1)
             val inequal = top.
-              linearAssignment(j0, LinearForm(c000 : _*))
-              .linearAssignment(i0, LinearForm(_0001 : _*))
+              linearAssignment(j0, LinearForm(c000))
+              .linearAssignment(i0, LinearForm(_0001))
             val c000m1 = zero.updated(0, c).updated(i0 + 1, -1)
             val mc0001 = zero.updated(0, -c).updated(i0 + 1, 1)
             assert (inequal != top)
             assert (inequal <= top)
             assert (!inequal.isBottom)
             assert (inequal != octDomain.bottom(n))
-            assert (inequal.constraints.contains(LinearForm(c000m1 : _*)))
-            assert (inequal.constraints.contains(LinearForm(mc0001 : _*)))
+            assert (inequal.constraints.contains(LinearForm(c000m1)))
+            assert (inequal.constraints.contains(LinearForm(mc0001)))
           }
         }
       }
@@ -767,15 +767,15 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val mc001 = zero.updated(0, -c).updated(j0 + 1, 1)  // x -c <= 0
           val c00m1 = zero.updated(0,  c).updated(j0 + 1, -1) // -x + c <= 0
           val inequal = top.linearAssignment(j0, LinearForm.c(c))
-            .linearInequality(LinearForm(mc001 : _*))
-            .linearInequality(LinearForm(c00m1 : _*))
+            .linearInequality(LinearForm(mc001))
+            .linearInequality(LinearForm(c00m1))
           assert (inequal != top)
           assert (inequal <= top)
           assert (!inequal.isBottom)
           assert (inequal != octDomain.bottom(n))
           assert (inequal.constraints.size == 2)
-          assert (inequal.constraints.contains(LinearForm(mc001 : _*)))
-          assert (inequal.constraints.contains(LinearForm(c00m1 : _*)))
+          assert (inequal.constraints.contains(LinearForm(mc001)))
+          assert (inequal.constraints.contains(LinearForm(c00m1)))
         }
       }
     }
@@ -798,7 +798,7 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val zero = Array.fill(n + 1)(0)
           assert(zero.size == n + 1)
           val c001 = zero.updated(0, c).updated(j0 + 1, 1) // c + 1 <= 0
-          val lf = LinearForm(c001 : _*)
+          val lf = LinearForm(c001)
           val assigned  = top.linearInequality(lf)
           assert (assigned != top)
           assert (assigned <= top)
@@ -828,7 +828,7 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
             val zero = Array.fill(n + 1)(0)
             assert(zero.size == n + 1)
             val c001 = zero.updated(0, c).updated(j0 + 1, 1).updated(i0 + 1, - 1)
-            val lf = LinearForm(c001 : _*)
+            val lf = LinearForm(c001)
             val assigned  = top.linearInequality(lf)
             assert (assigned != top)
             assert (assigned <= top)
@@ -864,8 +864,8 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
            */
           val d001 = zero.updated(0, d).updated(j0 + 1, 1)
           val c000 = zero.updated(0, c).updated(j0 + 1, 0)
-          val assigned  = top.linearAssignment(j0, LinearForm(c000 : _*))
-          val inequal  = assigned.linearInequality(LinearForm(d001 : _*))
+          val assigned  = top.linearAssignment(j0, LinearForm(c000))
+          val inequal  = assigned.linearInequality(LinearForm(d001))
           assert (inequal != top)
           assert (assigned <= top)
           assert (inequal.isBottom)
@@ -904,10 +904,10 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val mc000 = zero.updated(0, -c)
           val c000 = zero.updated(0, c)
           val _00m1 = zero.updated(0, 0).updated(j0 + 1, -1)
-          val x_gets_c  = top.linearAssignment(j0, LinearForm(c000 : _*))
+          val x_gets_c  = top.linearAssignment(j0, LinearForm(c000))
           val x_gets_minus_c_then_gets_minus_x  =
-            top.linearAssignment(j0, LinearForm(mc000 : _*))
-              .linearAssignment(j0, LinearForm(_00m1 : _*))
+            top.linearAssignment(j0, LinearForm(mc000))
+              .linearAssignment(j0, LinearForm(_00m1))
           assert (x_gets_c == x_gets_minus_c_then_gets_minus_x)
           assert (x_gets_c <= x_gets_minus_c_then_gets_minus_x)
           assert (x_gets_c >= x_gets_minus_c_then_gets_minus_x)
@@ -938,12 +938,12 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
             val _00m1 = zero.updated(0, 0).updated(j0 + 1, -1)
             val _010 = zero.updated(0, 0).updated(i0 + 1, 1)
             val y_gets_c_then_x_gets_y  =
-              top.linearAssignment(i0, LinearForm(c000 : _*))//  i<- c
-                .linearAssignment(j0, LinearForm(_010 : _*)) //  j<-+i
+              top.linearAssignment(i0, LinearForm(c000))//  i<- c
+                .linearAssignment(j0, LinearForm(_010)) //  j<-+i
             val x_gets_minus_c_then_y_gets_minus_x_then_x_gets_minus_x  =
-              top.linearAssignment(j0, LinearForm(mc000 : _*)) // j <- -c
-                .linearAssignment(i0, LinearForm(_00m1 : _*))  // i <- -j
-                .linearAssignment(j0, LinearForm(_00m1 : _*))  // j <- -j
+              top.linearAssignment(j0, LinearForm(mc000)) // j <- -c
+                .linearAssignment(i0, LinearForm(_00m1))  // i <- -j
+                .linearAssignment(j0, LinearForm(_00m1))  // j <- -j
             assert (y_gets_c_then_x_gets_y == x_gets_minus_c_then_y_gets_minus_x_then_x_gets_minus_x)
             assert (y_gets_c_then_x_gets_y <= x_gets_minus_c_then_y_gets_minus_x_then_x_gets_minus_x)
             assert (y_gets_c_then_x_gets_y >= x_gets_minus_c_then_y_gets_minus_x_then_x_gets_minus_x)
@@ -971,9 +971,9 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val c000 = zero.updated(0, c)
           val mcm0m10 = zero.updated(j0 + 1, 1).updated(0, - c - 1)  // x - c - 1 <= 0
           val cm0m10 = zero.updated(j0 + 1, -1).updated(0, + c - 1)  // -x + c - 1 <= 0
-          val assigned = top.linearAssignment(j0, LinearForm(c000 : _*)) // j0 <- c
-          val inequal = top.linearInequality(LinearForm(mcm0m10 : _*))
-            .linearInequality(LinearForm(cm0m10 : _*))
+          val assigned = top.linearAssignment(j0, LinearForm(c000)) // j0 <- c
+          val inequal = top.linearInequality(LinearForm(mcm0m10))
+            .linearInequality(LinearForm(cm0m10))
           assert (assigned <= inequal)
           assert (assigned != inequal)
           assert (!(assigned >= inequal)) // fails
@@ -1003,9 +1003,9 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
           val c000 = zero.updated(0, c)
           val mcm0m10 = zero.updated(j0 + 1, 1).updated(0, - c + 1)  // x - c + 1 <= 0
           val cm0m10 = zero.updated(j0 + 1, -1).updated(0, + c + 1)  // -x + c + 1 <= 0
-          val assigned = top.linearAssignment(j0, LinearForm(c000 : _*)) // j0 <- c
-          val inequal = top.linearInequality(LinearForm(mcm0m10 : _*))
-            .linearInequality(LinearForm(cm0m10 : _*))
+          val assigned = top.linearAssignment(j0, LinearForm(c000)) // j0 <- c
+          val inequal = top.linearInequality(LinearForm(mcm0m10))
+            .linearInequality(LinearForm(cm0m10))
           assert (!(assigned <= inequal))
           // assert(false, inequal.o.asInstanceOf[LazyOctagon[_]].dbm)
           assert (bottom == inequal)
@@ -1032,8 +1032,8 @@ abstract class OctagonSpecification extends AnyPropSpec with ScalaCheckPropertyC
             val zero = Array.fill(n + 1)(0)
             assert(zero.size == n + 1)
             val c000 = zero.updated(0, c)
-            val ass1 = top.linearAssignment(j0, LinearForm(c000 : _*)) // j0 <- c
-            val ass2 = top.linearAssignment(i0, LinearForm(c000 : _*)) // i0 <- c
+            val ass1 = top.linearAssignment(j0, LinearForm(c000)) // j0 <- c
+            val ass2 = top.linearAssignment(i0, LinearForm(c000)) // i0 <- c
             assert (ass1 != ass2)
             assert (!(ass1 <= ass2))
             assert (!(ass1 >= ass2))

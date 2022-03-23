@@ -41,7 +41,7 @@ object AboutDialog extends Dialog {
     contents += new Button() {
       xLayoutAlignment = 0.5
       action = new Action("OK") {
-    	def apply() { AboutDialog.visible = false }
+    	def apply() = { AboutDialog.visible = false }
       }
     }
     border = Swing.EmptyBorder(10)

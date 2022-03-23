@@ -20,10 +20,11 @@ package it.unich.jandom.targets.jvmsoot
 
 import java.io._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import it.unich.jandom.targets.Annotation
 import it.unich.jandom.targets.Environment
 import it.unich.jandom.targets.cfg.ControlFlowGraph
+
 import soot._
 import soot.options.Options
 import soot.tagkit.LoopInvariantTag

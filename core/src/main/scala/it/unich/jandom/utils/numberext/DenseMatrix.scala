@@ -401,7 +401,7 @@ object DenseMatrix {
       }
     }
     val X1 = new Array[Rational](Xrows * Xcols)
-    for (i <- Xrows - 1 to (0, -1)) {
+    for (i <- Range.inclusive(Xrows - 1, 0, -1)) {
       cfor(0)(_ < Xcols, _ + 1) { (k) =>
         X1(i + k * Xrows) = X(perm(i) + k * Xrows)
       }

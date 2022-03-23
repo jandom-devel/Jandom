@@ -70,7 +70,7 @@ object NumericalTopDomain extends NumericalDomain {
 
     def isPolyhedral = true
 
-    def addVariable = new Property(dimension + 1)
+    def addVariable() = new Property(dimension + 1)
     def delVariable(n: Int) = new Property(dimension - 1)
     def mapVariables(rho: Seq[Int]) = new Property(rho count { _ != -1 })
 

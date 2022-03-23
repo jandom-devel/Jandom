@@ -59,7 +59,7 @@ class BisimulationOctagonSpecification extends AnyPropSpec with ScalaCheckProper
                 assert(top.toBox <= boxtop)
                 val oct = opSeq.foldLeft(top)((op, p) => applyOp(op)(p))
                 val box = opSeq.foldLeft(boxtop)((op, p) => applyOp(op)(p))
-                assert(oct.toBox <= box, opSeq + " + "  + oct + oct.constraints + oct.toBox + " <= " + box)
+                assert(oct.toBox <= box, s"opSeq + $oct ${oct.constraints} ${oct.toBox} <= $box")
               }
             }
           }

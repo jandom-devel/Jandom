@@ -49,7 +49,7 @@ object JandomSumBench extends App with FASTLoader {
     (for ((loc, prop) <- m) yield loc.name + " => " + prop.mkString(program.env.variables)).mkString(", ")
   }
 
-  def fastModelAnalyze(program: LTS) {
+  def fastModelAnalyze(program: LTS): Unit = {
     totalPrograms += 1
 
     println(s"------>${program.name}")
@@ -90,9 +90,9 @@ object JandomSumBench extends App with FASTLoader {
     val ann3 = program.analyze(params3)
     val tann3 = System.currentTimeMillis - t3
 
-    val cann1 = ann1 mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }
-    val cann2 = ann2 mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }
-    val cann3 = ann3 mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }
+    val cann1 = (ann1.view mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }).toMap
+    val cann2 = (ann2.view mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }).toMap
+    val cann3 = (ann3.view mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }).toMap
 
     println(s"Times: box $tann1  sum: $tann2  ptope: $tann3")
     print("Box: ")

@@ -18,7 +18,7 @@
 
 package it.unich.jandom.ui.gui
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import java.awt.event.{ InputEvent, KeyEvent }
 import java.io.{ File, FileInputStream }
 import scala.swing.{Action, BorderPanel, BoxPanel, ComboBox, EditorPane, FileChooser, Label, MenuItem, Orientation, ScrollPane}
@@ -64,7 +64,7 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   layout(methodSelector) = BorderPanel.Position.North
 
   val methodSelectAction = new Action("Method Select") {
-    def apply() {
+    def apply() = {
       val methodName = methodComboBox.selection.item
       method = Some(new AsmMethod(methodList.find(_.name == methodName).get))
       editorPane.text = method.get.toString
@@ -72,34 +72,35 @@ class ASMEditorPane(val frame: MainFrame) extends BorderPanel with TargetPane {
   }
   val newAction = new Action("New") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK))
-    def apply() { editorPane.text = "" }
+    def apply() = { editorPane.text = "" }
   }
 
   val openAction = new Action("Open...") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK))
-    def apply() {
+    def apply() = {
       val returnVal = fileChooser.showOpenDialog(ASMEditorPane.this)
-      if (returnVal != FileChooser.Result.Approve) return ;
-      val file = fileChooser.selectedFile
-      val is = new FileInputStream(file)
-      val cr = new ClassReader(is)
-      val node = new ClassNode()
-      cr.accept(node, ClassReader.SKIP_DEBUG)
-      methodList = node.methods.asScala
-      methodComboBox = new ComboBox(methodList map { _.name })
-      methodComboBox.peer.setAction(methodSelectAction.peer)
-      methodSelector.contents(1) = methodComboBox
-      methodSelectAction()
-      // what follows does not work, probably for a scala bug..
-      // therefore, we cannot change the combobox  component
-      // val model = new DefaultComboBoxModel(methodList.toArray)
-      // methodComboBox.peer.setModel(model: ComboBoxModel[_])
+      if (returnVal == FileChooser.Result.Approve) {
+        val file = fileChooser.selectedFile
+        val is = new FileInputStream(file)
+        val cr = new ClassReader(is)
+        val node = new ClassNode()
+        cr.accept(node, ClassReader.SKIP_DEBUG)
+        methodList = node.methods.asScala.toSeq
+        methodComboBox = new ComboBox(methodList map { _.name })
+        methodComboBox.peer.setAction(methodSelectAction.peer)
+        methodSelector.contents(1) = methodComboBox
+        methodSelectAction()
+        // what follows does not work, probably for a scala bug..
+        // therefore, we cannot change the combobox  component
+        // val model = new DefaultComboBoxModel(methodList.toArray)
+        // methodComboBox.peer.setModel(model: ComboBoxModel[_])
+      }
     }
   }
 
-  def ensureSaved = true
+  def ensureSaved() = true
 
-  def updateFrameTitle() {
+  def updateFrameTitle(): Unit = {
     val newTitle = softwareName + " - JVM"
     frame.title = newTitle
   }

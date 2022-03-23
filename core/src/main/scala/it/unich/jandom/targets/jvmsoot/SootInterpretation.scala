@@ -18,8 +18,9 @@
 
 package it.unich.jandom.targets.jvmsoot
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import it.unich.jandom.targets._
+
 import soot.SootMethod
 import soot.Scene
 import soot.jimple.toolkits.callgraph.CHATransformer
@@ -104,7 +105,7 @@ class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: S
     }
   }
 
-  def compute(method: SootMethod, input: params.Property) {
+  def compute(method: SootMethod, input: params.Property): Unit = {
     val l = new java.util.LinkedList[SootMethod]()
     l.add(method)
     scene.setEntryPoints(l)
@@ -121,9 +122,9 @@ class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: S
       inte(m) = params.domain.bottom(SootCFG.outputTypes(m))
     }
 
-    val worklist = scala.collection.mutable.Queue[SootMethod](order: _*)
+    val worklist = mutable.Queue.empty[SootMethod].appendAll(order)
     while (worklist.nonEmpty) {
-      val m = worklist.dequeue
+      val m = worklist.dequeue()
       val optJmethod = targets(m)
       val top = params.domain.top(SootCFG.inputTypes(m))
       val output = optJmethod match {
@@ -135,7 +136,7 @@ class JimpleRecursiveInterpretation[Params <: Parameters[JimpleMethod]](scene: S
       if (!(inte(m) >= output)) {
         inte(m) = inte(m) widening output
         val sources = new Sources(cg.edgesInto(m)).asInstanceOf[java.util.Iterator[SootMethod]]
-        worklist.enqueue(sources.asScala.toSeq: _*)
+        worklist.enqueueAll(sources.asScala)
       }
     }
   }

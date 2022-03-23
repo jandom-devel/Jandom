@@ -26,5 +26,5 @@ trait ParameterEnumeration[V] extends Parameter[ParameterValue[V]] {
   /**
    * The list of commented values
    */
-  val values: Seq[ParameterValue[V]]
+  val values: collection.Seq[ParameterValue[V]]
 }

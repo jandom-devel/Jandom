@@ -46,7 +46,7 @@ class HTMLOutputBuilder(val indentSize: Int = 2) extends OutputBuilder {
   }
 
   def newline(indent: IndentBehaviour = Same): this.type = {
-    lines += '"' + StringEscapeUtils.escapeEcmaScript(sb.toString()) + '"'
+    lines += s"\"${StringEscapeUtils.escapeEcmaScript(sb.toString())}\""
     sb.clear()
     indent match {
       case Increase => indentLevel += indentSize
@@ -59,7 +59,7 @@ class HTMLOutputBuilder(val indentSize: Int = 2) extends OutputBuilder {
 
   override def toString: String = {
     val htmlStream = getClass.getResourceAsStream("/htmlout/index.html")
-    val html = Source.fromInputStream(htmlStream).getLines.mkString("\n")
+    val html = Source.fromInputStream(htmlStream).getLines().mkString("\n")
     val jsonAnn = for ((row, col, s) <- ann) yield s"""{ row: $row, col: $col, note: "${StringEscapeUtils.escapeEcmaScript(s)}" }"""
     html.replace("%%PROG%%", lines.mkString(",")).replace("%%ANN%%", jsonAnn.mkString(",\n"))
   }

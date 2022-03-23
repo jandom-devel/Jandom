@@ -74,7 +74,7 @@ trait CartesianFiberedDomainSuite extends AbstractDomainSuite {
    * This may be used to check that `p` is a non-extremal property, i.e. it is not
    * top or bottom.
    */
-  def nonExtremalProperty(p: dom.Property) {
+  def nonExtremalProperty(p: dom.Property): Unit = {
     it("is not bottom") { assert(!p.isBottom) }
     it("is not top") { assert(!p.isTop) }
     it("is not empty") { assert(!p.isEmpty) }

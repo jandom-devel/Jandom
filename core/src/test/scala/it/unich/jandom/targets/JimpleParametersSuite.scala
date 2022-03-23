@@ -50,7 +50,7 @@ class JimpleParametersSuite extends AnyFunSuite with SootTests {
   jimplePairSharingTests()
   jimplePairSharingTestsFromInput()
 
-  def jimplePairSharingTests() {
+  def jimplePairSharingTests(): scala.Unit = {
 
     val jimplePairSharingTests: Seq[(String, String)] = Seq(
       "emptyInt" ->
@@ -119,7 +119,7 @@ class JimpleParametersSuite extends AnyFunSuite with SootTests {
     }
   }
 
-  def jimplePairSharingTestsFromInput() {
+  def jimplePairSharingTestsFromInput(): scala.Unit = {
 
     // analyze from an input property where @this is not null and all the other variables are null
 

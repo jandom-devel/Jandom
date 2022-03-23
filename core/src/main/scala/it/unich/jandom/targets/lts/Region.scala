@@ -30,7 +30,7 @@ import it.unich.jandom.targets.NumericCondition
   * @param condition a numeric condition corresponding to this region
   * @author Gianluca Amato <gianluca.amato@unich.it>
   */
-class Region(val name: String, val state: Option[Location], val condition: NumericCondition) {
+case class Region(val name: String, val state: Option[Location], val condition: NumericCondition) {
 
   /**
     * Returns true if `that` is syntactically equal to `this`.
@@ -51,15 +51,7 @@ class Region(val name: String, val state: Option[Location], val condition: Numer
   /**
     * Returns a string representation of a region with synthetic variable names.
     */
-  def mkString: String = mkString(Stream.from(0).map("v" + _))
+  def mkString: String = mkString(LazyList.from(0).map("v" + _))
 
   override def toString: String = name
-}
-
-object Region {
-  def apply(name: String, state: Option[Location], condition: NumericCondition) =
-    new Region(name, state, condition)
-
-  def unapply(region: Region): Option[(String, Option[Location], NumericCondition)] =
-    Some((region.name, region.state, region.condition))
 }

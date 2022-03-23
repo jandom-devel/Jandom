@@ -18,13 +18,15 @@
 
 package it.unich.jandom.targets.jvmsoot
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.targets._
 import it.unich.jandom.targets.NumericCondition._
+
 import soot._
 import soot.jimple._
 import soot.toolkits.graph._
+
 import spire.math.Rational
 
 /**
@@ -84,7 +86,7 @@ class JimpleMethod(method: SootMethod, io: Boolean) extends SootCFG[JimpleMethod
           val res2 = jimpleExprToLinearForm(v.getOp2)
           res1 flatMap { res1 =>
             res2 flatMap { res2 =>
-              val lf = LinearForm(res1: _*) - LinearForm(res2: _*)
+              val lf = LinearForm(res1) - LinearForm(res2)
               v match {
                 case _: GtExpr => Some(AtomicCond(lf, ComparisonOperators.GT))
                 case _: GeExpr => Some(AtomicCond(lf, ComparisonOperators.GTE))

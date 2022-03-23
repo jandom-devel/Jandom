@@ -71,8 +71,8 @@ class MainFrame extends Frame {
    */
   val quitAction = new Action("Quit") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK))
-    def apply() {
-      if (currentEditorPane.ensureSaved) sys.exit(0)
+    def apply() = {
+      if (currentEditorPane.ensureSaved()) sys.exit(0)
     }
   }
 
@@ -80,7 +80,7 @@ class MainFrame extends Frame {
    * This is the action to invoke when the user selects the About Box dialog
    */
   val aboutAction = new Action("About") {
-    def apply() {
+    def apply() = {
       AboutDialog.visible = true
     }
   }
@@ -89,7 +89,7 @@ class MainFrame extends Frame {
    * This is the action to invoke when the user press the Analyze button
    */
   val analyzeAction = new Action("ANALYZE!") {
-    def apply() {
+    def apply() = {
       currentEditorPane.analyze match {
         case Some(output) =>
           outputPane.text = outputPane.text + output
@@ -101,35 +101,35 @@ class MainFrame extends Frame {
 
   val randomAction: Action = new Action("Random") {
     toolTip = "Analysis of C-style programs"
-    def apply() {
+    def apply() = {
       mode = Random
     }
   }
 
   val asmAction: Action = new Action("ASM") {
     toolTip = "Analysis of Java bytecode thorugh the ASM library"
-    def apply() {
+    def apply() = {
       mode = Asm
     }
   }
 
   val sootAction: Action = new Action("Soot") {
     toolTip = "Analysis of Java bytecode thorugh the Soot library"
-    def apply() {
+    def apply() = {
       mode = Soot
     }
   }
 
   val fastAction: Action = new Action("Fast") {
     toolTip = "Analysis of  Alice library"
-    def apply() {
+    def apply() = {
       mode = Fast
     }
   }
   init()
 
 
-  def init() {
+  def init(): Unit = {
     title = "Jandom"
 
     contents = new BorderPanel {
@@ -143,7 +143,7 @@ class MainFrame extends Frame {
     mode = Mode.Random
   }
 
-  def setFileMenu() {
+  def setFileMenu(): Unit = {
     val fileMenu = menuBar.menus(0)
     fileMenu.contents.clear()
     fileMenu.contents ++= currentEditorPane.fileMenuItems
@@ -152,7 +152,7 @@ class MainFrame extends Frame {
     fileMenu.contents += new MenuItem(quitAction)
   }
 
-  def setEditMenu() {
+  def setEditMenu(): Unit = {
     val editMenu = menuBar.menus(1)
     editMenu.contents.clear()
     if (currentEditorPane.editMenuItems.isEmpty)
@@ -162,7 +162,7 @@ class MainFrame extends Frame {
     editMenu.contents ++= currentEditorPane.editMenuItems
   }
 
-  def setMenuBar() {
+  def setMenuBar(): Unit = {
     val randomMode = new RadioMenuItem("")
     randomMode.action = randomAction
     val asmMode = new RadioMenuItem("")
@@ -197,13 +197,13 @@ class MainFrame extends Frame {
   /**
    * Closing the frame causes the program to exit
    */
-  override def closeOperation() {
+  override def closeOperation() = {
     quitAction()
   }
 
   def mode = realMode
 
-  def mode_=(m: Mode) {
+  def mode_=(m: Mode): Unit = {
     realMode = m
     currentEditorPane = m match {
       case Asm => asmEditorPane
@@ -213,7 +213,7 @@ class MainFrame extends Frame {
     }
     tabbedPane.pages(0).content = currentEditorPane
     // repaint is needed to avoid corruption in display
-    tabbedPane.repaint
+    tabbedPane.repaint()
     setFileMenu()
     setEditMenu()
     currentEditorPane.select()

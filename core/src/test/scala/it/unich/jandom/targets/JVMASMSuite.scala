@@ -18,7 +18,7 @@
 
 package it.unich.jandom.targets
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import org.objectweb.asm.ClassReader
 import org.objectweb.asm.tree.ClassNode
 import org.scalatest.funsuite.AnyFunSuite

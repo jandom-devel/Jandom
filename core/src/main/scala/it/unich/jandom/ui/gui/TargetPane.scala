@@ -51,5 +51,5 @@ trait TargetPane extends Component {
   /**
    * This is called when this target pane is selected.
    */
-  def select()
+  def select(): Unit
 }

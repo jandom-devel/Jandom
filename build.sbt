@@ -28,12 +28,12 @@ ThisBuild / scmInfo := Some(ScmInfo(
 
 //*** Scala configuration
 
-ThisBuild / scalaVersion := "2.12.15"
+ThisBuild / scalaVersion := "2.13.8"
 ThisBuild / scalacOptions ++= Seq(
   "-deprecation",
   "-feature",
   "-unchecked",
-  "-Xlint:_,-missing-interpolator",
+  "-Xlint:_,-missing-interpolator,-strict-unsealed-patmat",
   "-Ywarn-unused:-implicits"
 )
 
@@ -101,12 +101,13 @@ lazy val core = project
 
     //*** Library dependencies
     libraryDependencies ++= Seq(
-      "it.unich.scalafix" %% "scalafix" % "0.7.0",
+      "it.unich.scalafix" %% "scalafix" % "0.8.0",
       "org.apache.commons" % "commons-text" % "1.9",
       "org.typelevel" %% "spire" % "0.17.0",
       "org.rogach" %% "scallop" % "4.1.0",
       "org.scala-lang.modules" %% "scala-swing" % "3.0.0",
       "org.scala-lang.modules" %% "scala-parser-combinators" % "2.1.1",
+      "org.scala-lang.modules" %% "scala-collection-contrib" % "0.2.2",
       "org.scala-lang" % "scala-reflect" % scalaVersion.value,
       // ASM is included in the Soot Jar
       "ca.mcgill.sable" % "soot" % "4.1.0",

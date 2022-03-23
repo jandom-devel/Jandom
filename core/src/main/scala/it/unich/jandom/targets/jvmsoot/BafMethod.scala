@@ -17,7 +17,7 @@
 
 package it.unich.jandom.targets.jvmsoot
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import soot._
 import soot.baf._
@@ -106,7 +106,7 @@ class BafMethod(method: SootMethod, io: Boolean) extends SootCFG[BafMethod, Bloc
         case unit: Dup1_x1Inst =>
           unit.getOp1Type match {
             case _: PrimType => unit.getUnder1Type match {
-              case _: PrimType => currprop.evalDup1_x1
+              case _: PrimType => currprop.evalDup1_x1()
               case _: Type => throw UnsupportedSootUnitException(unit)
             }
             case _: Type => throw UnsupportedSootUnitException(unit)
@@ -114,10 +114,10 @@ class BafMethod(method: SootMethod, io: Boolean) extends SootCFG[BafMethod, Bloc
         case unit: Dup1_x2Inst =>
           unit.getOp1Type match {
             case _: PrimType => unit.getUnder1Type match {
-              case _: LongType => currprop.evalDup1_x1
-              case _: DoubleType => currprop.evalDup1_x1
+              case _: LongType => currprop.evalDup1_x1()
+              case _: DoubleType => currprop.evalDup1_x1()
               case _: PrimType => unit.getUnder2Type match {
-                case _: PrimType => currprop.evalDup1_x2
+                case _: PrimType => currprop.evalDup1_x2()
                 case _: Type => throw UnsupportedSootUnitException(unit)
               }
               case _: Type => throw UnsupportedSootUnitException(unit)
@@ -126,22 +126,22 @@ class BafMethod(method: SootMethod, io: Boolean) extends SootCFG[BafMethod, Bloc
           }
         case unit: Dup1Inst =>
           unit.getOp1Type match {
-            case _: PrimType => currprop.evalDup1
+            case _: PrimType => currprop.evalDup1()
             case _: Type => throw UnsupportedSootUnitException(unit)
           }
         case unit: Dup2_x1Inst =>
           unit.getOp1Type match {
             case _: LongType => unit.getOp2Type match {
-              case _: PrimType => currprop.evalDup1_x1
+              case _: PrimType => currprop.evalDup1_x1()
               case _: Type => throw UnsupportedSootUnitException(unit)
             }
             case _: DoubleType => unit.getOp2Type match {
-              case _: PrimType => currprop.evalDup1_x1
+              case _: PrimType => currprop.evalDup1_x1()
               case _: Type => throw UnsupportedSootUnitException(unit)
             }
             case _: PrimType => unit.getOp2Type match {
               case _: PrimType => unit.getUnder1Type match {
-                case _: PrimType => currprop.evalDup2_x1
+                case _: PrimType => currprop.evalDup2_x1()
                 case _: Type => throw UnsupportedSootUnitException(unit)
               }
               case _: Type => throw UnsupportedSootUnitException(unit)
@@ -152,14 +152,14 @@ class BafMethod(method: SootMethod, io: Boolean) extends SootCFG[BafMethod, Bloc
           unit.getOp1Type match {
             case _: LongType => unit.getOp2Type match {
               case _: PrimType => unit.getUnder1Type match {
-                case _: PrimType => currprop.evalDup1_x2
+                case _: PrimType => currprop.evalDup1_x2()
                 case _: Type => throw UnsupportedSootUnitException(unit)
               }
               case _: Type => throw UnsupportedSootUnitException(unit)
             }
             case _: DoubleType => unit.getOp2Type match {
               case _: PrimType => unit.getUnder1Type match {
-                case _: PrimType => currprop.evalDup1_x2
+                case _: PrimType => currprop.evalDup1_x2()
                 case _: Type => throw UnsupportedSootUnitException(unit)
               }
               case _: Type => throw UnsupportedSootUnitException(unit)
@@ -167,7 +167,7 @@ class BafMethod(method: SootMethod, io: Boolean) extends SootCFG[BafMethod, Bloc
             case _: PrimType => unit.getOp2Type match {
               case _: PrimType => unit.getUnder1Type match {
                 case _: PrimType => unit.getUnder2Type match {
-                  case _: PrimType => currprop.evalDup2_x2
+                  case _: PrimType => currprop.evalDup2_x2()
                   case _: Type => throw UnsupportedSootUnitException(unit)
                 }
                 case _: Type => throw UnsupportedSootUnitException(unit)
@@ -178,10 +178,10 @@ class BafMethod(method: SootMethod, io: Boolean) extends SootCFG[BafMethod, Bloc
           }
         case unit: Dup2Inst =>
           unit.getOp1Type match {
-            case _: LongType => currprop.evalDup1
-            case _: DoubleType => currprop.evalDup1
+            case _: LongType => currprop.evalDup1()
+            case _: DoubleType => currprop.evalDup1()
             case _: PrimType => unit.getOp2Type match {
-              case _: PrimType => currprop.evalDup2
+              case _: PrimType => currprop.evalDup2()
               case _: Type => throw UnsupportedSootUnitException(unit)
             }
             case _: Type => throw UnsupportedSootUnitException(unit)
@@ -201,7 +201,6 @@ class BafMethod(method: SootMethod, io: Boolean) extends SootCFG[BafMethod, Bloc
         case unit: IncInst =>
           unit.getConstant match {
             case i: IntConstant => currprop.evalInc(localMap(unit.getLocal), i.value)
-            case i: LongConstant => currprop.evalInc(localMap(unit.getLocal), i.value)
             case i: FloatConstant => currprop.evalInc(localMap(unit.getLocal), i.value)
             case i: DoubleConstant => currprop.evalInc(localMap(unit.getLocal), i.value)
             case _: Constant => throw UnsupportedSootUnitException(unit)
@@ -246,7 +245,6 @@ class BafMethod(method: SootMethod, io: Boolean) extends SootCFG[BafMethod, Bloc
         case unit: PushInst =>
           unit.getConstant match {
             case i: IntConstant => currprop.evalConstant(i.value)
-            case i: LongConstant => currprop.evalConstant(i.value)
             case i: FloatConstant => currprop.evalConstant(i.value)
             case i: DoubleConstant => currprop.evalConstant(i.value)
             case _: NullConstant => currprop.evalNull()

@@ -81,7 +81,7 @@ class AliasingDomainSuite extends AnyFunSpec with AliasingDomainSuiteParameters 
 
   import AliasingDomain._
 
-  def AliasingMorphism(g1: dom.Property, g2: dom.Property, m: Morphism) {
+  def AliasingMorphism(g1: dom.Property, g2: dom.Property, m: Morphism): Unit = {
     it("preserve labels") {
       for (i <- 0 until g1.dimension) {
         assert((g1.labels(i) flatMap m) === g2.labels(i))
@@ -91,16 +91,25 @@ class AliasingDomainSuite extends AnyFunSpec with AliasingDomainSuiteParameters 
     }
   }
 
-  def nonExtremalGraph[OM <: ObjectModel](g: dom.Property) {
+  def nonExtremalGraph[OM <: ObjectModel](g: dom.Property): Unit = {
     val bottom = g.bottom
     val top = g.top
     describe("has a morphism to bottom which") {
-      val Some((1, m)) = g.tryMorphism(bottom)
-      it should behave like AliasingMorphism(g, bottom, m)
+      g.tryMorphism(bottom) match {
+        case Some((1, m)) =>
+          it should behave like AliasingMorphism(g, bottom, m)
+        case _ =>
+          fail()
+      }
+     
     }
     describe("has a morphism from top which") {
-      val Some((-1, m)) = g.tryMorphism(top)
-      it should behave like AliasingMorphism(top, g, m)
+      g.tryMorphism(top) match {
+        case Some((-1, m)) =>
+          it should behave like AliasingMorphism(top, g, m)
+        case _ =>
+          fail()
+      }
     }
     it should behave like nonExtremalProperty(g)
   }
@@ -206,8 +215,12 @@ class AliasingDomainSuite extends AnyFunSpec with AliasingDomainSuiteParameters 
     it("is not comparable with g1") { assert(g2.tryCompareTo(g1).isEmpty) }
     it("is smaller than g3") { assert(g2 < g3) }
     describe("has a morphism from g3 which") {
-      val Some((-1, m)) = g2.tryMorphism(g3)
-      it should behave like AliasingMorphism(g3, g2, m)
+      g2.tryMorphism(g3) match {
+        case Some((-1, m)) => 
+          it should behave like AliasingMorphism(g3, g2, m)
+        case _ =>
+          fail()
+      }
     }
   }
 

@@ -18,6 +18,8 @@
 
 package it.unich.jandom.domains.numerical
 
+import scala.collection.immutable.ArraySeq
+
 import spire.math.Rational
 
 /**
@@ -69,7 +71,7 @@ trait LinearForm {
   /**
    * Return the opposite of the linear form.
    */
-  def unary_-(): LinearForm
+  def unary_- : LinearForm
 
   /**
    * Add two linear forms.
@@ -115,7 +117,7 @@ trait LinearForm {
    * @inheritdoc
    * It is equivalent to `mkString` with variable names `v0`...`vn`
    */
-  override final def toString = mkString(Stream.from(0).map { "v" + _ })
+  override final def toString = mkString(LazyList.from(0).map { "v" + _ })
 
   /**
    * This is used to store the PPL version of this linear form. It is declared
@@ -150,6 +152,24 @@ object LinearForm {
   import scala.language.implicitConversions
 
   /**
+    * Builds a linear form from given coefficients. The input arrays is wrapped into an
+    * immutable sequence using `ArraySeq.unsafeWrapArray` before calling the relevant
+    * constructors.
+    *
+    * @param coeffs the coefficient of the linear form. The first coefficient
+    * is the constant term.
+    */
+  def apply(coeffs: Array[Rational]): LinearForm = DenseLinearForm(ArraySeq.unsafeWrapArray(coeffs))
+
+ /**
+   * Builds a linear form from given non rational coefficients
+   * @tparam T the type of coefficients we are using which may be converted to rationals
+   * @param coeffs the coefficient of the linear form. The first coefficient
+   * is the constant term.
+   */
+  def apply[T](coeffs: Array[T])(implicit ev: T => Rational): LinearForm = DenseLinearForm((coeffs.view map ev).toSeq)
+
+  /**
    * Builds a linear form from given coefficients.
    * @param coeffs the coefficient of the linear form. The first coefficient
    * is the constant term.
@@ -162,7 +182,7 @@ object LinearForm {
    * @param coeffs the coefficient of the linear form. The first coefficient
    * is the constant term.
    */
-  def apply[T <% Rational](coeffs: T*): LinearForm = DenseLinearForm(coeffs map implicitly[T => Rational])
+  def apply[T](coeffs: T*)(implicit ev: T => Rational): LinearForm = DenseLinearForm(coeffs map ev)
 
   /**
    * Builds a linear form given the non-null coefficients and constant term. Each pair
@@ -187,7 +207,7 @@ object LinearForm {
   /**
    * Builds the constant linear form `c` from a non-rational constant
    */
-  implicit def c[T <% Rational](known: T): LinearForm = DenseLinearForm(List(known))
+  implicit def c[T](known: T)(implicit ev: T => Rational): LinearForm = DenseLinearForm(List(known))
 }
 
 /**
@@ -208,7 +228,7 @@ object Inequalities {
             if (x != 1)
             {
               if (x != -1)
-              { (x)+"*" }
+              { s"$x*" }
               else { "-" }
             }
             else
@@ -262,9 +282,9 @@ object Inequalities {
       val poss = (homcoeffs :+ top :+ bottom).filter(_ > 0).length
       if (negs > poss) {
         // Too many - signs, flip
-        -top + " <= " + homCoeffToString(homcoeffs.map(_ * -1), vars)+" <= "+ -bottom
+        s"${-top} <= ${homCoeffToString(homcoeffs.map(_ * -1), vars)} <= ${-bottom}"
       } else {
-        bottom + " <= " + homCoeffToString(homcoeffs, vars)+" <= " + top
+        s"${bottom} <= ${homCoeffToString(homcoeffs, vars)} <= ${top}"
       }
     }
   }

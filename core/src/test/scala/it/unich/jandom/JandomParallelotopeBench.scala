@@ -50,7 +50,7 @@ object JandomParallelotopeBench extends App with FASTLoader {
     (for ((loc, prop) <- m) yield loc.name + " => " + prop.mkString(program.env.variables)).mkString(", ")
   }
 
-  def fastModelAnalyze(program: LTS) {
+  def fastModelAnalyze(program: LTS): Unit = {
     totalPrograms += 1
 
     println(s"------>${program.name}")
@@ -95,9 +95,9 @@ object JandomParallelotopeBench extends App with FASTLoader {
     val parAnn = program.analyze(params3)
     val tann3 = System.currentTimeMillis - t3
 
-    val cprod = productAnn mapValues { p => CStoPolyehdra(p.p1.dimension, p.p1.constraints) intersection CStoPolyehdra(p.p2.dimension, p.p2.constraints) }
-    val cbox = boxAnn mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }
-    val cpar = parAnn mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }
+    val cprod = (productAnn.view mapValues { p => CStoPolyehdra(p.p1.dimension, p.p1.constraints) intersection CStoPolyehdra(p.p2.dimension, p.p2.constraints) }).toMap
+    val cbox = (boxAnn.view mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }).toMap
+    val cpar = (parAnn.view mapValues { p => CStoPolyehdra(p.dimension, p.constraints) }).toMap
 
     print("Box    : ")
     println(mkString(program, cbox))

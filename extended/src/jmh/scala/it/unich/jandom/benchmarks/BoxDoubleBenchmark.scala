@@ -40,7 +40,7 @@ class BoxDoubleBenchmark {
   PPLInitializer
 
   @Benchmark
-  def timePPL() {
+  def timePPL(): Unit = {
     // create an empty box
     val db = new Double_Box(numvars, Degenerate_Element.EMPTY)
 
@@ -61,7 +61,7 @@ class BoxDoubleBenchmark {
   }
 
   @Benchmark
-  def timePPL2() {
+  def timePPL2(): Unit = {
     val db = new Double_Box(numvars, Degenerate_Element.EMPTY)
     val v0 = new Variable(0)
     val vlast = new Variable(numvars - 1)
@@ -79,7 +79,7 @@ class BoxDoubleBenchmark {
   }
 
   @Benchmark
-  def timeJandomNoPPLOptimized() {
+  def timeJandomNoPPLOptimized(): Unit = {
     var db = BoxDouble.bottom(numvars)
     for (i <- 1 to numpoints) {
       val point = Array.fill(numvars)(i.toDouble)
@@ -88,7 +88,7 @@ class BoxDoubleBenchmark {
   }
 
   @Benchmark
-  def timeJandomNoPPL() {
+  def timeJandomNoPPL(): Unit = {
     var db = BoxDouble.bottom(numvars)
     val full = BoxDouble.top(numvars)
     for (i <- 1 to numpoints) {
@@ -98,7 +98,7 @@ class BoxDoubleBenchmark {
   }
 
   @Benchmark
-  def timeJandomPPL() {
+  def timeJandomPPL(): Unit = {
     val PPLBoxDouble = PPLBoxDoubleDomain()
     var db = PPLBoxDouble.bottom(numvars)
     val full = PPLBoxDouble.top(numvars)
@@ -109,7 +109,7 @@ class BoxDoubleBenchmark {
   }
   
   @Benchmark
-  def timeJandomPPLReflexive() {
+  def timeJandomPPLReflexive(): Unit = {
     val domain = PPLDomain[Octagonal_Shape_double]()
     var db = domain.bottom(numvars)
     val full = domain.top(numvars)
@@ -120,7 +120,7 @@ class BoxDoubleBenchmark {
   }
 
   @Benchmark
-  def timeJandomPPLMacro() {
+  def timeJandomPPLMacro(): Unit = {
     // we explicitly type domain in order to avoid generation of existential types.
     val domain: NumericalDomain = PPLDomainMacro[Double_Box]
     var db = domain.bottom(numvars)

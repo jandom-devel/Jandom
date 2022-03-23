@@ -76,11 +76,12 @@ class RandomParserSuite extends AnyFunSuite with Checkers {
 
   for (f <- files) {
     test("SLIL Target analyze " + f.getName) {
-      val source = scala.io.Source.fromFile(f).getLines.mkString("\n")
+      val source = scala.io.Source.fromFile(f).getLines().mkString("\n")
       val parser = RandomParser()
       parser.parse(source) match {
-        case parser.Success(_, _) =>
-        case parser.NoSuccess(msg, next) => fail(msg + " in line " + next.pos.line + " column " + next.pos.column)
+        case parser.Success(_, _) => 
+        case parser.Error(msg, next) => fail(msg + " in line " + next.pos.line + " column " + next.pos.column)
+        case parser.Failure(msg, next) => fail(msg + " in line " + next.pos.line + " column " + next.pos.column)
       }
     }
   }

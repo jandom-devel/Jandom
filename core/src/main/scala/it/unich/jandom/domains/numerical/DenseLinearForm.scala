@@ -43,7 +43,7 @@ class DenseLinearForm[T](val coeffs: Seq[Rational]) extends LinearForm {
 
   def pairs = for { (ci, i) <- homcoeffs.zipWithIndex ; if ! ci.isZero } yield (i,ci)
 
-  def unary_-(): LinearForm = new DenseLinearForm(coeffs map (x => -x))
+  def unary_- = new DenseLinearForm(coeffs map (x => -x))
 
   def +(that: LinearForm): LinearForm = {
     new DenseLinearForm(coeffs.zipAll(that.coeffs, Rational.zero, Rational.zero) map (pair => pair._1 + pair._2))

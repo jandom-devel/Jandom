@@ -163,7 +163,7 @@ abstract class SumDomain[D1 <: NumericalDomain, D2 <: NumericalDomain] extends N
 
     def isPolyhedral = p1.isPolyhedral && p2.isPolyhedral
 
-    def addVariable: Property = SumDomain.this(p1.addVariable, p2.addVariable)
+    def addVariable(): Property = SumDomain.this(p1.addVariable(), p2.addVariable())
 
     def delVariable(n: Int): Property = SumDomain.this(p1.delVariable(n), p2.delVariable(n))
 

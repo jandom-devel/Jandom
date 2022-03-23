@@ -28,7 +28,7 @@ import it.unich.jandom.ui.WideningScopes
 /**
  * The class for command line parameters.
  */
-class Conf(arguments: Seq[String]) extends ScallopConf(arguments) {
+class Conf(arguments: collection.Seq[String]) extends ScallopConf(arguments) {
   def enumConverter(e: Enumeration) = singleArgConverter(e.withName(_))
   // we need to factour out common code here
   val wideningScope = opt[WideningScope.Value]("widening", default = Some(WideningScopes.default.value))(enumConverter(WideningScope))

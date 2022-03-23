@@ -18,7 +18,7 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.NumericalProperty
@@ -173,7 +173,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
 
   def constraints = {
     val cs = domain.minimized_constraints(pplobject)
-    cs.asScala flatMap PPLUtils.fromPPLConstraint
+    (cs.asScala.view flatMap PPLUtils.fromPPLConstraint).toSeq
   }
 
   def isPolyhedral = {
@@ -183,7 +183,7 @@ class PPLProperty[PPLNativeProperty <: AnyRef](val domain: PPLDomain[PPLNativePr
     isEmpty || ((cs.asScala forall PPLUtils.isRepresentableAsLinearForms) && domain.minimized_congruences(pplobject).isEmpty())
   }
 
-  def addVariable = {
+  def addVariable() = {
     val newpplobject = domain.copyConstructor(pplobject)
     domain.add_space_dimensions_and_embed(newpplobject, 1)
     new PPLProperty(domain, newpplobject)

@@ -40,10 +40,10 @@ class IfStmt(val condition: NumericCondition, val then_branch: SLILStmt, val els
     val thenEnd = then_branch.analyzeStmt(params)(thenStart, phase, ann)
     val elseEnd = else_branch.analyzeStmt(params)(elseStart, phase, ann)
     if (params.allPPResult) {
-      ann((this, 'thenStart)) = thenStart
-      ann((this, 'elseStart)) = elseStart
-      ann((this, 'thenEnd)) = thenEnd
-      ann((this, 'elseEnd)) = elseEnd
+      ann((this, Symbol("thenStart"))) = thenStart
+      ann((this, Symbol("elseStart"))) = elseStart
+      ann((this, Symbol("thenEnd"))) = thenEnd
+      ann((this, Symbol("elseEnd"))) = elseEnd
     }
     thenEnd union elseEnd
   }
@@ -51,16 +51,16 @@ class IfStmt(val condition: NumericCondition, val then_branch: SLILStmt, val els
   def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ob: OutputBuilder, env: Environment): Unit = {
     ob ++= s"if (${condition.mkString(env.variables)}) {"
     ob.newline(ob.IndentBehaviour.Increase)
-    for (p <- ann.get((this, 'thenStart))) ob.annotate(p.mkString(env.variables)).newline()
+    for (p <- ann.get((this, Symbol("thenStart")))) ob.annotate(p.mkString(env.variables)).newline()
     then_branch.outputAnnotation(ann, ob, env)
-    for (p <- ann.get((this, 'thenEnd)))
+    for (p <- ann.get((this, Symbol("thenEnd"))))
       ob.newline().annotate(p.mkString(env.variables))
     ob.newline(ob.IndentBehaviour.Decrease)
     ob ++= "} else {"
     ob.newline(ob.IndentBehaviour.Increase)
-    for (p <- ann.get((this, 'elseStart))) ob.annotate(p.mkString(env.variables)).newline()
+    for (p <- ann.get((this, Symbol("elseStart")))) ob.annotate(p.mkString(env.variables)).newline()
     else_branch.outputAnnotation(ann, ob, env)
-    for (p <- ann.get((this, 'elseEnd)))
+    for (p <- ann.get((this, Symbol("elseEnd"))))
       ob.newline().annotate(p.mkString(env.variables))
     ob.newline(ob.IndentBehaviour.Decrease)
     ob ++= "}"
@@ -77,18 +77,18 @@ class IfStmt(val condition: NumericCondition, val then_branch: SLILStmt, val els
   val numvars: Int = condition.dimension max then_branch.numvars max else_branch.numvars
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
-    val pp1 = lts.Location((this, 'thenStart).toString, Seq.empty)
-    val pp2 = lts.Location((this, 'elseStart).toString, Seq.empty)
-    val pp1end = lts.Location((this, 'thenEnd).toString, Seq.empty)
-    val pp2end = lts.Location((this, 'elseEnd).toString, Seq.empty)
-    val t1 = lts.Transition((this, 'thenBranch).toString, prev, pp1, Seq(condition), Seq.empty)
-    val t2 = lts.Transition((this, 'elseBranch).toString, prev, pp2, Seq(condition.opposite), Seq.empty)
-    val t3 = lts.Transition((this, 'thenExit).toString, pp1end, next, Seq.empty, Seq.empty)
-    val t4 = lts.Transition((this, 'elseExit).toString, pp2end, next, Seq.empty, Seq.empty)
+    val pp1 = lts.Location((this, Symbol("thenStart")).toString, Seq.empty)
+    val pp2 = lts.Location((this, Symbol("elseStart")).toString, Seq.empty)
+    val pp1end = lts.Location((this, Symbol("thenEnd")).toString, Seq.empty)
+    val pp2end = lts.Location((this, Symbol("elseEnd")).toString, Seq.empty)
+    val t1 = lts.Transition((this, Symbol("thenBranch")).toString, prev, pp1, Seq(condition), Seq.empty)
+    val t2 = lts.Transition((this, Symbol("elseBranch")).toString, prev, pp2, Seq(condition.opposite), Seq.empty)
+    val t3 = lts.Transition((this, Symbol("thenExit")).toString, pp1end, next, Seq.empty, Seq.empty)
+    val t4 = lts.Transition((this, Symbol("elseExit")).toString, pp2end, next, Seq.empty, Seq.empty)
     val tt1 = then_branch.toLTS(pp1, pp1end)
     val tt2 = else_branch.toLTS(pp2, pp2end)
-    (tt1._1 ++ tt2._1 ++ Seq((this, 'thenStart) -> pp1, (this, 'elseStart) -> pp2, (this, 'thenEnd) -> pp1end,
-      (this, 'elseEnd) -> pp2end), tt1._2 ++ tt2._2 :+ t1 :+ t2 :+ t3 :+ t4)
+    (tt1._1 ++ tt2._1 ++ Seq((this, Symbol("thenStart")) -> pp1, (this, Symbol("elseStart")) -> pp2, (this, Symbol("thenEnd")) -> pp1end,
+      (this, Symbol("elseEnd")) -> pp2end), tt1._2 ++ tt2._2 :+ t1 :+ t2 :+ t3 :+ t4)
   }
 
   /*

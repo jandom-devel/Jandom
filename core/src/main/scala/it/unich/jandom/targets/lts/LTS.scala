@@ -134,14 +134,14 @@ class LTS(val name: String, val locations: IndexedSeq[Location], val transitions
 
     def iterator: Iterator[(Location, Property)] = buffer.indices.filter(buffer(_).isDefined).map {
       i => (locations(i), buffer(i).get)
-    }.toIterator
+    }.iterator
 
-    def +=(kv: (ProgramPoint, Property)): this.type = {
+    def addOne(kv: (ProgramPoint, Property)): this.type = {
       buffer(kv._1.id) = Some(kv._2)
       this
     }
 
-    def -=(key: ProgramPoint): this.type = {
+    def subtractOne(key: ProgramPoint): this.type = {
       buffer(key.id) = None
       this
     }

@@ -53,13 +53,14 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
    * Returns a full span for a node of type `t`.
    */
   private[objects] def fullSpan(t: om.Type): Span = {
-    (for { f <- om.fields(t); tf = om.typeOf(f); if om.mayShare(tf, tf) } yield f -> Node())(collection.breakOut)
+    val spanEntries = for { f <- om.fields(t).view; tf = om.typeOf(f); if om.mayShare(tf, tf) } yield f -> Node()
+    spanEntries.toMap
   }
 
   def top(types: Fiber) = {
     val labels = for { t <- types } yield if (om.mayShare(t, t)) Some(Node()) else None
-    val edges: EdgeSet = (for { (t, Some(n)) <- types zip labels } yield n -> fullSpan(t))(collection.breakOut)
-    new Property(labels, edges, types)
+    val edges = for { (t, Some(n)) <- types lazyZip labels } yield n -> fullSpan(t)
+    new Property(labels, edges.toMap, types)
   }
 
   def bottom(types: Fiber) =
@@ -70,12 +71,13 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
    * of an EdgeSet, and they are completed by turning undefined spans into empty spans.
    */
   private[objects] def apply(labels: Seq[Option[Node]], partialEdgeSet: EdgeSet, types: Seq[om.Type]): Property = {
-    val edgeSet: EdgeSet = (
-      for (Some(l) <- labels.distinct) yield if (partialEdgeSet.isDefinedAt(l))
-        l -> partialEdgeSet(l)
-      else
-        l -> Map.empty[om.Field, Node])(collection.breakOut)
-    new Property(labels, edgeSet, types)
+    val edges = 
+      for (Some(l) <- labels.distinct.view) yield 
+        if (partialEdgeSet.isDefinedAt(l))
+          l -> partialEdgeSet(l)
+        else
+          l -> Map.empty[om.Field, Node]
+    new Property(labels, edges.toMap, types)
   }
 
   /**
@@ -83,10 +85,10 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
    * of triples `(n1,f,n2)` where `n1` is the source node, `n2` is the target node and `f` the field name.
    */
   private[objects] def apply(labels: Seq[Option[Node]], edges: Seq[(Node, om.Field, Node)], types: Seq[om.Type]): Property = {
-    val partialEdgeSet = edges.groupBy(_._1).
-      mapValues(_.groupBy(_._2).
-        mapValues(_.head._3))
-    apply(labels, partialEdgeSet, types)
+    val partialEdgeSet = edges.groupBy(_._1).view.
+      mapValues(_.groupBy(_._2).view.
+        mapValues(_.head._3).toMap)
+    apply(labels, partialEdgeSet.toMap, types)
   }
 
   /**
@@ -103,7 +105,7 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
      * This method checks if an aliasing graph is well formed.
      */
     @elidable(ASSERTION)
-    private def checkInvariant() {
+    private def checkInvariant(): Unit = {
       assume(labels.length == types.length, s"Field `labels` has length ${labels.length} while field `types` has length ${types.length} in ${this}")
       for (Some(n) <- labels) { assume(edges.isDefinedAt(n), s"First level node ${n} has no corresponding span") }
       for (n <- edges.keys) { assume(labels contains Some(n), s"A span exists for node ${n} which is not first level in ${this}") }
@@ -128,7 +130,7 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
       val s = collection.mutable.Set(nodes: _*)
       val q = collection.mutable.Queue(nodes: _*)
       while (!q.isEmpty) {
-        val n = q.dequeue
+        val n = q.dequeue()
         if (isFirstLevel(n)) {
           for ((f, tgt) <- edges(n); if !(s contains tgt)) {
             s += tgt
@@ -144,8 +146,8 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
      */
     private[objects] def restrictNot(nodes: Set[Node]): Property = {
       val newlabels = labels map { _ flatMap { n => if (nodes contains n) None else Some(n) } }
-      val newedges = (edges -- nodes) mapValues { span => span filterNot { case (f, n) => nodes contains n } }
-      new Property(newlabels, newedges, types)
+      val newedges = (edges -- nodes).view mapValues { span => span filterNot { case (f, n) => nodes contains n } }
+      new Property(newlabels, newedges.toMap, types)
     }
 
     /**
@@ -155,7 +157,7 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
      */
     private[objects] def reachableNodesForbidden(forbidden: Node): Set[Node] = {
       assume(isFirstLevel(forbidden))
-      val firstLevel: Set[Node] = (for (Some(n) <- labels; if n != forbidden) yield n)(collection.breakOut)
+      val firstLevel: Set[Node] = (for (Some(n) <- labels.view; if n != forbidden) yield n).toSet
       val secondLevel = (firstLevel flatMap { edges(_).values }) - forbidden
       firstLevel ++ secondLevel
     }
@@ -165,7 +167,7 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
      * @note This is more efficient that just resorting to reachableNodesFrom
      */
     private[objects] def nodes: Set[Node] = {
-      val firstLevel: Set[Node] = (for (Some(n) <- labels) yield n)(collection.breakOut)
+      val firstLevel: Set[Node] = (for (Some(n) <- labels.view) yield n).toSet
       val secondLevel = (firstLevel flatMap { edges(_).values })
       firstLevel ++ secondLevel
     }
@@ -332,11 +334,16 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
         }
 
         def matchLabels(l1: Seq[Option[Node]], l2: Seq[Option[Node]]): Unit = {
-          for ((on1, on2) <- (labels zip other.labels)) {
-            matchNode(on1, on2)
-            if (status.isEmpty) return
-            matchFields(on1, on2)
-            if (status.isEmpty) return
+          import scala.util.control._
+
+          val loopBreak = new Breaks
+          loopBreak.breakable {
+            for ((on1, on2) <- (labels lazyZip other.labels)) {
+                  matchNode(on1, on2)
+                  if (status.isEmpty) loopBreak.break()
+                  matchFields(on1, on2)
+                  if (status.isEmpty) loopBreak.break()
+            }
           }
         }
 
@@ -474,7 +481,7 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
 
     def addFreshVariable(t: om.Type): Property = {
       val n = Node()
-      new Property(labels :+ Some(n), edges updated (n, fullSpan(t)), types :+ t)
+      new Property(labels :+ Some(n), edges.updated(n, fullSpan(t)), types :+ t)
     }
 
     def addVariable(t: om.Type): Property = {
@@ -484,14 +491,14 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
     def delVariable(v: Int): Property = {
       // Remove spurious edges
       val newedges = reducedEdgeSet(v)
-      new Property(labels patch (v, Nil, 1), newedges, types patch (v, Nil, 1))
+      new Property(labels.patch(v, Nil, 1), newedges, types.patch(v, Nil, 1))
     }
 
     def mapVariables(rho: Seq[Int]): Property = {
       val newsize = rho.count(_ != -1)
       val revrho = collection.mutable.Buffer.fill(newsize)(0)
       for ((newidx, oldidx) <- rho.zipWithIndex; if newidx != -1) revrho(newidx) = oldidx
-      mapVariablesReverse(revrho)
+      mapVariablesReverse(revrho.toSeq)
     }
 
     /**
@@ -501,8 +508,8 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
     private def mapVariablesReverse(rho: Seq[Int]): Property = {
       val newlabels = rho map labels
       val newtypes = rho map types
-      val newedges = edges filterKeys { newlabels contains Some(_) }
-      new Property(newlabels, newedges, newtypes)
+      val newedges = edges.view filterKeys { newlabels contains Some(_) }
+      new Property(newlabels, newedges.toMap, newtypes)
     }
 
     def top: Property = domain.top(fiber)
@@ -519,8 +526,8 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
       val newlabels = privateLabels ++ other.labels.drop(common)
       val newtypes = types.dropRight(common) ++ other.types.drop(common)
 
-      val commonNodes: Set[Node] = (for (on <- commonLabels; n <- on) yield n) (collection.breakOut)
-      val privateNodes: Set[Node] =  (for (on <- privateLabels; n <- on) yield n) (collection.breakOut)
+      val commonNodes: Set[Node] = (for (on <- commonLabels.view; n <- on) yield n).toSet
+      val privateNodes: Set[Node] =  (for (on <- privateLabels.view; n <- on) yield n).toSet
       val reachableNodes = privateNodes filter { n => commonNodes exists { m => mayShareNodes(m,n)}}
 
       val newedges =
@@ -531,7 +538,7 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
             span)
       new Property(
         newlabels,
-        (newedges ++ other.edges).filterKeys { newlabels contains Some(_) },
+        (newedges ++ other.edges).view.filterKeys({ newlabels contains Some(_) }).toMap,
         newtypes)
     }
 
@@ -614,14 +621,14 @@ class AliasingDomain[OM <: ObjectModel](val om: OM) extends ObjectDomain[OM] {
       assume(om.lteq(newtype, types(v)))
       labels(v) match {
         case None =>
-          new Property(labels, edges, types updated (v, newtype))
+          new Property(labels, edges, types.updated(v, newtype))
         case Some(n) =>
           val nodeType = completeNodeType(n).get
           if (om.lteq(nodeType, newtype) || om.lteq(newtype, nodeType)) {
             val newspan = expandSpan(n, newtype)
-            new Property(labels, edges updated (n, newspan), types updated (v, newtype))
+            new Property(labels, edges.updated(n, newspan), types.updated(v, newtype))
           } else {
-            domain.bottom(types updated (v, newtype))
+            domain.bottom(types.updated(v, newtype))
           }
       }
     }

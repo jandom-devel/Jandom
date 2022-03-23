@@ -17,9 +17,11 @@
  */
 
 package it.unich.jandom.targets.cfg
+
 import scala.collection.mutable.HashMap
 import scala.collection.mutable.Queue
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
+
 import it.unich.jandom.targets.Annotation
 import it.unich.jandom.targets.Target
 import soot.toolkits.graph.DirectedGraph
@@ -123,12 +125,12 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
    */
   def analyzeFromAnnotation(params: Parameters)(ann: Annotation[ProgramPoint, params.Property]): Annotation[ProgramPoint, params.Property] = {
     val annEdge = HashMap[Edge, params.Property]()
-    val taskList = Queue[ProgramPoint](graph.getHeads.asScala: _*)
+    val taskList = Queue.empty[ProgramPoint].appendAll(graph.getHeads.asScala)
 
     // ASCENDING phase
     params.log("Ascening Phase\n")
     while (!taskList.isEmpty) {
-      val node = taskList.dequeue
+      val node = taskList.dequeue()
       params.log(s"node ${node}input ${ann(node)}\n")
       val result = analyzeBlock(params)(node, ann(node))
       params.log("result " + result.mkString(",") + "\n")
@@ -156,10 +158,10 @@ abstract class ControlFlowGraph[Tgt <: ControlFlowGraph[Tgt, Node], Node] extend
     }
 
     // DESCENDING phase
-    taskList.enqueue(graph.asScala.toSeq: _*)
+    taskList.enqueueAll(graph.asScala)
     params.log("Descending Phase\n")
     while (!taskList.isEmpty) {
-      val node = taskList.dequeue
+      val node = taskList.dequeue()
       params.log(s"node ${node} input ${ann(node)} ")
       val result = analyzeBlock(params)(node, ann(node))
       params.log("result " + (graph.getSuccsOf(node).asScala zip result).mkString(" ; ") + "\n")

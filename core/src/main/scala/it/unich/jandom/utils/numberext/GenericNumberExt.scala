@@ -36,7 +36,7 @@ abstract class GenericNumberExt[T: Numeric]
   def min(that: GenericNumberExt[T]) = if (this <= that) this else that
   def max(that: GenericNumberExt[T]) = if (this >= that) this else that
 
-  def unary_-(): GenericNumberExt[T]
+  def unary_- : GenericNumberExt[T]
   val isWhole = true
 }
 
@@ -75,7 +75,7 @@ object GenericNumberExt {
    * A sort of companion object for the class of NANVAL
    */
   object NaN {
-    def apply[T]() = cachedNaN.asInstanceOf[GenericNumberExt[T]]
+    def apply[T] = cachedNaN.asInstanceOf[GenericNumberExt[T]]
     def unapply[T](v: GenericNumberExt[T])() = v eq cachedNaN
   }
 
@@ -83,7 +83,7 @@ object GenericNumberExt {
    * A sort of companion object for the class of positive infinite numbers
    */
   object PositiveInfinity {
-    def apply[T]() = cachedPositiveInfinity.asInstanceOf[GenericNumberExt[T]]
+    def apply[T] = cachedPositiveInfinity.asInstanceOf[GenericNumberExt[T]]
     def unapply[T](v: GenericNumberExt[T])() = v eq cachedPositiveInfinity
   }
 
@@ -91,7 +91,7 @@ object GenericNumberExt {
    * A sort of companion object for the class of negative infinite numbers
    */
   object NegativeInfinity {
-    def apply[T]() = cachedNegativeInfinity.asInstanceOf[GenericNumberExt[T]]
+    def apply[T] = cachedNegativeInfinity.asInstanceOf[GenericNumberExt[T]]
     def unapply[T](v: GenericNumberExt[T])() = v eq cachedNegativeInfinity
   }
 
@@ -195,7 +195,7 @@ object GenericNumberExt {
     }
 
     def tryCompareTo[B >: GenericNumberExt[T]](that: B)(implicit arg0: (B) => PartiallyOrdered[B]) = that match {
-      case that: GenericNumberExtNormal[T] => Some(implicitly[Numeric[T]].compare(this.value, that.value))
+      case that: GenericNumberExtNormal[T @unchecked] => Some(implicitly[Numeric[T]].compare(this.value, that.value))
       case that => that.tryCompareTo(this)
     }
 

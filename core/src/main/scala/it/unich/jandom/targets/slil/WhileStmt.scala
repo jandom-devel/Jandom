@@ -53,8 +53,8 @@ class WhileStmt(val condition: NumericCondition, val body: SLILStmt) extends SLI
     params.nestingLevel += 1
 
     // Determines widening/narrowing operators to use
-    val widening = params.widening((this, 'head))
-    val narrowing = params.narrowing((this, 'head))
+    val widening = params.widening((this, Symbol("head")))
+    val narrowing = params.narrowing((this, Symbol("head")))
 
     // Determines initial values for the analysis, depending on the calling phase
     var (bodyResult, invariant) =
@@ -152,10 +152,10 @@ class WhileStmt(val condition: NumericCondition, val body: SLILStmt) extends SLI
     lastBodyResult = bodyResult
 
     // Annotate results
-    ann((this, 'head)) = invariant
+    ann((this, Symbol("head"))) = invariant
     if (params.allPPResult) {
-      ann((this, 'bodyStart)) = condition.analyze(invariant)
-      ann((this, 'bodyEnd)) = bodyResult
+      ann((this, Symbol("bodyStart"))) = condition.analyze(invariant)
+      ann((this, Symbol("bodyEnd"))) = bodyResult
     }
 
     // Exit from this loop, hence decrement nesting level
@@ -166,12 +166,12 @@ class WhileStmt(val condition: NumericCondition, val body: SLILStmt) extends SLI
 
   def outputAnnotation[T <: NumericalProperty[_]](ann: Annotation[ProgramPoint, T], ob: OutputBuilder, env: Environment): Unit = {
     ob ++= s"while (${condition.mkString(env.names)})"
-    for (p <- ann.get((this, 'head))) (ob ++= " ").annotate(p.mkString(env.variables))
+    for (p <- ann.get((this, Symbol("head")))) (ob ++= " ").annotate(p.mkString(env.variables))
     ob ++= " {"
     ob.newline(ob.IndentBehaviour.Increase)
-    for (p <- ann.get((this, 'bodyStart))) ob.annotate(p.mkString(env.variables)).newline()
+    for (p <- ann.get((this, Symbol("bodyStart")))) ob.annotate(p.mkString(env.variables)).newline()
     body.outputAnnotation(ann, ob, env)
-    for (p <- ann.get((this, 'bodyEnd))) ob.newline().annotate(p.mkString(env.variables))
+    for (p <- ann.get((this, Symbol("bodyEnd")))) ob.newline().annotate(p.mkString(env.variables))
     ob.newline(ob.IndentBehaviour.Decrease)
     ob ++= "}"
   }
@@ -185,26 +185,26 @@ class WhileStmt(val condition: NumericCondition, val body: SLILStmt) extends SLI
   val numvars: Int = condition.dimension max body.numvars
 
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
-    val headpp = lts.Location((this, 'head).toString, Seq())
-    val truepp = lts.Location((this, 'bodyStart).toString, Seq())
-    val tailpp = lts.Location((this, 'bodyEnd).toString, Seq())
-    val tenter = lts.Transition((this, 'enter).toString, prev, headpp, Seq(), Seq.empty)
-    val texit = lts.Transition((this, 'exit).toString, tailpp, headpp, Seq(), Seq.empty)
-    val ttrue = lts.Transition((this, 'true).toString, headpp, truepp, Seq(condition), Seq.empty)
-    val tfalse = lts.Transition((this, 'false).toString, headpp, next, Seq(condition.opposite), Seq.empty)
+    val headpp = lts.Location((this, Symbol("head")).toString, Seq())
+    val truepp = lts.Location((this, Symbol("bodyStart")).toString, Seq())
+    val tailpp = lts.Location((this, Symbol("bodyEnd")).toString, Seq())
+    val tenter = lts.Transition((this, Symbol("enter")).toString, prev, headpp, Seq(), Seq.empty)
+    val texit = lts.Transition((this, Symbol("exit")).toString, tailpp, headpp, Seq(), Seq.empty)
+    val ttrue = lts.Transition((this, Symbol("true")).toString, headpp, truepp, Seq(condition), Seq.empty)
+    val tfalse = lts.Transition((this, Symbol("false")).toString, headpp, next, Seq(condition.opposite), Seq.empty)
     val tt1 = body.toLTS(truepp, tailpp)
-    (tt1._1 ++ Seq((this, 'head) -> headpp, (this, 'bodyStart) -> truepp, (this, 'bodyEnd) -> tailpp),
+    (tt1._1 ++ Seq((this, Symbol("head")) -> headpp, (this, Symbol("bodyStart")) -> truepp, (this, Symbol("bodyEnd")) -> tailpp),
       tt1._2 :+ tenter :+ ttrue :+ tfalse :+ texit)
   }
 
   // Optimized alternative definition of wire.
   /*
   def toLTS(prev: lts.Location, next: lts.Location): (Map[ProgramPoint, lts.Location], Seq[lts.Transition]) = {
-    val pp = lts.Location((this, 'head).toString, Seq())
+    val pp = lts.Location((this, Symbol("head")).toString, Seq())
     val t1 = lts.Transition((this, 'enter).toString, prev, pp, Seq(condition), Seq.empty)
     val t2 = lts.Transition((this, 'exit).toString, prev, next, Seq(condition.opposite), Seq.empty)
     val tt1 = body.toLTS(pp, prev)
-    (tt1._1 updated((this, 'head), pp), tt1._2 :+ t1 :+ t2)
+    (tt1._1 updated((this, Symbol("head")), pp), tt1._2 :+ t1 :+ t2)
   }
   */
 

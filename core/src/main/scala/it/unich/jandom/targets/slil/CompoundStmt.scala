@@ -68,7 +68,7 @@ class CompoundStmt(val stmts: SLILStmt*) extends SLILStmt {
     val locations = mutable.HashMap.empty[ProgramPoint, lts.Location]
     var src = prev
     var tgt = prev
-    for ((stmt, index) <- stmts.zip(Stream from 1)) {
+    for ((stmt, index) <- stmts.view.zipWithIndex) {
       tgt = if (index == stmts.size) next else lts.Location((this, index).toString, Seq.empty)
       if (index != stmts.size) locations((this, index)) = tgt
       val innerLTS = stmt.toLTS(src, tgt)

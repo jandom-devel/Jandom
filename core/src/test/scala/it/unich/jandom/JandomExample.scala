@@ -32,7 +32,7 @@ import it.unich.jandom.targets.slil.SLILTarget
 object JandomExample extends App {
 
   {
-    val source = scala.io.Source.fromFile("examples/WideningPaper/nested.R").getLines.mkString("\n")
+    val source = scala.io.Source.fromFile("examples/WideningPaper/nested.R").getLines().mkString("\n")
     val parsed = parsers.RandomParser().parse(source)
     if (parsed.successful) {
       val program = parsed.get
@@ -47,7 +47,7 @@ object JandomExample extends App {
   }
 
   {
-    val source = scala.io.Source.fromFile("examples/LPinv/berkeley.in").getLines.mkString("\n")
+    val source = scala.io.Source.fromFile("examples/LPinv/berkeley.in").getLines().mkString("\n")
     val parsed = parsers.LPInvParser().parse("berkeley",source)
     if (parsed.successful) {
       val program = parsed.get

@@ -72,7 +72,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
         (
           low.forall { (x) => !(x.isPosInfinity) } &&
           high.forall { (x) => !(x.isNegInfinity) } &&
-          (low, high).zipped.forall(_ <= _) &&
+          (low lazyZip high).forall (_ <= _) &&
           !isEmpty
           ||
           low.forall { _.isPosInfinity } &&
@@ -158,8 +158,8 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
      */
     def union(that: Property): Property = {
       require(dimension == that.dimension)
-      val newlow = (this.low, that.low).zipped.map(_ min _)
-      val newhigh = (this.high, that.high).zipped.map(_ max _)
+      val newlow = (this.low lazyZip that.low) map (_ min _)
+      val newhigh = (this.high lazyZip that.high) map (_ max _)
       new Property(newlow, newhigh, isEmpty && that.isEmpty)
     }
 
@@ -170,8 +170,8 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
      */
     def intersection(that: Property): Property = {
       require(dimension == that.dimension)
-      val newlow = (this.low, that.low).zipped.map(_ max _)
-      val newhigh = (this.high, that.high).zipped.map(_ min _)
+      val newlow = (this.low lazyZip that.low) map (_ max _)
+      val newhigh = (this.high lazyZip that.high) map (_ min _)
       BoxDoubleDomain.this(newlow, newhigh)
     }
 
@@ -182,8 +182,8 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
      */
     def widening(that: Property) = {
       require(dimension == that.dimension)
-      val newlow = (low, that.low).zipped.map((l1, l2) => if (l1 == Double.PositiveInfinity) l2 else if (l1 <= l2) l1 else Double.NegativeInfinity)
-      val newhigh = (high, that.high).zipped.map((l1, l2) => if (l1 == Double.NegativeInfinity) l2 else if (l1 >= l2) l1 else Double.PositiveInfinity)
+      val newlow = (this.low lazyZip that.low) map((l1, l2) => if (l1 == Double.PositiveInfinity) l2 else if (l1 <= l2) l1 else Double.NegativeInfinity)
+      val newhigh = (this.high lazyZip that.high) map((l1, l2) => if (l1 == Double.NegativeInfinity) l2 else if (l1 >= l2) l1 else Double.PositiveInfinity)
       new Property(newlow, newhigh, isEmpty && that.isEmpty)
     }
 
@@ -197,8 +197,8 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
       if (that.isEmpty) {
         that
       } else {
-        val newlow = (low, that.low).zipped.map((l1, l2) => if (l1 == Double.NegativeInfinity) l2 else l1)
-        val newhigh = (high, that.high).zipped.map((l1, l2) => if (l1 == Double.PositiveInfinity) l2 else l1)
+        val newlow = (this.low lazyZip that.low) map ((l1, l2) => if (l1 == Double.NegativeInfinity) l2 else l1)
+        val newhigh = (this.high lazyZip that.high) map((l1, l2) => if (l1 == Double.PositiveInfinity) l2 else l1)
         BoxDoubleDomain.this(newlow, newhigh)
       }
     }
@@ -211,7 +211,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
      */
     def linearEvaluation(lf: LinearForm): (Double, Double) = {
       val known = lf.known.toDouble
-      val homcoeffs = lf.homcoeffs.map (_.toDouble).toArray
+      val homcoeffs = lf.homcoeffs map (_.toDouble)
       linearEvaluation(known, homcoeffs)
     }
 
@@ -222,7 +222,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
      * @return a tuple with two components: the first component is the least value, the second component is the greatest value
      * of the linear form over the box.
      */
-    private def linearEvaluation(known: Double, homcoeffs: Array[Double]): (Double, Double) = {
+    private def linearEvaluation(known: Double, homcoeffs: Seq[Double]): (Double, Double) = {
       require(homcoeffs.length <= dimension)
       var newlow = known
       var newhigh = known
@@ -304,7 +304,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
       if (isEmpty)
         this
       else {
-        val homcoeffs = lf.homcoeffs.map(_.toDouble).toArray
+        val homcoeffs = lf.homcoeffs.map(_.toDouble)
         val known = lf.known.toDouble
         val lfArgmin = linearArgmin(lf)
         val lfMin = linearEvaluation(known, homcoeffs)._1
@@ -373,7 +373,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
      * @note @inheritdoc
      * @throws $ILLEGAL
      */
-    def addVariable: Property =
+    def addVariable(): Property =
       if (isEmpty)
         BoxDoubleDomain.this.bottom(dimension + 1)
       else
@@ -454,8 +454,8 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
           case (false, true) => Option(1)
           case (true, false) => Option(-1)
           case (false, false) =>
-            val lowpairs = (this.low, other.low).zipped
-            val highpairs = (this.high, other.high).zipped
+            val lowpairs = this.low lazyZip other.low
+            val highpairs = this.high lazyZip other.high
             if (lowpairs.forall(_ == _) && highpairs.forall(_ == _))
               Option(0)
             else if (lowpairs.forall(_ <= _) && highpairs.forall(_ >= _))
@@ -483,7 +483,7 @@ class BoxDoubleDomain(val overReals: Boolean) extends BoxGenericDomain[Double] {
    */
   def apply(low: Array[Double], high: Array[Double]): Property = {
     require(low.length == high.length)
-    if ((low, high).zipped.exists(_ > _))
+    if ((low lazyZip high).exists(_ > _))
       bottom(low.length)
     else
       new Property(low, high, false)

@@ -137,7 +137,7 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
     * @param m a sequence of vectors, all of the same length.
     * @return a sequence of positions in m.
     */
-  private def pivoting(m: IndexedSeq[DenseVector]): List[Int] = {
+  private def pivoting[F[_]](m: collection.IndexedSeqOps[DenseVector, F, F[DenseVector]]): List[Int] = {
     val dimension = m(0).length
     val indexes = ListBuffer[Int]()
     val pivots = ListBuffer[(DenseVector, Int)]()
@@ -408,7 +408,7 @@ class ParallelotopeRationalDomain private(favorAxis: Int) extends NumericalDomai
         }
 
         val Qsorted = Q.sortBy(_._4)
-        val pvt = domain.pivoting(Qsorted map (_._1))
+        val pvt = domain.pivoting(Qsorted.view map ( _._1 ))
         val newA = DenseMatrix(pvt map (Qsorted(_)._1): _*)
         val newlow = Bounds(pvt map (Qsorted(_)._2): _*)
         val newhigh = Bounds(pvt map (Qsorted(_)._3): _*)

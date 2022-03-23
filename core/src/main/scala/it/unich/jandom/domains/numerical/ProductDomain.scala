@@ -146,8 +146,8 @@ class ProductDomain[D1 <: NumericalDomain, D2 <: NumericalDomain](val dom1: D1, 
 
     def isPolyhedral = p1.isPolyhedral && p2.isPolyhedral
 
-    def addVariable: Property =
-      new Property(p1.addVariable, p2.addVariable)
+    def addVariable(): Property =
+      new Property(p1.addVariable(), p2.addVariable())
 
     def delVariable(n: Int): Property =
       new Property(p1.delVariable(n), p2.delVariable(n))

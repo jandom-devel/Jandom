@@ -69,7 +69,7 @@ object FASTComparison extends App with FASTLoader {
       val ann2 = results((lts, name2))._1
       for (l <- lts.locations) {
         val result = ann1(l) tryCompareTo ann2(l)
-        result match {
+        (result: @unchecked) match {
           case None =>
             un += 1
           //println(s"location ${l}: ${ann1(l)} vs ${ann2(l)}")

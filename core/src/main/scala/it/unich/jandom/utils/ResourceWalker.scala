@@ -21,7 +21,7 @@ package it.unich.jandom.utils
 import java.net.URI
 import java.nio.file._
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 /**
   * An utility object containing methods for walking directory resources whether they are

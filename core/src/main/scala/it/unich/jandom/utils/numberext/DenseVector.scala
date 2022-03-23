@@ -252,7 +252,7 @@ final class DenseVector(val data: Array[Rational]) extends AnyVal {
   /**
     * Returns `this` as a Scala Vector.
     */
-  def toScalaVector: Vector[Rational] = Vector(data: _*)
+  def toScalaVector: Vector[Rational] = Vector.from(data)
 
 }
 

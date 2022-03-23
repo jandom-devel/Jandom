@@ -50,10 +50,10 @@ class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SLILS
     ob ++= (inputVars map { v: Int => env(v) }).mkString(",")
     ob ++= ") {"
     ob.newline(ob.IndentBehaviour.Increase)
-    for (p <- ann.get((this, 'start)))
+    for (p <- ann.get((this, Symbol("start"))))
       ob.annotate(p.mkString(env.variables)).newline()
     stmt.outputAnnotation(ann, ob, env)
-    for (p <- ann.get((this, 'end)))
+    for (p <- ann.get((this, Symbol("end"))))
       ob.newline().annotate(p.mkString(env.variables))
     ob.newline(ob.IndentBehaviour.Decrease)
     ob ++= "}"
@@ -82,8 +82,8 @@ class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SLILS
         stmt.analyzeStmt(params)(input, Ascending, ann)
     }
     if (params.allPPResult) {
-      ann((this, 'start)) = input
-      ann((this, 'end)) = output
+      ann((this, Symbol("start"))) = input
+      ann((this, Symbol("end"))) = output
     }
     ann.asInstanceOf[Annotation[ProgramPoint, params.Property]]
   }
@@ -97,7 +97,7 @@ class SLILProgram(val env: Environment, val inputVars: Seq[Int], val stmt: SLILS
     val startPP = lts.Location("start", Seq())
     val endPP = lts.Location("end", Seq())
     val (ppmapTmp, transitions) = stmt.toLTS(startPP, endPP)
-    val ppmap = ppmapTmp ++ Seq((this, 'start) -> startPP, (this, 'end) -> endPP)
+    val ppmap = ppmapTmp ++ Seq((this, Symbol("start")) -> startPP, (this, Symbol("end")) -> endPP)
     val locations: IndexedSeq[Location] = ppmap.values.toIndexedSeq
     new TargetAdapter[lts.LTS] {
       val transformed: lts.LTS = lts.LTS("slil", locations, transitions, env,

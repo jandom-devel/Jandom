@@ -39,7 +39,7 @@ case class NumericAssignmentMultiple(val as: Seq[NumericAssignment]) {
    */
   def mkString(vars: Seq[String]): Seq[String] = for (a <- as) yield s"${vars(a.v)}' := ${a.exp.mkString(vars)}"
 
-  override def toString = "[ " + mkString(Stream.from(0).map { "v" + _ }).mkString(", ") + " ]"
+  override def toString = "[ " + mkString(LazyList.from(0).map { "v" + _ }).mkString(", ") + " ]"
 }
 
 /**

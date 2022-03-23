@@ -23,7 +23,6 @@ import scala.language.implicitConversions
 import it.unich.jandom.domains.EmptyExistsSuite
 import it.unich.jandom.domains.SeparatedTopAndBottomSuite
 import it.unich.jandom.utils.numberext.RationalExt
-import it.unich.jandom.utils.numberext.Bounds
 import it.unich.jandom.utils.numberext.DenseMatrix
 import it.unich.jandom.utils.numberext.Bounds
 import spire.syntax.literals._
@@ -229,7 +228,7 @@ class ParallelotopeRationalDomainFastSuite extends NumericalDomainSuite with Sep
       assertResult(diamond)(diamond.mapVariables(Seq(1, 0)))
       assertResult(diamond)(i.mapVariables(Seq(0, 1)))
       assertResult(h)(i.mapVariables(Seq(-1, 0)))
-      assertResult(diamond)(diamond.addVariable.mapVariables(Seq(1, 0, -1)))
+      assertResult(diamond)(diamond.addVariable().mapVariables(Seq(1, 0, -1)))
     }
   }
 

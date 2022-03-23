@@ -18,7 +18,7 @@
 
 package it.unich.jandom.domains.numerical.ppl
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import it.unich.jandom.domains.numerical.LinearForm
 import it.unich.jandom.domains.numerical.NumericalProperty
@@ -170,7 +170,7 @@ final class PPLBoxDouble(val pplbox: Double_Box) extends NumericalProperty[PPLBo
 
   def constraints = {
     val cs = pplbox.constraints()
-    cs.asScala flatMap PPLUtils.fromPPLConstraint
+    (cs.asScala.view flatMap PPLUtils.fromPPLConstraint).toSeq
   }
 
   def isPolyhedral = {
@@ -178,7 +178,7 @@ final class PPLBoxDouble(val pplbox: Double_Box) extends NumericalProperty[PPLBo
     cs.asScala forall PPLUtils.isRepresentableAsLinearForms
   }
 
-  def addVariable: PPLBoxDouble = {
+  def addVariable(): PPLBoxDouble = {
     val newpplbox = new Double_Box(pplbox)
     newpplbox.add_space_dimensions_and_embed(1)
     new PPLBoxDouble(newpplbox)

@@ -34,7 +34,7 @@ object EQSLegacySLILComparison extends App with SLILLoader {
     var lt, eq, gt, un = 0
     for (l <- programPoints) {
       val result = ann1(l) tryCompareTo ann2(l)
-      result match {
+      (result: @unchecked) match {
         case None =>
           un += 1
         case Some(0) => eq += 1
@@ -49,9 +49,9 @@ object EQSLegacySLILComparison extends App with SLILLoader {
 
   val dom = BoxDoubleDomain()
 
-  var timeEQS = 0.0
-  var timeLTS = 0.0
-  var timeTemp = 0.0
+  var timeEQS = 0L
+  var timeLTS = 0L
+  var timeTemp = 0L
   var globaleq, globallt, globalgt, globalun = 0
 
 

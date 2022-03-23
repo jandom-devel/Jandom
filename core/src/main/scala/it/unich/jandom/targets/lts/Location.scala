@@ -72,7 +72,7 @@ class Location(val name: String, val conditions: Seq[NumericCondition]) {
   /**
     * Returns a string representation of an annotation with synthetic variable names.
     */
-  def mkString: String = mkString(Stream.from(0).map("v" + _))
+  def mkString: String = mkString(LazyList.from(0).map("v" + _))
 
   override def toString: String = name
 }

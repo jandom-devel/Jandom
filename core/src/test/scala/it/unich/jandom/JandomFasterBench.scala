@@ -35,7 +35,7 @@ import parma_polyhedra_library.C_Polyhedron
   */
 object JandomFasterBench extends App with FASTLoader {
 
-  def fastModelAnalyze(program: LTS) {
+  def fastModelAnalyze(program: LTS): Unit = {
     println(s"------> ${program.name}")
 
     val params = new targets.Parameters[LTS] {

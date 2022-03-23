@@ -60,7 +60,7 @@ class Transition(val name: String, val start: Location, val end: Location, val g
   /**
     * Returns a string representation of a transition with synthetic variable names.
     */
-  def mkString: String = mkString(Stream.from(0).map("v" + _))
+  def mkString: String = mkString(LazyList.from(0).map("v" + _))
 
   /**
     * Returns the result of executing the transition.

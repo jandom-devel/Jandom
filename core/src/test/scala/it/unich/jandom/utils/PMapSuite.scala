@@ -75,7 +75,7 @@ class PMapSuite extends AnyFunSpec {
     }
     
     it("may be viewed as a parameter map with less parameters") {
-      def f[M <% pa.type +: PNil](m: M) = m(pa)        
+      def f[M](m: M)(implicit ev: M =>  pa.type +: PNil) = m(pa)        
       assertResult(valuepa)(f(m1))
       assertResult(valuepa)(f(m2))      
     }

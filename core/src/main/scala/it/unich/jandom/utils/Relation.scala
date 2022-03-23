@@ -18,7 +18,7 @@
 
 package it.unich.jandom.utils
 
-import scala.collection.mutable.MultiMap
+import scala.collection.immutable.MultiDict
 
 /**
  * A trait representing a mathematical relation.
@@ -81,16 +81,16 @@ object Relation {
     original: Relation[U, V] =>
 
     lazy val inverse = {
-      val memo = new collection.mutable.HashMap[V, collection.mutable.Set[U]] with MultiMap[V, U]
-      for (u <- original.domain; v <- original.image(u)) memo.addBinding(v, u)
-      val map = memo.toMap
+      val memo = MultiDict.from[V, U]( 
+        for (u <- original.domain.view; v <- original.image(u)) yield v -> u
+      )
 
       new Relation[V, U] with AutomaticPartialOrdering[V, U] {
         def isEmpty = original.isEmpty
-        def apply(v: V, u: U) = map.getOrElse(v, Set.empty[U]) contains u
-        def image(v: V) = map.getOrElse(v, Set.empty[U]).toSet
-        lazy val graph = for { v <- map.keySet; u <- map(v) } yield (v, u)
-        lazy val domain = map.keySet
+        def apply(v: V, u: U) = memo.containsEntry(v -> u)
+        def image(v: V) = memo.sets.getOrElse(v, Set.empty[U])
+        lazy val graph = for { v <- memo.sets.keySet; u <- memo.get(v) } yield (v, u)
+        lazy val domain = memo.sets.keySet
         lazy val codomain = original.domain
         def inverse = original
       }
@@ -104,9 +104,9 @@ object Relation {
   trait AutomaticPartialOrdering[U, V] extends PartiallyOrdered[Relation[U,V]] {
     original: Relation[U, V] =>
 
-    def tryCompareTo[B >: Relation[U, V]](that: B)(implicit arg0: (B) ⇒ PartiallyOrdered[B]): Option[Int] = {
+    def tryCompareTo[B >: Relation[U, V]](that: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = {
       that match {
-        case that: Relation[U, V] =>
+        case that: Relation[U @unchecked, V @unchecked] =>
           val thisgraph = graph
           val thatgraph = that.graph
           if (thisgraph == thatgraph)
@@ -122,7 +122,7 @@ object Relation {
 
     override def equals(that: Any): Boolean = {
       that match {
-        case that: Relation[U, V] => graph == that.graph
+        case that: Relation[U @unchecked, V @unchecked] => graph == that.graph
         case _ => false
       }
     }

@@ -92,11 +92,11 @@ trait DBM[N <: IField[N]] {
         .mkString("\t"))
       .mkString("\n")
 
-  def canEqual(a: Any) = a.isInstanceOf[DBM[N]]
+  def canEqual(a: Any) = a.isInstanceOf[DBM[N @unchecked]]
 
   override def equals(that: Any): Boolean =
     that match {
-      case that: DBM[N] => {
+      case that: DBM[N @unchecked] => {
         if (that.dimension == this.dimension)
           if (that.isClosed == this.isClosed)
             (dimension.allIdxs.forall(idx => that(idx) == this(idx)))
@@ -129,7 +129,7 @@ trait ClosedDBM[N <: IField[N]] extends DBM[N] with PartiallyOrdered[ClosedDBM[N
 
   def tryCompareTo[B >: ClosedDBM[N]](other : B)(implicit arg0: (B) => PartiallyOrdered[B]) : Option[Int] =
     other match {
-      case that : ClosedDBM[N] => {
+      case that : ClosedDBM[N @unchecked] => {
         require(that.dimension == this.dimension)
         if (dimension.allIdxs.forall(idx => that(idx) == this(idx))) Some(0)
         else if (dimension.allIdxs.forall(idx => this(idx) <= that(idx))) Some(-1) // We have tighter bounds
@@ -198,8 +198,6 @@ case class ArrayDBM[N <: IField[N]]
     * O(1)
     */
   def updated (idx : DBMIdx)(n : N) : DBM[N] = ArrayDBM(dimension, a.updated(idx.i - 1, a(idx.i - 1).updated(idx.j - 1, n)))
-
-  def seq = a.map(_.seq).seq
 
   /**
     * O(n^2)

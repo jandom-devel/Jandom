@@ -152,12 +152,12 @@ object Utils {
       for {
         i <- Gen.choose(0, n - 1)
         j <- Gen.choose(0, n - 1)// .suchThat(_ != i)
-        coeffi <- Gen.choose[Int](-1,1)
-        coeffj <- Gen.choose[Int](-1,1)
+        coeffi <- Gen.choose[Rational](-1, 1)
+        coeffj <- Gen.choose[Rational](-1, 1)
         c <- GenRational
       } yield {
-        val arr = Array.fill(n)(0).updated(i, coeffi).updated(j, coeffj)
-        LinearForm(arr : _*)
+        val arr = Array.fill(n)(Rational.zero).updated(i, coeffi).updated(j, coeffj)
+        LinearForm(arr)
       }
     }
 
@@ -165,11 +165,11 @@ object Utils {
       assert(n >= 2)
       for {
         i <- Gen.choose(0, n - 1)
-        coeffi <- Gen.choose[Int](-1,1)
+        coeffi <- Gen.choose[Rational](-1, 1)
         c <- GenRational
       } yield {
-        val arr = Array.fill(n)(0).updated(i, coeffi)
-        LinearForm(arr : _*)
+        val arr: Array[Rational] = Array.fill(n)(Rational.zero).updated(i, coeffi)
+        LinearForm(arr)
       }
     }
 

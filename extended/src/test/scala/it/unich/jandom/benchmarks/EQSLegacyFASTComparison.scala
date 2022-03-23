@@ -38,7 +38,7 @@ object EQSLegacyFASTComparison extends App with FASTLoader {
     var lt, eq, gt, un = 0
     for (l <- locations) {
       val result = ann1(l) tryCompareTo ann2(l)
-      result match {
+      (result: @unchecked) match {
         case None =>
           un += 1
         //println(s"location ${l}: ${ann1(l)} vs ${ann2(l)}")
@@ -76,9 +76,9 @@ object EQSLegacyFASTComparison extends App with FASTLoader {
   )
 
   for ((name, params) <- paramsList) {
-    var timeEQS = 0.0
-    var timeLTS = 0.0
-    var timeTemp = 0.0
+    var timeEQS = 0L
+    var timeLTS = 0L
+    var timeTemp = 0L
     var globaleq, globallt, globalgt, globalun = 0
     for (lts <- ltss) {
       timeTemp = java.lang.System.currentTimeMillis()

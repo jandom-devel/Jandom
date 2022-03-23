@@ -86,7 +86,7 @@ sealed abstract class NumericExpression {
    * @inheritdoc
    * It is equivalent to `mkString` with variable names `v0`...`vn`.
    */
-  override def toString = mkString(Stream.from(0).map { "v" + _ })
+  override def toString = mkString(LazyList.from(0).map { "v" + _ })
 
   /**
    * Returns true if the expression is syntactically zero
@@ -113,7 +113,7 @@ object NumericExpression {
    */
   case object NonDeterministicExpression extends NumericExpression {
     def analyze[Property <: NumericalProperty[Property]](input: Property): Property =
-      input.addVariable
+      input.addVariable()
 
     def assignTo[Property <: NumericalProperty[Property]](v: Int)(input: Property): Property =
       input.nonDeterministicAssignment(v)
@@ -142,7 +142,7 @@ object NumericExpression {
   case class LinearExpression(val lf: LinearForm) extends NumericExpression {
 
     def analyze[Property <: NumericalProperty[Property]](input: Property): Property =
-      input.addVariable.linearAssignment(input.dimension, lf)
+      input.addVariable().linearAssignment(input.dimension, lf)
 
     def assignTo[Property <: NumericalProperty[Property]](v: Int)(input: Property): Property =
       input.linearAssignment(v, lf)
@@ -282,7 +282,7 @@ object NumericExpression {
   /**
    * Implicit conversion from constants to a NumericExpression.
    */
-  implicit def ConstantExpression[T <% Rational](c: T) = LinearExpression(c)
+  implicit def ConstantExpression[T](c: T)(implicit ev: T => Rational) = LinearExpression(c)
 
   /**
    * Constructs an expression corresponding to the variable `v`.

@@ -43,9 +43,10 @@ private[ppl] trait PPLDomainSuiteParameters[Shape <: AnyRef] {
  * Test suite for the PPLProperty numerical domain, instantiated with the Double_Box shape
  * @author Gianluca Amato <gamato@unich.it>
  */
-class PPLDomainSuiteBox extends { val dom = PPLDomain[Double_Box]() } with AnyFunSpec
-  with PPLDomainSuiteParameters[Double_Box] with NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite
-  with PreciseIntersectionSuite {
+class PPLDomainSuiteBox extends AnyFunSpec with PPLDomainSuiteParameters[Double_Box] with NumericalDomainSuite 
+  with SeparatedTopAndBottomSuite with EmptyExistsSuite with PreciseIntersectionSuite {
+
+  val dom = PPLDomain[Double_Box]()
 
   describe("Test on disequality") {
     val obj = dom.top(3).linearAssignment(0, 0)
@@ -67,9 +68,10 @@ class PPLDomainSuiteBox extends { val dom = PPLDomain[Double_Box]() } with AnyFu
  * Test suite for the PPLProperty numerical domain, instantiated with the Double_Box shape
  * @author Gianluca Amato <gamato@unich.it>
  */
-class PPLDomainSuiteOctagon extends { val dom = PPLDomain[Octagonal_Shape_double]() } with AnyFunSpec
-  with PPLDomainSuiteParameters[Octagonal_Shape_double] with NumericalDomainSuite with SeparatedTopAndBottomSuite with EmptyExistsSuite {
+class PPLDomainSuiteOctagon extends AnyFunSpec with  PPLDomainSuiteParameters[Octagonal_Shape_double] with NumericalDomainSuite 
+ with SeparatedTopAndBottomSuite with EmptyExistsSuite {
 
+  val dom = PPLDomain[Octagonal_Shape_double]()
   val full = dom.top(3)
   val empty = dom.bottom(3)
 

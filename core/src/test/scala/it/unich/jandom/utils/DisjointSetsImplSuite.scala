@@ -30,7 +30,7 @@ class DisjointSetsImplSuite extends AnyFunSpec {
     }
     it("should remove all elements after clear") {
       val ds = DisjointSetsImpl(1 until 10: _*)
-      ds.clear
+      ds.clear()
       assert((1 until 10) forall { i => ds.find(i) == None })
       assert(ds.size === 0)
       assert(ds.setCount === 0)

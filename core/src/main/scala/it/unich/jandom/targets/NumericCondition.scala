@@ -54,7 +54,7 @@ sealed abstract class NumericCondition {
    * @inheritdoc
    * It is equivalent to `mkString` with variable names `v0`...`vn`
    */
-  override def toString = mkString(Stream.from(0).map { "v" + _ })
+  override def toString = mkString(LazyList.from(0).map { "v" + _ })
 }
 
 object NumericCondition {

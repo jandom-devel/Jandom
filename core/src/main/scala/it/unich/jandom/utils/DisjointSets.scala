@@ -18,7 +18,7 @@
 
 package it.unich.jandom.utils
 
-import scala.collection.generic.Growable
+import scala.collection.mutable.Growable
 
 /**
  * This is a trait for disjoint sets. A disjoint set algorithm keeps a number

@@ -62,11 +62,11 @@ class ParametersPane extends GridBagPanel {
       }
   }
 
-  private def addParameterEnumeration(row: Int, pe: ParameterEnumeration[_]): ComboBox[_] = {
+  private def addParameterEnumeration[V](row: Int, pe: ParameterEnumeration[V]): ComboBox[ParameterValue[V]] = {
     val label = new Label(pe.name + ":") {
       tooltip = pe.description
     }
-    val comboBox = new ComboBox(pe.values: Seq[ParameterValue[_]]) {
+    val comboBox = new ComboBox(pe.values) {
       renderer = ParameterRenderer
       selection.item = pe.default
     }
@@ -81,7 +81,7 @@ class ParametersPane extends GridBagPanel {
 
   def selectedObjectDomain = ObjectDomains.values(objectDomainComboBox.selection.index).value
 
-  def setParameters[T <: Target[T]](params: Parameters[T]) {
+  def setParameters[T <: Target[T]](params: Parameters[T]): Unit = {
     params.wideningScope = WideningScopes.values(wideningComboBox.selection.index).value
     params.narrowingStrategy = NarrowingStrategies.values(narrowingComboBox.selection.index).value
     val delay = delayModel.getValue().asInstanceOf[Double].toInt

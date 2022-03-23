@@ -49,7 +49,7 @@ class JimpleSuite extends AnyFunSuite with SootTests {
   jimpleNumTests()
   jimplePairSharingTests()
 
-  def jimpleNumTests() {
+  def jimpleNumTests(): scala.Unit = {
     val jimpleNumericalTests = Seq(
       "sequential" ->
         Seq(None -> false -> "b0 == 0 && b1 == 10 && i2 == 10"),
@@ -100,7 +100,7 @@ class JimpleSuite extends AnyFunSuite with SootTests {
     }
   }
 
-  def jimplePairSharingTests() {
+  def jimplePairSharingTests(): scala.Unit = {
 
     val jimplePairSharingTests: Seq[(String, String)] = Seq(
       "sequential" -> "{}",

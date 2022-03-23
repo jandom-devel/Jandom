@@ -49,7 +49,7 @@ class SLILProgramSuite extends AnyFunSuite {
     }
     val ann = program.analyze(params)
     assertResult(BoxDouble(Array(10), Array(11))) {
-      ann((program, 'end))
+      ann((program, Symbol("end")))
     }
   }
 

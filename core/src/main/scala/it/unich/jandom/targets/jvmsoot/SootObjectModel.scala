@@ -18,13 +18,14 @@
 
 package it.unich.jandom.targets.jvmsoot
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 import it.unich.jandom.objectmodels.ObjectModel
 import it.unich.jandom.objectmodels.ObjectModelHelper
 
 import soot._
 import soot.jandom.MyFastHierarchy
+
 
 /**
  * An object model for the JVM using the Soot library.
@@ -91,13 +92,13 @@ class SootObjectModel(scene: soot.Scene) extends ObjectModel with ObjectModelHel
   def parents(t: Type) = t match {
     case t: RefType =>
       val k = t.getSootClass()
-      val ifs: Set[Type] = (for {
+      val ifs = for {
         i <- k.getInterfaces().asScala
-      } yield i.getType())(collection.breakOut)
+      } yield i.getType()
       if (k.hasSuperclass())
-        ifs + k.getSuperclass().getType()
+        ifs.toSet + k.getSuperclass().getType()
       else
-        ifs
+        ifs.toSet
     case _: PrimType => Set()
     case t: ArrayType => parents(t.baseType) map { (ArrayType.v(_, t.numDimensions)) }
     case _: NullType => Set()

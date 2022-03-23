@@ -132,32 +132,32 @@ class RationalExt(val value: Rational, private val special: RationalExt.SpecialV
     case NAN => "NaN"
   }
 
-  def doubleValue() = special match {
+  def doubleValue = special match {
     case POSINF => scala.Double.PositiveInfinity
     case NEGINF => scala.Double.NegativeInfinity
     case NAN => scala.Double.NaN
-    case NORMAL => value.doubleValue()
+    case NORMAL => value.doubleValue
   }
 
-  def floatValue() = special match {
+  def floatValue = special match {
     case POSINF => scala.Float.PositiveInfinity
     case NEGINF => scala.Float.NegativeInfinity
     case NAN => scala.Float.NaN
-    case NORMAL => value.floatValue()
+    case NORMAL => value.floatValue
   }
 
-  def longValue() = special match {
+  def longValue = special match {
     case POSINF => Long.MaxValue
     case NEGINF => Long.MinValue
     case NAN => throw new IllegalArgumentException("cannot convert NaN to Long")
-    case NORMAL => value.longValue()
+    case NORMAL => value.longValue
   }
 
-  def intValue() = special match {
+  def intValue = special match {
     case POSINF => Int.MaxValue
     case NEGINF => Int.MinValue
     case NAN => throw new IllegalArgumentException("cannot convert NaN to Int")
-    case NORMAL => value.intValue()
+    case NORMAL => value.intValue
   }
 
   def max(that: RationalExt): RationalExt = (special, that.special) match {
@@ -224,7 +224,7 @@ class RationalExt(val value: Rational, private val special: RationalExt.SpecialV
 
   def underlying = this
 
-  def isWhole = value.isWhole() && special == NORMAL
+  def isWhole = value.isWhole && special == NORMAL
 
   /**
    * Returns a string representing the rational number. For finite rationals, a decimal representation
@@ -335,5 +335,11 @@ object RationalExt extends StaticIField[RationalExt]{
     def toDouble(x: RationalExt): Double = x.toDouble
     def div(x: RationalExt, y: RationalExt): RationalExt = x / y
     def compare(x: RationalExt, y: RationalExt) = x compare y
+
+    /**
+      * This is a fake implementation which always returns None
+      * @todo write a real implementation
+      */
+    def parseString(str: String): Option[RationalExt] = None
   }
 }

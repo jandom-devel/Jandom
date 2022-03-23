@@ -41,13 +41,13 @@ class DisjointSetsImpl[T](initialElements: Seq[T]) extends DisjointSets[T] {
 
   initialElements foreach (this += _)
 
-  def clear = nodes.clear
+  def clear() = nodes.clear()
 
   /**
    * Add a new single-node forest to the disjoint-set forests. It will
    * be placed into its own set.
    */
-  def +=(elem: T) = {
+  def addOne(elem: T) = {
     nodes += (elem -> DisjointSetsImpl.Node(elem, 0, None))
     this
   }

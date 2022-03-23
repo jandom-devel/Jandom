@@ -35,42 +35,42 @@ class FastEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane {
   contents = editorPane
 
   val fileChooser = new FileChooser(new File("."))
-  val actionMap = Map(editorPane.peer.getActions() map
-    { action => action.getValue(javax.swing.Action.NAME) -> action }: _*)
+  val actionMap = (editorPane.peer.getActions().view map
+    { action => action.getValue(javax.swing.Action.NAME) -> action }).toMap
   var undo = new UndoManager
   var _currentFile: Option[File] = None
   var _modified = false
 
   def modified = _modified
-  def modified_=(v: Boolean) {
+  def modified_=(v: Boolean): Unit = {
     _modified = v
     updateFrameTitle()
   }
 
   def currentFile = _currentFile
-  def currentFile_=(f: Option[File]) {
+  def currentFile_=(f: Option[File]): Unit = {
     _currentFile = f
     updateFrameTitle()
   }
 
   editorPane.peer.getDocument().addDocumentListener(new DocumentListener {
-    def changedUpdate(e: DocumentEvent) { listen(e) };
-    def insertUpdate(e: DocumentEvent) { listen(e) };
-    def removeUpdate(e: DocumentEvent) { listen(e) };
-    def listen(e: DocumentEvent) {
+    def changedUpdate(e: DocumentEvent) = listen(e)
+    def insertUpdate(e: DocumentEvent) = listen(e)
+    def removeUpdate(e: DocumentEvent) = listen(e)
+    def listen(e: DocumentEvent): Unit = {
       modified = true
     }
   })
 
   editorPane.peer.getDocument().addUndoableEditListener(new UndoableEditListener {
-    def undoableEditHappened(e: UndoableEditEvent) {
+    def undoableEditHappened(e: UndoableEditEvent) = {
       undo.addEdit(e.getEdit())
       undoAction.updateUndoState()
       redoAction.updateRedoState()
     }
   })
 
-  def updateFrameTitle() {
+  def updateFrameTitle(): Unit = {
     val newTitle = softwareName +
       (currentFile match {
         case None => ""
@@ -125,77 +125,80 @@ class FastEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane {
   /**
    * Save the current editor content, with the old filename if present.
    */
-  def save() { doSave(false) }
+  def save(): Unit = doSave(false)
 
   /**
    * Save the current editor content, with a new filename.
    */
-  def saveAs() { doSave(true) }
+  def saveAs(): Unit = doSave(true)
 
   /**
    * Clear the current content.
    */
-  def clear() {
-    if (!ensureSaved()) return ;
-    currentFile = None
-    modified = false
+  def clear(): Unit = {
+    if (ensureSaved()) {
+      currentFile = None
+      modified = false
+    }
   }
 
   /**
    * Open a new file.
    */
-  def open() {
-    if (!ensureSaved()) return ;
-    val returnVal = fileChooser.showOpenDialog(this)
-    if (returnVal != FileChooser.Result.Approve) return ;
-    val file = fileChooser.selectedFile
-    try {
-      editorPane.text = scala.io.Source.fromFile(file).mkString
-    } catch {
-      case e: IOException =>
-    }
-    currentFile = Some(file)
-    modified = false
+  def open(): Unit = {
+    if (ensureSaved()) {
+      val returnVal = fileChooser.showOpenDialog(this)
+      if (returnVal == FileChooser.Result.Approve) {
+        val file = fileChooser.selectedFile
+        try {
+          editorPane.text = scala.io.Source.fromFile(file).mkString
+        } catch {
+          case e: IOException =>
+        }
+        currentFile = Some(file)
+        modified = false
+      }
+    } 
   }
 
   val newAction = new Action("New") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_DOWN_MASK))
-    def apply() { clear() }
+    def apply() = clear()
   }
 
   val openAction = new Action("Open...") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK))
-    def apply() { open() }
+    def apply() = open()
   }
 
   val saveAction = new Action("Save") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK))
-    def apply() { save() }
+    def apply() = save()
   }
 
   val saveAsAction = new Action("Save As") {
-    def apply() { saveAs() }
+    def apply() = saveAs()
   }
 
   val cutAction = new Action("Cut") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_DOWN_MASK))
-    def apply() { actionMap("cut-to-clipboard").actionPerformed(null) }
+    def apply() = actionMap("cut-to-clipboard").actionPerformed(null)
   }
 
   val pasteAction = new Action("Paste") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK))
-    def apply() { actionMap("paste-from-clipboard").actionPerformed(null) }
+    def apply() = actionMap("paste-from-clipboard").actionPerformed(null)
   }
 
   val copyAction = new Action("Copy") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK))
-    def apply() { actionMap("copy-to-clipboard").actionPerformed(null) }
+    def apply() = actionMap("copy-to-clipboard").actionPerformed(null)
   }
 
   object undoAction extends Action("Undo") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK))
 
-    def apply() {
+    def apply() = {
       undo.undo()
       updateUndoState()
       redoAction.updateRedoState()
@@ -215,7 +218,7 @@ class FastEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane {
   object redoAction extends Action("Redo") {
     accelerator = Some(KeyStroke.getKeyStroke(KeyEvent.VK_Z, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK))
 
-    def apply() {
+    def apply() = {
       undo.redo()
       updateRedoState()
       undoAction.updateUndoState()
@@ -245,9 +248,13 @@ class FastEditorPane(val frame: MainFrame) extends ScrollPane with TargetPane {
         frame.parametersPane.setParameters(params)
         val ann = program.analyze(params)
         Option((params, program, ann))
-      case parser.NoSuccess(msg, next) =>
+      case parser.Error(msg, next) =>
         Dialog.showMessage(FastEditorPane.this, msg + " in line " + next.pos.line + " column " + next.pos.column,
           "Error in parsing source code", Dialog.Message.Error)
+        None
+      case parser.Failure(msg, next) =>
+        Dialog.showMessage(FastEditorPane.this, msg + " in line " + next.pos.line + " column " + next.pos.column,
+          "Failure in parsing source code", Dialog.Message.Error)
         None
     }
   }

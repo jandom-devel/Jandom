@@ -39,31 +39,31 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
 
   override def clone: JVMEnvFixedFrame[NumProperty] = new JVMEnvFixedFrame(domain, maxLocals, property)
 
-  def empty {
+  def empty() = {
     property = property.bottom
   }
 
-  def ipush(c: Int) {
+  def ipush(c: Int) = {
     property = property.addVariable().constantAssignment(property.dimension, c)
   }
 
-  def istore(v: Int) {
+  def istore(v: Int) = {
     property = property.variableAssignment(v, property.dimension - 1).delVariable(property.dimension - 1)
   }
 
-  def iload(v: Int) {
+  def iload(v: Int) = {
     property = property.addVariable().variableAssignment(property.dimension, v)
   }
 
-  def iadd() {
+  def iadd() = {
     property = property.variableAdd(property.dimension - 2, property.dimension - 1).delVariable(property.dimension - 1)
   }
 
-  def iinc(v: Int, c: Int) {
+  def iinc(v: Int, c: Int) = {
     property = property.constantAdd(v, c)
   }
 
-  def if_icmp(op: ComparisonOperators.Value) {
+  def if_icmp(op: ComparisonOperators.Value) = {
     import ComparisonOperators._
     val lfm = LinearForm.v(property.dimension - 1)
     val lfn = LinearForm.v(property.dimension - 2)
@@ -89,13 +89,13 @@ class JVMEnvFixedFrame[NumProperty <: NumericalProperty[NumProperty]](
     new JVMEnvFixedFrame[NumProperty](domain, maxLocals, property widening that.property)
 
   def tryCompareTo[B >: JVMEnvFixedFrame[NumProperty]](other: B)(implicit arg0: (B) => PartiallyOrdered[B]): Option[Int] = other match {
-    case other: JVMEnvFixedFrame[NumProperty] =>
+    case other: JVMEnvFixedFrame[NumProperty @unchecked] =>
       property.tryCompareTo(other.property)
     case _ => None
   }
 
   override def equals(that: Any) =  that match {
-    case that: JVMEnvFixedFrame[NumProperty] => property==that.property && maxLocals == that.maxLocals
+    case that: JVMEnvFixedFrame[NumProperty @unchecked] => property==that.property && maxLocals == that.maxLocals
     case _ => false
   }
 
